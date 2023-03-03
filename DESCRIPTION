@@ -1,0 +1,11 @@
+Package: STEGO.R
+Title: Single cell T-cell receptor and Expression Grouped Ontologies
+Version: 0.0.0.9000
+Authors@R: 
+    person("Kerry", "Mullan", , "kerry.mullan@uantwerpen.be", role = c("aut", "cre"),
+           comment = c(ORCID = "https://orcid.org/0000-0003-4400-1198"))
+Description: STEGO.R is to aid in analysis of scRNA-seq with TCR repertiore data. It is a shiny R application. The app includes the QC process from 10x genomics.
+License: `use_gpl3_license()`
+Encoding: UTF-8
+Roxygen: list(markdown = TRUE)
+RoxygenNote: 7.2.3
