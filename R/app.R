@@ -1,110 +1,10 @@
-# compatibility with Immunarch ----
-# setwd("app")
-suppressMessages(require("shiny"))
-suppressMessages(require("shinyBS"))
-suppressMessages(require("shinyWidgets"))
-suppressMessages(require("Seurat"))
-suppressMessages(require("plyr"))
-suppressMessages(require("dplyr"))
-suppressMessages(require("bslib"))
-suppressMessages(require("Matrix"))
-suppressMessages(require("DT"))
-suppressMessages(require("shinybusy"))
-suppressMessages(require("tidyverse"))
-suppressMessages(require("SeuratDisk"))
-suppressMessages(suppressWarnings(require("SeuratData")))
-suppressMessages(require("igraph"))
-suppressMessages(require("linkcomm")) # create the network graphs.
-suppressMessages(require("ggpattern"))
-# suppressMessages(require("plotly"))
-suppressMessages(require("ggrepel"))
-suppressMessages(require("showtext"))
-suppressMessages(require("reshape2")) # acast function
-suppressMessages(require("GGally"))
-suppressMessages(require("ggnet"))
-suppressMessages(require("network"))
-suppressMessages(require("VLF")) ## aa.count.function
-suppressMessages(require("motifStack")) # function
-suppressMessages(require("ggseqlogo")) # create figure
-suppressMessages(require("RIRA")) # cell typist
-suppressMessages(require("colourpicker")) # select visual colour
-suppressMessages(require("RColorBrewer"))
-suppressMessages(require("randomcoloR"))
-suppressMessages(require("ggridges")) # ridges plot
-suppressMessages(require("fpc")) #
-suppressMessages(require("ComplexHeatmap"))
-suppressMessages(require("circlize")) # colorRamp2
-suppressMessages(suppressWarnings(require("ClusTCR2")))
-suppressMessages(require("plyr"))
-require("doParallel")
-require("RColorBrewer")
-require("stringr")
-require(gridExtra)
+#' Run STEGO application.
+#' @export
 
-font_add_google("Gochi Hand", "gochi")
-font_add_google("Schoolbell", "bell")
-font_add_google("Press Start 2P", "Game")
-
-showtext_auto()
-
-# font ------
-font <- as.data.frame(font_families())
-font
-names(font) <- "Fonts"
-
-# set file upload limit
 options(shiny.maxRequestSize = 2000*1024^2)
-# reticulate::use_condaenv("/Users/kerrymullan/miniconda", required = TRUE) # changes to the location that the python conda packages are installed.
 
-# error messages------
-error_message_val1 <- "Upload call tags file"
-error_message_val2 <- "Upload TCR file"
-error_message_val3 <- "Upload count file"
-error_message_val4 <- "Check for missing uploaded files"
-error_message_val_10x_barcode <- "Upload 10x Barcode file"
-error_message_val_10x_features <- "Upload 10x Features file"
-error_message_val_sc <- "Upload raw processed count matrix for Seurat"
-error_message_val_UMAP <- "Upload .h5Seurat file"
+runSTEGO <- function(...)  {
 
-
-# cellTypist -----
-cellTypistModels <- c("Immune_All_Low.pkl",   #immune sub-populations combined from 20 tissues of 18 studies
-                      "Immune_All_High.pkl" , # immune populations combined from 20 tissues of 18 studies
-                      "Adult_Mouse_Gut.pkl"  , #cell types in the adult mouse gut combined from eight datasets
-                      "Autopsy_COVID19_Lung.pkl" , # cell types from the lungs of 16 SARS-CoV-2 infected COVID-19 autopsy adult donors
-                      "COVID19_Immune_Landscape.pkl" ,  #immune subtypes from lung and blood of COVID-19 patients and healthy controls
-                      "Cells_Fetal_Lung.pkl"  ,# cell types from human embryonic and fetal lungs
-                      "Cells_Intestinal_Tract.pkl",  # intestinal cells from fetal, pediatric (healthy and Crohn's disease) and adult human gut
-                      "Cells_Lung_Airway.pkl" ,  #cell populations from scRNA-seq of five locations of the human lungs and airways
-                      "Developing_Human_Brain.pkl"  ,# cell types from the first-trimester developing human brain
-                      "Developing_Human_Thymus.pkl" ,# cell populations in embryonic, fetal, pediatric, and adult stages of the human thymus
-                      "Developing_Mouse_Brain.pkl"  ,# cell types from the embryonic mouse brain between gastrulation and birth
-                      "Healthy_COVID19_PBMC.pkl" ,#  peripheral blood mononuclear cell types from healthy and COVID-19 individuals
-                      "Human_IPF_Lung.pkl" ,#  cell types from idiopathic pulmonary fibrosis, chronic obstructive pulmonary disease, and healthy lungs of adult humans
-                      "Human_Lung_Atlas.pkl" ,#  integrated Human Lung Cell Atlas (HLCA) combining 46 datasets of the human respiratory system
-                      "Human_PF_Lung.pkl"  ,# cell types from different forms of pulmonary fibrosis lungs of adult humans
-                      "Lethal_COVID19_Lung.pkl" ,#  cell types from the lungs of individuals who died of COVID-19 and control individuals
-                      "Nuclei_Lung_Airway.pkl",#   cell populations from snRNA-seq of five locations of the human lungs and airways
-                      "Pan_Fetal_Human.pkl"  # stromal and immune populations from the human fetus
-)
-
-# functions -----
-test_fun <- function() {
-  for (i in 1:15) {
-    incProgress(1/15)
-    sum(runif(1000000,0,1))
-  }
-}
-gg_fill_hue <- function(n) {
-  hues = seq(15, 375, length = n + 1)
-  hcl(h = hues, l = 65, c = 100)[1:n]
-} # colouring function
-
-# default colouring
-gg_fill_hue <- function(n) {
-  hues = seq(15, 375, length = n + 1)
-  hcl(h = hues, l = 65, c = 100)[1:n]
-}
 
 # ?numericInput
 # UI page -----
@@ -840,11 +740,9 @@ mainPanel(
 ##### Classification to include ------
                                      tabsetPanel(id = "Panel_TCRUMAP",
 
-
 # T cell classification ------
                                        tabPanel("Overview",
                                                 tabsetPanel(id = "Panel_class",
-
                                                             tabPanel("Meta data",value = 16,
                                                                      add_busy_spinner(spin = "fading-circle"),
                                                                      div(DT::dataTableOutput("UMAP_tb_download")),
@@ -2007,7 +1905,9 @@ server <- function(input, output,session) {
 # ClusTCR2 ------
   input.data_ClusTCR2 <- reactive({switch(input$dataset2,"test_data_clusTCR2" = test.data_clusTCR2(),"own_data_clusTCR2" = own.data_clusTCR2())})
   test.data_clusTCR2 <- reactive({
-    dataframe = read.csv("../cdr3.csv")
+      # system.file("extdata","inst/extdata/clusTCR/cdr3.csv",package = "STEGO.R")
+      dataframe = read.csv(system.file("extdata","clusTCR/cdr3.csv",package = "STEGO.R"))
+    # dataframe = read.csv("../cdr3.csv")
   })
   own.data_clusTCR2  <- reactive({
     inFile2_ClusTCR2 <- input$file2_ClusTCR2
@@ -2195,6 +2095,7 @@ server <- function(input, output,session) {
   input.data_sc <- reactive({switch(input$dataset_sc,"test_data_sc" = test.data_sc(),"own_data_sc" = own.data_sc())})
   test.data_sc <- reactive({
     if (input$df_seruatobj_type =="10x") {
+        # dataframe = read.csv(system.file("extdata","clusTCR/cdr3.csv",package = "STEGO.R"))
       dataframe = read.csv("../filename.csv.gz")
     }
     else {
@@ -2367,6 +2268,7 @@ server <- function(input, output,session) {
   input.data_sc_meta <- reactive({switch(input$dataset_sc,"test_data_sc" = test.data_sc_meta(),"own_data_sc" = own.data_sc_meta())})
   test.data_sc_meta <- reactive({
     if (input$df_seruatobj_type =="10x") {
+        # dataframe = read.csv(system.file("extdata","clusTCR/cdr3.csv",package = "STEGO.R"))
       dataframe = read.csv("../Test.metadata/metadata_10x_2022.12.14.csv")
     }
     else {
@@ -3287,7 +3189,9 @@ server <- function(input, output,session) {
   input.data_sc_pro <- reactive({switch(input$dataset_sc_pro,"test_data_sc_pro" = test.data_sc_pro(),"own_data_sc_pro" = own.data_sc_pro())})
   test.data_sc_pro <- reactive({
     if (input$STEGO_R_pro=="STEGO_R (.h5Seurat)") {
-      dataframe = LoadH5Seurat("../Public data/Bd Rhapsody/Seurat/Seurat Obj 2023.02.28.h5Seurat")
+        # dataframe = read.csv(system.file("extdata","clusTCR/cdr3.csv",package = "STEGO.R"))
+
+      dataframe = LoadH5Seurat(system.file("extdata","Analysis/Seurat Obj 2023.02.28.h5Seurat",package = "STEGO.R"))
     }
 
     else {
@@ -3317,6 +3221,7 @@ server <- function(input, output,session) {
   input.data_sc_clusTCR <- reactive({switch(input$dataset_sc_pro,"test_data_sc_pro" = test.data_sc_clusTCR(),"own_data_sc_pro" = own.data_sc_clusTCR())})
   # input.data_sc_clusTCR <- reactive({switch(input$dataset_cluster_file,"test_data_clusTCR" = test.data_sc_clusTCR(),"own_data_clusTCR" = own.data_sc_clusTCR())})
   test.data_sc_clusTCR <- reactive({
+      # dataframe = read.csv(system.file("extdata","clusTCR/cdr3.csv",package = "STEGO.R"))
     dataframe = read.csv("../Test.Cluster/Cluster_table  2022.12.15.csv")
   })
   own.data_sc_clusTCR <- reactive({
@@ -6091,9 +5996,9 @@ output$Ridge_chart_alpha_gamma_stat_comp <- DT::renderDataTable(escape = FALSE, 
   })
   output$UMAP_Epitope_plot <- renderPlot({
     UMAP_Epitope()
-
   })
 
 ### end -----
 }
 shinyApp(ui, server)
+}
