@@ -1,5 +1,5 @@
 #' Run STEGO application.
-#' @export
+#' @export runSTEGO
 
 options(shiny.maxRequestSize = 2000*1024^2)
 
@@ -45,6 +45,11 @@ ui <- fluidPage(
                                                 div(DT::dataTableOutput("test.files2")),
                                                 add_busy_spinner(spin = "fading-circle"),
                                                 div(DT::dataTableOutput("test.files3")),
+
+                                       ),
+                                       tabPanel("Filtering",
+                                                add_busy_spinner(spin = "fading-circle"),
+                                                div(DT::dataTableOutput("Filtering_BD")),
 
                                        ),
                                        tabPanel("clusTCR",
@@ -735,7 +740,15 @@ mainPanel(
                                               column(4, selectInput("Selected_clonotype","Select clonotype:",choices ="")),
                                               column(4, selectInput("Selected_chain","Select chain:",choices ="")),
 
+
                                      )),
+                                     conditionalPanel(condition="input.Panel_TCRUMAP=='ClusTCR2'",
+                                                      fluidRow(
+                                                        column(3,selectInput("chain_TCR","Chains included",choices = c("TCR","BCR","both")),),
+                                                        # column(3,selectInput("V_gene_clust","V gene",choices = c("v_gene_AG","v_gene_BD","v_gene_IgL","v_gene_IgH")),),
+                                                        # column(3, selectInput("cdr3_clust","CDR3",choices = c("cdr3_AG","cdr3_BD","cdr3_IgL","cdr3_IgH")),)
+                                                      ),
+                                     ),
 
 ##### Classification to include ------
                                      tabsetPanel(id = "Panel_TCRUMAP",
@@ -913,14 +926,37 @@ tabPanel("Epitope",
          ),
 
          ),
-
-tabPanel("ClusTCR2",
+# ClusTCR2 Analysis -----
+tabPanel("ClusTCR2",value = "ClusTCR2",
          tabsetPanel(
-           tabPanel("Table"),
-           tabPanel("UMAP")
-         )
+           tabPanel("Table",
+
+                    add_busy_spinner(spin = "fading-circle"),
+                    div(DT::dataTableOutput("Tb_ClusTCR_selected")),
+
+           ),
+           tabPanel("UMAP",
+                    fluidRow(
+                      column(3,selectInput("ClusTCR_display","Colour by:",choices = c("all","Selected"))),
+                      column(3,conditionalPanel(condition="input.ClusTCR_display=='Selected'",selectInput("Clusters_to_dis","Clusters to display",
+                                                                                                          choices = "",multiple = T)))),
+                    div(DT::dataTableOutput("Tb_ClusTCR_col")),
+
+
+                    fluidRow(
+                      # column(3,
+                      #        wellPanel(id = "tPanel23",style = "overflow-y:scroll; max-height: 600px",
+                      #                  uiOutput('myPanel_cols_epitope'))),
+                      column(9, plotOutput("UMAP_ClusTCR2_plot",height="600px"))
+                    ),
+
+           ),
+
+
 
          )
+
+)
                                        # tabPanel("Clonotypes per cluster (Pie/bar plot)"),
                                        # tabPanel("Upset plot")
                                       )
@@ -1075,80 +1111,101 @@ server <- function(input, output,session) {
       calls <- input.data.calls.bd();
       TCR <- as.data.frame(input.data.TCR.BD())
       counts <- as.data.frame(input.data.count.BD())
+
       validate(
         need(nrow(counts)>0 & nrow(TCR)>0 & nrow(calls)>0,
              error_message_val4)
       )
-      # remove zero count gene
-      if (input$filter_zero_expression==T) {
-        t.counts <- as.data.frame((t(counts)))
-        t.counts$total <- rowSums(t.counts)
-        t.counts <- t.counts[ t.counts$total > 0,] # remove genes with no expression
-        t.counts <- t.counts[,!names(t.counts) %in% "total"]
-        counts <- as.data.frame((t(t.counts)))
-        counts$total <- rowSums(counts[!names(counts) %in%  "Cell_Index"])
-        counts <- counts[ counts$total > 0,] # remove genes with no expression
-        counts <- counts[,!names(counts) %in% "total"]
-      }
-      else {
-        counts <- counts
-      }
-
 
       calls_TCR <- merge(calls,TCR, by ="Cell_Index")
       calls_TCR_count <- merge(calls_TCR,counts, by ="Cell_Index")
       #filtering to paired TCR
-      if (input$filtering_TCR==T) {
+      calls_TCR_count$TRAG <-ifelse(grepl("TR",calls_TCR_count$TCR_Alpha_Gamma_V_gene_Dominant),"TRAG","Missing TRAG gene")
+      calls_TCR_count$TRBD <-ifelse(grepl("TR",calls_TCR_count$TCR_Beta_Delta_V_gene_Dominant),"TRBD","Missing TRBD gene")
+      calls_TCR_count$TRAG_fun <-ifelse(grepl("[*]",calls_TCR_count$TCR_Alpha_Gamma_CDR3_Translation_Dominant),"Non-functional",
+                                        ifelse(grepl("Missing",calls_TCR_count$TRAG),"Missing TCR",
 
-        if (input$BCR_present ==F) {
-          calls_TCR_count$TCR_Paired_Chains <- toupper(calls_TCR_count$TCR_Paired_Chains)
-          calls_TCR_paired <- subset(calls_TCR_count,calls_TCR_count$TCR_Paired_Chains==TRUE) # remove cells that lack pairs
-        }
+                                               ifelse(grepl("TRGV10",calls_TCR_count$TCR_Alpha_Gamma_V_gene_Dominant),"pseudogene","productive")))
 
-        else {
-          calls_TCR_count$TCR_Paired_Chains <- toupper(calls_TCR_count$TCR_Paired_Chains)
-          calls_TCR_count$BCR_Paired_Chains <- toupper(calls_TCR_count$BCR_Paired_Chains)
-          calls_TCR_paired <- subset(calls_TCR_count,calls_TCR_count$TCR_Paired_Chains==TRUE | calls_TCR_count$BCR_Paired_Chains==TRUE) # remove cells that lack pairs
-        }
-        # calls_TCR_count <- calls_TCR_count[ calls_TCR_count$Total_VDJ_Read_Count > 0,] # remove cells with no TCR counts
+      calls_TCR_count$TRBD_fun <- ifelse(grepl("[*]",calls_TCR_count$TCR_Beta_Delta_CDR3_Translation_Dominant),"Non-functional",
+                                         ifelse(grepl("Missing",calls_TCR_count$TRBD),"Missing TCR","productive"))
 
+
+      calls_TCR_count$paired_TCR <- ifelse(calls_TCR_count$TRAG=="TRAG" & calls_TCR_count$TRBD=="TRBD","paired TCR",
+                                           ifelse(calls_TCR_count$TRAG=="TRAG" | calls_TCR_count$TRBD=="TRBD", "Unpaired TCR","No TCR"
+                                           ))
+      calls_TCR_count$Productive_TCR <- ifelse(calls_TCR_count$TRBD_fun=="productive" & calls_TCR_count$TRAG_fun=="productive","productive TCR",
+                                               ifelse(calls_TCR_count$TRBD_fun=="productive" & calls_TCR_count$TRAG_fun=="Missing TCR","productive TCR",
+                                                      ifelse(calls_TCR_count$TRBD_fun=="Missing TCR" & calls_TCR_count$TRAG_fun=="productive","productive TCR",
+                                                             "unproductive")))
+
+      if (input$BCR_present ==T) {
+        calls_TCR_count$v_gene_IgL <- ifelse(grepl("IG",calls_TCR_count$BCR_Light_V_gene_Dominant),"v_gene_IgL","Missing IgL gene")
+        calls_TCR_count$v_gene_IgH <- ifelse(grepl("IG",calls_TCR_count$BCR_Heavy_V_gene_Dominant),"v_gene_IgH","Missing IgL gene")
+        calls_TCR_count$v_gene_IgL_fun <- ifelse(grepl("[*]",calls_TCR_count$BCR_Light_CDR3_Translation_Dominant),"Non-functional",
+                                                 ifelse(grepl("Missing",calls_TCR_count$v_gene_IgL),"Missing BCR","productive"))
+        calls_TCR_count$v_gene_IgH_fun <- ifelse(grepl("[*]",calls_TCR_count$BCR_Heavy_CDR3_Translation_Dominant),"Non-functional",
+                                                 ifelse(grepl("Missing",calls_TCR_count$v_gene_IgH),"Missing BCR","productive"))
+        #
+        #
+        calls_TCR_count$paired_BCR <- ifelse(calls_TCR_count$v_gene_IgL=="v_gene_IgL" & calls_TCR_count$v_gene_IgH=="v_gene_IgH","paired BCR",
+                                             ifelse(calls_TCR_count$v_gene_IgL=="v_gene_IgL" | calls_TCR_count$v_gene_IgH=="v_gene_IgH", "Unpaired BCR","No BCR"
+                                             ))
+
+
+        calls_TCR_count$Productive_BCR <- ifelse(calls_TCR_count$v_gene_IgL_fun=="productive" & calls_TCR_count$v_gene_IgH_fun=="productive","productive BCR",
+                                                 ifelse(calls_TCR_count$v_gene_IgL_fun=="productive" & calls_TCR_count$v_gene_IgH_fun=="Missing BCR","productive BCR",
+                                                        ifelse(calls_TCR_count$v_gene_IgL_fun=="Missing BCR" & calls_TCR_count$v_gene_IgH_fun=="productive","productive BCR",
+                                                               "unproductive")))
+
+        calls_TCR_count$BCR_TCR <- ifelse(calls_TCR_count$Productive_BCR=="productive BCR" & calls_TCR_count$Productive_TCR=="productive TCR","Both TCR and BCR present",NA)
       }
 
       else {
-        calls_TCR_paired <- calls_TCR_count
+        calls_TCR_count <- calls_TCR_count
       }
 
-      # filtering non-funtional TCR
-      if (input$filter_non_function ==T) {
+      # filter out non functional TCR
+      if (input$filter_non_function ==T && input$BCR_present ==T) {
+        productive <- calls_TCR_count[calls_TCR_count$Productive_TCR %in% "productive TCR" | calls_TCR_count$Productive_BCR %in% "productive BCR",] }
+      else if (input$filter_non_function ==T && input$BCR_present ==F) {
 
+        productive <- calls_TCR_count[calls_TCR_count$Productive_TCR %in% "productive TCR",]
+      }
+      else if (input$filter_non_function ==F && input$BCR_present ==T) {
+        productive <- calls_TCR_count
+      }
+      else {
+        productive <- calls_TCR_count
+      }
+
+
+      # filter out un-paired TCR's
+      if (input$filtering_TCR ==T) {
 
         if (input$BCR_present ==T) {
-          calls_TCR_paired.fun <- calls_TCR_paired[-c(grep("[*]",calls_TCR_paired$TCR_Alpha_Gamma_CDR3_Translation_Dominant)),] # remove stop codons alpha/gamma
-          calls_TCR_paired.fun <- calls_TCR_paired.fun[-c(grep("[*]",calls_TCR_paired.fun$TCR_Beta_Delta_CDR3_Translation_Dominant)),] # remove stop codons beta/delta
-          calls_TCR_paired.fun <- calls_TCR_paired.fun[-c(grep("[*]",calls_TCR_paired.fun$BCR_Light_CDR3_Translation_Dominant)),] # remove stop codons  light chain
-          calls_TCR_paired.fun <- calls_TCR_paired.fun[-c(grep("[*]",calls_TCR_paired.fun$BCR_Heavy_CDR3_Translation_Dominant)),] # remove stop codon heavy chain
+          paired <- productive[productive$paired_TCR %in% "paired TCR" | productive$paired_BCR %in% "paired BCR",]
         }
-
         else {
-          calls_TCR_paired.fun <- calls_TCR_paired[-c(grep("[*]",calls_TCR_paired$TCR_Alpha_Gamma_CDR3_Translation_Dominant)),] # remove stop codons
-          calls_TCR_paired.fun <- calls_TCR_paired.fun[-c(grep("[*]",calls_TCR_paired.fun$TCR_Beta_Delta_CDR3_Translation_Dominant)),] # remove st
+          paired <- productive[productive$paired_TCR %in% "paired TCR",]
         }
-
 
       }
+
       else {
 
-        calls_TCR_paired.fun <- calls_TCR_paired
+        paired <- productive
       }
 
-
-
-
-
-      rownames(calls_TCR_paired.fun) <- calls_TCR_paired.fun$Cell_Index # creating the unique ID for each row
-      # calls_TCR_paired.fun <- calls_TCR_paired.fun[!calls_TCR_paired.fun$Sample_Tag %in% c("Multiplet","Undetermined"), ]
-      calls_TCR_paired.fun
+      paired
     }
+
+
+    output$Filtering_BD <- DT::renderDataTable(escape = FALSE, filter = list(position = 'top', clear = FALSE),  options = list(autoWidth = FALSE, lengthMenu = c(2,5,10,20,50,100), pageLength = 5, scrollX = TRUE),{
+      df()
+
+
+    })
 
   ## create Sample_tags file =====
 
@@ -3221,8 +3278,9 @@ server <- function(input, output,session) {
   input.data_sc_clusTCR <- reactive({switch(input$dataset_sc_pro,"test_data_sc_pro" = test.data_sc_clusTCR(),"own_data_sc_pro" = own.data_sc_clusTCR())})
   # input.data_sc_clusTCR <- reactive({switch(input$dataset_cluster_file,"test_data_clusTCR" = test.data_sc_clusTCR(),"own_data_clusTCR" = own.data_sc_clusTCR())})
   test.data_sc_clusTCR <- reactive({
-      # dataframe = read.csv(system.file("extdata","clusTCR/cdr3.csv",package = "STEGO.R"))
-    dataframe = read.csv("../Test.Cluster/Cluster_table  2022.12.15.csv")
+      dataframe = read.csv(system.file("extdata","clusTCR/ClusTCR2.csv",package = "STEGO.R"))
+
+    # dataframe = read.csv("../Test.Cluster/Cluster_table  2022.12.15.csv")
   })
   own.data_sc_clusTCR <- reactive({
     inFile_cluster_file <- input$file_cluster_file
@@ -3237,7 +3295,10 @@ server <- function(input, output,session) {
   input.data_sc_TCRex <- reactive({switch(input$dataset_sc_pro,"test_data_sc_pro" = test.data_sc_TCRex(),"own_data_sc_pro" = own.data_sc_TCRex())})
   # input.data_sc_clusTCR <- reactive({switch(input$dataset_cluster_file,"test_data_clusTCR" = test.data_sc_clusTCR(),"own_data_clusTCR" = own.data_sc_clusTCR())})
   test.data_sc_TCRex <- reactive({
-    read.table("../Public data/Bd Rhapsody/TCRex/tcrex_nsjhx29ivo.tsv",skip = 7,header = T,sep="\t")
+
+    dataframe = read.table(system.file("extdata","TCRex/tcrex_nsjhx29ivo.tsv",package = "STEGO.R"),skip=7,header = T,sep="\t")
+
+    # read.table("../Public data/Bd Rhapsody/TCRex/tcrex_nsjhx29ivo.tsv",skip = 7,header = T,sep="\t")
   })
 
   own.data_sc_TCRex <- reactive({
@@ -5087,8 +5148,6 @@ meta2.names <- names(df3.meta3)
 
   })
 
-
-
   # Select top clonotype ----
 
   observe({
@@ -5997,6 +6056,246 @@ output$Ridge_chart_alpha_gamma_stat_comp <- DT::renderDataTable(escape = FALSE, 
   output$UMAP_Epitope_plot <- renderPlot({
     UMAP_Epitope()
   })
+
+
+  #### clusTCR2 figure -----
+  clusTCR2_df <- reactive({
+    clust <- input.data_sc_clusTCR()
+    md <- Add.UMAP.reduction()
+    validate(
+      need(nrow(clust)>0 & nrow(md)>0,
+           "Upload clusTCR table, which is needed for TCR -> UMAP section")
+    )
+    if (input$chain_TCR=="TCR") {
+      md$CDR3_Vgene <- paste(md$cdr3_AG,md$v_gene_AG,sep="_")
+      split <- as.data.frame(do.call(rbind, strsplit(as.character(md$CDR3_Vgene), "-")))[1]
+      md$CDR3_Vgene <- split$V1
+      df <- merge(md,clust,by = "CDR3_Vgene")
+
+      md$CDR3_Vgene <- paste(md$cdr3_BD,md$v_gene_BD,sep="_")
+      split <- as.data.frame(do.call(rbind, strsplit(as.character(md$CDR3_Vgene), "-")))[1]
+      md$CDR3_Vgene <- split$V1
+      df2 <- merge(md,clust,by = "CDR3_Vgene")
+      cluster <- rbind(df,df2)
+    }
+    else if (input$chain_TCR=="BCR") {
+
+
+      md$CDR3_Vgene <- paste(md$cdr3_IgL,md$v_gene_IgL,sep="_")
+      split <- as.data.frame(do.call(rbind, strsplit(as.character(md$CDR3_Vgene), "-")))[1]
+      md$CDR3_Vgene <- split$V1
+      df3 <- merge(md,clust,by = "CDR3_Vgene")
+
+      md$CDR3_Vgene <- paste(md$cdr3_IgH,md$v_gene_IgH,sep="_")
+      split <- as.data.frame(do.call(rbind, strsplit(as.character(md$CDR3_Vgene), "-")))[1]
+      md$CDR3_Vgene <- split$V1
+      df4 <- merge(md,clust,by = "CDR3_Vgene")
+
+
+
+      cluster <- rbind(df3,df4)
+    }
+    else {
+      md$CDR3_Vgene <- paste(md$cdr3_AG,md$v_gene_AG,sep="_")
+      split <- as.data.frame(do.call(rbind, strsplit(as.character(md$CDR3_Vgene), "-")))[1]
+      md$CDR3_Vgene <- split$V1
+      df <- merge(md,clust,by = "CDR3_Vgene")
+
+      md$CDR3_Vgene <- paste(md$cdr3_BD,md$v_gene_BD,sep="_")
+      split <- as.data.frame(do.call(rbind, strsplit(as.character(md$CDR3_Vgene), "-")))[1]
+      md$CDR3_Vgene <- split$V1
+      df2 <- merge(md,clust,by = "CDR3_Vgene")
+
+      md$CDR3_Vgene <- paste(md$cdr3_IgL,md$v_gene_IgL,sep="_")
+      split <- as.data.frame(do.call(rbind, strsplit(as.character(md$CDR3_Vgene), "-")))[1]
+      md$CDR3_Vgene <- split$V1
+      df3 <- merge(md,clust,by = "CDR3_Vgene")
+
+      md$CDR3_Vgene <- paste(md$cdr3_IgH,md$v_gene_IgH,sep="_")
+      split <- as.data.frame(do.call(rbind, strsplit(as.character(md$CDR3_Vgene), "-")))[1]
+      md$CDR3_Vgene <- split$V1
+      df4 <- merge(md,clust,by = "CDR3_Vgene")
+
+      cluster <- rbind(df,df2,df3,df4)
+    }
+    cluster <- cluster[order(cluster$Clust_size_order),]
+    cluster
+  })
+
+  output$Tb_ClusTCR_selected <- DT::renderDataTable(escape = FALSE, options = list(autoWidth = FALSE, lengthMenu = c(2,5,10,20,50,100), pageLength = 5, scrollX = TRUE),{
+    clusTCR2_df()
+  })
+
+# umap ClusTCR -----
+  observe({
+    clust <- input.data_sc_clusTCR()
+    clust <- clust[order(clust$Clust_size_order),]
+
+    sc <- input.data_sc_pro()
+    validate(
+      need(nrow(clust)>0,
+           "Upload clusTCR table, which is needed for TCR -> UMAP section")
+    )
+    updateSelectInput(
+      session,
+      "Clusters_to_dis",
+      choices=unique(clust$Clust_size_order),
+      selected = c(1,2)
+    )
+  }) # junction sequence
+
+  output$Tb_ClusTCR_col <- DT::renderDataTable(escape = FALSE, options = list(autoWidth = FALSE, lengthMenu = c(2,5,10,20,50,100), pageLength = 5, scrollX = TRUE),{
+    cluster <- clusTCR2_df()
+    md <- Add.UMAP.reduction()
+    validate(
+      need(nrow(cluster)>0 & nrow(md)>0,
+           "Upload clusTCR table, which is needed for TCR -> UMAP section")
+    )
+
+    cluster <- cluster[order(cluster$Clust_size_order),]
+    cluster$Clust_size_order <- factor(cluster$Clust_size_order, levels = unique(cluster$Clust_size_order))
+    # cluster <- cluster[cluster$Clust_size_order %in% input$Clusters_to_dis,]
+    col.df <- as.data.frame(unique(cluster$Clust_size_order))
+    names(col.df) <- "V1"
+    col.df$palette_rainbow <- rainbow(length(unique(cluster$Clust_size_order)))
+    col.df2 <- col.df
+    col.df2
+
+  })
+
+
+  UMAP_ClusTCR2 <- reactive({
+    cluster <- clusTCR2_df()
+    md <- Add.UMAP.reduction()
+    if (input$ClusTCR_display == "all" ) {
+      cluster <- cluster[order(cluster$Clust_size_order),]
+      cluster$Clust_size_order <- factor(cluster$Clust_size_order, levels = unique(cluster$Clust_size_order))
+      # cluster <- cluster[cluster$Clust_size_order %in% input$Clusters_to_dis,]
+      col.df <- as.data.frame(unique(cluster$Clust_size_order))
+      names(col.df) <- "V1"
+      col.df$palette_rainbow <- rainbow(length(unique(cluster$Clust_size_order)))
+      col.df2 <- col.df
+      md$Clust_size_order <- NA
+      md$Clust_size_order <- factor(md$Clust_size_order, levels = unique(cluster$Clust_size_order))
+
+      figure <- ggplot()+
+        geom_point(data=md,aes(x=UMAP_1,UMAP_2,color = Clust_size_order))+
+        geom_point(data=cluster,aes(x=UMAP_1,UMAP_2,colour=Clust_size_order))+
+        scale_color_manual(na.value="grey", values = c(col.df2$palette_rainbow),breaks = c(unique(col.df2$V1)))+
+        # scale_size_manual(na.value=0.25,values = rep(3,dim(num)[1]))+
+        theme_bw()+
+        # labs(color=NULL,size = 12)+
+        theme(
+          legend.text = element_text(colour="black", size=24,family="sans"),
+          legend.title = element_blank(),
+          legend.position = "right",
+        )
+
+    }
+
+    else {
+
+      cluster <- cluster[order(cluster$Clust_size_order),]
+      cluster$Clust_size_order <- factor(cluster$Clust_size_order, levels = unique(cluster$Clust_size_order))
+
+      col.df <- as.data.frame(unique(cluster$Clust_size_order))
+      names(col.df) <- "V1"
+      col.df$palette_rainbow <- rainbow(length(unique(cluster$Clust_size_order)))
+      col.df2 <- col.df[col.df$V1 %in% input$Clusters_to_dis,]
+
+      md$Clust_size_order <- NA
+      md$Clust_size_order <- factor(md$Clust_size_order, levels = unique(cluster$Clust_size_order))
+      cluster <- cluster[cluster$Clust_size_order %in% input$Clusters_to_dis,]
+
+      figure <- ggplot()+
+        geom_point(data=md,aes(x=UMAP_1,UMAP_2,color = Clust_size_order))+
+        geom_point(data=cluster,aes(x=UMAP_1,UMAP_2,colour=Clust_size_order))+
+        scale_color_manual(na.value="grey", values = c(col.df2$palette_rainbow),breaks = c(unique(col.df2$V1)))+
+        # scale_size_manual(na.value=0.25,values = rep(3,dim(num)[1]))+
+        theme_bw()+
+        # labs(color=NULL,size = 12)+
+        theme(
+          legend.text = element_text(colour="black", size=24,family="sans"),
+          legend.title = element_blank(),
+          legend.position = "right",
+        )
+    }
+
+    figure
+
+  })
+
+  output$UMAP_ClusTCR2_plot <- renderPlot({
+    UMAP_ClusTCR2()
+  })
+
+  # pie ClusTCR -----
+
+  Pie_ClusTCR2 <- reactive({
+    cluster <- clusTCR2_df()
+    md <- Add.UMAP.reduction()
+    if (input$ClusTCR_display == "all" ) {
+      cluster <- cluster[order(cluster$Clust_size_order),]
+      cluster$Clust_size_order <- factor(cluster$Clust_size_order, levels = unique(cluster$Clust_size_order))
+      # cluster <- cluster[cluster$Clust_size_order %in% input$Clusters_to_dis,]
+      col.df <- as.data.frame(unique(cluster$Clust_size_order))
+      names(col.df) <- "V1"
+      col.df$palette_rainbow <- rainbow(length(unique(cluster$Clust_size_order)))
+      col.df2 <- col.df
+      md$Clust_size_order <- NA
+      md$Clust_size_order <- factor(md$Clust_size_order, levels = unique(cluster$Clust_size_order))
+
+      figure <- ggplot()+
+        geom_point(data=md,aes(x=UMAP_1,UMAP_2,color = Clust_size_order))+
+        geom_point(data=cluster,aes(x=UMAP_1,UMAP_2,colour=Clust_size_order))+
+        scale_color_manual(na.value="grey", values = c(col.df2$palette_rainbow),breaks = c(unique(col.df2$V1)))+
+        # scale_size_manual(na.value=0.25,values = rep(3,dim(num)[1]))+
+        theme_bw()+
+        # labs(color=NULL,size = 12)+
+        theme(
+          legend.text = element_text(colour="black", size=24,family="sans"),
+          legend.title = element_blank(),
+          legend.position = "right",
+        )
+
+    }
+
+    else {
+
+      cluster <- cluster[order(cluster$Clust_size_order),]
+      cluster$Clust_size_order <- factor(cluster$Clust_size_order, levels = unique(cluster$Clust_size_order))
+
+      col.df <- as.data.frame(unique(cluster$Clust_size_order))
+      names(col.df) <- "V1"
+      col.df$palette_rainbow <- rainbow(length(unique(cluster$Clust_size_order)))
+      col.df2 <- col.df[col.df$V1 %in% input$Clusters_to_dis,]
+
+      md$Clust_size_order <- NA
+      md$Clust_size_order <- factor(md$Clust_size_order, levels = unique(cluster$Clust_size_order))
+      cluster <- cluster[cluster$Clust_size_order %in% input$Clusters_to_dis,]
+
+      figure <- ggplot()+
+        geom_point(data=md,aes(x=UMAP_1,UMAP_2,color = Clust_size_order))+
+        geom_point(data=cluster,aes(x=UMAP_1,UMAP_2,colour=Clust_size_order))+
+        scale_color_manual(na.value="grey", values = c(col.df2$palette_rainbow),breaks = c(unique(col.df2$V1)))+
+        # scale_size_manual(na.value=0.25,values = rep(3,dim(num)[1]))+
+        theme_bw()+
+        # labs(color=NULL,size = 12)+
+        theme(
+          legend.text = element_text(colour="black", size=24,family="sans"),
+          legend.title = element_blank(),
+          legend.position = "right",
+        )
+    }
+
+    figure
+
+  })
+
+  output$pie_ClusTCR2_plot <- renderPlot({
+    Pie_ClusTCR2()
+  })
+
 
 ### end -----
 }

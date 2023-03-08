@@ -36,7 +36,6 @@ suppressMessages(require("fpc")) #
 suppressMessages(require("ComplexHeatmap"))
 suppressMessages(require("circlize")) # colorRamp2
 suppressMessages(suppressWarnings(require("ClusTCR2")))
-suppressMessages(require("plyr"))
 suppressMessages(require("doParallel"))
 suppressMessages(require("RColorBrewer"))
 suppressMessages(require("stringr"))
