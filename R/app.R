@@ -1612,6 +1612,7 @@ server <- function(input, output,session) {
   ## barcode file -----
   input.data.barcode.10x <- reactive({switch(input$dataset_10x,"test_data_10x" = test.data.barcode.10x(), "own_data_10x" = own.data.barcode.10x())})
   test.data.barcode.10x <- reactive({
+    dataframe = read.csv(system.file("extdata","BDrhap/demo/RhapVDJDemo-BCR_DBEC_MolsPerCell.csv",package = "STEGO.R"),skip = 7)
     dataframe = read.table("../RHM003/count/sample_filtered_feature_bc_matrix/barcodes.tsv.gz")
   })
   own.data.barcode.10x <- reactive({
@@ -2153,10 +2154,13 @@ server <- function(input, output,session) {
   test.data_sc <- reactive({
     if (input$df_seruatobj_type =="10x") {
         # dataframe = read.csv(system.file("extdata","clusTCR/cdr3.csv",package = "STEGO.R"))
-      dataframe = read.csv("../filename.csv.gz")
+      dataframe = read.csv(system.file("extdata","10x/Mahuron_Melanoma_2020/LN/K409_LN.count-matrix_10x_2023.03.08.csv.gz",package = "STEGO.R"))
+      # head(dataframe)[1:6,1:6]
+      # dataframe = read.csv("../filename.csv.gz")
     }
     else {
-      dataframe = read.csv("../Public data/Bd Rhapsody/QC_output/BD_Count_Matrix_2023.02.27.csv",row.names = 1)
+      dataframe = read.csv(system.file("extdata","BDrhap/Seurat/BD_Count_Matrix_2023.03.07.csv",package = "STEGO.R"),row.names = 1)
+      # dataframe = read.csv("../Public data/Bd Rhapsody/QC_output/BD_Count_Matrix_2023.02.27.csv",row.names = 1)
     }
   })
 
@@ -3248,7 +3252,7 @@ server <- function(input, output,session) {
     if (input$STEGO_R_pro=="STEGO_R (.h5Seurat)") {
         # dataframe = read.csv(system.file("extdata","clusTCR/cdr3.csv",package = "STEGO.R"))
 
-      dataframe = LoadH5Seurat(system.file("extdata","Analysis/Seurat Obj 2023.02.28.h5Seurat",package = "STEGO.R"))
+      dataframe = LoadH5Seurat(system.file("extdata","BDrhap/Analysis/Seurat Obj 2023.02.28.h5Seurat",package = "STEGO.R"))
     }
 
     else {
@@ -3278,7 +3282,7 @@ server <- function(input, output,session) {
   input.data_sc_clusTCR <- reactive({switch(input$dataset_sc_pro,"test_data_sc_pro" = test.data_sc_clusTCR(),"own_data_sc_pro" = own.data_sc_clusTCR())})
   # input.data_sc_clusTCR <- reactive({switch(input$dataset_cluster_file,"test_data_clusTCR" = test.data_sc_clusTCR(),"own_data_clusTCR" = own.data_sc_clusTCR())})
   test.data_sc_clusTCR <- reactive({
-      dataframe = read.csv(system.file("extdata","clusTCR/ClusTCR2.csv",package = "STEGO.R"))
+      dataframe = read.csv(system.file("extdata","BDrhap/clusTCR/ClusTCR2.csv",package = "STEGO.R"))
 
     # dataframe = read.csv("../Test.Cluster/Cluster_table  2022.12.15.csv")
   })
@@ -3296,7 +3300,7 @@ server <- function(input, output,session) {
   # input.data_sc_clusTCR <- reactive({switch(input$dataset_cluster_file,"test_data_clusTCR" = test.data_sc_clusTCR(),"own_data_clusTCR" = own.data_sc_clusTCR())})
   test.data_sc_TCRex <- reactive({
 
-    dataframe = read.table(system.file("extdata","TCRex/tcrex_nsjhx29ivo.tsv",package = "STEGO.R"),skip=7,header = T,sep="\t")
+    dataframe = read.table(system.file("extdata","BDrhap/TCRex/tcrex_nsjhx29ivo.tsv",package = "STEGO.R"),skip=7,header = T,sep="\t")
 
     # read.table("../Public data/Bd Rhapsody/TCRex/tcrex_nsjhx29ivo.tsv",skip = 7,header = T,sep="\t")
   })
