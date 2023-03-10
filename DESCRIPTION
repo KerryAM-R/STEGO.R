@@ -21,8 +21,6 @@ Imports:
   DT,
   shinybusy,
   tidyverse,
-  SeuratDisk,
-  SeuratData,
   igraph,
   linkcomm,
   ggpattern,
@@ -30,24 +28,31 @@ Imports:
   showtext,
   reshape2,
   GGally,
-  ggnet,
   network,
   VLF,
   motifStack,
-  ggseqlogo,
   RIRA,
   colourpicker,
   RColorBrewer,
   randomcoloR,
   ggridges,
   fpc,
-  ComplexHeatmap,
   circlize,
-  ClusTCR2,
   doParallel,
-  RColorBrewer,
   stringr,
-  gridExtra
+  gridExtra,
+  remotes
+Remotes:
+  github::mojaveazure/seurat-disk,
+  github::satijalab/seurat-data,
+  github::briatte/ggnet,
+  github::omarwagih/ggseqlogo,
+  github::MarioniLab/DropletUtils
+  github::KerryAM-R/ClusTCR2
+  bioc::3.3/GO.db,
+  bioc::3.3/motifStack,
+  bioc::3.3/ExperimentHub,
+  bioc::3.3/ComplexHeatmap
 Depends:
   shiny,
   shinyBS,
@@ -84,6 +89,5 @@ Depends:
   circlize,
   ClusTCR2,
   doParallel,
-  RColorBrewer,
   stringr,
   gridExtra

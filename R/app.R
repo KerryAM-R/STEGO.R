@@ -1,4 +1,5 @@
 #' Run STEGO application.
+#' @name STEGO
 #' @export runSTEGO
 
 options(shiny.maxRequestSize = 2000*1024^2)
@@ -382,21 +383,26 @@ ui <- fluidPage(
                                                         tabsetPanel(
                                                           tabPanel("Classification to include",
                                                                   selectInput("V_gene_Class","V gene with/without CDR3",choices = ""),
-                                                                 fluidRow(
-                                                                   column(3,checkboxInput("add.classification_T_cell","Add general T cell markers", value = T)),
-                                                                   column(3,checkboxInput("add.classification_T_cell_Function","Add Function", value = T)),
-                                                                   column(3,checkboxInput("add.classification_T_cell_Function_CD4","Add Function (CD4)", value = T)),
-                                                                   column(3,checkboxInput("add.classification_T_cell_Function_CD8","Add Function (CD8)", value = T)),
-                                                                   column(3,checkboxInput("add.classification_T_cell_Function_CD4_CD8pos","Add Function (CD4+CD8+)", value = T)),
-                                                                   column(3,checkboxInput("add.classification_T_cell_Function_CD4_CD8neg","Add Function (CD4-CD8-)", value = T)),
-                                                                   column(3,checkboxInput("add.classification_T_cell_Memory","Add Memory", value = T)),
-                                                                   column(3,checkboxInput("add.classification_T_cell_Activation","Add Activation status", value = T)),
-                                                                   column(3,checkboxInput("add.classification_CellTypist_list","Add cellTypist based classification", value = T)),
-                                                                   column(3,checkboxInput("add.classification_CellTypist_cycling","Add cellTypist based Cell cycle", value = T)),
-                                                                   column(3,checkboxInput("add.classification_CellTypist_list_CD8","Add cellTypist CD8 classification", value = T)),
-                                                                   column(3,checkboxInput("add.classification_CellTypist_list_CD4","Add cellTypist CD4 classification", value = T)),
+                                                                  p("Lituature Curated list"),
+                                                                  fluidRow(column(3,checkboxInput("add.classification_T_cell","General T cell markers", value = T)),
+                                                                           column(3,checkboxInput("add.classification_T_cell_Function","Function", value = T)),
+                                                                           column(3,checkboxInput("add.classification_T_cell_Function_CD4","Function (CD4)", value = T)),
+                                                                           column(3,checkboxInput("add.classification_T_cell_Function_CD8","Function (CD8)", value = T)),
+                                                                           column(3,checkboxInput("add.classification_T_cell_Function_CD4_CD8pos","Function (CD4+CD8+)", value = T)),
+                                                                           column(3,checkboxInput("add.classification_T_cell_Function_CD4_CD8neg","Function (CD4-CD8-)", value = T)),
+                                                                           column(3,checkboxInput("add.classification_T_cell_Memory","Memory", value = T)),
+                                                                           column(3,checkboxInput("add.classification_T_cell_Activation","Activation status", value = T)),),
+                                                                  h5("Cell Typist based list"),
+                                                                  fluidRow(
 
-                                                                 ),
+                                                                    column(3,checkboxInput("add.classification_CellTypist_list_overview","CellTypist Overview", value = T)),
+
+                                                                    column(3,checkboxInput("add.classification_CellTypist_list","CellTypist based classification", value = T)),
+                                                                    column(3,checkboxInput("add.classification_CellTypist_list_CD8","CellTypist CD8 classification", value = T)),
+                                                                    column(3,checkboxInput("add.classification_CellTypist_list_CD4","CellTypist CD4 classification", value = T)),
+                                                                    column(3,checkboxInput("add.classification_CellTypist_cycling","CellTypist Cell cycle", value = T)),
+
+                                                                  ),
                                                                  add_busy_spinner(spin = "fading-circle"),
                                                                  div(DT::dataTableOutput("DEx_table_TcellClass")),
 
@@ -939,8 +945,12 @@ tabPanel("ClusTCR2",value = "ClusTCR2",
                     fluidRow(
                       column(3,selectInput("ClusTCR_display","Colour by:",choices = c("all","Selected"))),
                       column(3,conditionalPanel(condition="input.ClusTCR_display=='Selected'",selectInput("Clusters_to_dis","Clusters to display",
-                                                                                                          choices = "",multiple = T)))),
-                    div(DT::dataTableOutput("Tb_ClusTCR_col")),
+                                                                                                          choices = "",multiple = T))),
+
+                      column(3,selectInput("Clusters_to_dis_motif","Clusters to display (motif)",
+                                                                                                          choices = "",multiple = F))
+                      ),
+                    # div(DT::dataTableOutput("Tb_ClusTCR_col")),
 
 
                     fluidRow(
@@ -951,6 +961,9 @@ tabPanel("ClusTCR2",value = "ClusTCR2",
                     ),
 
            ),
+           tabPanel("motif",
+                    plotOutput("Motif_ClusTCR2_cluster",height="600px")
+                    )
 
 
 
@@ -1612,8 +1625,9 @@ server <- function(input, output,session) {
   ## barcode file -----
   input.data.barcode.10x <- reactive({switch(input$dataset_10x,"test_data_10x" = test.data.barcode.10x(), "own_data_10x" = own.data.barcode.10x())})
   test.data.barcode.10x <- reactive({
-    dataframe = read.csv(system.file("extdata","BDrhap/demo/RhapVDJDemo-BCR_DBEC_MolsPerCell.csv",package = "STEGO.R"),skip = 7)
-    dataframe = read.table("../RHM003/count/sample_filtered_feature_bc_matrix/barcodes.tsv.gz")
+
+    dataframe = read.table(system.file("extdata","10x/RAW/GSM4455933_K409_LN_GEX_barcodes.tsv.gz",package = "STEGO.R"))
+    # dataframe = read.table("../RHM003/count/sample_filtered_feature_bc_matrix/barcodes.tsv.gz")
   })
   own.data.barcode.10x <- reactive({
     inFile_10x_barcode <- input$file_calls_10x
@@ -1635,7 +1649,8 @@ server <- function(input, output,session) {
   ## features file -----
   input.data.features.10x <- reactive({switch(input$dataset_10x,"test_data_10x" = test.data.features.10x(), "own_data_10x" = own.data.features.10x())})
   test.data.features.10x <- reactive({
-    dataframe = read.table("../RHM003/count/sample_filtered_feature_bc_matrix/features.tsv.gz")
+    dataframe = read.table(system.file("extdata","10x/RAW/GSM4455933_K409_LN_GEX_genes.tsv.gz",package = "STEGO.R"))
+    # dataframe = read.table("../RHM003/count/sample_filtered_feature_bc_matrix/features.tsv.gz")
   })
   own.data.features.10x <- reactive({
     inFile_10x_features <- input$file_features_10x
@@ -1658,7 +1673,7 @@ server <- function(input, output,session) {
   # Matrix file
   input.data.matrix.10x <- reactive({switch(input$dataset_10x,"test_data_10x" = test.data.matrix.10x(), "own_data_10x" = own.data.matrix.10x())})
   test.data.matrix.10x <- reactive({
-    dataframe = Matrix::readMM("../RHM003/count/sample_filtered_feature_bc_matrix/matrix.mtx.gz")
+    dataframe = Matrix::readMM(system.file("extdata","10x/RAW/GSM4455933_K409_LN_GEX_matrix.mtx.gz",package = "STEGO.R"))
   })
   own.data.matrix.10x <- reactive({
     inFile_10x_matrix <- input$file_matrix_10x
@@ -1680,7 +1695,7 @@ server <- function(input, output,session) {
   ## contig files ----
   input.data.TCR.10x <- reactive({switch(input$dataset_10x,"test_data_10x" = test.data.TCR.10x(), "own_data_10x" = own.data.TCR.10x())})
   test.data.TCR.10x <- reactive({
-    dataframe = read.csv("../RHM003/vdj_t/filtered_contig_annotations.csv")
+    dataframe = read.csv(system.file("extdata","10x/RAW/GSM4455934_K409_LN_VDJ_filtered_contig_annotations.csv.gz",package = "STEGO.R"))
   })
   own.data.TCR.10x <- reactive({
     inFile_10x_TCR <- input$file_TCR_10x
@@ -1735,7 +1750,7 @@ server <- function(input, output,session) {
     contig_paired <- merge(contig_AG,contig_BD, by=c("barcode", "full_length" ,"productive" ,"raw_clonotype_id"),all = T)
 
     contig_paired$pairing <- ifelse(contig_paired$chain_BD=="TRB" & contig_paired$chain_AG=="TRA","abTCR Paired",
-                                    ifelse(contig_paired$chain_BD=="TRD" & contig_paired$chain_AG=="TRG","gdTCR Paired"
+                                    ifelse(contig_paired$chain_BD=="TRD" & contig_paired$chain_AG=="TRG","gdTCR Paired",NA
                                     ))
     contig_paired
     contig_paired$pairing[is.na(contig_paired$pairing)] <- "unpaired"
@@ -2163,7 +2178,6 @@ server <- function(input, output,session) {
       # dataframe = read.csv("../Public data/Bd Rhapsody/QC_output/BD_Count_Matrix_2023.02.27.csv",row.names = 1)
     }
   })
-
   own.data_sc <- reactive({
     inFile_sc <- input$file_SC
     if (is.null(inFile_sc)) return(NULL)
@@ -2334,7 +2348,8 @@ server <- function(input, output,session) {
       # dataframe = read.csv("../Test.metadata/metadata_10x_2022.12.14.csv")
     }
     else {
-      dataframe = read.csv(system.file("extdata","BDrhap/BDrhap/Seurat/Meta.data 2023.03.07.csv",package = "STEGO.R"))
+      # dataframe = read.csv(system.file("extdata","BDrhap/Seurat/BD_Count_Matrix_2023.03.07.csv",package = "STEGO.R"),row.names = 1)
+      dataframe = read.csv(system.file("extdata","BDrhap/Seurat/Meta.data 2023.03.07.csv",package = "STEGO.R"))
       # dataframe = read.csv("../Public data/Bd Rhapsody/QC_output/Meta.data 2023.02.27.csv")
     }
   })
@@ -2931,9 +2946,9 @@ server <- function(input, output,session) {
            "Imput metadata required")
     )
     MainTcell <- add.classification()
-    if (input$add.classification_CellTypist_list==T) {
+    if (input$add.classification_CellTypist_list_overview==T) {
       rownames(MainTcell) <- MainTcell$Cell_Index
-      MainTcell_test <- MainTcell[,names(MainTcell) %in% c("MKI67","TOP2A","Chain2","PDCD1","ZNF683","CD8A","ICOS","CXCR5","GZMK","CD4","IL10","NKG7","GNLY","CTLA4","IL2RA","FOXP3","KLRB1","SLC4A10","TRAV1-2","CCR7","SELL","AQP3","ITGB1","CX3CR1","GZMB","CCL5","CD27","IKZF2","ITGA1","ITGAE","CXCR6","CXCR3","TBX21","IL7R","CCR6","ZBTB16","ITGAD", "IKZF2", "MIR155HG","BIRC3","SMS","CD3D","CD3E","CD3G","FCRL2","ITGAX","TBX21","CD79A","MS4A1","CD19","TNFRSF13B","CD22","POU2AF1","SUGCT","CR2","CD27","IGHM","IGHD","TCL1A","AICDA","CD24","MYO1C","MME","ZCCHC7","RAG1","DNTT")]
+      MainTcell_test <- MainTcell[,names(MainTcell) %in% c("MKI67","TOP2A","Chain2","PDCD1","ZNF683","CD8A","ICOS","CXCR5","GZMK","CD4","IL10","NKG7","GNLY","CTLA4","IL2RA","FOXP3","KLRB1","SLC4A10","TRAV1-2","CCR7","SELL","AQP3","ITGB1","CX3CR1","GZMB","CCL5","CD27","IKZF2","ITGA1","ITGAE","CXCR6","CXCR3","TBX21","IL7R","CCR6","ZBTB16","ITGAD", "IKZF2", "MIR155HG","BIRC3","SMS","CD3D","CD3E","CD3G","FCRL2","ITGAX","TBX21","CD79A","MS4A1","CD19","TNFRSF13B","CD22","POU2AF1","SUGCT","CR2","CD27","IGHM","IGHD","TCL1A","AICDA","CD24","MYO1C","MME","ZCCHC7","RAG1","DNTT","GLL1","IGLL5","CD40")]
       # -----
       df <- MainTcell_test
       # Vector of columns you want in this data
@@ -2948,7 +2963,7 @@ server <- function(input, output,session) {
       df_centres <- as.data.frame(kmeans10$centers)
 
       df_centres <- df_centres %>%
-        mutate(CellTypist_list = case_when(
+        mutate(CellTypist_list_ = case_when(
           #### B cells -----
           FCRL2>0 & ITGAX>0 & TBX21>0     ~ "Age-associated B cells", # B cells
           CD79A>0 & MS4A1>0 & CD19>0      ~ "B cell", # B cell
@@ -2962,7 +2977,6 @@ server <- function(input, output,session) {
           IL7R>0 & ZCCHC7>0 & RAG1>0      ~ "Pre-pro-B cells",
           MME>0 &  DNTT>0 & GLL1>0        ~ "Pro-B cells",
           MME>0 & CD24>0 & IGLL5>0        ~ "Small pre-B cells",
-
 
           # MKI67 >0 & TOP2A > 0 & Chain2==1 ~ "Cycling ab T cells",
           # MKI67 >0 & TOP2A > 0 & Chain2== -1 ~ "Cycling gd T cells",
@@ -2992,7 +3006,94 @@ server <- function(input, output,session) {
           c(CD3D>0 | CD3E >0 |CD3G>0 ) &IL7R>0 & CCR6>0 & ZBTB16>0 ~ "Type 17 helper T cells",
           c(CD3D>0 | CD3E >0 |CD3G>0 ) &ITGAD>0 & Chain2== -1 & IKZF2>0 ~ "CRTAM+ gamma-delta T cells",
           c(CD3D>0 | CD3E >0 |CD3G>0 ) &MIR155HG>0 & BIRC3>0 & SMS>0 ~ "T(agonist)",
+          TRUE ~ NA_character_))
 
+      df_centres$clust_name <- rownames(df_centres)
+      head(df_centres)
+      df_centres2 <- df_centres[names(df_centres) %in% c("clust_name","CellTypist_list")]
+      Cluster_Df <- as.data.frame( kmeans10$cluster)
+      Cluster_Df
+      names(Cluster_Df) <- "clust_name"
+      Cluster_Df$Cell_Index <- rownames(Cluster_Df)
+      Cluster_Df_class <- merge(df_centres2,Cluster_Df,by="clust_name")
+      Cluster_Df_class2 <- Cluster_Df_class[,names(Cluster_Df_class) %in% c("Cell_Index","CellTypist_list")]
+      Cluster_Df_class2[order(Cluster_Df_class2$Cell_Index),]
+    }
+    else {
+      Cluster_Df_class2 <- as.data.frame(MainTcell[,names(MainTcell) %in% c("Cell_Index")])
+      names(Cluster_Df_class2) <- "Cell_Index"
+      Cluster_Df_class2[order(Cluster_Df_class2$Cell_Index),]
+    }
+
+
+  })
+  add.classification_CellTypist_list_higher <- reactive({
+    sc <- vals_meta.sc$metadata_SCobj
+    validate(
+      need(nrow(sc)>0,
+           "Imput metadata required")
+    )
+    MainTcell <- add.classification()
+    if (input$add.classification_CellTypist_list_overview==T) {
+      rownames(MainTcell) <- MainTcell$Cell_Index
+      MainTcell_test <- MainTcell[,names(MainTcell) %in% c("MKI67","TOP2A","Chain2","PDCD1","ZNF683","CD8A","ICOS","CXCR5","GZMK","CD4","IL10","NKG7","GNLY","CTLA4","IL2RA","FOXP3","KLRB1","SLC4A10","TRAV1-2","CCR7","SELL","AQP3","ITGB1","CX3CR1","GZMB","CCL5","CD27","IKZF2","ITGA1","ITGAE","CXCR6","CXCR3","TBX21","IL7R","CCR6","ZBTB16","ITGAD", "IKZF2", "MIR155HG","BIRC3","SMS","CD3D","CD3E","CD3G","FCRL2","ITGAX","TBX21","CD79A","MS4A1","CD19","TNFRSF13B","CD22","POU2AF1","SUGCT","CR2","CD27","IGHM","IGHD","TCL1A","AICDA","CD24","MYO1C","MME","ZCCHC7","RAG1","DNTT","GLL1","IGLL5")]
+      # -----
+      df <- MainTcell_test
+      # Vector of columns you want in this data
+      nms <- c("MKI67","TOP2A","Chain2","PDCD1","ZNF683","CD8A","ICOS","CXCR5","GZMK","CD4","IL10","NKG7","GNLY","CTLA4","IL2RA","FOXP3","KLRB1","SLC4A10","TRAV1-2","CCR7","SELL","AQP3","ITGB1","CX3CR1","GZMB","CCL5","CD27","IKZF2","ITGA1","ITGAE","CXCR6","CXCR3","TBX21","IL7R","CCR6","ZBTB16","ITGAD", "IKZF2", "MIR155HG","BIRC3","SMS","CD3D","CD3E","CD3G","FCRL2","ITGAX","TBX21","CD79A","MS4A1","CD19","TNFRSF13B","CD22","POU2AF1","SUGCT","CR2","CD27","IGHM","IGHD","TCL1A","AICDA","CD24","MYO1C","MME","ZCCHC7","RAG1","DNTT","GLL1","IGLL5")
+      Missing <- setdiff(nms, names(df))  # Find names of missing columns
+      df[Missing] <- 0                    # Add them, filled with '0's
+      MainTcell_test <- df[nms]
+
+      MainTcell_test[is.na(MainTcell_test)] <- 0
+      # kmeans10 <-pamk(d_frame, krange= 500:1000, ns=1000)
+      kmeans10 <- kmeans(MainTcell_test, centers = 500, nstart = 1)
+      df_centres <- as.data.frame(kmeans10$centers)
+
+      df_centres <- df_centres %>%
+        mutate(CellTypist_list_ = case_when(
+          #### B cells -----
+          FCRL2>0 & ITGAX>0 & TBX21>0     ~ "B cells", # B cells
+          CD79A>0 & MS4A1>0 & CD19>0      ~ "B cell", # B cell
+          CXCR5>0 & TNFRSF13B>0 & CD22>0  ~ "B cells",
+          POU2AF1>0 & CD40>0 & SUGCT>0    ~ "B cells",
+          CR2>0 & CD27>0 & MS4A1>0        ~ "B cells",
+          IGHM>0 & IGHD>0 & TCL1A>0       ~ "B cells",
+          MKI67>0 & SUGCT>0 & AICDA>0     ~ "B cells",
+          CD24>0 & MYO1C>0 & MS4A1>0      ~ "B cells",
+          MME>0 & CD24>0 & MKI67>0        ~ "B cells",
+          IL7R>0 & ZCCHC7>0 & RAG1>0      ~ "B cells",
+          MME>0 &  DNTT>0 & GLL1>0        ~ "B cells",
+          MME>0 & CD24>0 & IGLL5>0        ~ "B cells",
+
+          # MKI67 >0 & TOP2A > 0 & Chain2==1 ~ "Cycling ab T cells",
+          # MKI67 >0 & TOP2A > 0 & Chain2== -1 ~ "Cycling gd T cells",
+          #### T cells ----
+          c(CD3D>0 | CD3E >0 |CD3G>0 ) & PDCD1 >0 & ZNF683 >0 & CD8A >0 ~ "T cells",
+          c(CD3D>0 | CD3E >0 |CD3G>0 ) & PDCD1 >0 & ICOS >0 & CXCR5>0  ~"T cells",
+          c(CD3D>0 | CD3E >0 |CD3G>0 ) & GZMK >0 & CD4>0 & IL10>0 ~ "T cells",
+          c(CD3D>0 | CD3E >0 |CD3G>0 ) & GZMK >0 & CD4>0 & IL10>0 ~ "T cells",
+          c(CD3D>0 | CD3E >0 |CD3G>0 ) & NKG7>0 & GNLY>0 & CD8A>0 ~ "T cells",
+          c(CD3D>0 | CD3E >0 |CD3G>0 ) & NKG7>0 & GNLY>0 & CD4>0 ~ "T cells",
+          c(CD3D>0 | CD3E >0 |CD3G>0 ) & NKG7>0 & GNLY>0 & CD8A<0 & CD4<0~ "T cells",
+          c(CD3D>0 | CD3E >0 |CD3G>0 ) & CD4>0 &CTLA4>0 & IL2RA >0 & FOXP3>0 ~ "T cells",
+          c(CD3D>0 | CD3E >0 |CD3G>0 ) &KLRB1 >0 & SLC4A10 >0 & `TRAV1-2`>0  ~ "T cells",
+          c(CD3D>0 | CD3E >0 |CD3G>0 ) &KLRB1 >0 & SLC4A10 >0 & `TRAV1-2`>0  ~ "T cells",
+          c(CD3D>0 | CD3E >0 |CD3G>0 ) &KLRB1 >0 & SLC4A10 >0 & `TRAV1-2`==0 ~ "T cells",
+          c(CD3D>0 | CD3E >0 |CD3G>0 ) &CD8A>0 & CCR7>0 & SELL>0 ~ "T cells",
+          c(CD3D>0 | CD3E >0 |CD3G>0 ) &CD4>0 & CCR7>0 & SELL>0 ~ "T cells",
+          c(CD3D>0 | CD3E >0 |CD3G>0 ) &KLRB1>0 & AQP3>0 & ITGB1>0 ~ "T cells",
+          c(CD3D>0 | CD3E >0 |CD3G>0 ) &PDCD1>0 & CD4>0 & CTLA4>0 ~ "T cells",
+          c(CD3D>0 | CD3E >0 |CD3G>0 ) &CX3CR1>0 & GZMB>0 & GNLY>0 ~ "T cells",
+          c(CD3D>0 | CD3E >0 |CD3G>0 ) &GZMK>0 & CD8A>0 & CCL5>0 ~ "T cells",
+          (CD3D>0 | CD3E >0 |CD3G>0 ) &GZMK>0 & CD4>0 & CCL5>0 ~ "T cells",
+          c(CD3D>0 | CD3E >0 |CD3G>0 ) &CD27>0 & CCR7>0 & IKZF2>0 ~ "T cells",
+          c(CD3D>0 | CD3E >0 |CD3G>0 ) &ITGA1>0 & ITGAE>0 & CXCR6>0 ~"T cells",
+          c(CD3D>0 | CD3E >0 |CD3G>0 ) &CCL5>0 & CXCR3>0 & TBX21>0 & CD4>0 ~ "T cells",
+          c(CD3D>0 | CD3E >0 |CD3G>0 ) &CCL5>0 & CXCR3>0 & TBX21>0 ~ "T cells",
+          c(CD3D>0 | CD3E >0 |CD3G>0 ) &IL7R>0 & CCR6>0 & ZBTB16>0 ~ "T cells",
+          c(CD3D>0 | CD3E >0 |CD3G>0 ) &ITGAD>0 & IKZF2>0 ~ "T cells",
+          c(CD3D>0 | CD3E >0 |CD3G>0 ) &MIR155HG>0 & BIRC3>0 & SMS>0 ~ "T cells",
           TRUE ~ NA_character_))
 
       df_centres$clust_name <- rownames(df_centres)
@@ -3269,6 +3370,8 @@ server <- function(input, output,session) {
                    add.classification_T_cell_Function_CD4_CD8neg_df(),
                    add.classification_T_cell_Activation_df(),
                    add.classification_T_cell_Memory_df(),
+                   add.classification_CellTypist_list_higher(),
+                   add.classification_CellTypist_list_lower(),
                    add.classification_CellTypist_list_df(),
                    add.classification_CellTypist_list_CD8_df(),
                    add.classification_CellTypist_list_CD4_df(),
@@ -6324,10 +6427,34 @@ output$Ridge_chart_alpha_gamma_stat_comp <- DT::renderDataTable(escape = FALSE, 
   output$UMAP_ClusTCR2_plot <- renderPlot({
     UMAP_ClusTCR2()
   })
+  ##### motif plot ----
+  observe({
+    clust <- input.data_sc_clusTCR()
+    validate(
+      need(nrow(clust)>0,
+           "upload clustering")
+    )
 
-  # pie ClusTCR -----
+    clust <- clust[order(clust$Clust_size_order),]
+    updateSelectInput(
+      session,
+      "Clusters_to_dis_motif",
+      choices=unique(clust$Clust_size_order),
+      selected = 5
+    )
+  }) # cluster to display
+  motif_plot_sc <- reactive({
+    Network_df <- input.data_sc_clusTCR()
+    Motif_from_cluster_file(Network_df,Clust_selected = input$Clusters_to_dis_motif)
+  })
 
-  Pie_ClusTCR2 <- reactive({
+  output$Motif_ClusTCR2_cluster <- renderPlot({
+    motif_plot_sc()
+  })
+
+  # Ridge ClusTCR -----
+
+  Ridge_clusTCR2 <- reactive({
     cluster <- clusTCR2_df()
     md <- Add.UMAP.reduction()
     if (input$ClusTCR_display == "all" ) {
@@ -6388,10 +6515,13 @@ output$Ridge_chart_alpha_gamma_stat_comp <- DT::renderDataTable(escape = FALSE, 
 
   })
 
-  output$pie_ClusTCR2_plot <- renderPlot({
+  output$ridge_ClusTCR2_plot <- renderPlot({
     Pie_ClusTCR2()
   })
 
+
+
+  ###
 
 ### end -----
 }
