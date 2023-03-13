@@ -391,6 +391,7 @@ ui <- fluidPage(
                                                                            column(3,checkboxInput("add.classification_T_cell_Function_CD8","Function (CD8)", value = T)),
                                                                            column(3,checkboxInput("add.classification_T_cell_Function_CD4_CD8pos","Function (CD4+CD8+)", value = T)),
                                                                            column(3,checkboxInput("add.classification_T_cell_Function_CD4_CD8neg","Function (CD4-CD8-)", value = T)),
+                                                                           column(3,checkboxInput("add.classification_B_cell_Function","Function B cell", value = T)),
                                                                            column(3,checkboxInput("add.classification_T_cell_Memory","Memory", value = T)),
                                                                            column(3,checkboxInput("add.classification_T_cell_Activation","Activation status", value = T)),),
                                                                   h5("Cell Typist based list"),
@@ -2540,19 +2541,19 @@ server <- function(input, output,session) {
   })
 # Add cell annotations to Seurat object -----
 
-  add.CellTypist <- reactive({
-    sc <- vals_meta.sc$metadata_SCobj
-
-    if(input$cellTypist_add==T){
-      sc <- RIRA::RunCellTypist(sc, runCelltypistUpdate = F, modelName = input$cellTypistModels_selected)
-      sc@meta.data$CellTypist <- sc@meta.data$majority_voting
-
-    }
-    else(
-      sc <- sc
-    )
-    sc
-  })
+  # add.CellTypist <- reactive({
+  #   sc <- vals_meta.sc$metadata_SCobj
+  #
+  #   if(input$cellTypist_add==T){
+  #     sc <- RIRA::RunCellTypist(sc, runCelltypistUpdate = F, modelName = input$cellTypistModels_selected)
+  #     sc@meta.data$CellTypist <- sc@meta.data$majority_voting
+  #
+  #   }
+  #   else(
+  #     sc <- sc
+  #   )
+  #   sc
+  # })
 # cell Typist
   output$DEx_table_cellTypist <- DT::renderDataTable(escape = FALSE, filter = list(position = 'top', clear = FALSE),  options = list(autoWidth = FALSE, lengthMenu = c(2,5,10,20,50,100), pageLength = 5, scrollX = TRUE),{
     calls <- add.CellTypist()
@@ -2643,6 +2644,8 @@ server <- function(input, output,session) {
           # CD3D < 0 & CD3E<0 & CD3G<0 & CD4 <0 & CD8B < 0 & CD8A < 0~ "Not a T cell",
           CD3D > 0 | CD3E>0 | CD3G>0 ~ "T cell",
           MS4A1>0 ~ "B cell",
+          JCHAIN>0 ~ "Plasma cell",
+
           TRUE ~ NA_character_))
 
       df_centres$clust_name <- rownames(df_centres)
@@ -2664,7 +2667,7 @@ server <- function(input, output,session) {
     }
 
   })
-  add.classification_T_cell_Function_Df <- reactive({
+  add.classification_T.B_cell_Function_Df <- reactive({
     sc <- vals_meta.sc$metadata_SCobj
     validate(
       need(nrow(sc)>0,
@@ -2676,10 +2679,11 @@ server <- function(input, output,session) {
 
       rownames(MainTcell) <- MainTcell$Cell_Index
       MainTcell_test <- MainTcell[,names(MainTcell) %in% c("CD4","CD8A","CD8B","FOXP3","IL2RA","IL12A","IL18","CXCR3","IL2","IFNG","TNF","IL4","IL9","IL17A","IL17F","IL22","IL21","CCR6",
-                                                           "GZMB","PRF1","GNLY","IL6","KLRB1","TGFB1")]
+                                                           "GZMB","PRF1","GNLY","IL6","KLRB1","TGFB1","IGHM")]
       df <- MainTcell_test
       # Vector of columns you want in this data
-      nms <- c("CD4","CD8A","CD8B","FOXP3","IL2RA","IL12A","IL18","CXCR3","IL2","IFNG","TNF","IL4","IL9","IL17A","IL17F","IL22","IL21","CCR6","GZMB","PRF1","GNLY","IL6","KLRB1","TGFB1")
+      nms <- c("CD4","CD8A","CD8B","FOXP3","IL2RA","IL12A","IL18","CXCR3","IL2","IFNG","TNF","IL4","IL9","IL17A","IL17F","IL22","IL21","CCR6",
+               "GZMB","PRF1","GNLY","IL6","KLRB1","TGFB1","IGHM")
       Missing <- setdiff(nms, names(df))  # Find names of missing columns
       df[Missing] <- 0                    # Add them, filled with '0's
       MainTcell_test <- df[nms]
@@ -2690,7 +2694,7 @@ server <- function(input, output,session) {
       df_centres <- as.data.frame(kmeans10$centers)
 
       df_centres <- df_centres %>%
-        mutate(classify.T.cell_Function = case_when(
+        mutate(classify.Adaptive.cell_Function = case_when(
           CD4 > 0 & c(CD8A<0 | CD8B<0) & FOXP3 >0 & IL2RA >0 ~ "CD4+ Treg FOXP3+CD25+",
           CD4 < 0 & c(CD8A>0 | CD8B>0) & TGFB1>0 & FOXP3 >0 ~ "CD8+ Tregs FOXP3+TGFB1+",
           CD4 >0 & CD8A<0 & CD8B<0 & c(IL12A >0 | IL18 > 0 | CXCR3>0) & IL2>0 & IFNG>0 ~ "IL2+IFNg+ (Th1)",
@@ -2714,22 +2718,23 @@ server <- function(input, output,session) {
           CD4>0 & c(CD8A >0 | CD8B >0) & c(GZMB > 0 | GNLY>0 | PRF1 >0) ~ "CD4+CD8+ Cytotoxic",
           CD4>0 & TNF>0 ~ "TNF+CD4+",
           CD4>0 & IFNG>0 ~ "IFNg+CD4+",
-          IL6>0 ~ "IL6+",
-          IFNG>0 ~ "IFNg+",
-          TNF>0 ~ "TNF+",
-          IL2>0 ~ "IL2+",
-
+          IGHM>0 & MS4A1>0 ~ "IgM+ B cell",
+          IGHM<0 & MS4A1>0~ "IgM- B cell",
+          c(IGHA2>0 | IGHA1>0) & JCHAIN>0 ~ "IgA+ Plasma cell",
+          c(IGHG1>0 | IGHG2>0| IGHG3>0| IGHG4>0) & JCHAIN>0 ~ "IgG+ Plasma cell",
+          IGHE>0 & JCHAIN>0 ~ "IgG+ Plasma cell",
+          IGHD>0 & MS4A1>0 ~ "IgD+ B cell",
           TRUE ~ NA_character_))
 
       df_centres$clust_name <- rownames(df_centres)
       head(df_centres)
-      df_centres2 <- df_centres[names(df_centres) %in% c("clust_name","classify.T.cell_Function")]
+      df_centres2 <- df_centres[names(df_centres) %in% c("clust_name","classify.Adaptive.cell_Function")]
       Cluster_Df <- as.data.frame( kmeans10$cluster)
       Cluster_Df
       names(Cluster_Df) <- "clust_name"
       Cluster_Df$Cell_Index <- rownames(Cluster_Df)
       Cluster_Df_class <- merge(df_centres2,Cluster_Df,by="clust_name")
-      Cluster_Df_class2 <- Cluster_Df_class[,names(Cluster_Df_class) %in% c("Cell_Index","classify.T.cell_Function")]
+      Cluster_Df_class2 <- Cluster_Df_class[,names(Cluster_Df_class) %in% c("Cell_Index","classify.Adaptive.cell_Function")]
       Cluster_Df_class2[order(Cluster_Df_class2$Cell_Index),]
 
     }
@@ -2750,11 +2755,12 @@ server <- function(input, output,session) {
     MainTcell <- as.data.frame(add.classification())
 
     if (input$add.classification_T_cell_Function_CD4==T) {
-      MainTcell_test <- MainTcell[,names(MainTcell) %in% c("CD4","CD8A","CD8B","FOXP3","IL2RA","IL12A","IL18","CXCR3","IL2","IFNG","TNF","IL4","IL9","IL17A","IL17F","IL22","IL21","CCR6","GZMB","PRF1","GNLY","IL6","KLRB1","TGFB1","Chain2","MKI67","TOP2A")]
-      MainTcell_test
+      MainTcell_test <- MainTcell[,names(MainTcell) %in% c("CD4","CD8A","CD8B","FOXP3","IL2RA","IL12A","IL18","CXCR3","IL2","IFNG","TNF","IL4","IL9","IL17A","IL17F","IL22","IL21","CCR6",
+                                                           "GZMB","PRF1","GNLY","IL6","KLRB1","TGFB1","IGHM")]
       df <- MainTcell_test
       # Vector of columns you want in this data
-      nms <- c("CD4","CD8A","CD8B","FOXP3","IL2RA","IL12A","IL18","CXCR3","IL2","IFNG","TNF","IL4","IL9","IL17A","IL17F","IL22","IL21","CCR6","GZMB","PRF1","GNLY","IL6","KLRB1","TGFB1","Chain2","MKI67","TOP2A")
+      nms <- c("CD4","CD8A","CD8B","FOXP3","IL2RA","IL12A","IL18","CXCR3","IL2","IFNG","TNF","IL4","IL9","IL17A","IL17F","IL22","IL21","CCR6",
+               "GZMB","PRF1","GNLY","IL6","KLRB1","TGFB1","IGHM")
       Missing <- setdiff(nms, names(df))  # Find names of missing columns
       df[Missing] <- 0                    # Add them, filled with '0's
       MainTcell_test <- df[nms]
@@ -2819,10 +2825,11 @@ server <- function(input, output,session) {
     if (input$add.classification_T_cell_Function_CD8==T) {
       rownames(MainTcell) <- MainTcell$Cell_Index
       MainTcell_test <- MainTcell[,names(MainTcell) %in% c("CD4","CD8A","CD8B","FOXP3","IL2RA","IL12A","IL18","CXCR3","IL2","IFNG","TNF","IL4","IL9","IL17A","IL17F","IL22","IL21","CCR6",
-                                                           "GZMB","PRF1","GNLY","IL6","KLRB1","TGFB1","MKI67","TOP2A","Chain2")]
+                                                           "GZMB","PRF1","GNLY","IL6","KLRB1","TGFB1","IGHM")]
       df <- MainTcell_test
       # Vector of columns you want in this data
-      nms <- c("CD4","CD8A","CD8B","FOXP3","IL2RA","IL12A","IL18","CXCR3","IL2","IFNG","TNF","IL4","IL9","IL17A","IL17F","IL22","IL21","CCR6","GZMB","PRF1","GNLY","IL6","KLRB1","TGFB1","MKI67","TOP2A","Chain2")
+      nms <- c("CD4","CD8A","CD8B","FOXP3","IL2RA","IL12A","IL18","CXCR3","IL2","IFNG","TNF","IL4","IL9","IL17A","IL17F","IL22","IL21","CCR6",
+               "GZMB","PRF1","GNLY","IL6","KLRB1","TGFB1","IGHM")
       Missing <- setdiff(nms, names(df))  # Find names of missing columns
       df[Missing] <- 0                    # Add them, filled with '0's
       MainTcell_test <- df[nms]
@@ -2844,7 +2851,6 @@ server <- function(input, output,session) {
           CD4<0 &c(CD8A >0 | CD8B >0) & IFNG>0 ~ "CD8+IFNg+",
           CD4<0 &c(CD8A >0 | CD8B >0) & TNF>0 ~ "CD8+TNF+",
           CD4<0 & c(CD8A >0 | CD8B >0) & IL2>0 ~ "CD8+IL2+",
-          CD4<0 &c(CD8A >0 | CD8B >0) & MKI67 >0 & TOP2A > 0  ~ "Cycling CD8+ T cells",
           CD4<0 &c(CD8A >0 | CD8B >0)  ~ "CD8+ T cells",
           TRUE ~ NA_character_))
 
@@ -2877,11 +2883,12 @@ server <- function(input, output,session) {
 
     if (input$add.classification_T_cell_Function_CD4_CD8pos==T) {
       rownames(MainTcell) <- MainTcell$Cell_Index
-      MainTcell_test <- MainTcell[,names(MainTcell) %in% c("CD4","CD8A","CD8B","FOXP3","IL2RA","IL12A","IL18","CXCR3","IL2","IFNG","TNF","IL4","IL9","IL17A","IL17F","IL22","IL21","CCR6","GZMB",
-                                                           "PRF1","GNLY","IL6","KLRB1","TGFB1","MKI67","TOP2A","Chain2")]
+      MainTcell_test <- MainTcell[,names(MainTcell) %in% c("CD4","CD8A","CD8B","FOXP3","IL2RA","IL12A","IL18","CXCR3","IL2","IFNG","TNF","IL4","IL9","IL17A","IL17F","IL22","IL21","CCR6",
+                                                           "GZMB","PRF1","GNLY","IL6","KLRB1","TGFB1","IGHM")]
       df <- MainTcell_test
       # Vector of columns you want in this data
-      nms <- c("CD4","CD8A","CD8B","FOXP3","IL2RA","IL12A","IL18","CXCR3","IL2","IFNG","TNF","IL4","IL9","IL17A","IL17F","IL22","IL21","CCR6","GZMB","PRF1","GNLY","IL6","KLRB1","TGFB1","MKI67","TOP2A","Chain2")
+      nms <- c("CD4","CD8A","CD8B","FOXP3","IL2RA","IL12A","IL18","CXCR3","IL2","IFNG","TNF","IL4","IL9","IL17A","IL17F","IL22","IL21","CCR6",
+               "GZMB","PRF1","GNLY","IL6","KLRB1","TGFB1","IGHM")
       Missing <- setdiff(nms, names(df))  # Find names of missing columns
       df[Missing] <- 0                    # Add them, filled with '0's
       MainTcell_test <- df[nms]
@@ -2928,11 +2935,12 @@ server <- function(input, output,session) {
     MainTcell <- add.classification()
     if (input$add.classification_T_cell_Function_CD4_CD8neg==T) {
       rownames(MainTcell) <- MainTcell$Cell_Index
-      MainTcell_test <- MainTcell[,names(MainTcell) %in% c("CD3D","CD3E","CD3G","CD4","CD8A","CD8B","FOXP3","IL2RA","IL12A","IL18","CXCR3","IL2","IFNG","TNF","IL4","IL9","IL17A","IL17F",
-                                                           "IL22","IL21","CCR6","GZMB","PRF1","GNLY","IL6","KLRB1","TGFB1","MKI67","TOP2A","Chain2")]
+      MainTcell_test <- MainTcell[,names(MainTcell) %in% c("CD4","CD8A","CD8B","FOXP3","IL2RA","IL12A","IL18","CXCR3","IL2","IFNG","TNF","IL4","IL9","IL17A","IL17F","IL22","IL21","CCR6",
+                                                           "GZMB","PRF1","GNLY","IL6","KLRB1","TGFB1","IGHM")]
       df <- MainTcell_test
       # Vector of columns you want in this data
-      nms <- c("CD3D","CD3E","CD3G","CD4","CD8A","CD8B","FOXP3","IL2RA","IL12A","IL18","CXCR3","IL2","IFNG","TNF","IL4","IL9","IL17A","IL17F","IL22","IL21","CCR6","GZMB","PRF1","GNLY","IL6","KLRB1","TGFB1","MKI67","TOP2A","Chain2")
+      nms <- c("CD4","CD8A","CD8B","FOXP3","IL2RA","IL12A","IL18","CXCR3","IL2","IFNG","TNF","IL4","IL9","IL17A","IL17F","IL22","IL21","CCR6",
+               "GZMB","PRF1","GNLY","IL6","KLRB1","TGFB1","IGHM")
       Missing <- setdiff(nms, names(df))  # Find names of missing columns
       df[Missing] <- 0                    # Add them, filled with '0's
       MainTcell_test <- df[nms]
@@ -2944,7 +2952,6 @@ server <- function(input, output,session) {
 
       df_centres <- df_centres %>%
         mutate(classify.T.cell_Function_CD4_CD8neg = case_when(
-          c(CD3D>0 | CD3E >0 |CD3G>0 ) & CD4 <0 & CD8B < 0 & CD8A < 0 & MKI67 >0 & TOP2A > 0  ~ "Cycling CD4-CD8- T cells",
           c(CD3D>0 | CD3E >0 |CD3G>0 ) & CD4<0 & CD8A <0 & CD8B <0 & c(GZMB > 0 | GNLY>0 | PRF1 >0) ~ "CD4-CD8- Cytotoxic",
           c(CD3D>0 | CD3E >0 |CD3G>0 ) & CD4 <0 & CD8B < 0 & CD8A < 0 ~ "CD4-CD8-",
           TRUE ~ NA_character_))
@@ -2969,6 +2976,65 @@ server <- function(input, output,session) {
 
 
   })
+
+
+  add.classification_B_cell_Function_Df <- reactive({
+    sc <- vals_meta.sc$metadata_SCobj
+    validate(
+      need(nrow(sc)>0,
+           "Imput metadata required")
+    )
+    MainTcell <- add.classification()
+
+    if (input$add.classification_B_cell_Function==T) {
+
+      rownames(MainTcell) <- MainTcell$Cell_Index
+      MainTcell_test <- MainTcell[,names(MainTcell) %in% c("CD4","CD8A","CD8B","FOXP3","IL2RA","IL12A","IL18","CXCR3","IL2","IFNG","TNF","IL4","IL9","IL17A","IL17F","IL22","IL21","CCR6",
+                                                           "GZMB","PRF1","GNLY","IL6","KLRB1","TGFB1","IGHM")]
+      df <- MainTcell_test
+      # Vector of columns you want in this data
+      nms <- c("CD4","CD8A","CD8B","FOXP3","IL2RA","IL12A","IL18","CXCR3","IL2","IFNG","TNF","IL4","IL9","IL17A","IL17F","IL22","IL21","CCR6",
+               "GZMB","PRF1","GNLY","IL6","KLRB1","TGFB1","IGHM")
+      Missing <- setdiff(nms, names(df))  # Find names of missing columns
+      df[Missing] <- 0                    # Add them, filled with '0's
+      MainTcell_test <- df[nms]
+
+      d_frame <- na.omit(MainTcell_test)
+      set.seed(123)
+      kmeans10 <- kmeans(d_frame, centers = 500, nstart = 1)
+      df_centres <- as.data.frame(kmeans10$centers)
+
+      df_centres <- df_centres %>%
+        mutate(classify.B.cell_Function = case_when(
+          IGHM>0 & MS4A1>0 ~ "IgM+ B cell",
+          IGHM<0 & MS4A1>0~ "IgM- B cell",
+          c(IGHA2>0 | IGHA1>0) & JCHAIN>0 ~ "IgA+ Plasma cell",
+          c(IGHG1>0 | IGHG2>0| IGHG3>0| IGHG4>0) & JCHAIN>0 ~ "IgG+ Plasma cell",
+          IGHE>0 & JCHAIN>0 ~ "IgG+ Plasma cell",
+          IGHD>0 & MS4A1>0 ~ "IgD+ B cell",
+          TRUE ~ NA_character_))
+
+      df_centres$clust_name <- rownames(df_centres)
+      head(df_centres)
+      df_centres2 <- df_centres[names(df_centres) %in% c("clust_name","classify.B.cell_Function")]
+      Cluster_Df <- as.data.frame( kmeans10$cluster)
+      Cluster_Df
+      names(Cluster_Df) <- "clust_name"
+      Cluster_Df$Cell_Index <- rownames(Cluster_Df)
+      Cluster_Df_class <- merge(df_centres2,Cluster_Df,by="clust_name")
+      Cluster_Df_class2 <- Cluster_Df_class[,names(Cluster_Df_class) %in% c("Cell_Index","classify.B.cell_Function")]
+      Cluster_Df_class2[order(Cluster_Df_class2$Cell_Index),]
+
+    }
+    else {
+      Cluster_Df_class2 <- as.data.frame(MainTcell[,names(MainTcell) %in% c("Cell_Index")])
+      names(Cluster_Df_class2) <- "Cell_Index"
+      Cluster_Df_class2[order(Cluster_Df_class2$Cell_Index),]
+    }
+
+
+  })
+
   add.classification_T_cell_Memory_df <- reactive({
     sc <- vals_meta.sc$metadata_SCobj
     validate(
@@ -2978,10 +3044,12 @@ server <- function(input, output,session) {
     MainTcell <- add.classification()
     if (input$add.classification_T_cell_Memory==T) {
       rownames(MainTcell) <- MainTcell$Cell_Index
-      MainTcell_test <- MainTcell[,names(MainTcell) %in% c("CD8A","CD8B","CD4","CD27","CCR7","SELL", "CXCR3","IL7R","IL2RA","CX3CR1","CD2","CD5","CD7","PDCD1","CD69","KLRG1","CD44","ITGAE","CCR8","KLRC1","CTLA4","ICOS")]
+      MainTcell_test <- MainTcell[,names(MainTcell) %in% c("CD8A","CD8B","CD4","CD27","CCR7","SELL", "CXCR3","IL7R","IL2RA","CX3CR1","CD2","CD5","CD7","PDCD1","CD69","KLRG1",
+                                                           "CD44","ITGAE","CCR8","KLRC1","CTLA4","ICOS","JCHAIN","MS4A1")]
 
       df <- MainTcell_test
-      nms <- c("CD8A","CD8B","CD4","CD27","CCR7","SELL", "CXCR3","IL7R","IL2RA","CX3CR1","CD2","CD5","CD7","PDCD1","CD69","KLRG1","CD44","ITGAE","CCR8","KLRC1","CTLA4","ICOS")   # Vector of columns you want in this data
+      nms <- c("CD8A","CD8B","CD4","CD27","CCR7","SELL", "CXCR3","IL7R","IL2RA","CX3CR1","CD2","CD5","CD7","PDCD1","CD69","KLRG1",
+               "CD44","ITGAE","CCR8","KLRC1","CTLA4","ICOS","JCHAIN","MS4A1")  # Vector of columns you want in this data
       Missing <- setdiff(nms, names(df))  # Find names of missing columns
       df[Missing] <- 0                    # Add them, filled with '0's
       MainTcell_test <- df[nms]
@@ -3007,6 +3075,8 @@ server <- function(input, output,session) {
           CD69>0 & ITGAE>0 & KLRC1>0 & CTLA4>0 & ICOS>0 ~ "Lung-Tissue resident", #
           CD69>0 & ITGAE>0  ~ "Other resident", #
           CD2>0 & CD5>0 & CD7>0 ~ 'Developing T cells (CD2+CD5+CD7+)',
+          CD27>0 & JCHAIN>0 ~ "Memory Plasma cell",
+          CD27>0 & MS4A1>0 ~ "Memory B cell",
           TRUE ~ NA_character_))
 
       df_centres$clust_name <- rownames(df_centres)
@@ -3062,6 +3132,7 @@ server <- function(input, output,session) {
           IL2RA>0 & ICAM1> 0 ~  "CD25+CD54+",
           PDCD1>0 ~ "Exhaused (PD1+)", # PDCD1= PD1 AND B3GAT1=CD57
           B3GAT1>0 ~ "Senescence (CD57+)", # PDCD1= PD1 AND B3GAT1=CD57
+          JCHAIN>0 & IL6>0 ~ "IL6+ Plasma cell",
           TRUE ~ NA_character_))
 
       df_centres$clust_name <- rownames(df_centres)
@@ -3095,7 +3166,7 @@ server <- function(input, output,session) {
       # -----
       df <- MainTcell_test
       # Vector of columns you want in this data
-      nms <- c("MKI67","TOP2A","Chain2","PDCD1","ZNF683","CD8A","ICOS","CXCR5","GZMK","CD4","IL10","NKG7","GNLY","CTLA4","IL2RA","FOXP3","KLRB1","SLC4A10","TRAV1-2","CCR7","SELL","AQP3","ITGB1","CX3CR1","GZMB","CCL5","CD27","IKZF2","ITGA1","ITGAE","CXCR6","CXCR3","TBX21","IL7R","CCR6","ZBTB16","ITGAD", "IKZF2", "MIR155HG","BIRC3","SMS","CD3D","CD3E","CD3G","FCRL2","ITGAX","TBX21","CD79A","MS4A1","CD19","TNFRSF13B","CD22","POU2AF1","SUGCT","CR2","CD27","IGHM","IGHD","TCL1A","AICDA","CD24","MYO1C","MME","ZCCHC7","RAG1","DNTT","GLL1","IGLL5","CD40","CD1C","FCER1A","CLEC10A","BATF3","CADM1","CLEC9A","CLEC10A","S100A9","EBI3","CCR7","CCL19","CLEC10A","KLF4","AXL","IRF8","PCLAF","FXYD2","HES1","CD99","CD1A","SMPD3","ACY3","SPINK2","CD34","GNLY","FCGR3A","NKG7","S100A13","TLE1","AREG","CXCR3","IKZF3","GATA3","KLRG1","HPGDS","IL4I1","RORC","KIT","XCL2","GZMK","TYROBP","C1QC","HMOX1","LYZ","VCAN","CD14","S100A12","FCN1","FCGR3A","C1QA","CX3CR1","CD160","TOX2","SATB1","CCR9","GNG4","TRDC","TRGC1")
+      nms <- c("MKI67","TOP2A","Chain2","PDCD1","ZNF683","CD8A","ICOS","CXCR5","GZMK","CD4","IL10","NKG7","GNLY","CTLA4","IL2RA","FOXP3","KLRB1","SLC4A10","TRAV1-2","CCR7","SELL","AQP3","ITGB1","CX3CR1","GZMB","CCL5","CD27","IKZF2","ITGA1","ITGAE","CXCR6","CXCR3","TBX21","IL7R","CCR6","ZBTB16","ITGAD", "IKZF2", "MIR155HG","BIRC3","SMS","CD3D","CD3E","CD3G","FCRL2","ITGAX","TBX21","CD79A","MS4A1","CD19","TNFRSF13B","CD22","POU2AF1","SUGCT","CR2","CD27","IGHM","IGHD","TCL1A","AICDA","CD24","MYO1C","MME","ZCCHC7","RAG1","DNTT","GLL1","IGLL5","CD40","CD1C","FCER1A","CLEC10A","BATF3","CADM1","CLEC9A","CLEC10A","S100A9","EBI3","CCR7","CCL19","CLEC10A","KLF4","AXL","IRF8","PCLAF","FXYD2","HES1","CD99","CD1A","SMPD3","ACY3","SPINK2","CD34","GNLY","FCGR3A","NKG7","S100A13","TLE1","AREG","CXCR3","IKZF3","GATA3","KLRG1","HPGDS","IL4I1","RORC","KIT","XCL2","GZMK","TYROBP","C1QC","HMOX1","LYZ","VCAN","CD14","S100A12","FCN1","FCGR3A","C1QA","CX3CR1","CD160","TOX2","SATB1","CCR9","GNG4","TRDC","TRGC1","JCHAIN","MZB1","XBP1")
 
       Missing <- setdiff(nms, names(df))  # Find names of missing columns
       df[Missing] <- 0                    # Add them, filled with '0's
@@ -3120,6 +3191,7 @@ server <- function(input, output,session) {
           IL7R>0 & ZCCHC7>0 & RAG1>0      ~ "Pre-pro-B cells",
           MME>0 &  DNTT>0 & GLL1>0        ~ "Pro-B cells",
           MME>0 & CD24>0 & IGLL5>0        ~ "Small pre-B cells",
+          JCHAIN>0 & MZB1>0 & XBP1>0      ~ "Plasma cell"
 
           # MKI67 >0 & TOP2A > 0 & Chain2==1 ~ "Cycling ab T cells",
           # MKI67 >0 & TOP2A > 0 & Chain2== -1 ~ "Cycling gd T cells",
@@ -3558,20 +3630,22 @@ server <- function(input, output,session) {
   ## download the classification -----
   classification_SC <- reactive({
     annotation <- cbind(add.classification_T_cell_Df(),
-                   add.classification_T_cell_Function_Df(),
-                   add.classification_T_cell_Function_CD4_df(),
-                   add.classification_T_cell_Function_CD8_df(),
-                   add.classification_T_cell_Function_CD4_CD8pos_df(),
-                   add.classification_T_cell_Function_CD4_CD8neg_df(),
-                   add.classification_T_cell_Activation_df(),
-                   add.classification_T_cell_Memory_df(),
-                   add.classification_CellTypist_list_higher(),
-                   add.classification_CellTypist_list_lower(),
-                   add.classification_CellTypist_list_df(),
-                   add.classification_CellTypist_list_CD8_df(),
-                   add.classification_CellTypist_list_CD4_df(),
-                   add.classification_CellTypist_cycling_df()
-    )
+                        add.classification_T.B_cell_Function_Df(),
+                        add.classification_T_cell_Function_CD4_df(),
+                        add.classification_T_cell_Function_CD8_df(),
+                        add.classification_T_cell_Function_CD4_CD8pos_df(),
+                        add.classification_T_cell_Function_CD4_CD8neg_df(),
+
+                        add.classification_T_cell_Activation_df(),
+                        add.classification_T_cell_Memory_df(),
+
+                        add.classification_CellTypist_list_higher(),
+                        add.classification_CellTypist_list_lower(),
+                        add.classification_CellTypist_list_df(),
+                        add.classification_CellTypist_list_CD8_df(),
+                        add.classification_CellTypist_list_CD4_df(),
+                        add.classification_CellTypist_cycling_df()
+        )
 
     rownames(annotation) <- annotation$Cell_Index
     annotation <- annotation[,!grepl("Cell_Index",names(annotation))]
