@@ -2,7 +2,11 @@
 % Please edit documentation in R/app.R
 \name{STEGO}
 \alias{STEGO}
+\alias{runSTEGO}
 \title{Run STEGO application.}
+\usage{
+runSTEGO(...)
+}
 \description{
 Run STEGO application.
 }

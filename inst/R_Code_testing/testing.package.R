@@ -1,9 +1,5 @@
-source("R/global.R")
-
-options(shiny.maxRequestSize = 2000*1024^2)
-
-
-
+# source("R/global.R")
+  options(shiny.maxRequestSize = 20000*1024^2)
   # ?numericInput
   # UI page -----
   ui <- fluidPage(
@@ -131,6 +127,7 @@ options(shiny.maxRequestSize = 2000*1024^2)
                                                   conditionalPanel(condition="input.panel_10x==4",
                                                                    downloadButton('downloaddt_TCR_Explore_10x','Download TCR_Explore')
                                                   ),
+                                                  selectInput("BCR_TCR_10x","Type of data",choices = c("TCR only","BCR only","both")),
 
                                                   textInput("name.10x","Name added to files",value = ""),
 
@@ -362,19 +359,20 @@ options(shiny.maxRequestSize = 2000*1024^2)
 
 
                               ),
+                              # cell annotation ----
                               tabPanel("Cell annotations",
                                        tabsetPanel(
-                                         tabPanel("CellTypist",
-                                                  fluidRow(
-
-                                                    column(3,checkboxInput("cellTypist_add","Add in CellTypist classification (human)", value = F)),
-                                                    column(9, selectInput("cellTypistModels_selected","Cell typist Models",
-                                                                          choices = cellTypistModels, selected = "Immune_All_Low.pkl",multiple = T))
-                                                  ),
-                                                  add_busy_spinner(spin = "fading-circle"),
-                                                  div(DT::dataTableOutput("DEx_table_cellTypist")),
-
-                                         ),
+                                         # tabPanel("CellTypist",
+                                         #          fluidRow(
+                                         #
+                                         #            column(3,checkboxInput("cellTypist_add","Add in CellTypist classification (human)", value = F)),
+                                         #            column(9, selectInput("cellTypistModels_selected","Cell typist Models",
+                                         #                                  choices = cellTypistModels, selected = "Immune_All_Low.pkl",multiple = T))
+                                         #          ),
+                                         #          add_busy_spinner(spin = "fading-circle"),
+                                         #          div(DT::dataTableOutput("DEx_table_cellTypist")),
+                                         #
+                                         # ),
 
                                          tabPanel("K-means clustering",
                                                   tabsetPanel(
@@ -742,18 +740,12 @@ options(shiny.maxRequestSize = 2000*1024^2)
                                                                     column(4,actionButton("run_top","Update selected clonotype")),
                                                                     column(4, selectInput("Selected_clonotype","Select clonotype:",choices ="")),
                                                                     column(4, selectInput("Selected_chain","Select chain:",choices ="")),
+
+
                                                                   )),
                                                  conditionalPanel(condition="input.Panel_TCRUMAP=='ClusTCR2'",
                                                                   fluidRow(
                                                                     column(3,selectInput("chain_TCR","Chains included",choices = c("TCR","BCR","both")),),
-
-
-                                                                      column(3,selectInput("ClusTCR_display","Colour by:",choices = c("all","Selected"))),
-                                                                      column(3,conditionalPanel(condition="input.ClusTCR_display=='Selected'",selectInput("Clusters_to_dis","Clusters to display",
-                                                                                                                                                          choices = "",multiple = T))),
-
-                                                                      column(3,selectInput("Clusters_to_dis_motif","Clusters to display (motif)",
-                                                                                           choices = "",multiple = F))
                                                                     # column(3,selectInput("V_gene_clust","V gene",choices = c("v_gene_AG","v_gene_BD","v_gene_IgL","v_gene_IgH")),),
                                                                     # column(3, selectInput("cdr3_clust","CDR3",choices = c("cdr3_AG","cdr3_BD","cdr3_IgL","cdr3_IgH")),)
                                                                   ),
@@ -882,20 +874,33 @@ options(shiny.maxRequestSize = 2000*1024^2)
                                                                                    column(2,style = "margin-top: 25px;",downloadButton('downloadPlotPNG_top_clonotype_pie','Download PNG'))),
                                                                         ),
                                                                         tabPanel("Expression",
-                                                                                 div(DT::dataTableOutput("Violin_chart_alpha_gamma")),
-                                                                                 fluidRow(
-                                                                                   column(3, checkboxInput("restric_ex","Restrict to above a threshold?", value = F )),
-                                                                                   column(3, numericInput("Gre_ex","Expression above:", value = 0 )),
-                                                                                   column(3, selectInput("plot_type_ridgvi","Plot type", choices = c("Ridge (selected clonotype)","Ridge (compare)","Violin (selected clonotype)", "Violin (compare)"))),
+
+                                                                                 tabsetPanel(
+                                                                                   tabPanel("Stats",
+                                                                                            add_busy_spinner(spin = "fading-circle"),
+                                                                                            DT::dataTableOutput("Ridge_chart_alpha_gamma_stat_comp")),
+
+                                                                                   tabPanel("Plots",
+                                                                                            actionButton("run_string.data_Exp_top","View Ridge plot"),
+                                                                                            div(DT::dataTableOutput("Violin_chart_alpha_gamma")),
+                                                                                            fluidRow(
+                                                                                              column(3, checkboxInput("restric_ex","Restrict to above a threshold?", value = F )),
+                                                                                              column(3, numericInput("Gre_ex","Expression above:", value = 0 )),
+                                                                                              column(3, selectInput("plot_type_ridgvi","Plot type", choices = c("Ridge (selected clonotype)","Ridge (compare)","Violin (selected clonotype)", "Violin (compare)"))),
+                                                                                            ),
+
+                                                                                            fluidRow(column(12, selectInput("string.data_Exp_top","column names for summary","",multiple = F, width = "1200px") )),
+                                                                                            add_busy_spinner(spin = "fading-circle"),
+                                                                                            conditionalPanel(condition="input.plot_type_ridgvi=='Ridge (compare)' | input.plot_type_ridgvi=='Violin (compare)'",
+                                                                                                             div()),
+                                                                                            plotOutput("Ridge_chart_alpha_gamma_plot_out",height="600px"),
+                                                                                            conditionalPanel(condition="input.plot_type_ridgvi=='Ridge (selected clonotype)' | input.plot_type_ridgvi=='Violin (selected clonotype)'",
+                                                                                                             div(DT::dataTableOutput("Ridge_chart_alpha_gamma_stat"))),
+                                                                                            )
                                                                                  ),
-                                                                                 actionButton("run_string.data_Exp_top","View Ridge plot"),
-                                                                                 fluidRow(column(12, selectInput("string.data_Exp_top","column names for summary","",multiple = F, width = "1200px") )),
-                                                                                 add_busy_spinner(spin = "fading-circle"),
-                                                                                 plotOutput("Ridge_chart_alpha_gamma_plot_out",height="600px"),
-                                                                                 conditionalPanel(condition="input.plot_type_ridgvi=='Ridge (selected clonotype)' | input.plot_type_ridgvi=='Violin (selected clonotype)'",
-                                                                                                  div(DT::dataTableOutput("Ridge_chart_alpha_gamma_stat"))),
-                                                                                 conditionalPanel(condition="input.plot_type_ridgvi=='Ridge (compare)' | input.plot_type_ridgvi=='Violin (compare)'",
-                                                                                                  div(DT::dataTableOutput("Ridge_chart_alpha_gamma_stat_comp"))),
+
+
+
                                                                         ),
                                                                       ),
                                                              ),
@@ -945,7 +950,14 @@ options(shiny.maxRequestSize = 2000*1024^2)
 
                                                                         ),
                                                                         tabPanel("UMAP",
+                                                                                 fluidRow(
+                                                                                   column(3,selectInput("ClusTCR_display","Colour by:",choices = c("all","Selected"))),
+                                                                                   column(3,conditionalPanel(condition="input.ClusTCR_display=='Selected'",selectInput("Clusters_to_dis","Clusters to display",
+                                                                                                                                                                       choices = "",multiple = T))),
 
+                                                                                   column(3,selectInput("Clusters_to_dis_motif","Clusters to display (motif)",
+                                                                                                        choices = "",multiple = F))
+                                                                                 ),
                                                                                  # div(DT::dataTableOutput("Tb_ClusTCR_col")),
 
 
@@ -959,11 +971,7 @@ options(shiny.maxRequestSize = 2000*1024^2)
                                                                         ),
                                                                         tabPanel("motif",
                                                                                  plotOutput("Motif_ClusTCR2_cluster",height="600px")
-                                                                        ),
-                                                                        tabPanel("pie",
-                                                                                 plotOutput("pie_ClusTCR2_plot",height="600px")
-
-                                                                                 )
+                                                                        )
 
 
 
@@ -1000,8 +1008,6 @@ options(shiny.maxRequestSize = 2000*1024^2)
                ),
                # end of Integration -----
                # tabPanel("Epitope")
-
-
 
     ) # nav page
   )
@@ -1717,7 +1723,7 @@ options(shiny.maxRequestSize = 2000*1024^2)
 
 
     ## meta.data for seurat ----
-    tb_10x_meta.data <- function () {
+    tb_10x_meta.data_TCR <- function () {
       contigs <- input.data.TCR.10x()
       validate(
         need(nrow(contigs)>0,
@@ -1805,15 +1811,148 @@ options(shiny.maxRequestSize = 2000*1024^2)
 
       contig_paired_only
     }
+    tb_10x_meta.data_BCR <- function () {
+      contigs <- input.data.TCR.10x()
+      validate(
+        need(nrow(contigs)>0,
+             "Upload file")
+      )
+      contigs <- contigs[order(contigs$umis,decreasing = T),]
+
+      contigs_lim <- contigs[!names(contigs) %in% c("is_cell","contig_id","high_confidence","raw_consensus_id","exact_subclonotype_id","reads","length","cdr3_nt",names(contigs[grep("fwr",names(contigs))]),names(contigs[grep("cdr1",names(contigs))]),names(contigs[grep("cdr2",names(contigs))])
+      )]
+      contigs_lim
+      contig_LK <- subset(contigs_lim,contigs_lim$chain=="IGL" | contigs_lim$chain=="IGK")
+      name.list <- names(contig_LK[c(names(contig_LK[grep("gene",names(contig_LK))]),
+                                     names(contig_LK[grep("cdr3",names(contig_LK))]),
+                                     "chain")])
+      name.list
+      contig_LK <- contig_LK %>%
+        select(all_of(name.list), everything())
+      names(contig_LK)[1:summary(name.list)[1]] <-paste(names(contig_LK[names(contig_LK) %in% name.list]),"_IgL",sep="")
+      head(contig_LK)
+
+      contig_H <- subset(contigs_lim,contigs_lim$chain=="IGH")
+
+      name.list <- names(contig_H[c(names(contig_H[grep("gene",names(contig_H))]),
+                                    names(contig_H[grep("cdr3",names(contig_H))]),
+                                    "chain")])
+      contig_H <- contig_H %>%
+        select(all_of(name.list), everything())
+
+
+      names(contig_H)[1:summary(name.list)[1]] <-paste(names(contig_H[names(contig_H) %in% name.list]),"_IgH",sep="")
+      head(contig_H)
+      # contig_paired <- merge(contig_LK,contig_H, by=c("barcode", "full_length" ,"productive" ,"raw_clonotype_id"),all = T)
+      # contig_paired <- merge(contig_LK,contig_H, by=c("barcode", "full_length" ,"productive" ,"raw_clonotype_id"),all = T)
+      contig_paired <- merge(contig_LK,contig_H, by=c("barcode", "full_length" ,"productive" ,"raw_clonotype_id"),all = T)
+
+      contig_paired$pairing <- ifelse(contig_paired$chain_IgH=="IGH" & contig_paired$chain_IgL=="IGK","IGK Paired",
+                                      ifelse(contig_paired$chain_IgH=="IGH" & contig_paired$chain_IgL=="IGL","IGL Paired",NA
+                                      ))
+
+      contig_paired
+      contig_paired$pairing[is.na(contig_paired$pairing)] <- "unpaired"
+      contig_paired <- contig_paired[!names(contig_paired) %in% c("d_gene_IgL")]
+      contig_paired_only <- contig_paired
+      contig_paired_only <- subset(contig_paired_only,contig_paired_only$cdr3_IgH!="None")
+      contig_paired_only <- subset(contig_paired_only,contig_paired_only$cdr3_IgL!="None")
+      dim(contig_paired_only)
+
+      contig_paired_only$d_gene_IgH <- sub("^$","NA", contig_paired_only$d_gene_IgH)
+      #
+      contig_paired_only$vj_gene_LK <- paste(contig_paired_only$v_gene_IgL,contig_paired_only$j_gene_IgL,sep = ".")
+      contig_paired_only$vj_gene_LK <- gsub("NA.NA","",contig_paired_only$vj_gene_LK)
+      #
+      contig_paired_only$vj_gene_H <- paste(contig_paired_only$v_gene_IgH,contig_paired_only$j_gene_IgH,sep = ".")
+      contig_paired_only$vj_gene_H <- gsub(".NA.",".",contig_paired_only$vj_gene_H)
+      contig_paired_only$vj_gene_H <- gsub(".None.",".",contig_paired_only$vj_gene_H)
+      contig_paired_only$vj_gene_H <- gsub("NA.NA","",contig_paired_only$vj_gene_H)
+      #
+      contig_paired_only$vdj_gene_H <- paste(contig_paired_only$v_gene_IgH,contig_paired_only$d_gene_IgH,contig_paired_only$j_gene_IgH,sep = ".")
+      contig_paired_only$vdj_gene_H <- gsub(".NA.",".",contig_paired_only$vdj_gene_H)
+      contig_paired_only$vdj_gene_H <- gsub(".None.",".",contig_paired_only$vdj_gene_H)
+      contig_paired_only$vdj_gene_H <- gsub("NA.NA","",contig_paired_only$vdj_gene_H)
+      #
+      contig_paired_only$vj_gene_cdr3_LK <- paste(contig_paired_only$vj_gene_LK,contig_paired_only$cdr3_IgL,sep = "_")
+      contig_paired_only$vj_gene_cdr3_LK <- gsub("_NA","",contig_paired_only$vj_gene_cdr3_LK)
+      #
+      contig_paired_only$vj_gene_cdr3_H <- paste(contig_paired_only$vj_gene_H,contig_paired_only$cdr3_IgH,sep = "_")
+      contig_paired_only$vj_gene_cdr3_H <- gsub("_NA","",contig_paired_only$vj_gene_cdr3_H)
+      #
+      contig_paired_only$vdj_gene_cdr3_H <- paste(contig_paired_only$vdj_gene_H,contig_paired_only$cdr3_H,sep = "_")
+      contig_paired_only$vdj_gene_cdr3_H <- gsub("_NA","",contig_paired_only$vdj_gene_cdr3_H)
+      #
+      contig_paired_only$vj_gene_LK_H <- paste(contig_paired_only$vj_gene_LK,contig_paired_only$vj_gene_H,sep = " & ")
+      contig_paired_only$vdj_gene_LK_H <- paste(contig_paired_only$vj_gene_LK,contig_paired_only$vdj_gene_H,sep = " & ")
+      contig_paired_only$vdj_gene_LK_H <- gsub("^ & ","",contig_paired_only$vdj_gene_LK_H)
+      contig_paired_only$vdj_gene_LK_H <- gsub(" & $","",contig_paired_only$vdj_gene_LK_H)
+      #
+      # #updating names to be consistant....
+      contig_paired_only$vj_gene_cdr3_LK_H <- paste(contig_paired_only$vj_gene_cdr3_LK,contig_paired_only$vj_gene_cdr3_H,sep = " & ")
+      contig_paired_only$vj_gene_cdr3_LK_H <- gsub("^ & ","",contig_paired_only$vj_gene_cdr3_LK_H)
+      contig_paired_only$vj_gene_cdr3_LK_H <- gsub(" & $","",contig_paired_only$vj_gene_cdr3_LK_H)
+
+      contig_paired_only$vdj_gene_cdr3_LK_H <- paste(contig_paired_only$vj_gene_cdr3_LK,contig_paired_only$vdj_gene_cdr3_H,sep = " & ")
+      contig_paired_only$vdj_gene_cdr3_LK_H <- gsub("^ & ","",contig_paired_only$vdj_gene_cdr3_LK_H)
+      contig_paired_only$vdj_gene_cdr3_LK_H <- gsub(" & $","",contig_paired_only$vdj_gene_cdr3_LK_H)
+      # contig_paired_only$vdj_gene_cdr3_LK_H <- paste(contig_paired_only$vj_gene_cdr3_LK,contig_paired_only$vdj_gene_cdr3_H,sep = " & ")
+      names(contig_paired_only)[names(contig_paired_only) %in% "barcode"] <- "Cell_Index"
+      dup <- contig_paired_only[duplicated(contig_paired_only$Cell_Index),]
+      contig_paired_only <- contig_paired_only[order(contig_paired_only$Cell_Index, contig_paired_only$umis.x,contig_paired_only$umis.y,decreasing = T),]
+
+      contig_paired_only_dup <- contig_paired_only[!duplicated(contig_paired_only$Cell_Index),] # remove duplicate barcodes.
+      names(contig_paired_only_dup)
+      contig_paired_only_dup <- contig_paired_only_dup[!names(contig_paired_only_dup) %in% c("umis.x","umis.y")]
+      contig_paired_only_dup$Sample_Name <- input$sample_name_10x
+
+      contig_paired_only_dup <- contig_paired_only_dup %>%
+        select(all_of(c("Cell_Index","Sample_Name")), everything())
+
+      contig_paired_only_dup
+
+      contig_paired_only_dup
+    }
+
+
     output$tb_10x_meta1 <- DT::renderDataTable(escape = FALSE, options = list(autoWidth = FALSE, lengthMenu = c(2,5,10,20,50,100), pageLength = 5, scrollX = TRUE),{
-      tb_10x_meta.data()
+      if (input$BCR_TCR_10x=="TCR only") {
+        tb_10x_meta.data_TCR()
+
+      }
+
+      else if (input$BCR_TCR_10x=="BCR only") {
+        tb_10x_meta.data_BCR()
+      }
+      else {
+        TCR <- tb_10x_meta.data_TCR()
+        BCR <- tb_10x_meta.data_BCR()
+
+
+
+        contig_paired <- names(BCR)[!grepl("_IgH",names(BCR)) & !grepl("_IgL",names(BCR))]
+        contig_paired <- merge(TCR,BCR,by = merge.names, all=T)
+        contig_paired
+      }
+
     })
     output$downloadtb_10x_metadata2 <- downloadHandler(
       filename = function(){
-        paste(input$name.10x," metadata_10x_",gsub("-", ".", Sys.Date()),".csv", sep = "")
+        paste(input$name.10x,"_metadata_10x_",gsub("-", ".", Sys.Date()),".csv", sep = "")
       },
       content = function(file){
-        df <- as.data.frame(tb_10x_meta.data())
+
+        if (input$BCR_TCR_10x=="TCR only") {
+          df <-  tb_10x_meta.data_TCR()
+
+        }
+
+        else if (input$BCR_TCR_10x=="BCR only") {
+          df <-  tb_10x_meta.data_BCR()
+        }
+        else {
+
+        }
         # write.table(,file, row.names = T)
         write_csv(df, file)
 
@@ -1827,9 +1966,27 @@ options(shiny.maxRequestSize = 2000*1024^2)
              "Upload file")
       )
 
-      contig_paired <- as.data.frame(tb_10x_meta.data())
+      if (input$BCR_TCR_10x=="TCR only") {
+        contig_paired <-  tb_10x_meta.data_TCR()
 
-      count.df <- contig_paired[names(contig_paired) %in% c("chain_AG","chain_BD","pairing")]
+      }
+
+      else if (input$BCR_TCR_10x=="BCR only") {
+        contig_paired <-  tb_10x_meta.data_BCR()
+      }
+      else {
+
+
+        TCR <- tb_10x_meta.data_TCR()
+        BCR <- tb_10x_meta.data_BCR()
+        contig_paired <- names(BCR)[!grepl("_IgH",names(BCR)) & !grepl("_IgL",names(BCR))]
+        contig_paired <- merge(TCR,BCR,by = merge.names, all=T)
+
+      }
+
+      # contig_paired <- as.data.frame(tb_10x_meta.data())
+
+      count.df <- contig_paired[names(contig_paired) %in% c(names(contig_paired)[grepl("chain",names(contig_paired))],"pairing")]
       count.df$count <- 1
       # ddply(count.df,names(count.df) ,numcolwise(sum))
       df1 <- ddply(count.df,names(count.df)[c(-4)] ,numcolwise(sum))
@@ -1854,11 +2011,6 @@ options(shiny.maxRequestSize = 2000*1024^2)
       names(contigs2)[names(contigs2) %in% c("v_gene")] <- "v_call"
       contigs2 <- subset(contigs2,contigs2$junction_aa!= "None")
       contigs2[!duplicated(contigs2[,c('v_call','junction_aa')]),]
-      #
-      # contigs2
-      # contigs2 <- contigs2 %>%
-      #   select(all_of('v_call','junction_aa'), everything())
-      # contigs2
     })
 
     output$tb_10x_contigues1 <- DT::renderDataTable(escape = FALSE, options = list(autoWidth = FALSE, lengthMenu = c(2,5,10,20,50,100), pageLength = 10, scrollX = TRUE),{
@@ -1867,7 +2019,7 @@ options(shiny.maxRequestSize = 2000*1024^2)
 
     output$downloadtb_10x_contigues1 <- downloadHandler(
       filename = function(){
-        paste(input$name.10x," clusTCR_10x_",gsub("-", ".", Sys.Date()),".csv", sep = "")
+        paste(input$name.10x,"_clusTCR_10x_",gsub("-", ".", Sys.Date()),".csv", sep = "")
       },
       content = function(file){
         df <- as.data.frame(tb_10x_contigues_contig())
@@ -1877,7 +2029,24 @@ options(shiny.maxRequestSize = 2000*1024^2)
 
     ## TCR explore 10x -----
     TCR_Explore_10x <- function () {
-      contig_paired_only <- tb_10x_meta.data()
+      if (input$BCR_TCR_10x=="TCR only") {
+        contig_paired_only <-  tb_10x_meta.data_TCR()
+
+      }
+
+      else if (input$BCR_TCR_10x=="BCR only") {
+        contig_paired_only <-  tb_10x_meta.data_BCR()
+      }
+      else {
+
+
+        TCR <- tb_10x_meta.data_TCR()
+        BCR <- tb_10x_meta.data_BCR()
+        contig_paired_only <- names(BCR)[!grepl("_IgH",names(BCR)) & !grepl("_IgL",names(BCR))]
+        contig_paired_only <- merge(TCR,BCR,by = merge.names, all=T)
+
+      }
+
       contig_paired_only$cloneCount <- 1
       contig_paired_only$group <- input$group10x
       contig_paired_only$Indiv <- input$Indiv10x
@@ -1893,7 +2062,7 @@ options(shiny.maxRequestSize = 2000*1024^2)
 
     output$downloaddt_TCR_Explore_10x <- downloadHandler(
       filename = function(){
-        paste(input$name.10x,"TCR_Explore_10x  ",gsub("-", ".", Sys.Date()),".csv", sep = "")
+        paste(input$name.10x,"_TCR_Explore_10x_",gsub("-", ".", Sys.Date()),".csv", sep = "")
       },
       content = function(file){
         df <- as.data.frame(TCR_Explore_10x())
@@ -1998,6 +2167,7 @@ options(shiny.maxRequestSize = 2000*1024^2)
     # rendering the table
 
     observe({
+
       updateSelectInput(
         session,
         "clusTCR2_names",
@@ -2070,7 +2240,7 @@ options(shiny.maxRequestSize = 2000*1024^2)
 
     output$download_ClusTCR_labels <- downloadHandler(
       filename = function(){
-        paste("Cluster_table  ",gsub("-", ".", Sys.Date()),".csv", sep = "")
+        paste("ClusTCR2_output",gsub("-", ".", Sys.Date()),".csv", sep = "")
       },
       content = function(file){
         df <- as.data.frame(ClusTCR2_lab_df())
@@ -2398,24 +2568,24 @@ options(shiny.maxRequestSize = 2000*1024^2)
     })
     # Add cell annotations to Seurat object -----
 
-    add.CellTypist <- reactive({
-      sc <- vals_meta.sc$metadata_SCobj
-
-      if(input$cellTypist_add==T){
-        sc <- RIRA::RunCellTypist(sc, runCelltypistUpdate = F, modelName = input$cellTypistModels_selected)
-        sc@meta.data$CellTypist <- sc@meta.data$majority_voting
-
-      }
-      else(
-        sc <- sc
-      )
-      sc
-    })
+    # add.CellTypist <- reactive({
+    #   sc <- vals_meta.sc$metadata_SCobj
+    #
+    #   if(input$cellTypist_add==T){
+    #     sc <- RIRA::RunCellTypist(sc, runCelltypistUpdate = F, modelName = input$cellTypistModels_selected)
+    #     sc@meta.data$CellTypist <- sc@meta.data$majority_voting
+    #
+    #   }
+    #   else(
+    #     sc <- sc
+    #   )
+    #   sc
+    # })
     # cell Typist
-    output$DEx_table_cellTypist <- DT::renderDataTable(escape = FALSE, filter = list(position = 'top', clear = FALSE),  options = list(autoWidth = FALSE, lengthMenu = c(2,5,10,20,50,100), pageLength = 5, scrollX = TRUE),{
-      calls <- add.CellTypist()
-      calls@meta.data
-    })
+    # output$DEx_table_cellTypist <- DT::renderDataTable(escape = FALSE, filter = list(position = 'top', clear = FALSE),  options = list(autoWidth = FALSE, lengthMenu = c(2,5,10,20,50,100), pageLength = 5, scrollX = TRUE),{
+    #   calls <- add.CellTypist()
+    #   calls@meta.data
+    # })
 
     #
     observe({
@@ -2429,7 +2599,7 @@ options(shiny.maxRequestSize = 2000*1024^2)
         session,
         "V_gene_Class",
         choices=names(df3.meta),
-        selected = "v_gene_cdr3_AB_GD")
+        selected = "vdj_gene_cdr3_AB_GD")
     })
 
     add.classification <- reactive({
@@ -2475,10 +2645,10 @@ options(shiny.maxRequestSize = 2000*1024^2)
       MainTcell <- add.classification()
       if (input$add.classification_T_cell==T) {
 
-        MainTcell_test <- MainTcell[,names(MainTcell) %in% c("CD4","CD8A","CD8B","CD3D","CD3E","CD3G")]
+        MainTcell_test <- MainTcell[,names(MainTcell) %in% c("CD4","CD8A","CD8B","CD3D","CD3E","CD3G","MS4A1")]
         head(MainTcell_test)
         df <- MainTcell_test
-        nms <- c("CD4","CD8A","CD8B","CD3D","CD3E","CD3G")   # Vector of columns you want in this data
+        nms <- c("CD4","CD8A","CD8B","CD3D","CD3E","CD3G","MS4A1")   # Vector of columns you want in this data
         Missing <- setdiff(nms, names(df))  # Find names of missing columns
         df[Missing] <- 0                    # Add them, filled with '0's
         MainTcell_test <- df[nms]
@@ -2500,6 +2670,7 @@ options(shiny.maxRequestSize = 2000*1024^2)
             c(CD3D>0 | CD3E >0 |CD3G>0 ) & CD4 <0 & CD8B < 0 & CD8A < 0 ~ "CD4-CD8-",
             # CD3D < 0 & CD3E<0 & CD3G<0 & CD4 <0 & CD8B < 0 & CD8A < 0~ "Not a T cell",
             CD3D > 0 | CD3E>0 | CD3G>0 ~ "T cell",
+            MS4A1>0 ~ "B cell",
             TRUE ~ NA_character_))
 
         df_centres$clust_name <- rownames(df_centres)
@@ -2542,8 +2713,9 @@ options(shiny.maxRequestSize = 2000*1024^2)
         MainTcell_test <- df[nms]
 
         d_frame <- na.omit(MainTcell_test)
+        centre_size <- round(dim(MainTcell_test)[2]/4,0)
         set.seed(123)
-        kmeans10 <- kmeans(d_frame, centers = 500, nstart = 1)
+        kmeans10 <- kmeans(d_frame, centers = centre_size, nstart = 1)
         df_centres <- as.data.frame(kmeans10$centers)
 
         df_centres <- df_centres %>%
@@ -2617,8 +2789,9 @@ options(shiny.maxRequestSize = 2000*1024^2)
         MainTcell_test <- df[nms]
         MainTcell_test[is.na(MainTcell_test)] <- 0
         MainTcell_test
+        centre_size <- round(dim(MainTcell_test)[2]/4,0)
         set.seed(123)
-        kmeans10 <- kmeans(MainTcell_test, centers = 50, nstart = 1)
+        kmeans10 <- kmeans(MainTcell_test, centers = centre_size, nstart = 1)
         kmeans10$centers
         df_centres <- as.data.frame(kmeans10$centers)
         df_centres <- df_centres %>%
@@ -2685,9 +2858,9 @@ options(shiny.maxRequestSize = 2000*1024^2)
         MainTcell_test <- df[nms]
 
         MainTcell_test[is.na(MainTcell_test)] <- 0
-        # kmeans10 <-pamk(d_frame, krange= 500:1000, ns=1000)
+        centre_size <- round(dim(MainTcell_test)[2]/4,0)
         set.seed(123)
-        kmeans10 <- kmeans(MainTcell_test, centers = 500, nstart = 1)
+        kmeans10 <- kmeans(MainTcell_test, centers = centre_size, nstart = 1)
         df_centres <- as.data.frame(kmeans10$centers)
 
         df_centres <- df_centres %>%
@@ -2744,8 +2917,9 @@ options(shiny.maxRequestSize = 2000*1024^2)
         MainTcell_test <- df[nms]
 
         MainTcell_test[is.na(MainTcell_test)] <- 0
+        centre_size <- round(dim(MainTcell_test)[2]/4,0)
         set.seed(123)
-        kmeans10 <- kmeans(MainTcell_test, centers = 500, nstart = 1)
+        kmeans10 <- kmeans(MainTcell_test, centers = centre_size, nstart = 1)
         df_centres <- as.data.frame(kmeans10$centers)
 
         df_centres <- df_centres %>%
@@ -2795,8 +2969,9 @@ options(shiny.maxRequestSize = 2000*1024^2)
         MainTcell_test <- df[nms]
 
         MainTcell_test[is.na(MainTcell_test)] <- 0
+        centre_size <- round(dim(MainTcell_test)[2]/4,0)
         set.seed(123)
-        kmeans10 <- kmeans(MainTcell_test, centers = 500, nstart = 1)
+        kmeans10 <- kmeans(MainTcell_test, centers = centre_size, nstart = 1)
         df_centres <- as.data.frame(kmeans10$centers)
 
         df_centres <- df_centres %>%
@@ -2844,8 +3019,9 @@ options(shiny.maxRequestSize = 2000*1024^2)
         MainTcell_test <- df[nms]
         head(MainTcell_test)
         MainTcell_test[is.na(MainTcell_test)] <- 0
+        centre_size <- round(dim(MainTcell_test)[2]/4,0)
         set.seed(123)
-        kmeans10 <- kmeans(MainTcell_test, centers = 1000, nstart = 10)
+        kmeans10 <- kmeans(MainTcell_test, centers = centre_size, nstart = 10)
         kmeans10$centers
         df_centres <- as.data.frame(kmeans10$centers)
 
@@ -2902,8 +3078,9 @@ options(shiny.maxRequestSize = 2000*1024^2)
         MainTcell_test <- df[nms]
         head(MainTcell_test)
         MainTcell_test[is.na(MainTcell_test)] <- 0
+        centre_size <- round(dim(MainTcell_test)[2]/4,0)
         set.seed(123)
-        kmeans10 <- kmeans(MainTcell_test, centers = 500, nstart = 10)
+        kmeans10 <- kmeans(MainTcell_test, centers = centre_size, nstart = 10)
         kmeans10$centers
         df_centres <- as.data.frame(kmeans10$centers)
 
@@ -2948,22 +3125,23 @@ options(shiny.maxRequestSize = 2000*1024^2)
       MainTcell <- add.classification()
       if (input$add.classification_CellTypist_list_overview==T) {
         rownames(MainTcell) <- MainTcell$Cell_Index
-        MainTcell_test <- MainTcell[,names(MainTcell) %in% c("MKI67","TOP2A","Chain2","PDCD1","ZNF683","CD8A","ICOS","CXCR5","GZMK","CD4","IL10","NKG7","GNLY","CTLA4","IL2RA","FOXP3","KLRB1","SLC4A10","TRAV1-2","CCR7","SELL","AQP3","ITGB1","CX3CR1","GZMB","CCL5","CD27","IKZF2","ITGA1","ITGAE","CXCR6","CXCR3","TBX21","IL7R","CCR6","ZBTB16","ITGAD", "IKZF2", "MIR155HG","BIRC3","SMS","CD3D","CD3E","CD3G","FCRL2","ITGAX","TBX21","CD79A","MS4A1","CD19","TNFRSF13B","CD22","POU2AF1","SUGCT","CR2","CD27","IGHM","IGHD","TCL1A","AICDA","CD24","MYO1C","MME","ZCCHC7","RAG1","DNTT","GLL1","IGLL5","CD40")]
+        MainTcell_test <- MainTcell[,names(MainTcell) %in% c("MKI67","TOP2A","Chain2","PDCD1","ZNF683","CD8A","ICOS","CXCR5","GZMK","CD4","IL10","NKG7","GNLY","CTLA4","IL2RA","FOXP3","KLRB1","SLC4A10","TRAV1-2","CCR7","SELL","AQP3","ITGB1","CX3CR1","GZMB","CCL5","CD27","IKZF2","ITGA1","ITGAE","CXCR6","CXCR3","TBX21","IL7R","CCR6","ZBTB16","ITGAD", "IKZF2", "MIR155HG","BIRC3","SMS","CD3D","CD3E","CD3G","FCRL2","ITGAX","TBX21","CD79A","MS4A1","CD19","TNFRSF13B","CD22","POU2AF1","SUGCT","CR2","CD27","IGHM","IGHD","TCL1A","AICDA","CD24","MYO1C","MME","ZCCHC7","RAG1","DNTT","GLL1","IGLL5","CD40","CD1C","FCER1A","CLEC10A","BATF3","CADM1","CLEC9A","CLEC10A","S100A9","EBI3","CCR7","CCL19","CLEC10A","KLF4","AXL","IRF8","PCLAF","FXYD2","HES1","CD99","CD1A","SMPD3","ACY3","SPINK2","CD34","GNLY","FCGR3A","NKG7","S100A13","TLE1","AREG","CXCR3","IKZF3","GATA3","KLRG1","HPGDS","IL4I1","RORC","KIT","XCL2","GZMK","TYROBP","C1QC","HMOX1","LYZ","VCAN","CD14","S100A12","FCN1","FCGR3A","C1QA","CX3CR1","CD160","TOX2","SATB1","CCR9","GNG4","TRDC","TRGC1")]
         # -----
         df <- MainTcell_test
         # Vector of columns you want in this data
-        nms <- c("MKI67","TOP2A","Chain2","PDCD1","ZNF683","CD8A","ICOS","CXCR5","GZMK","CD4","IL10","NKG7","GNLY","CTLA4","IL2RA","FOXP3","KLRB1","SLC4A10","TRAV1-2","CCR7","SELL","AQP3","ITGB1","CX3CR1","GZMB","CCL5","CD27","IKZF2","ITGA1","ITGAE","CXCR6","CXCR3","TBX21","IL7R","CCR6","ZBTB16","ITGAD", "IKZF2", "MIR155HG","BIRC3","SMS","CD3D","CD3E","CD3G")
+        nms <- c("MKI67","TOP2A","Chain2","PDCD1","ZNF683","CD8A","ICOS","CXCR5","GZMK","CD4","IL10","NKG7","GNLY","CTLA4","IL2RA","FOXP3","KLRB1","SLC4A10","TRAV1-2","CCR7","SELL","AQP3","ITGB1","CX3CR1","GZMB","CCL5","CD27","IKZF2","ITGA1","ITGAE","CXCR6","CXCR3","TBX21","IL7R","CCR6","ZBTB16","ITGAD", "IKZF2", "MIR155HG","BIRC3","SMS","CD3D","CD3E","CD3G","FCRL2","ITGAX","TBX21","CD79A","MS4A1","CD19","TNFRSF13B","CD22","POU2AF1","SUGCT","CR2","CD27","IGHM","IGHD","TCL1A","AICDA","CD24","MYO1C","MME","ZCCHC7","RAG1","DNTT","GLL1","IGLL5","CD40","CD1C","FCER1A","CLEC10A","BATF3","CADM1","CLEC9A","CLEC10A","S100A9","EBI3","CCR7","CCL19","CLEC10A","KLF4","AXL","IRF8","PCLAF","FXYD2","HES1","CD99","CD1A","SMPD3","ACY3","SPINK2","CD34","GNLY","FCGR3A","NKG7","S100A13","TLE1","AREG","CXCR3","IKZF3","GATA3","KLRG1","HPGDS","IL4I1","RORC","KIT","XCL2","GZMK","TYROBP","C1QC","HMOX1","LYZ","VCAN","CD14","S100A12","FCN1","FCGR3A","C1QA","CX3CR1","CD160","TOX2","SATB1","CCR9","GNG4","TRDC","TRGC1")
+
         Missing <- setdiff(nms, names(df))  # Find names of missing columns
         df[Missing] <- 0                    # Add them, filled with '0's
         MainTcell_test <- df[nms]
-
         MainTcell_test[is.na(MainTcell_test)] <- 0
-        # kmeans10 <-pamk(d_frame, krange= 500:1000, ns=1000)
-        kmeans10 <- kmeans(MainTcell_test, centers = 500, nstart = 1)
+        centre_size <- round(dim(MainTcell_test)[2]/4,0)
+        set.seed(123)
+        kmeans10 <- kmeans(MainTcell_test, centers = centre_size, nstart = 1)
         df_centres <- as.data.frame(kmeans10$centers)
 
         df_centres <- df_centres %>%
-          mutate(CellTypist_list_ = case_when(
+          mutate(CellTypist_list_lower = case_when(
             #### B cells -----
             FCRL2>0 & ITGAX>0 & TBX21>0     ~ "Age-associated B cells", # B cells
             CD79A>0 & MS4A1>0 & CD19>0      ~ "B cell", # B cell
@@ -2981,42 +3159,65 @@ options(shiny.maxRequestSize = 2000*1024^2)
             # MKI67 >0 & TOP2A > 0 & Chain2==1 ~ "Cycling ab T cells",
             # MKI67 >0 & TOP2A > 0 & Chain2== -1 ~ "Cycling gd T cells",
             #### T cells ----
-            c(CD3D>0 | CD3E >0 |CD3G>0 ) & PDCD1 >0 & ZNF683 >0 & CD8A >0 ~ "CD8aa T cells",
-            c(CD3D>0 | CD3E >0 |CD3G>0 ) & PDCD1 >0 & ICOS >0 & CXCR5>0  ~"Follicular helper T cells",
-            c(CD3D>0 | CD3E >0 |CD3G>0 ) & GZMK >0 & CD4>0 & IL10>0 ~ "Memory GZMK+IL10+CD4+ cytotoxic T cells",
-            c(CD3D>0 | CD3E >0 |CD3G>0 ) & GZMK >0 & CD4>0 & IL10>0 ~ "Memory GZMK+IL10-CD4+ cytotoxic T cells",
-            c(CD3D>0 | CD3E >0 |CD3G>0 ) & NKG7>0 & GNLY>0 & CD8A>0 ~ "NK CD8+ T cells",
-            c(CD3D>0 | CD3E >0 |CD3G>0 ) & NKG7>0 & GNLY>0 & CD4>0 ~ "NK CD4+ T cells",
-            c(CD3D>0 | CD3E >0 |CD3G>0 ) & NKG7>0 & GNLY>0 & CD8A<0 & CD4<0~ "NK CD8- gd T cells",
-            c(CD3D>0 | CD3E >0 |CD3G>0 ) & CD4>0 &CTLA4>0 & IL2RA >0 & FOXP3>0 ~ "Regulatory T cells",
-            c(CD3D>0 | CD3E >0 |CD3G>0 ) &KLRB1 >0 & SLC4A10 >0 & `TRAV1-2`>0  ~ "KLRB1+SLC4A10+ MAIT cells (TRAV1-2+)",
-            c(CD3D>0 | CD3E >0 |CD3G>0 ) &KLRB1 >0 & SLC4A10 >0 & `TRAV1-2`>0  ~ "KLRB1+ MAIT cells (TRAV1-2+)",
-            c(CD3D>0 | CD3E >0 |CD3G>0 ) &KLRB1 >0 & SLC4A10 >0 & `TRAV1-2`==0 ~ "MAIT cells (TRAV1-2neg)",
-            c(CD3D>0 | CD3E >0 |CD3G>0 ) &CD8A>0 & CCR7>0 & SELL>0 ~ "Tcm/Naive cytotoxic T cells",
-            c(CD3D>0 | CD3E >0 |CD3G>0 ) &CD4>0 & CCR7>0 & SELL>0 ~ "Tcm/Naive helper T cells",
-            c(CD3D>0 | CD3E >0 |CD3G>0 ) &KLRB1>0 & AQP3>0 & ITGB1>0 ~ "Tem/Effector helper T cells",
-            c(CD3D>0 | CD3E >0 |CD3G>0 ) &PDCD1>0 & CD4>0 & CTLA4>0 ~ "Tem/Effector helper T cells PD1+",
-            c(CD3D>0 | CD3E >0 |CD3G>0 ) &CX3CR1>0 & GZMB>0 & GNLY>0 ~ "Tem/Temra cytotoxic T cells",
-            c(CD3D>0 | CD3E >0 |CD3G>0 ) &GZMK>0 & CD8A>0 & CCL5>0 ~ "Tem/Trm cytotoxic CD8+ T cells",
-            (CD3D>0 | CD3E >0 |CD3G>0 ) &GZMK>0 & CD4>0 & CCL5>0 ~ "Tem/Trm cytotoxic CD4+ T cells",
-            c(CD3D>0 | CD3E >0 |CD3G>0 ) &CD27>0 & CCR7>0 & IKZF2>0 ~ "Treg(diff)",
-            c(CD3D>0 | CD3E >0 |CD3G>0 ) &ITGA1>0 & ITGAE>0 & CXCR6>0 ~"Trm cytotoxic T cells",
-            c(CD3D>0 | CD3E >0 |CD3G>0 ) &CCL5>0 & CXCR3>0 & TBX21>0 & CD4>0 ~ "Type 1 helper CD4+ ab T cells",
-            c(CD3D>0 | CD3E >0 |CD3G>0 ) &CCL5>0 & CXCR3>0 & TBX21>0 & Chain2== -1 ~ "Type 1 helper gd T cells",
-            c(CD3D>0 | CD3E >0 |CD3G>0 ) &IL7R>0 & CCR6>0 & ZBTB16>0 ~ "Type 17 helper T cells",
-            c(CD3D>0 | CD3E >0 |CD3G>0 ) &ITGAD>0 & Chain2== -1 & IKZF2>0 ~ "CRTAM+ gamma-delta T cells",
-            c(CD3D>0 | CD3E >0 |CD3G>0 ) &MIR155HG>0 & BIRC3>0 & SMS>0 ~ "T(agonist)",
+            ACY3>0 & CD34>0 & SPINK2>0 ~ "ETP",
+            FXYD2>0 & HES1>0 & CD99>0 ~ "DN thymocytes",
+            CD1A>0 & CD8A>0 & SMPD3>0 ~ "DP thymocytes",
+            ZNF683 >0 & GNG4 >0 & PDCD1 >0 ~ "CD8aa T cells",
+            TOX2 >0 & SATB1 >0 & CCR9 >0 ~ "CD8a/b(entry)",
+            PDCD1 >0 & ICOS >0 & CXCR5>0  ~"Follicular helper T cells",
+            KLRB1 >0 & SLC4A10 >0 & `TRAV1-2`>0  ~ "KLRB1+ MAIT cells (TRAV1-2+)",
+            GZMK >0 & CD4>0 & IL10>0 ~ "Memory CD4+ cytotoxic T cells",
+            NKG7>0 & GNLY>0 & CD8A>0 ~ "NK CD8+ T cells",
+            CTLA4>0 & IL2RA >0 & FOXP3>0 ~ "Regulatory T cells",
+            MIR155HG>0 & BIRC3>0 & SMS>0 ~ "T(agonist)",
+            CD8A>0 & CCR7>0 & SELL>0 ~ "Tcm/Naive cytotoxic T cells",
+            CD4>0 & CCR7>0 & SELL>0 ~ "Tcm/Naive helper T cells",
+            KLRB1>0 & AQP3>0 & ITGB1>0 ~ "Tem/Effector helper T cells",
+            PDCD1>0 & CD4>0 & CTLA4>0 ~ "Tem/Effector helper T cells PD1+",
+            CX3CR1>0 & GZMB>0 & GNLY>0 ~ "Tem/Temra cytotoxic T cells",
+            GZMK>0 & CD8A>0 & CCL5>0 ~ "Tem/Trm cytotoxic CD8+ T cells",
+            CD27>0 & CCR7>0 & IKZF2>0 ~ "Treg(diff)",
+            ITGA1>0 & ITGAE>0 & CXCR6>0 ~"Trm cytotoxic T cells",
+            CCL5>0 & CXCR3>0 & TBX21>0  ~ "Type 1 helper T cells",
+            IL7R>0 & CCR6>0 & ZBTB16>0 ~ "Type 17 helper T cells",
+            TRDC>0 & TRGC1>0 & CCL5>0 ~ "Gamma-delta T cells",
+
+            #### DC -----
+            CD1C>0 & FCER1A>0 & CLEC10A>0 ~ "DC",
+            BATF3>0 & CADM1>0 & CLEC9A>0 ~ "DC1",
+            CLEC10A>0 & FCER1A>0 & CD1C>0 ~ "DC2",
+            CLEC10A>0 & FCER1A>0 & S100A9>0 ~ "DC3",
+            EBI3>0 & CCR7>0 & CCL19>0 ~ "Migratory DC",
+            CLEC10A>0 & KLF4>0 & AXL>0 ~ " Transitional DC",
+            IRF8>0 & CLEC10A>0 & PCLAF>0 ~ "DC precursor",
+            #### ILC cells ----
+            GNLY>0 & FCGR3A>0 & NKG7>0 ~ "CD16+ NK cells",
+            GNLY>0 & CD160>0 & NKG7>0 ~ "CD16- NK cells",
+            S100A13>0 & TLE1>0 & AREG>0 ~ "ILC",
+            CXCR3>0 & CD3D>0 & IKZF3>0 ~ "ILC1",
+            GATA3>0 & KLRG1>0 & HPGDS>0 ~ "ILC2",
+            IL4I1>0 & RORC>0 & KIT>0 ~ "ILC3",
+            GNLY>0 & XCL2>0 & NKG7>0 ~ "NK cells",
+            CCL5>0 & GZMK>0 & FCGR3A>0 ~ "Traditional NK cells",
+            #### Monocytes -----
+            TYROBP>0 & C1QC>0 & HMOX1>0 ~ "Mono-mac",
+            LYZ>0 & VCAN>0 & S100A9>0 ~ "Monocyte precursor",
+            S100A9>0 & CD14>0 & S100A12>0 ~ "Classical monocytes",
+            S100A9>0 & LYZ>0 & FCN1>0 ~ "Monocytes",
+            FCGR3A>0 & C1QA>0 & CX3CR1>0 ~ "Non-classical monocytes",
+
+
             TRUE ~ NA_character_))
 
         df_centres$clust_name <- rownames(df_centres)
         head(df_centres)
-        df_centres2 <- df_centres[names(df_centres) %in% c("clust_name","CellTypist_list")]
+        df_centres2 <- df_centres[names(df_centres) %in% c("clust_name","CellTypist_list_lower")]
         Cluster_Df <- as.data.frame( kmeans10$cluster)
         Cluster_Df
         names(Cluster_Df) <- "clust_name"
         Cluster_Df$Cell_Index <- rownames(Cluster_Df)
         Cluster_Df_class <- merge(df_centres2,Cluster_Df,by="clust_name")
-        Cluster_Df_class2 <- Cluster_Df_class[,names(Cluster_Df_class) %in% c("Cell_Index","CellTypist_list")]
+        Cluster_Df_class2 <- Cluster_Df_class[,names(Cluster_Df_class) %in% c("Cell_Index","CellTypist_list_lower")]
         Cluster_Df_class2[order(Cluster_Df_class2$Cell_Index),]
       }
       else {
@@ -3036,75 +3237,98 @@ options(shiny.maxRequestSize = 2000*1024^2)
       MainTcell <- add.classification()
       if (input$add.classification_CellTypist_list_overview==T) {
         rownames(MainTcell) <- MainTcell$Cell_Index
-        MainTcell_test <- MainTcell[,names(MainTcell) %in% c("MKI67","TOP2A","Chain2","PDCD1","ZNF683","CD8A","ICOS","CXCR5","GZMK","CD4","IL10","NKG7","GNLY","CTLA4","IL2RA","FOXP3","KLRB1","SLC4A10","TRAV1-2","CCR7","SELL","AQP3","ITGB1","CX3CR1","GZMB","CCL5","CD27","IKZF2","ITGA1","ITGAE","CXCR6","CXCR3","TBX21","IL7R","CCR6","ZBTB16","ITGAD", "IKZF2", "MIR155HG","BIRC3","SMS","CD3D","CD3E","CD3G","FCRL2","ITGAX","TBX21","CD79A","MS4A1","CD19","TNFRSF13B","CD22","POU2AF1","SUGCT","CR2","CD27","IGHM","IGHD","TCL1A","AICDA","CD24","MYO1C","MME","ZCCHC7","RAG1","DNTT","GLL1","IGLL5")]
+        MainTcell_test <- MainTcell[,names(MainTcell) %in% c("MKI67","TOP2A","Chain2","PDCD1","ZNF683","CD8A","ICOS","CXCR5","GZMK","CD4","IL10","NKG7","GNLY","CTLA4","IL2RA","FOXP3","KLRB1","SLC4A10","TRAV1-2","CCR7","SELL","AQP3","ITGB1","CX3CR1","GZMB","CCL5","CD27","IKZF2","ITGA1","ITGAE","CXCR6","CXCR3","TBX21","IL7R","CCR6","ZBTB16","ITGAD", "IKZF2", "MIR155HG","BIRC3","SMS","CD3D","CD3E","CD3G","FCRL2","ITGAX","TBX21","CD79A","MS4A1","CD19","TNFRSF13B","CD22","POU2AF1","SUGCT","CR2","CD27","IGHM","IGHD","TCL1A","AICDA","CD24","MYO1C","MME","ZCCHC7","RAG1","DNTT","GLL1","IGLL5","CD40","CD1C","FCER1A","CLEC10A","BATF3","CADM1","CLEC9A","CLEC10A","S100A9","EBI3","CCR7","CCL19","CLEC10A","KLF4","AXL","IRF8","PCLAF","FXYD2","HES1","CD99","CD1A","SMPD3","ACY3","SPINK2","CD34","GNLY","FCGR3A","NKG7","S100A13","TLE1","AREG","CXCR3","IKZF3","GATA3","KLRG1","HPGDS","IL4I1","RORC","KIT","XCL2","GZMK","TYROBP","C1QC","HMOX1","LYZ","VCAN","CD14","S100A12","FCN1","FCGR3A","C1QA","CX3CR1","CD160","TOX2","SATB1","CCR9","GNG4","TRDC","TRGC1")]
         # -----
         df <- MainTcell_test
         # Vector of columns you want in this data
-        nms <- c("MKI67","TOP2A","Chain2","PDCD1","ZNF683","CD8A","ICOS","CXCR5","GZMK","CD4","IL10","NKG7","GNLY","CTLA4","IL2RA","FOXP3","KLRB1","SLC4A10","TRAV1-2","CCR7","SELL","AQP3","ITGB1","CX3CR1","GZMB","CCL5","CD27","IKZF2","ITGA1","ITGAE","CXCR6","CXCR3","TBX21","IL7R","CCR6","ZBTB16","ITGAD", "IKZF2", "MIR155HG","BIRC3","SMS","CD3D","CD3E","CD3G","FCRL2","ITGAX","TBX21","CD79A","MS4A1","CD19","TNFRSF13B","CD22","POU2AF1","SUGCT","CR2","CD27","IGHM","IGHD","TCL1A","AICDA","CD24","MYO1C","MME","ZCCHC7","RAG1","DNTT","GLL1","IGLL5")
+        nms <- c("MKI67","TOP2A","Chain2","PDCD1","ZNF683","CD8A","ICOS","CXCR5","GZMK","CD4","IL10","NKG7","GNLY","CTLA4","IL2RA","FOXP3","KLRB1","SLC4A10","TRAV1-2","CCR7","SELL","AQP3","ITGB1","CX3CR1","GZMB","CCL5","CD27","IKZF2","ITGA1","ITGAE","CXCR6","CXCR3","TBX21","IL7R","CCR6","ZBTB16","ITGAD", "IKZF2", "MIR155HG","BIRC3","SMS","CD3D","CD3E","CD3G","FCRL2","ITGAX","TBX21","CD79A","MS4A1","CD19","TNFRSF13B","CD22","POU2AF1","SUGCT","CR2","CD27","IGHM","IGHD","TCL1A","AICDA","CD24","MYO1C","MME","ZCCHC7","RAG1","DNTT","GLL1","IGLL5","CD40","CD1C","FCER1A","CLEC10A","BATF3","CADM1","CLEC9A","CLEC10A","S100A9","EBI3","CCR7","CCL19","CLEC10A","KLF4","AXL","IRF8","PCLAF","FXYD2","HES1","CD99","CD1A","SMPD3","ACY3","SPINK2","CD34","GNLY","FCGR3A","NKG7","S100A13","TLE1","AREG","CXCR3","IKZF3","GATA3","KLRG1","HPGDS","IL4I1","RORC","KIT","XCL2","GZMK","TYROBP","C1QC","HMOX1","LYZ","VCAN","CD14","S100A12","FCN1","FCGR3A","C1QA","CX3CR1","CD160","TOX2","SATB1","CCR9","GNG4","TRDC","TRGC1")
         Missing <- setdiff(nms, names(df))  # Find names of missing columns
         df[Missing] <- 0                    # Add them, filled with '0's
         MainTcell_test <- df[nms]
 
         MainTcell_test[is.na(MainTcell_test)] <- 0
-        # kmeans10 <-pamk(d_frame, krange= 500:1000, ns=1000)
-        kmeans10 <- kmeans(MainTcell_test, centers = 500, nstart = 1)
+        centre_size <- round(dim(MainTcell_test)[2]/4,0)
+        set.seed(123)
+        kmeans10 <- kmeans(MainTcell_test, centers = centre_size, nstart = 1)
         df_centres <- as.data.frame(kmeans10$centers)
 
         df_centres <- df_centres %>%
-          mutate(CellTypist_list_ = case_when(
+          mutate(CellTypist_list_higher= case_when(
             #### B cells -----
-            FCRL2>0 & ITGAX>0 & TBX21>0     ~ "B cells", # B cells
+            FCRL2>0 & ITGAX>0 & TBX21>0     ~ "B cell", # B cell
             CD79A>0 & MS4A1>0 & CD19>0      ~ "B cell", # B cell
-            CXCR5>0 & TNFRSF13B>0 & CD22>0  ~ "B cells",
-            POU2AF1>0 & CD40>0 & SUGCT>0    ~ "B cells",
-            CR2>0 & CD27>0 & MS4A1>0        ~ "B cells",
-            IGHM>0 & IGHD>0 & TCL1A>0       ~ "B cells",
-            MKI67>0 & SUGCT>0 & AICDA>0     ~ "B cells",
-            CD24>0 & MYO1C>0 & MS4A1>0      ~ "B cells",
-            MME>0 & CD24>0 & MKI67>0        ~ "B cells",
-            IL7R>0 & ZCCHC7>0 & RAG1>0      ~ "B cells",
-            MME>0 &  DNTT>0 & GLL1>0        ~ "B cells",
-            MME>0 & CD24>0 & IGLL5>0        ~ "B cells",
+            CXCR5>0 & TNFRSF13B>0 & CD22>0  ~ "B cell", # B cell
+            POU2AF1>0 & CD40>0 & SUGCT>0    ~ "B cell", # B cell
+            CR2>0 & CD27>0 & MS4A1>0        ~ "B cell", # B cell
+            IGHM>0 & IGHD>0 & TCL1A>0       ~ "B cell", # B cell
+            MKI67>0 & SUGCT>0 & AICDA>0     ~ "B cell", # B cell
+            CD24>0 & MYO1C>0 & MS4A1>0      ~ "B cell", # B cell
+            MME>0 & CD24>0 & MKI67>0        ~ "B cell", # B cell
+            IL7R>0 & ZCCHC7>0 & RAG1>0      ~ "B cell", # B cell
+            MME>0 &  DNTT>0 & GLL1>0        ~ "B cell", # B cell
+            MME>0 & CD24>0 & IGLL5>0        ~ "B cell", # B cell
 
             # MKI67 >0 & TOP2A > 0 & Chain2==1 ~ "Cycling ab T cells",
             # MKI67 >0 & TOP2A > 0 & Chain2== -1 ~ "Cycling gd T cells",
             #### T cells ----
-            c(CD3D>0 | CD3E >0 |CD3G>0 ) & PDCD1 >0 & ZNF683 >0 & CD8A >0 ~ "T cells",
-            c(CD3D>0 | CD3E >0 |CD3G>0 ) & PDCD1 >0 & ICOS >0 & CXCR5>0  ~"T cells",
-            c(CD3D>0 | CD3E >0 |CD3G>0 ) & GZMK >0 & CD4>0 & IL10>0 ~ "T cells",
-            c(CD3D>0 | CD3E >0 |CD3G>0 ) & GZMK >0 & CD4>0 & IL10>0 ~ "T cells",
-            c(CD3D>0 | CD3E >0 |CD3G>0 ) & NKG7>0 & GNLY>0 & CD8A>0 ~ "T cells",
-            c(CD3D>0 | CD3E >0 |CD3G>0 ) & NKG7>0 & GNLY>0 & CD4>0 ~ "T cells",
-            c(CD3D>0 | CD3E >0 |CD3G>0 ) & NKG7>0 & GNLY>0 & CD8A<0 & CD4<0~ "T cells",
-            c(CD3D>0 | CD3E >0 |CD3G>0 ) & CD4>0 &CTLA4>0 & IL2RA >0 & FOXP3>0 ~ "T cells",
-            c(CD3D>0 | CD3E >0 |CD3G>0 ) &KLRB1 >0 & SLC4A10 >0 & `TRAV1-2`>0  ~ "T cells",
-            c(CD3D>0 | CD3E >0 |CD3G>0 ) &KLRB1 >0 & SLC4A10 >0 & `TRAV1-2`>0  ~ "T cells",
-            c(CD3D>0 | CD3E >0 |CD3G>0 ) &KLRB1 >0 & SLC4A10 >0 & `TRAV1-2`==0 ~ "T cells",
-            c(CD3D>0 | CD3E >0 |CD3G>0 ) &CD8A>0 & CCR7>0 & SELL>0 ~ "T cells",
-            c(CD3D>0 | CD3E >0 |CD3G>0 ) &CD4>0 & CCR7>0 & SELL>0 ~ "T cells",
-            c(CD3D>0 | CD3E >0 |CD3G>0 ) &KLRB1>0 & AQP3>0 & ITGB1>0 ~ "T cells",
-            c(CD3D>0 | CD3E >0 |CD3G>0 ) &PDCD1>0 & CD4>0 & CTLA4>0 ~ "T cells",
-            c(CD3D>0 | CD3E >0 |CD3G>0 ) &CX3CR1>0 & GZMB>0 & GNLY>0 ~ "T cells",
-            c(CD3D>0 | CD3E >0 |CD3G>0 ) &GZMK>0 & CD8A>0 & CCL5>0 ~ "T cells",
-            (CD3D>0 | CD3E >0 |CD3G>0 ) &GZMK>0 & CD4>0 & CCL5>0 ~ "T cells",
-            c(CD3D>0 | CD3E >0 |CD3G>0 ) &CD27>0 & CCR7>0 & IKZF2>0 ~ "T cells",
-            c(CD3D>0 | CD3E >0 |CD3G>0 ) &ITGA1>0 & ITGAE>0 & CXCR6>0 ~"T cells",
-            c(CD3D>0 | CD3E >0 |CD3G>0 ) &CCL5>0 & CXCR3>0 & TBX21>0 & CD4>0 ~ "T cells",
-            c(CD3D>0 | CD3E >0 |CD3G>0 ) &CCL5>0 & CXCR3>0 & TBX21>0 ~ "T cells",
-            c(CD3D>0 | CD3E >0 |CD3G>0 ) &IL7R>0 & CCR6>0 & ZBTB16>0 ~ "T cells",
-            c(CD3D>0 | CD3E >0 |CD3G>0 ) &ITGAD>0 & IKZF2>0 ~ "T cells",
-            c(CD3D>0 | CD3E >0 |CD3G>0 ) &MIR155HG>0 & BIRC3>0 & SMS>0 ~ "T cells",
+            ACY3>0 & CD34>0 & SPINK2>0 ~ "T cells",
+            FXYD2>0 & HES1>0 & CD99>0 ~ "T cells",
+            CD1A>0 & CD8A>0 & SMPD3>0 ~ "T cells",
+            ZNF683 >0 & GNG4 >0 & PDCD1 >0 ~ "T cells",
+            TOX2 >0 & SATB1 >0 & CCR9 >0 ~ "T cells",
+            PDCD1 >0 & ICOS >0 & CXCR5>0  ~"T cells",
+            KLRB1 >0 & SLC4A10 >0 & `TRAV1-2`>0  ~ "T cells",
+            GZMK >0 & CD4>0 & IL10>0 ~ "T cells",
+            NKG7>0 & GNLY>0 & CD8A>0 ~ "T cells",
+            CTLA4>0 & IL2RA >0 & FOXP3>0 ~ "T cells",
+            MIR155HG>0 & BIRC3>0 & SMS>0 ~ "T cells",
+            CD8A>0 & CCR7>0 & SELL>0 ~ "T cells",
+            CD4>0 & CCR7>0 & SELL>0 ~ "T cells",
+            KLRB1>0 & AQP3>0 & ITGB1>0 ~ "T cells",
+            PDCD1>0 & CD4>0 & CTLA4>0 ~ "T cells",
+            CX3CR1>0 & GZMB>0 & GNLY>0 ~ "T cells",
+            GZMK>0 & CD8A>0 & CCL5>0 ~ "T cells",
+            CD27>0 & CCR7>0 & IKZF2>0 ~ "T cells",
+            ITGA1>0 & ITGAE>0 & CXCR6>0 ~"T cells",
+            CCL5>0 & CXCR3>0 & TBX21>0  ~ "T cells",
+            IL7R>0 & CCR6>0 & ZBTB16>0 ~ "T cells",
+            TRDC>0 & TRGC1>0 & CCL5>0 ~ "T cells",
+            #### DC -----
+            CD1C>0 & FCER1A>0 & CLEC10A>0 ~ "DC",
+            BATF3>0 & CADM1>0 & CLEC9A>0 ~ "DC",
+            CLEC10A>0 & FCER1A>0 & CD1C>0 ~ "DC",
+            CLEC10A>0 & FCER1A>0 & S100A9>0 ~ "DC",
+            EBI3>0 & CCR7>0 & CCL19>0 ~"DC",
+            CLEC10A>0 & KLF4>0 & AXL>0 ~ "DC",
+            IRF8>0 & CLEC10A>0 & PCLAF>0 ~ "DC",
+            #### ILC cells ----
+            GNLY>0 & FCGR3A>0 & NKG7>0 ~ "ILC",
+            GNLY>0 & CD160>0 & NKG7>0 ~ "ILC",
+            S100A13>0 & TLE1>0 & AREG>0 ~ "ILC",
+            CXCR3>0 & CD3D>0 & IKZF3>0 ~ "ILC",
+            GATA3>0 & KLRG1>0 & HPGDS>0 ~"ILC",
+            IL4I1>0 & RORC>0 & KIT>0 ~ "ILC",
+            GNLY>0 & XCL2>0 & NKG7>0 ~ "ILC",
+            CCL5>0 & GZMK>0 & FCGR3A>0 ~ "ILC",
+            #### Monocytes -----
+            TYROBP>0 & C1QC>0 & HMOX1>0 ~ "Monocytes",
+            LYZ>0 & VCAN>0 & S100A9>0 ~ "Monocytes",
+            S100A9>0 & CD14>0 & S100A12>0 ~ "Monocytes",
+            S100A9>0 & LYZ>0 & FCN1>0 ~ "Monocytes",
+            FCGR3A>0 & C1QA>0 & CX3CR1>0 ~ "Monocytes",
+
+
             TRUE ~ NA_character_))
 
         df_centres$clust_name <- rownames(df_centres)
         head(df_centres)
-        df_centres2 <- df_centres[names(df_centres) %in% c("clust_name","CellTypist_list")]
-        Cluster_Df <- as.data.frame( kmeans10$cluster)
+        df_centres2 <- df_centres[names(df_centres) %in% c("clust_name","CellTypist_list_higher")]
+        Cluster_Df <- as.data.frame(kmeans10$cluster)
         Cluster_Df
         names(Cluster_Df) <- "clust_name"
         Cluster_Df$Cell_Index <- rownames(Cluster_Df)
         Cluster_Df_class <- merge(df_centres2,Cluster_Df,by="clust_name")
-        Cluster_Df_class2 <- Cluster_Df_class[,names(Cluster_Df_class) %in% c("Cell_Index","CellTypist_list")]
+        Cluster_Df_class2 <- Cluster_Df_class[,names(Cluster_Df_class) %in% c("Cell_Index","CellTypist_list_higher")]
         Cluster_Df_class2[order(Cluster_Df_class2$Cell_Index),]
       }
       else {
@@ -3115,6 +3339,7 @@ options(shiny.maxRequestSize = 2000*1024^2)
 
 
     })
+
     add.classification_CellTypist_list_df <- reactive({
       sc <- vals_meta.sc$metadata_SCobj
       validate(
@@ -3124,18 +3349,19 @@ options(shiny.maxRequestSize = 2000*1024^2)
       MainTcell <- add.classification()
       if (input$add.classification_CellTypist_list==T) {
         rownames(MainTcell) <- MainTcell$Cell_Index
-        MainTcell_test <- MainTcell[,names(MainTcell) %in% c("MKI67","TOP2A","Chain2","PDCD1","ZNF683","CD8A","ICOS","CXCR5","GZMK","CD4","IL10","NKG7","GNLY","CTLA4","IL2RA","FOXP3","KLRB1","SLC4A10","TRAV1-2","CCR7","SELL","AQP3","ITGB1","CX3CR1","GZMB","CCL5","CD27","IKZF2","ITGA1","ITGAE","CXCR6","CXCR3","TBX21","IL7R","CCR6","ZBTB16","ITGAD", "IKZF2", "MIR155HG","BIRC3","SMS","CD3D","CD3E","CD3G")]
+        MainTcell_test <- MainTcell[,names(MainTcell) %in% c("MKI67","TOP2A","Chain2","PDCD1","ZNF683","CD8A","ICOS","CXCR5","GZMK","CD4","IL10","NKG7","GNLY","CTLA4","IL2RA","FOXP3","KLRB1","SLC4A10","TRAV1-2","CCR7","SELL","AQP3","ITGB1","CX3CR1","GZMB","CCL5","CD27","IKZF2","ITGA1","ITGAE","CXCR6","CXCR3","TBX21","IL7R","CCR6","ZBTB16","ITGAD", "IKZF2", "MIR155HG","BIRC3","SMS","CD3D","CD3E","CD3G","TRDC")]
 
         df <- MainTcell_test
         # Vector of columns you want in this data
-        nms <- c("MKI67","TOP2A","Chain2","PDCD1","ZNF683","CD8A","ICOS","CXCR5","GZMK","CD4","IL10","NKG7","GNLY","CTLA4","IL2RA","FOXP3","KLRB1","SLC4A10","TRAV1-2","CCR7","SELL","AQP3","ITGB1","CX3CR1","GZMB","CCL5","CD27","IKZF2","ITGA1","ITGAE","CXCR6","CXCR3","TBX21","IL7R","CCR6","ZBTB16","ITGAD", "IKZF2", "MIR155HG","BIRC3","SMS","CD3D","CD3E","CD3G")
+        nms <- c("MKI67","TOP2A","Chain2","PDCD1","ZNF683","CD8A","ICOS","CXCR5","GZMK","CD4","IL10","NKG7","GNLY","CTLA4","IL2RA","FOXP3","KLRB1","SLC4A10","TRAV1-2","CCR7","SELL","AQP3","ITGB1","CX3CR1","GZMB","CCL5","CD27","IKZF2","ITGA1","ITGAE","CXCR6","CXCR3","TBX21","IL7R","CCR6","ZBTB16","ITGAD", "IKZF2", "MIR155HG","BIRC3","SMS","CD3D","CD3E","CD3G","TRDC")
         Missing <- setdiff(nms, names(df))  # Find names of missing columns
         df[Missing] <- 0                    # Add them, filled with '0's
         MainTcell_test <- df[nms]
 
         MainTcell_test[is.na(MainTcell_test)] <- 0
+        centre_size <- round(dim(MainTcell_test)[2]/4,0)
         # kmeans10 <-pamk(d_frame, krange= 500:1000, ns=1000)
-        kmeans10 <- kmeans(MainTcell_test, centers = 1000, nstart = 1)
+        kmeans10 <- kmeans(MainTcell_test, centers = centre_size, nstart = 1)
         df_centres <- as.data.frame(kmeans10$centers)
 
         df_centres <- df_centres %>%
@@ -3146,14 +3372,13 @@ options(shiny.maxRequestSize = 2000*1024^2)
             c(CD3D>0 | CD3E >0 |CD3G>0 ) & PDCD1 >0 & ICOS >0 & CXCR5>0  ~"Follicular helper T cells",
             c(CD3D>0 | CD3E >0 |CD3G>0 ) & GZMK >0 & CD4>0 & IL10>0 ~ "Memory GZMK+IL10+CD4+ cytotoxic T cells",
             c(CD3D>0 | CD3E >0 |CD3G>0 ) & GZMK >0 & CD4>0 & IL10>0 ~ "Memory GZMK+IL10-CD4+ cytotoxic T cells",
-            c(CD3D>0 | CD3E >0 |CD3G>0 ) & NKG7>0 & GNLY>0 & CD8A>0 & Chain2==1 ~ "NK CD8+ ab T cells",
-            c(CD3D>0 | CD3E >0 |CD3G>0 ) & NKG7>0 & GNLY>0 & CD8A>0 & Chain2== -1 ~ "NK CD8+ gd T cells",
-            c(CD3D>0 | CD3E >0 |CD3G>0 ) & NKG7>0 & GNLY>0 & CD4>0 & Chain2==1 ~ "NK CD4+ ab T cells",
-            c(CD3D>0 | CD3E >0 |CD3G>0 ) & NKG7>0 & GNLY>0 & CD8A>0 & Chain2== -1 ~ "NK CD8- gd T cells",
+            c(CD3D>0 | CD3E >0 |CD3G>0 ) & NKG7>0 & GNLY>0 & CD8A>0  ~ "NK CD8+ T cells",
+            c(CD3D>0 | CD3E >0 |CD3G>0 ) & NKG7>0 & GNLY>0 & CD8A>0  ~ "NK CD8+T cells",
+            c(CD3D>0 | CD3E >0 |CD3G>0 ) & NKG7>0 & GNLY>0 & CD4>0  ~ "NK CD4+ T cells",
+            c(CD3D>0 | CD3E >0 |CD3G>0 ) & NKG7>0 & GNLY>0 & CD8A<0 & CD4<0 ~ "NK CD4-CD8- T cells",
             c(CD3D>0 | CD3E >0 |CD3G>0 ) & CD4>0 &CTLA4>0 & IL2RA >0 & FOXP3>0 ~ "Regulatory T cells",
             c(CD3D>0 | CD3E >0 |CD3G>0 ) &KLRB1 >0 & SLC4A10 >0 & `TRAV1-2`>0  ~ "KLRB1+SLC4A10+ MAIT cells (TRAV1-2+)",
             c(CD3D>0 | CD3E >0 |CD3G>0 ) &KLRB1 >0 & SLC4A10 >0 & `TRAV1-2`>0  ~ "KLRB1+ MAIT cells (TRAV1-2+)",
-            c(CD3D>0 | CD3E >0 |CD3G>0 ) &KLRB1 >0 & SLC4A10 >0 & `TRAV1-2`==0 ~ "MAIT cells (TRAV1-2neg)",
             c(CD3D>0 | CD3E >0 |CD3G>0 ) &CD8A>0 & CCR7>0 & SELL>0 ~ "Tcm/Naive cytotoxic T cells",
             c(CD3D>0 | CD3E >0 |CD3G>0 ) &CD4>0 & CCR7>0 & SELL>0 ~ "Tcm/Naive helper T cells",
             c(CD3D>0 | CD3E >0 |CD3G>0 ) &KLRB1>0 & AQP3>0 & ITGB1>0 ~ "Tem/Effector helper T cells",
@@ -3164,10 +3389,11 @@ options(shiny.maxRequestSize = 2000*1024^2)
             c(CD3D>0 | CD3E >0 |CD3G>0 ) &CD27>0 & CCR7>0 & IKZF2>0 ~ "Treg(diff)",
             c(CD3D>0 | CD3E >0 |CD3G>0 ) &ITGA1>0 & ITGAE>0 & CXCR6>0 ~"Trm cytotoxic T cells",
             c(CD3D>0 | CD3E >0 |CD3G>0 ) &CCL5>0 & CXCR3>0 & TBX21>0 & CD4>0 ~ "Type 1 helper CD4+ ab T cells",
-            c(CD3D>0 | CD3E >0 |CD3G>0 ) &CCL5>0 & CXCR3>0 & TBX21>0 & Chain2== -1 ~ "Type 1 helper gd T cells",
+            c(CD3D>0 | CD3E >0 |CD3G>0 ) &CCL5>0 & CXCR3>0 & TBX21>0& TRDC>0  ~ "Type 1 helper gd T cells",
             c(CD3D>0 | CD3E >0 |CD3G>0 ) &IL7R>0 & CCR6>0 & ZBTB16>0 ~ "Type 17 helper T cells",
             c(CD3D>0 | CD3E >0 |CD3G>0 ) &ITGAD>0 & Chain2== -1 & IKZF2>0 ~ "CRTAM+ gamma-delta T cells",
             c(CD3D>0 | CD3E >0 |CD3G>0 ) &MIR155HG>0 & BIRC3>0 & SMS>0 ~ "T(agonist)",
+            c(CD3D>0 | CD3E >0 |CD3G>0 ) ~ "T cell",
 
             TRUE ~ NA_character_))
 
@@ -3209,8 +3435,9 @@ options(shiny.maxRequestSize = 2000*1024^2)
         MainTcell_test <- df[nms]
 
         MainTcell_test[is.na(MainTcell_test)] <- 0
+        centre_size <- round(dim(MainTcell_test)[2]/4,0)
         set.seed(123)
-        kmeans10 <- kmeans(MainTcell_test, centers = 1000, nstart = 1)
+        kmeans10 <- kmeans(MainTcell_test, centers = centre_size, nstart = 1)
         df_centres <- as.data.frame(kmeans10$centers)
 
         df_centres <- df_centres %>%
@@ -3264,8 +3491,9 @@ options(shiny.maxRequestSize = 2000*1024^2)
         MainTcell_test <- df[nms]
 
         MainTcell_test[is.na(MainTcell_test)] <- 0
+        centre_size <- round(dim(MainTcell_test)[2]/4,0)
         set.seed(123)
-        kmeans10 <- kmeans(MainTcell_test, centers = 500, nstart = 1)
+        kmeans10 <- kmeans(MainTcell_test, centers = centre_size, nstart = 1)
         df_centres <- as.data.frame(kmeans10$centers)
 
         df_centres <- df_centres %>%
@@ -3317,18 +3545,20 @@ options(shiny.maxRequestSize = 2000*1024^2)
       MainTcell <- add.classification()
       if (input$add.classification_CellTypist_cycling==T) {
         rownames(MainTcell) <- MainTcell$Cell_Index
-        MainTcell_test <- MainTcell[,names(MainTcell) %in% c("MKI67","TOP2A","Chain2","PDCD1","ZNF683","CD8A","ICOS","CXCR5","GZMK","CD4","IL10","NKG7","GNLY","CTLA4","IL2RA","FOXP3","KLRB1","SLC4A10","TRAV1-2","CCR7","SELL","AQP3","ITGB1","CX3CR1","GZMB","CCL5","CD27","IKZF2","ITGA1","ITGAE","CXCR6","CXCR3","TBX21","IL7R","CCR6","ZBTB16","ITGAD", "IKZF2", "MIR155HG","BIRC3","SMS","CD3D","CD3E","CD3G","CD40LG")]
+        MainTcell_test <- MainTcell[,names(MainTcell) %in% c("MKI67","TOP2A","Chain2","CD3D","CD3E","CD3G","CLEC10A","GNLY","S100A9")]
 
         df <- MainTcell_test
         # Vector of columns you want in this data
-        nms <- c("MKI67","TOP2A","Chain2","PDCD1","ZNF683","CD8A","ICOS","CXCR5","GZMK","CD4","IL10","NKG7","GNLY","CTLA4","IL2RA","FOXP3","KLRB1","SLC4A10","TRAV1-2","CCR7","SELL","AQP3","ITGB1","CX3CR1","GZMB","CCL5","CD27","IKZF2","ITGA1","ITGAE","CXCR6","CXCR3","TBX21","IL7R","CCR6","ZBTB16","ITGAD", "IKZF2", "MIR155HG","BIRC3","SMS","CD3D","CD3E","CD3G","CD40LG")
+        nms <- c("MKI67","TOP2A","Chain2","CD3D","CD3E","CD3G","CLEC10A","GNLY","S100A9")
         Missing <- setdiff(nms, names(df))  # Find names of missing columns
         df[Missing] <- 0                    # Add them, filled with '0's
         MainTcell_test <- df[nms]
 
         MainTcell_test[is.na(MainTcell_test)] <- 0
+        centre_size <- round(dim(MainTcell_test)[2]/4,0)
         set.seed(123)
-        kmeans10 <- kmeans(MainTcell_test, centers = 100, nstart = 1)
+
+        kmeans10 <- kmeans(MainTcell_test, centers = centre_size, nstart = 1)
         df_centres <- as.data.frame(kmeans10$centers)
 
         df_centres <- df_centres %>%
@@ -3336,6 +3566,11 @@ options(shiny.maxRequestSize = 2000*1024^2)
             MKI67 >0 & TOP2A > 0 & Chain2==1 ~ "Cycling ab T cells",
             MKI67 >0 & TOP2A > 0 & Chain2== -1 ~ "Cycling gd T cells",
             MKI67 >0 & TOP2A > 0 & c(CD3D>0 | CD3E>0 | CD3G>0)  ~ "Cycling T cell",
+            MKI67 >0 & TOP2A>0 & CLEC10A>0 ~ "Cycling DC",
+            MKI67 >0 & TOP2A>0 & GNLY>0 ~ "Cycling NK cells",
+            MKI67 >0 & TOP2A>0 & S100A9>0 ~ "Cycling Monocytes",
+
+
             TRUE ~ NA_character_))
 
         df_centres$clust_name <- rownames(df_centres)
@@ -3380,9 +3615,10 @@ options(shiny.maxRequestSize = 2000*1024^2)
 
       rownames(annotation) <- annotation$Cell_Index
       annotation <- annotation[,!grepl("Cell_Index",names(annotation))]
+      annotation <- annotation[,!grepl("add.classi",names(annotation))]
       annotation$Cell_Index <- rownames(annotation)
 
-      sc <- add.CellTypist()
+      sc <- vals_meta.sc$metadata_SCobj
 
       md <- sc@meta.data
 
@@ -4686,7 +4922,7 @@ options(shiny.maxRequestSize = 2000*1024^2)
 
     output$downloaddf_DEx_table_clusters <- downloadHandler(
       filename = function(){
-        paste(input$name.file_clust," ClusTCR ",gsub("-", ".", Sys.Date()),".csv", sep = "")
+        paste(input$name.file_clust,"DEx_all_",gsub("-", ".", Sys.Date()),".csv", sep = "")
       },
       content = function(file){
         df <- as.data.frame(vals_clust_markers$markers_for_table)
@@ -5778,30 +6014,94 @@ options(shiny.maxRequestSize = 2000*1024^2)
     ### Add in the TCR clustering to the seurat object ----
 
     #### Ridge plot (expression per T cell) ----
+    vals_Ridge_top <- reactiveValues(output_stats=NULL)
 
-    observeEvent(input$run_string.data_Exp_top,{
-      df.test <- input.data_sc_pro()
+    compare.stat <- reactive({
+      sc <-input.data_sc_pro()
+
       validate(
-        need(nrow(df.test)>0,
+        need(nrow(sc)>0,
              error_message_val_sc)
       )
-      name.df <- as.data.frame(unique(df.test@assays$RNA@var.features))
+      df = as.data.frame(sc[["RNA"]]@scale.data)
+      md <- sc@meta.data
+      MainTcell <- as.data.frame(t(df))
+      MainTcell$Cell_Index <- rownames(MainTcell)
+      # names(MainTcell) <- gsub("CD8B.","CD8B",names(MainTcell))
 
-      names(name.df) <- "Gene_Name"
-      name.df <- as.data.frame(name.df[order(name.df$Gene_Name),])
+      MainTcell$Cell_Index == md$Cell_Index
+      unique(md$v_allele_AG)
 
-      names(name.df) <- "Gene_Name"
-      updateSelectInput(
-        session,
-        "string.data_Exp_top",
-        choices=name.df$Gene_Name,
-        selected = c("GZMB"))
+      md$Gene_select <- md[,names(md) %in% input$Gene_V_top]
+
+      MainTcell$selected <- ifelse(md$Gene_select == input$Selected_clonotype,"Selected","other")
+
+      MainTcell_selected <-  subset(MainTcell,MainTcell$selected=="Selected")
+      MainTcell_other<-  subset(MainTcell,MainTcell$selected=="other")
+      num <- dim(MainTcell)[2]-2
+      mat_emp <- matrix(nrow=num,ncol = 6)
+
+      for (i in 1:num) {
+        mat_emp[i,1] <- scientific(t.test(MainTcell_other[,i], MainTcell_selected[,i])$p.value, digits = 3)
+        mat_emp[i,2] <- round(t.test(MainTcell_other[,i], MainTcell_selected[,i])$conf.int[1],2)
+        mat_emp[i,3] <- round(t.test(MainTcell_other[,i], MainTcell_selected[,i])$conf.int[2],2)
+        mat_emp[i,4] <- round(t.test(MainTcell_other[,i], MainTcell_selected[,i])$estimate[1],2)
+        mat_emp[i,5] <- round(t.test(MainTcell_other[,i], MainTcell_selected[,i])$estimate[2],2)
+        mat_emp[i,6] <- wilcox.test(MainTcell_other[,i], MainTcell_selected[,i])$p.value
+      }
+
+      mat_emp <- as.data.frame(mat_emp)
+      rownames(mat_emp) <- names(MainTcell)[1:num]
+      names(mat_emp) <- c("Pval","lowCI","upperCI","mean of other","mean of selected","Wilcoxon")
+
+      mat_emp_sub <- subset(mat_emp,mat_emp$Pval!="NaN")
+
+      mat_emp_sub$bonferroni <- p.adjust(mat_emp_sub$Pval, method = "bonferroni", n = length(mat_emp_sub$Pval))
+      mat_emp_sub$BH_t.test <- p.adjust(mat_emp_sub$Pval, method = "BH", n = length(mat_emp_sub$Pval))
+      mat_emp_sub$BH_Wil <- p.adjust(mat_emp_sub$Wilcoxon, method = "BH", n = length(mat_emp_sub$Pval))
+      mat_emp_sub[order(mat_emp_sub$Pval,decreasing = F),]
+
+
+    })
+    output$Ridge_chart_alpha_gamma_stat_comp <- DT::renderDataTable(escape = FALSE, options = list(autoWidth = FALSE, lengthMenu = c(2,5,10,20,50,100), pageLength =10, scrollX = TRUE),{
+
+      sc <-input.data_sc_pro()
+
+      validate(
+        need(nrow(sc)>0,
+             error_message_val_sc)
+      )
+      compare.stat()
 
     })
 
 
+
+
+    observeEvent(input$run_string.data_Exp_top,{
+      df <- compare.stat()
+      validate(
+        need(nrow(df)>0,
+             error_message_val_sc)
+      )
+
+
+      updateSelectInput(
+        session,
+        "string.data_Exp_top",
+        choices=rownames(df),
+        selected = rownames(df)[1])
+
+    })
+
+
+
     Ridge_chart_alpha_gamma_df <- reactive({
       sc <-input.data_sc_pro()
+      validate(
+        need(nrow(sc)>0,
+             error_message_val_sc)
+      )
       df= as.data.frame(sc[["RNA"]]@scale.data)
 
       MainTcell <- as.data.frame(t(df))
@@ -5866,48 +6166,9 @@ options(shiny.maxRequestSize = 2000*1024^2)
     })
 
 
-    output$Ridge_chart_alpha_gamma_stat_comp <- DT::renderDataTable(escape = FALSE, options = list(autoWidth = FALSE, lengthMenu = c(2,5,10,20,50,100), pageLength =10, scrollX = TRUE),{
 
-      sc <-input.data_sc_pro()
-      df = as.data.frame(sc[["RNA"]]@scale.data)
-      md <- sc@meta.data
-      MainTcell <- as.data.frame(t(df))
-      MainTcell$Cell_Index <- rownames(MainTcell)
-      # names(MainTcell) <- gsub("CD8B.","CD8B",names(MainTcell))
 
-      MainTcell$Cell_Index == md$Cell_Index
-      unique(md$v_allele_AG)
 
-      md$Gene_select <- md[,names(md) %in% input$Gene_V_top]
-
-      MainTcell$selected <- ifelse(md$Gene_select == input$Selected_clonotype,"Selected","other")
-
-      MainTcell_selected <-  subset(MainTcell,MainTcell$selected=="Selected")
-      MainTcell_other<-  subset(MainTcell,MainTcell$selected=="other")
-      num <- dim(MainTcell)[2]-2
-      mat_emp <- matrix(nrow=num,ncol = 6)
-
-      for (i in 1:num) {
-        mat_emp[i,1] <- t.test(MainTcell_other[,i], MainTcell_selected[,i])$p.value
-        mat_emp[i,2] <- t.test(MainTcell_other[,i], MainTcell_selected[,i])$conf.int[1]
-        mat_emp[i,3] <- t.test(MainTcell_other[,i], MainTcell_selected[,i])$conf.int[2]
-        mat_emp[i,4] <- t.test(MainTcell_other[,i], MainTcell_selected[,i])$estimate[1]
-        mat_emp[i,5] <- t.test(MainTcell_other[,i], MainTcell_selected[,i])$estimate[2]
-        mat_emp[i,6] <- wilcox.test(MainTcell_other[,i], MainTcell_selected[,i])$p.value
-      }
-
-      mat_emp <- as.data.frame(mat_emp)
-      rownames(mat_emp) <- names(MainTcell)[1:num]
-      names(mat_emp) <- c("Pval","lowCI","upperCI","mean of other","mean of selected","Wilcoxon")
-
-      mat_emp_sub <- subset(mat_emp,mat_emp$Pval!="NaN")
-
-      mat_emp_sub$bonferroni <- p.adjust(mat_emp_sub$Pval, method = "bonferroni", n = length(mat_emp_sub$Pval))
-      mat_emp_sub$BH_t.test <- p.adjust(mat_emp_sub$Pval, method = "BH", n = length(mat_emp_sub$Pval))
-      mat_emp_sub$BH_Wil <- p.adjust(mat_emp_sub$Wilcoxon, method = "BH", n = length(mat_emp_sub$Pval))
-      mat_emp_sub
-
-    })
 
     ### Violin plots -----
 
@@ -5945,6 +6206,10 @@ options(shiny.maxRequestSize = 2000*1024^2)
 
     Ridge_chart_alpha_gamma_df_all <- reactive({
       sc <-input.data_sc_pro()
+      validate(
+        need(nrow(sc)>0,
+             error_message_val_sc)
+      )
       df= as.data.frame(sc[["RNA"]]@scale.data)
       MainTcell <- as.data.frame(t(df))
       meta.data <- as.data.frame(sc@meta.data)
@@ -6328,9 +6593,11 @@ options(shiny.maxRequestSize = 2000*1024^2)
     # umap ClusTCR -----
     observe({
       clust <- input.data_sc_clusTCR()
+      validate(
+        need(nrow(clust)>0,
+             error_message_val_sc)
+      )
       clust <- clust[order(clust$Clust_size_order),]
-
-      sc <- input.data_sc_pro()
       validate(
         need(nrow(clust)>0,
              "Upload clusTCR table, which is needed for TCR -> UMAP section")
@@ -6444,19 +6711,17 @@ options(shiny.maxRequestSize = 2000*1024^2)
       )
     }) # cluster to display
     motif_plot_sc <- reactive({
-      Network_df <- clusTCR2_df()
-      set.seed(123)
-      motif_plot(Network_df,Clust_selected = input$Clusters_to_dis_motif,Clust_column_name = "Clust_size_order")
-
+      Network_df <- input.data_sc_clusTCR()
+      Motif_from_cluster_file(Network_df,Clust_selected = input$Clusters_to_dis_motif)
     })
 
     output$Motif_ClusTCR2_cluster <- renderPlot({
       motif_plot_sc()
     })
 
-    # pie ClusTCR -----
+    # Ridge ClusTCR -----
 
-    Pie_ClusTCR2 <- reactive({
+    Ridge_clusTCR2 <- reactive({
       cluster <- clusTCR2_df()
       md <- Add.UMAP.reduction()
       if (input$ClusTCR_display == "all" ) {
@@ -6517,7 +6782,7 @@ options(shiny.maxRequestSize = 2000*1024^2)
 
     })
 
-    output$pie_ClusTCR2_plot <- renderPlot({
+    output$ridge_ClusTCR2_plot <- renderPlot({
       Pie_ClusTCR2()
     })
 
