@@ -1212,7 +1212,7 @@ server <- function(input, output,session) {
         paired <- productive
       }
 
-      paired
+      paired <- paired[!names(paired) %in% c("TRAG", "TRBD","TRAG_fun" , "TRBD_fun"   ),]
     }
 
 

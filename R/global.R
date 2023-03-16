@@ -41,7 +41,7 @@ suppressMessages(require("doParallel"))
 suppressMessages(require("RColorBrewer"))
 suppressMessages(require("stringr"))
 suppressMessages(require(gridExtra))
-
+suppressMessages(require("harmony"))
 font_add_google("Gochi Hand", "gochi")
 font_add_google("Schoolbell", "bell")
 font_add_google("Press Start 2P", "Game")
