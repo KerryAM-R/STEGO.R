@@ -2710,32 +2710,52 @@
       MainTcell <- add.classification()
       if (input$add.classification_T_cell==T) {
 
-        MainTcell_test <- MainTcell[,names(MainTcell) %in% c("CD4","CD8A","CD8B","CD3D","CD3E","CD3G","MS4A1","JCHAIN")]
+        MainTcell_test <- MainTcell[,names(MainTcell) %in% c("PTPRC","CD4","CD8A","CD8B","CD3D","CD3E","CD3G","MS4A1","JCHAIN","CLEC10A","FCGR3A","S100A9","TRAC","TRDC","TRGV9", "TRDV2","TRDV1")]
         head(MainTcell_test)
         df <- MainTcell_test
-        nms <- c("CD4","CD8A","CD8B","CD3D","CD3E","CD3G","MS4A1","JCHAIN")   # Vector of columns you want in this data
+        nms <- c("CD4","CD8A","CD8B","CD3D","CD3E","CD3G","MS4A1","JCHAIN","CLEC10A","FCGR3A","S100A9","TRDC","TRAC","TRGV9", "TRDV2","TRDV1","PTPRC")   # Vector of columns you want in this data
         Missing <- setdiff(nms, names(df))  # Find names of missing columns
         df[Missing] <- 0                    # Add them, filled with '0's
         MainTcell_test <- df[nms]
-
         MainTcell_test[is.na(MainTcell_test)] <- 0
-        centre_size <- round(dim(MainTcell_test)[1]/10,0)
+        centre_size <- round(dim(MainTcell_test)[1]/20,0)
         set.seed(123)
         kmeans10 <- kmeans(MainTcell_test, centers = centre_size, nstart = 1)
         kmeans10$centers
         df_centres <- as.data.frame(kmeans10$centers)
         df_centres <- df_centres %>%
           mutate(classify.Adaptive.cell = case_when(
-            c(CD3D>0 | CD3E >0 |CD3G>0 ) & CD4 >0 & CD8B > 0 & CD8A > 0 ~ "CD4+CD8ab+",
+            TRAC>0 & TRDC <0 & c(CD3D>0 | CD3E >0 |CD3G>0 ) & CD4 >0 & CD8B > 0 & CD8A > 0 ~ "CD4+CD8ab+ ab T cells",
+            TRAC<0 & TRDC >0 & c(CD3D>0 | CD3E >0 |CD3G>0 ) & CD4 >0 & CD8B > 0 & CD8A > 0 ~ "CD4+CD8ab+ gd T cells",
             c(CD3D>0 | CD3E >0 |CD3G>0 ) & CD4 >0 & CD8B < 0 & CD8A > 0 ~ "CD4+CD8a+",
-            c(CD3D>0 | CD3E >0 |CD3G>0 ) & CD4 >0 & CD8B < 0 & CD8A < 0 ~ "CD4+",
+
+            c(CD3D>0 | CD3E >0 |CD3G>0 ) & CD4 >0 & CD8B < 0 & CD8A < 0 & TRAC> 0 ~ "CD4+ ab T cell",
+
+            c(CD3D>0 | CD3E >0 |CD3G>0 ) & CD4 <0 & CD8B > 0 & CD8A > 0 & TRDV1>0 ~ "CD8ab+ Vd1 T cells",
             c(CD3D>0 | CD3E >0 |CD3G>0 ) & CD4 <0 & CD8B > 0 & CD8A > 0 ~ "CD8ab+",
+            c(CD3D>0 | CD3E >0 |CD3G>0 ) & CD4 <0 & CD8B < 0 & CD8A > 0 & TRDC>0 & TRDV2>0 & TRGV9>0 ~ "CD8a+ Vd2g9 T cell",
+            c(CD3D>0 | CD3E >0 |CD3G>0 ) & CD4 <0 & CD8B < 0 & CD8A > 0 & TRDC>0 & TRDV1>0 ~ "CD8a+ Vd1 T cell",
+            c(CD3D>0 | CD3E >0 |CD3G>0 ) & CD4 <0 & CD8B < 0 & CD8A > 0 & TRDC>0 & TRDV2>0  ~ "CD8a+ Vd2 T cell",
+            c(CD3D>0 | CD3E >0 |CD3G>0 ) & CD4 <0 & CD8B < 0 & CD8A > 0 & TRDC>0 ~ "CD8a+ T cell",
             c(CD3D>0 | CD3E >0 |CD3G>0 ) & CD4 <0 & CD8B < 0 & CD8A > 0 ~ "CD8a+",
-            c(CD3D>0 | CD3E >0 |CD3G>0 ) & CD4 <0 & CD8B < 0 & CD8A < 0 ~ "CD4-CD8-",
+            c(CD3D>0 | CD3E >0 |CD3G>0 ) & CD4 <0 & CD8B < 0 & CD8A < 0 & TRDC>0 & TRAC<0 ~ "CD4-CD8- gd T cell",
+            c(CD3D>0 | CD3E >0 |CD3G>0 ) & CD4 <0 & CD8B < 0 & CD8A < 0 & TRAC>0 & TRDC<0 ~ "CD4-CD8- ab T cell",
+            c(CD3D>0 | CD3E >0 |CD3G>0 ) & CD4 <0 & CD8B < 0 & CD8A < 0   ~ "CD4-CD8- T cell",
             # CD3D < 0 & CD3E<0 & CD3G<0 & CD4 <0 & CD8B < 0 & CD8A < 0~ "Not a T cell",
+            CD8A>0 & TRDC>0 ~ "CD8a+ gd T cell",
+            TRDC>0 ~ "gd T cell",
+            c(CD3D > 0 | CD3E>0 | CD3G>0) & TRAC>0 ~ "ab T cell",
             CD3D > 0 | CD3E>0 | CD3G>0 ~ "T cell",
             MS4A1>0 ~ "B cell",
             JCHAIN>0 ~ "Plasma cell",
+            CLEC10A>0 ~ "DC",
+            FCGR3A>0 ~ "NK-like",
+            S100A9>0 ~ "Monocytes",
+            CD4 >0 & CD8B < 0 & CD8A < 0 & TRAC> 0 ~ "CD4+ ab T cell",
+            CD4 >0 & CD8B < 0 & CD8A < 0 ~ "CD4+ (TCR downreg)",
+            CD4 <0 & CD8B > 0 & CD8A > 0 ~ "CD8ab+ (TCR downreg)",
+            TRAC>0  ~ "ab T cell",
+            PTPRC>0 ~ "PTPRC+ cells",
             TRUE ~ NA_character_))
 
         df_centres$clust_name <- rownames(df_centres)
