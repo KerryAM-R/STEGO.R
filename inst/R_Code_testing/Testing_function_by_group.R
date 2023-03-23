@@ -6,7 +6,12 @@ FeaturePlot(sc, features = "FCGR3A", min.cutoff = 'q10', label = T)
 
 
 df= as.data.frame(sc[["RNA"]]@scale.data)
-head(df)[1:6]
+
+df= as.data.frame(sc[["RNA"]]@counts)
+
+
+
+
 reduction <- (sc@reductions$umap)
 UMAP <- as.data.frame(reduction@cell.embeddings)
 UMAP$Cell_Index <- rownames(UMAP)
