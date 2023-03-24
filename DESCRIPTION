@@ -5,8 +5,53 @@ Authors@R:
     person("First", "Last", , "first.last@example.com", role = c("aut", "cre"),
            comment = c(ORCID = "YOUR-ORCID-ID"))
 Description: What the package does (one paragraph).
-License: `use_mit_license()`, `use_gpl3_license()` or friends to pick a
-    license
+License: GPL (>= 3)
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.2.3
+Imports: 
+    bslib,
+    circlize,
+    ClusTCR2,
+    colourpicker,
+    ComplexHeatmap,
+    doParallel,
+    dplyr,
+    DT,
+    fpc,
+    GGally,
+    ggnet,
+    ggpattern,
+    ggrepel,
+    ggridges,
+    ggseqlogo,
+    gridExtra,
+    harmony,
+    igraph,
+    linkcomm,
+    magrittr,
+    Matrix,
+    motifStack,
+    network,
+    plyr,
+    randomcoloR,
+    RColorBrewer,
+    reshape2,
+    scGate,
+    Seurat,
+    SeuratData,
+    SeuratDisk,
+    shiny,
+    shinyBS,
+    shinybusy,
+    shinyWidgets,
+    showtext,
+    stringr,
+    VLF
+Remotes:
+  github::mojaveazure/seurat-disk,
+  github::satijalab/seurat-data,
+  github::briatte/ggnet,
+  github::omarwagih/ggseqlogo,
+  github::MarioniLab/DropletUtils
+  github::KerryAM-R/ClusTCR2

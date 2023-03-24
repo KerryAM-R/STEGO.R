@@ -1,5 +1,6 @@
 #' Run STEGO application.
 #' @name STEGO
+#'
 #' @export runSTEGO
 
 runSTEGO <- function(...)  {
@@ -277,11 +278,8 @@ runSTEGO <- function(...)  {
                                                  accept=c('.csv','.csv.gz')),
                                        textInput("project_name","Name of sample",value = ""),
                                        # selectInput("species","Species",choices = c("human","mouse","other")),
-                                       selectInput("df_seruatobj_type","Data type", choices = c("10x","BD rhapsody"),selected = "BD rhapsody"),
-
+                                       selectInput("df_seruatobj_type","Data type", choices = c("10x Genomics","BD Rhapsody")),
                                        uiOutput("feature_input"),
-
-
                                        actionButton("run","Update Violin plot"),
                                        fluidRow(
                                          column(6,numericInput("dimension_heatmap.min","View heatmap dimensions.min", value = 1)),
@@ -597,7 +595,7 @@ runSTEGO <- function(...)  {
                                                         textInput("name.file_clust","Name added to files",value = ""),
                                        ),
                                        conditionalPanel(condition="input.STEGO_R_pro == 'STEGO_R (.h5Seurat)'",
-                                                        selectInput("datasource", "Data source",choices=c("BD rhapsody","10x Genomics")),
+                                                        selectInput("datasource", "Data source",choices=c("10x Genomics","BD Rhapsody")),
                                        ),
                                        fluidRow(column(6,selectInput("Samp_col","Sample column name",choices = "")),
                                                 column(6,selectInput("Split_by_group","Include group comparison",choices=c("no","yes"))),
