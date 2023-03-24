@@ -4,7 +4,8 @@
 
 runSTEGO <- function(...)  {
 
-  options(shiny.maxRequestSize = 20000*1024^2)
+  options(shiny.maxRequestSize = 200000*1024^2)
+  # ?numericInput
   # UI page -----
   ui <- fluidPage(
     theme=bs_theme(version = 5, bootswatch = "default"),
@@ -15,7 +16,7 @@ runSTEGO <- function(...)  {
                           tabPanel("10x genomics",
                                    sidebarLayout(
                                      sidebarPanel(id = "tPanel4",style = "overflow-y:scroll; max-height: 800px; position:relative;", width=3,
-                                                  selectInput("dataset_10x", "Choose a dataset:", choices = c("test_data_10x", "own_data_10x")),
+                                                  # selectInput("dataset_10x", "Choose a dataset:", choices = c("test_data_10x", "own_data_10x")),
                                                   fileInput('file_calls_10x', 'Barcode file (.tsv.gz or .tsv)',
                                                             accept=c('.tsv','.tsv.gz')),
                                                   fileInput('file_features_10x', 'Features file (.tsv.gz or .tsv)',
@@ -96,7 +97,7 @@ runSTEGO <- function(...)  {
                                    sidebarLayout(
                                      sidebarPanel(id = "tPanel4",style = "overflow-y:scroll; max-height: 800px; position:relative;", width=3,
                                                   # UPLOAD the three files...
-                                                  selectInput("dataset_BD", "Choose a dataset:", choices = c("test_data_BD", "own_data_BD")),
+                                                  # selectInput("dataset_BD", "Choose a dataset:", choices = c("test_data_BD", "own_data_BD")),
                                                   fileInput('file_calls_BD', 'Sample Tag Calls (.csv)',
                                                             accept=c('text/csv', 'text/comma-separated-values,text/plain', '.csv')),
                                                   numericInput("no_lines_skip_Tags","Information present? skip first 7 lines",value = 0,min=0,max=10,step=7),
@@ -183,8 +184,7 @@ runSTEGO <- function(...)  {
                         sidebarLayout(
 
                           sidebarPanel(id = "tPanel4",style = "overflow-y:scroll; max-height: 800px; position:relative;", width=3,
-                                       selectInput("dataset2", "Choose a dataset:", choices = c("test_data_clusTCR2","own_data_clusTCR2")),
-                                       # selectInput("dataset_clusTCR2", "Choose a dataset:", choices = c("test_data_clusTCR2","own_data_clusTCR2")),
+                                       # selectInput("dataset2", "Choose a dataset:", choices = c("test_data_clusTCR2","own_data_clusTCR2")),
                                        fileInput('file2_ClusTCR2', 'Select file for single samples',
                                                  accept=c('text/csv', 'text/comma-separated-values,text/plain', '.csv')),
                                        #
@@ -271,7 +271,7 @@ runSTEGO <- function(...)  {
                tabPanel("Seurat QC",
                         sidebarLayout(
                           sidebarPanel(id = "tPanel2",style = "overflow-y:scroll; max-height: 800px; position:relative;", width=3,
-                                       selectInput("dataset_sc", "Choose a dataset:", choices = c("test_data_sc", "own_data_sc")),
+                                       # selectInput("dataset_sc", "Choose a dataset:", choices = c("test_data_sc", "own_data_sc")),
                                        # upload the file
                                        fileInput('file_SC', 'Unprocessed filtered file (.csv.gz or .csv)',
                                                  accept=c('.csv','.csv.gz')),
@@ -582,7 +582,7 @@ runSTEGO <- function(...)  {
                           sidebarPanel(id = "tPanel4",style = "overflow-y:scroll; max-height: 800px; position:relative;", width=3,
 
                                        selectInput("STEGO_R_pro","QC processed",choices = c("STEGO_R (.h5Seurat)")), #,"Seurat (.rds)"
-                                       selectInput("dataset_sc_pro", "Choose a dataset:", choices = c("test_data_sc_pro", "own_data_sc_pro"), selected = "test_data_sc_pro"),
+                                       # selectInput("dataset_sc_pro", "Choose a dataset:", choices = c("test_data_sc_pro", "own_data_sc_pro"), selected = "test_data_sc_pro"),
 
 
                                        conditionalPanel(condition="input.check_up_files== 'up'",
@@ -1236,13 +1236,13 @@ runSTEGO <- function(...)  {
     })
     # human BD rhapsody data -----
     ## three files required for BD data: Sample Tag calls, TCR file and count ----
-    input.data.calls.bd <- reactive({switch(input$dataset_BD,"test_data_BD" = test.data.calls.bd(), "own_data_BD" = own.data.calls.bd())})
-    test.data.calls.bd <- reactive({
-      dataframe = read.csv(system.file("extdata","BDrhap/demo/Sample_Tags 2023.02.27.csv",package = "STEGO.R"))
-
-      # read.csv(system.file("../Public data/Bd Rhapsody/BD-Demo-VDJ-2/001493_BD-Demo-VDJ/Sample_Tags 2023.02.27.csv"))
-    })
-    own.data.calls.bd <- reactive({
+    # input.data.calls.bd <- reactive({switch(input$dataset_BD,"test_data_BD" = test.data.calls.bd(), "own_data_BD" = own.data.calls.bd())})
+    # test.data.calls.bd <- reactive({
+    #   dataframe = read.csv(system.file("extdata","BDrhap/demo/Sample_Tags 2023.02.27.csv",package = "STEGO.R"))
+    #
+    #   # read.csv(system.file("../Public data/Bd Rhapsody/BD-Demo-VDJ-2/001493_BD-Demo-VDJ/Sample_Tags 2023.02.27.csv"))
+    # })
+    input.data.calls.bd <- reactive({
       inFile12 <- input$file_calls_BD
       if (is.null(inFile12)) return(NULL)
 
@@ -1260,13 +1260,13 @@ runSTEGO <- function(...)  {
       calls
     })
 
-    input.data.TCR.BD <- reactive({switch(input$dataset_BD,"test_data_BD" = test.data.TCR.bd(), "own_data_BD" = own.data.TCR.bd())})
-    test.data.TCR.bd <- reactive({
-      # dataframe = read.csv("../Nic BD data/gd-T-cell-CBZ_VDJ_perCell.csv")
-      dataframe = read.csv(system.file("extdata","BDrhap/demo/RhapVDJDemo-BCR_VDJ_perCell.csv",package = "STEGO.R"),skip = 7)
-      # dataframe = read.csv("../Public data/Bd Rhapsody/BD-Demo-VDJ-2/001493_BD-Demo-VDJ/",skip = 7)
-    })
-    own.data.TCR.bd <- reactive({
+    # input.data.TCR.BD <- reactive({switch(input$dataset_BD,"test_data_BD" = test.data.TCR.bd(), "own_data_BD" = own.data.TCR.bd())})
+    # test.data.TCR.bd <- reactive({
+    #   # dataframe = read.csv("../Nic BD data/gd-T-cell-CBZ_VDJ_perCell.csv")
+    #   dataframe = read.csv(system.file("extdata","BDrhap/demo/RhapVDJDemo-BCR_VDJ_perCell.csv",package = "STEGO.R"),skip = 7)
+    #   # dataframe = read.csv("../Public data/Bd Rhapsody/BD-Demo-VDJ-2/001493_BD-Demo-VDJ/",skip = 7)
+    # })
+    input.data.TCR.BD <- reactive({
       inFileTCRBD <- input$file_TCR_BD
       if (is.null(inFileTCRBD)) return(NULL)
 
@@ -1284,13 +1284,13 @@ runSTEGO <- function(...)  {
       calls
     })
 
-    input.data.count.BD <- reactive({switch(input$dataset_BD,"test_data_BD" = test.data.count.bd(), "own_data_BD" = own.data.count.bd())})
-    test.data.count.bd <- reactive({
-      # dataframe = read.csv("../Nic BD data/Combined_gd-T-cell-CBZ_DBEC_MolsPerCell.csv")
-      dataframe = read.csv(system.file("extdata","BDrhap/demo/RhapVDJDemo-BCR_DBEC_MolsPerCell.csv",package = "STEGO.R"),skip = 7)
-      # dataframe = read.csv("../Public data/Bd Rhapsody/BD-Demo-VDJ-2/001493_BD-Demo-VDJ/RhapVDJDemo-BCR_DBEC_MolsPerCell.csv",skip = 7)
-    })
-    own.data.count.bd <- reactive({
+    # input.data.count.BD <- reactive({switch(input$dataset_BD,"test_data_BD" = test.data.count.bd(), "own_data_BD" = own.data.count.bd())})
+    # test.data.count.bd <- reactive({
+    #   # dataframe = read.csv("../Nic BD data/Combined_gd-T-cell-CBZ_DBEC_MolsPerCell.csv")
+    #   dataframe = read.csv(system.file("extdata","BDrhap/demo/RhapVDJDemo-BCR_DBEC_MolsPerCell.csv",package = "STEGO.R"),skip = 7)
+    #   # dataframe = read.csv("../Public data/Bd Rhapsody/BD-Demo-VDJ-2/001493_BD-Demo-VDJ/RhapVDJDemo-BCR_DBEC_MolsPerCell.csv",skip = 7)
+    # })
+    input.data.count.BD <- reactive({
       inFilecountBD <- input$file_counts_BD
       if (is.null(inFilecountBD)) return(NULL)
 
@@ -1811,13 +1811,13 @@ runSTEGO <- function(...)  {
 
     # 10x genomics data -----
     ## barcode file -----
-    input.data.barcode.10x <- reactive({switch(input$dataset_10x,"test_data_10x" = test.data.barcode.10x(), "own_data_10x" = own.data.barcode.10x())})
-    test.data.barcode.10x <- reactive({
-
-      dataframe = read.table(system.file("extdata","10x/RAW/GSM4455933_K409_LN_GEX_barcodes.tsv.gz",package = "STEGO.R"))
-      # dataframe = read.table("../RHM003/count/sample_filtered_feature_bc_matrix/barcodes.tsv.gz")
-    })
-    own.data.barcode.10x <- reactive({
+    # input.data.barcode.10x <- reactive({switch(input$dataset_10x,"test_data_10x" = test.data.barcode.10x(), "own_data_10x" = own.data.barcode.10x())})
+    # test.data.barcode.10x <- reactive({
+    #
+    #   dataframe = read.table(system.file("extdata","10x/RAW/GSM4455933_K409_LN_GEX_barcodes.tsv.gz",package = "STEGO.R"))
+    #   # dataframe = read.table("../RHM003/count/sample_filtered_feature_bc_matrix/barcodes.tsv.gz")
+    # })
+    input.data.barcode.10x <- reactive({
       inFile_10x_barcode <- input$file_calls_10x
       if (is.null(inFile_10x_barcode)) return(NULL)
 
@@ -1835,12 +1835,12 @@ runSTEGO <- function(...)  {
       calls
     })
     ## features file -----
-    input.data.features.10x <- reactive({switch(input$dataset_10x,"test_data_10x" = test.data.features.10x(), "own_data_10x" = own.data.features.10x())})
-    test.data.features.10x <- reactive({
-      dataframe = read.table(system.file("extdata","10x/RAW/GSM4455933_K409_LN_GEX_genes.tsv.gz",package = "STEGO.R"))
-      # dataframe = read.table("../RHM003/count/sample_filtered_feature_bc_matrix/features.tsv.gz")
-    })
-    own.data.features.10x <- reactive({
+    # input.data.features.10x <- reactive({switch(input$dataset_10x,"test_data_10x" = test.data.features.10x(), "own_data_10x" = own.data.features.10x())})
+    # test.data.features.10x <- reactive({
+    #   dataframe = read.table(system.file("extdata","10x/RAW/GSM4455933_K409_LN_GEX_genes.tsv.gz",package = "STEGO.R"))
+    #   # dataframe = read.table("../RHM003/count/sample_filtered_feature_bc_matrix/features.tsv.gz")
+    # })
+    input.data.features.10x <- reactive({
       inFile_10x_features <- input$file_features_10x
       if (is.null(inFile_10x_features)) return(NULL)
 
@@ -1859,11 +1859,11 @@ runSTEGO <- function(...)  {
     })
 
     # Matrix file
-    input.data.matrix.10x <- reactive({switch(input$dataset_10x,"test_data_10x" = test.data.matrix.10x(), "own_data_10x" = own.data.matrix.10x())})
-    test.data.matrix.10x <- reactive({
-      dataframe = Matrix::readMM(system.file("extdata","10x/RAW/GSM4455933_K409_LN_GEX_matrix.mtx.gz",package = "STEGO.R"))
-    })
-    own.data.matrix.10x <- reactive({
+    # input.data.matrix.10x <- reactive({switch(input$dataset_10x,"test_data_10x" = test.data.matrix.10x(), "own_data_10x" = own.data.matrix.10x())})
+    # test.data.matrix.10x <- reactive({
+    #   dataframe = Matrix::readMM(system.file("extdata","10x/RAW/GSM4455933_K409_LN_GEX_matrix.mtx.gz",package = "STEGO.R"))
+    # })
+    input.data.matrix.10x <- reactive({
       inFile_10x_matrix <- input$file_matrix_10x
       if (is.null(inFile_10x_matrix)) return(NULL)
 
@@ -1881,11 +1881,12 @@ runSTEGO <- function(...)  {
     })
 
     ## contig files ----
-    input.data.TCR.10x <- reactive({switch(input$dataset_10x,"test_data_10x" = test.data.TCR.10x(), "own_data_10x" = own.data.TCR.10x())})
-    test.data.TCR.10x <- reactive({
-      dataframe = read.csv(system.file("extdata","10x/RAW/GSM4455934_K409_LN_VDJ_filtered_contig_annotations.csv.gz",package = "STEGO.R"))
-    })
-    own.data.TCR.10x <- reactive({
+    # input.data.TCR.10x <- reactive({switch(input$dataset_10x,"test_data_10x" = test.data.TCR.10x(), "own_data_10x" = own.data.TCR.10x())})
+    # test.data.TCR.10x <- reactive({
+    #   dataframe = read.csv(system.file("extdata","10x/RAW/GSM4455934_K409_LN_VDJ_filtered_contig_annotations.csv.gz",package = "STEGO.R"))
+    # })
+
+    input.data.TCR.10x <- reactive({
       inFile_10x_TCR <- input$file_TCR_10x
       if (is.null(inFile_10x_TCR)) return(NULL)
 
@@ -2327,13 +2328,13 @@ runSTEGO <- function(...)  {
 
 
     # ClusTCR2 ------
-    input.data_ClusTCR2 <- reactive({switch(input$dataset2,"test_data_clusTCR2" = test.data_clusTCR2(),"own_data_clusTCR2" = own.data_clusTCR2())})
-    test.data_clusTCR2 <- reactive({
-      # system.file("extdata","inst/extdata/clusTCR/cdr3.csv",package = "STEGO.R")
-      dataframe = read.csv(system.file("extdata","clusTCR/cdr3.csv",package = "STEGO.R"))
-      # dataframe = read.csv("../cdr3.csv")
-    })
-    own.data_clusTCR2  <- reactive({
+    # input.data_ClusTCR2 <- reactive({switch(input$dataset2,"test_data_clusTCR2" = test.data_clusTCR2(),"own_data_clusTCR2" = own.data_clusTCR2())})
+    # test.data_clusTCR2 <- reactive({
+    #   # system.file("extdata","inst/extdata/clusTCR/cdr3.csv",package = "STEGO.R")
+    #   dataframe = read.csv(system.file("extdata","clusTCR/cdr3.csv",package = "STEGO.R"))
+    #   # dataframe = read.csv("../cdr3.csv")
+    # })
+    input.data_ClusTCR2  <- reactive({
       inFile2_ClusTCR2 <- input$file2_ClusTCR2
       if (is.null(inFile2_ClusTCR2)) return(NULL)
       else {
@@ -2522,20 +2523,20 @@ runSTEGO <- function(...)  {
 
     # Seurat -----
     ## uploading the raw files ----
-    input.data_sc <- reactive({switch(input$dataset_sc,"test_data_sc" = test.data_sc(),"own_data_sc" = own.data_sc())})
-    test.data_sc <- reactive({
-      if (input$df_seruatobj_type =="10x") {
-        # dataframe = read.csv(system.file("extdata","clusTCR/cdr3.csv",package = "STEGO.R"))
-        dataframe = read.csv(system.file("extdata","10x/Mahuron_Melanoma_2020/LN/K409_LN.count-matrix_10x_2023.03.08.csv.gz",package = "STEGO.R"))
-        # head(dataframe)[1:6,1:6]
-        # dataframe = read.csv("../filename.csv.gz")
-      }
-      else {
-        dataframe = read.csv(system.file("extdata","BDrhap/Seurat/BD_Count_Matrix_2023.03.07.csv",package = "STEGO.R"),row.names = 1)
-        # dataframe = read.csv("../Public data/Bd Rhapsody/QC_output/BD_Count_Matrix_2023.02.27.csv",row.names = 1)
-      }
-    })
-    own.data_sc <- reactive({
+    # input.data_sc <- reactive({switch(input$dataset_sc,"test_data_sc" = test.data_sc(),"own_data_sc" = own.data_sc())})
+    # test.data_sc <- reactive({
+    #   if (input$df_seruatobj_type =="10x") {
+    #     # dataframe = read.csv(system.file("extdata","clusTCR/cdr3.csv",package = "STEGO.R"))
+    #     dataframe = read.csv(system.file("extdata","10x/Mahuron_Melanoma_2020/LN/K409_LN.count-matrix_10x_2023.03.08.csv.gz",package = "STEGO.R"))
+    #     # head(dataframe)[1:6,1:6]
+    #     # dataframe = read.csv("../filename.csv.gz")
+    #   }
+    #   else {
+    #     dataframe = read.csv(system.file("extdata","BDrhap/Seurat/BD_Count_Matrix_2023.03.07.csv",package = "STEGO.R"),row.names = 1)
+    #     # dataframe = read.csv("../Public data/Bd Rhapsody/QC_output/BD_Count_Matrix_2023.02.27.csv",row.names = 1)
+    #   }
+    # })
+    input.data_sc <- reactive({
       inFile_sc <- input$file_SC
       if (is.null(inFile_sc)) return(NULL)
       else {
@@ -2736,21 +2737,21 @@ runSTEGO <- function(...)  {
     })
 
     ## Differential expression with two conditions -----
-    input.data_sc_meta <- reactive({switch(input$dataset_sc,"test_data_sc" = test.data_sc_meta(),"own_data_sc" = own.data_sc_meta())})
-    test.data_sc_meta <- reactive({
-      if (input$df_seruatobj_type =="10x") {
-        # dataframe = read.csv(system.file("extdata","clusTCR/cdr3.csv",package = "STEGO.R"))
-        dataframe = read.csv(system.file("extdata","10x/Mahuron_Melanoma_2020/LN/K409_LN metadata_10x_2023.03.08.csv",package = "STEGO.R"))
-        # dataframe = read.csv("../Test.metadata/metadata_10x_2022.12.14.csv")
-      }
-      else {
-        # dataframe = read.csv(system.file("extdata","BDrhap/Seurat/BD_Count_Matrix_2023.03.07.csv",package = "STEGO.R"),row.names = 1)
-        dataframe = read.csv(system.file("extdata","BDrhap/Seurat/Meta.data 2023.03.07.csv",package = "STEGO.R"))
-        # dataframe = read.csv("../Public data/Bd Rhapsody/QC_output/Meta.data 2023.02.27.csv")
-      }
-    })
+    # input.data_sc_meta <- reactive({switch(input$dataset_sc,"test_data_sc" = test.data_sc_meta(),"own_data_sc" = own.data_sc_meta())})
+    # test.data_sc_meta <- reactive({
+    #   if (input$df_seruatobj_type =="10x") {
+    #     # dataframe = read.csv(system.file("extdata","clusTCR/cdr3.csv",package = "STEGO.R"))
+    #     dataframe = read.csv(system.file("extdata","10x/Mahuron_Melanoma_2020/LN/K409_LN metadata_10x_2023.03.08.csv",package = "STEGO.R"))
+    #     # dataframe = read.csv("../Test.metadata/metadata_10x_2022.12.14.csv")
+    #   }
+    #   else {
+    #     # dataframe = read.csv(system.file("extdata","BDrhap/Seurat/BD_Count_Matrix_2023.03.07.csv",package = "STEGO.R"),row.names = 1)
+    #     dataframe = read.csv(system.file("extdata","BDrhap/Seurat/Meta.data 2023.03.07.csv",package = "STEGO.R"))
+    #     # dataframe = read.csv("../Public data/Bd Rhapsody/QC_output/Meta.data 2023.02.27.csv")
+    #   }
+    # })
 
-    own.data_sc_meta <- reactive({
+    input.data_sc_meta <- reactive({
       inFile_sc_meta <- input$file_SC_meta
       if (is.null(inFile_sc_meta)) return(NULL)
       else {
@@ -4592,22 +4593,22 @@ runSTEGO <- function(...)  {
     #
     # Analysis -----
     ## uploading seruat obj ----
-    input.data_sc_pro <- reactive({switch(input$dataset_sc_pro,"test_data_sc_pro" = test.data_sc_pro(),"own_data_sc_pro" = own.data_sc_pro())})
-    test.data_sc_pro <- reactive({
-      if (input$STEGO_R_pro=="STEGO_R (.h5Seurat)") {
-        # dataframe = read.csv(system.file("extdata","clusTCR/cdr3.csv",package = "STEGO.R"))
+    # input.data_sc_pro <- reactive({switch(input$dataset_sc_pro,"test_data_sc_pro" = test.data_sc_pro(),"own_data_sc_pro" = own.data_sc_pro())})
+    # test.data_sc_pro <- reactive({
+    #   if (input$STEGO_R_pro=="STEGO_R (.h5Seurat)") {
+    #     # dataframe = read.csv(system.file("extdata","clusTCR/cdr3.csv",package = "STEGO.R"))
+    #
+    #     dataframe = LoadH5Seurat(system.file("extdata","BDrhap/Analysis/Seurat Obj 2023.02.28.h5Seurat",package = "STEGO.R"))
+    #   }
+    #
+    #   else {
+    #     dataframe = readRDS("../KULSMC35CRC16highQualCD8.rds")
+    #   }
+    #
+    #
+    # })
 
-        dataframe = LoadH5Seurat(system.file("extdata","BDrhap/Analysis/Seurat Obj 2023.02.28.h5Seurat",package = "STEGO.R"))
-      }
-
-      else {
-        dataframe = readRDS("../KULSMC35CRC16highQualCD8.rds")
-      }
-
-
-    })
-
-    own.data_sc_pro <- reactive({
+    input.data_sc_pro <- reactive({
       inFile_sc_pro <- input$file_SC_pro
       if (is.null(inFile_sc_pro)) return(NULL)
       else {
@@ -4624,14 +4625,14 @@ runSTEGO <- function(...)  {
 
     })
 
-    input.data_sc_clusTCR <- reactive({switch(input$dataset_sc_pro,"test_data_sc_pro" = test.data_sc_clusTCR(),"own_data_sc_pro" = own.data_sc_clusTCR())})
-    # input.data_sc_clusTCR <- reactive({switch(input$dataset_cluster_file,"test_data_clusTCR" = test.data_sc_clusTCR(),"own_data_clusTCR" = own.data_sc_clusTCR())})
-    test.data_sc_clusTCR <- reactive({
-      dataframe = read.csv(system.file("extdata","BDrhap/clusTCR/ClusTCR2.csv",package = "STEGO.R"))
-
-      # dataframe = read.csv("../Test.Cluster/Cluster_table  2022.12.15.csv")
-    })
-    own.data_sc_clusTCR <- reactive({
+    # input.data_sc_clusTCR <- reactive({switch(input$dataset_sc_pro,"test_data_sc_pro" = test.data_sc_clusTCR(),"own_data_sc_pro" = own.data_sc_clusTCR())})
+    # # input.data_sc_clusTCR <- reactive({switch(input$dataset_cluster_file,"test_data_clusTCR" = test.data_sc_clusTCR(),"own_data_clusTCR" = own.data_sc_clusTCR())})
+    # test.data_sc_clusTCR <- reactive({
+    #   dataframe = read.csv(system.file("extdata","BDrhap/clusTCR/ClusTCR2.csv",package = "STEGO.R"))
+    #
+    #   # dataframe = read.csv("../Test.Cluster/Cluster_table  2022.12.15.csv")
+    # })
+    input.data_sc_clusTCR <- reactive({
       inFile_cluster_file <- input$file_cluster_file
       if (is.null(inFile_cluster_file)) return(NULL)
       else {
@@ -4640,17 +4641,17 @@ runSTEGO <- function(...)  {
 
     })
 
-    # upload TCRex file
-    input.data_sc_TCRex <- reactive({switch(input$dataset_sc_pro,"test_data_sc_pro" = test.data_sc_TCRex(),"own_data_sc_pro" = own.data_sc_TCRex())})
-    # input.data_sc_clusTCR <- reactive({switch(input$dataset_cluster_file,"test_data_clusTCR" = test.data_sc_clusTCR(),"own_data_clusTCR" = own.data_sc_clusTCR())})
-    test.data_sc_TCRex <- reactive({
+    # upload TCRex file ----
+    # input.data_sc_TCRex <- reactive({switch(input$dataset_sc_pro,"test_data_sc_pro" = test.data_sc_TCRex(),"own_data_sc_pro" = own.data_sc_TCRex())})
+    # # input.data_sc_clusTCR <- reactive({switch(input$dataset_cluster_file,"test_data_clusTCR" = test.data_sc_clusTCR(),"own_data_clusTCR" = own.data_sc_clusTCR())})
+    # test.data_sc_TCRex <- reactive({
+    #
+    #   dataframe = read.table(system.file("extdata","BDrhap/TCRex/tcrex_nsjhx29ivo.tsv",package = "STEGO.R"),skip=7,header = T,sep="\t")
+    #
+    #   # read.table("../Public data/Bd Rhapsody/TCRex/tcrex_nsjhx29ivo.tsv",skip = 7,header = T,sep="\t")
+    # })
 
-      dataframe = read.table(system.file("extdata","BDrhap/TCRex/tcrex_nsjhx29ivo.tsv",package = "STEGO.R"),skip=7,header = T,sep="\t")
-
-      # read.table("../Public data/Bd Rhapsody/TCRex/tcrex_nsjhx29ivo.tsv",skip = 7,header = T,sep="\t")
-    })
-
-    own.data_sc_TCRex <- reactive({
+    input.data_sc_TCRex <- reactive({
       inupload_TCRex_file <- input$upload_TCRex_file
       if (is.null(inupload_TCRex_file)) return(NULL)
       else {
@@ -7896,4 +7897,5 @@ runSTEGO <- function(...)  {
     ### end -----
   }
   shinyApp(ui, server)
+
 }

@@ -1,93 +1,12 @@
 Package: STEGO.R
-Title: Single cell T-cell receptor and Expression Grouped Ontologies
+Title: What the Package Does (One Line, Title Case)
 Version: 0.0.0.9000
 Authors@R: 
-    person("Kerry", "Mullan", , "kerry.mullan@uantwerpen.be", role = c("aut", "cre"),
-           comment = c(ORCID = "https://orcid.org/0000-0003-4400-1198"))
-Description: STEGO.R is to aid in analysis of scRNA-seq with TCR repertiore data. It is a shiny R application. The app includes the QC process from 10x genomics.
-License: `use_gpl3_license()`
+    person("First", "Last", , "first.last@example.com", role = c("aut", "cre"),
+           comment = c(ORCID = "YOUR-ORCID-ID"))
+Description: What the package does (one paragraph).
+License: `use_mit_license()`, `use_gpl3_license()` or friends to pick a
+    license
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.2.3
-Imports:
-  shiny,
-  shinyBS,
-  shinyWidgets,
-  Seurat,
-  plyr,
-  dplyr,
-  bslib,
-  Matrix,
-  DT,
-  shinybusy,
-  tidyverse,
-  igraph,
-  linkcomm,
-  ggpattern,
-  ggrepel,
-  showtext,
-  reshape2,
-  GGally,
-  network,
-  VLF,
-  motifStack,
-  RIRA,
-  colourpicker,
-  RColorBrewer,
-  randomcoloR,
-  ggridges,
-  fpc,
-  circlize,
-  doParallel,
-  stringr,
-  gridExtra,
-  remotes
-Remotes:
-  github::mojaveazure/seurat-disk,
-  github::satijalab/seurat-data,
-  github::briatte/ggnet,
-  github::omarwagih/ggseqlogo,
-  github::MarioniLab/DropletUtils
-  github::KerryAM-R/ClusTCR2
-  bioc::3.3/GO.db,
-  bioc::3.3/motifStack,
-  bioc::3.3/ExperimentHub,
-  bioc::3.3/ComplexHeatmap
-Depends:
-  shiny,
-  shinyBS,
-  shinyWidgets,
-  Seurat,
-  plyr,
-  dplyr,
-  bslib,
-  Matrix,
-  DT,
-  shinybusy,
-  tidyverse,
-  SeuratDisk,
-  SeuratData,
-  igraph,
-  linkcomm,
-  ggpattern,
-  ggrepel,
-  showtext,
-  reshape2,
-  GGally,
-  ggnet,
-  network,
-  VLF,
-  motifStack,
-  ggseqlogo,
-  RIRA,
-  colourpicker,
-  RColorBrewer,
-  randomcoloR,
-  ggridges,
-  fpc,
-  ComplexHeatmap,
-  circlize,
-  ClusTCR2,
-  doParallel,
-  stringr,
-  gridExtra
