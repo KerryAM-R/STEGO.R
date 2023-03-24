@@ -5,7 +5,7 @@
 
 runSTEGO <- function(...)  {
 
-  options(shiny.maxRequestSize = 200000*1024^2)
+  options(shiny.maxRequestSize = 100000*1024^2)
   # ?numericInput
   # UI page -----
   ui <- fluidPage(
