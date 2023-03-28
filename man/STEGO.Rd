@@ -5,7 +5,7 @@
 \alias{runSTEGO}
 \title{Run STEGO application.}
 \usage{
-runSTEGO(...)
+runSTEGO()
 }
 \description{
 Run STEGO application.

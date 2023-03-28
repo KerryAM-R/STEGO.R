@@ -1,14 +1,10 @@
 #' Run STEGO application.
 #' @name STEGO
 #'
-#' @export runSTEGO
+#' @export
 
-runSTEGO <- function(...)  {
-
+runSTEGO <- function(){
   options(shiny.maxRequestSize = 100000*1024^2)
-  source("global.R")
-  options(shiny.maxRequestSize = 100000*1024^2)
-  # ?numericInput
   # UI page -----
   ui <- fluidPage(
     theme=bs_theme(version = 5, bootswatch = "default"),
