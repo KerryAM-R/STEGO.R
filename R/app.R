@@ -4,6 +4,7 @@
 #' @export
 
 runSTEGO <- function(){
+  source(system.file("Global","global.R",package = "STEGO.R"))
   options(shiny.maxRequestSize = 100000*1024^2)
   # UI page -----
   ui <- fluidPage(

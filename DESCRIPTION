@@ -54,4 +54,8 @@ Remotes:
   github::briatte/ggnet,
   github::omarwagih/ggseqlogo,
   github::MarioniLab/DropletUtils,
-  github::KerryAM-R/ClusTCR2
+  github::KerryAM-R/ClusTCR2,
+  bioc::3.16/BiocManager,
+  bioc::3.16/BiocParallel,
+  bioc::3.16/ComplexHeatmap
+  
