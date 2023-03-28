@@ -53,5 +53,5 @@ Remotes:
   github::satijalab/seurat-data,
   github::briatte/ggnet,
   github::omarwagih/ggseqlogo,
-  github::MarioniLab/DropletUtils
+  github::MarioniLab/DropletUtils,
   github::KerryAM-R/ClusTCR2
