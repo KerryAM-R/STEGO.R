@@ -55,7 +55,7 @@ Remotes:
   github::omarwagih/ggseqlogo,
   github::MarioniLab/DropletUtils,
   github::KerryAM-R/ClusTCR2,
-  bioc::3.16.0/BiocManager,
-  bioc::3.16.0/BiocParallel,
-  bioc::3.16.0/ComplexHeatmap
+  github::jokergoo/ComplexHeatmap,
+  github::Bioconductor/BiocParallel,
+  bioc::3.3/SummarizedExperiment#117513
   
