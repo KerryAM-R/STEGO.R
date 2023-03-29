@@ -18,7 +18,6 @@ suppressMessages(suppressWarnings(require("SeuratData")))
 suppressMessages(require("igraph"))
 suppressMessages(require("linkcomm")) # create the network graphs.
 suppressMessages(require("ggpattern"))
-# suppressMessages(require("plotly"))
 suppressMessages(require("ggrepel"))
 suppressMessages(require("showtext"))
 suppressMessages(require("reshape2")) # acast function
@@ -28,7 +27,6 @@ suppressMessages(require("network"))
 suppressMessages(require("VLF")) ## aa.count.function
 suppressMessages(require("motifStack")) # function
 suppressMessages(require("ggseqlogo")) # create figure
-suppressMessages(require("RIRA")) # cell typist
 suppressMessages(require("colourpicker")) # select visual colour
 suppressMessages(require("RColorBrewer"))
 suppressMessages(require("randomcoloR"))
@@ -43,6 +41,7 @@ suppressMessages(require("stringr"))
 suppressMessages(require(gridExtra))
 suppressMessages(require("harmony"))
 suppressMessages(require(scGate))
+suppressMessages(require(readr))
 font_add_google("Gochi Hand", "gochi")
 font_add_google("Schoolbell", "bell")
 font_add_google("Press Start 2P", "Game")

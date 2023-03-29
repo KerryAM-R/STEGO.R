@@ -659,17 +659,21 @@ runSTEGO <- function(){
 
 
                                        selectInput("font_type",label = h4("Type of font"),choices = font,selected = "serif"),
-
-                                       # conditionalPanel(condition="input.QC_panel==2 || input.QC_panel==3",
+                                       h6("Adjust Graph legends"),
                                        fluidRow(
-                                         column(6,numericInput("text_size","Size of #",value=16)),
-                                         column(6,numericInput("title.text.sizer2","Axis text size",value=30)),
+                                         column(4,numericInput("text_size","Size of #",value=16)),
+                                         column(4,numericInput("title.text.sizer2","Axis text size",value=30)),
 
-                                         column(6,numericInput("Bar_legend_size","Legend text size",value=16)),
+                                         column(4,numericInput("Bar_legend_size","Legend text size",value=16)),
                                          column(4, selectInput("legend_position","Legend location",choices = c("top","bottom","left","right","none"),selected = "right")),
+                                         column(4,numericInput("string_break_characters","legend character breaks", value = 200))
                                        ),
-                                       # ),
-                                       p(""),
+                                       h6("Adjust bar graph label"),
+                                       fluidRow(
+                                         column(4,numericInput("angle_bar","Angle (bar)",value = 90)),
+                                         column(4,numericInput("vjust_bar","Vertical (bar)",value = 0.5)),
+                                         column(4,numericInput("hjust_bar","Horizontal (bar)",value = 1)),
+                                       )
                                        # selectInput("dataset_cluster_file", "Choose a dataset:", choices = c("test_data_clusTCR", "own_data_clusTCR")),
                                        # numericInput("num", label = h3("Numeric input"), value = 1),
                                        # materialSwitch(inputId = "mode", label = icon("moon"),
@@ -853,7 +857,7 @@ runSTEGO <- function(){
                                                              #### Cluster table -----
                                                              tabPanel("Cluster differences (Feature plot)",
                                                                       actionButton("run_string.data3","View Feature plot"),
-                                                                      fluidRow(column(12, selectInput("string.data3","column names for summary","",multiple = T, width = "1200px") )),
+                                                                      fluidRow(column(12, selectizeInput("string.data3","column names for summary","",multiple = T, width = "1200px") )),
                                                                       plotOutput("markers_featurePlot_sc", height = "600px"),
 
                                                                       fluidRow(
@@ -915,10 +919,7 @@ runSTEGO <- function(){
                                         ),
                                         ### end of differential expression -----
                                         ### TCR and GEX analysis section-----
-
-
                                         tabPanel("TCR and GEX",
-
                                                  fluidRow(
                                                    column(4,uiOutput("classification_to_add")),
                                                    column(4, selectInput("clust_group","Select cluster:",choices ="")),
@@ -926,7 +927,7 @@ runSTEGO <- function(){
                                                  conditionalPanel(condition="input.Panel_TCRUMAP=='top_clone'",
                                                                   fluidRow(
                                                                     column(4,actionButton("run_top","Update selected clonotype")),
-                                                                    column(4, selectInput("Selected_clonotype","Select clonotype:",choices ="")),
+                                                                    column(4, selectizeInput("Selected_clonotype","Select clonotype:",choices ="")),
                                                                     column(4, selectInput("Selected_chain","Select chain:",choices ="")),
 
 
@@ -970,9 +971,6 @@ runSTEGO <- function(){
                                                                                              column(2,numericInput("height_png_UMAP_all_classification","Height of PNG", value = 1000)),
                                                                                              column(2,numericInput("resolution_PNG_UMAP_all_classification","Resolution of PNG", value = 144)),
                                                                                              column(2,style = "margin-top: 25px;",downloadButton('downloadPlotPNG_UMAP_all_classification','Download PNG'))),
-
-
-
                                                                                   ),
 
                                                                                   tabPanel("Pie chart",value = 15,
@@ -989,31 +987,24 @@ runSTEGO <- function(){
 
                                                                                            # plotOutput("",height="600px")
                                                                                   ),
-                                                                                  tabPanel("Longitudinal (χ2) ",
-                                                                                           h5("balloonplot of χ2"),
-                                                                                           p("The plots include the pearsons resudical for each cell (aka standardized residuals), for the proportion of cell contribution. The Contrib = contribution in percentage (%)"),p("See:",tags$a(href="http://www.sthda.com/english/wiki/chi-square-test-of-independence-in-r", " for Information")),
+                                                                                  tabPanel( HTML(paste0("Longitudinal χ",tags$sup("2"),' test')),
+                                                                                            h5(HTML(paste0("balloonplot of χ",tags$sup("2")))),
+                                                                                            p("The plots include the pearsons resudical for each cell (aka standardized residuals), for the proportion of cell contribution. The Contrib = contribution in percentage (%)"),p("For process see:",tags$a(href="http://www.sthda.com/english/wiki/chi-square-test-of-independence-in-r")),
 
 
-                                                                                           selectInput("type_res","Type of comparison",choices = c("Residuals","Contrib")),
-                                                                                           tabsetPanel(
-                                                                                             tabPanel("Table",
+                                                                                            selectInput("type_res","Type of comparison",choices = c("Residuals","Contrib")),
+                                                                                            tabsetPanel(
+                                                                                              tabPanel("Table",
 
-                                                                                                      div(DT::dataTableOutput("Chi_tab_before")),
-                                                                                             ),
-                                                                                             tabPanel("balloonplot",
-                                                                                                      plotOutput("Chi_square_plot",height="600px"),
-                                                                                             )
-
-                                                                                           ),
-
+                                                                                                       div(DT::dataTableOutput("Chi_tab_before")),
+                                                                                              ),
+                                                                                              tabPanel("balloonplot",
+                                                                                                       plotOutput("Chi_square_plot",height="600px"),
+                                                                                              )
+                                                                                            ),
                                                                                   )
-
-
-
                                                                       ),
                                                              ),
-
-
 
                                                              # top clonotypes plot -----
                                                              tabPanel("Top clonotypes", value = "top_clone",
@@ -1174,10 +1165,8 @@ runSTEGO <- function(){
                                                              tabPanel("ClusTCR2",value = "ClusTCR2",
                                                                       tabsetPanel(
                                                                         tabPanel("Table",
-
                                                                                  add_busy_spinner(spin = "fading-circle"),
                                                                                  div(DT::dataTableOutput("Tb_ClusTCR_selected")),
-
                                                                         ),
                                                                         tabPanel("UMAP",
                                                                                  fluidRow(
@@ -1206,6 +1195,14 @@ runSTEGO <- function(){
                                                                         ),
                                                                         tabPanel("motif",
                                                                                  plotOutput("Motif_ClusTCR2_cluster",height="300px"),
+                                                                                 fluidRow(
+                                                                                   column(1,numericInput("width_Motif_ClusTCR2_cluster", "Width of PDF", value=10)),
+                                                                                   column(1,numericInput("height_Motif_ClusTCR2_cluster", "Height of PDF", value=3.5)),
+                                                                                   column(2,style = "margin-top: 25px;",downloadButton('downloadPlot_Motif_ClusTCR2_cluster','Download PDF')),
+                                                                                   column(2,numericInput("width_png_Motif_ClusTCR2_cluster","Width of PNG", value = 1200)),
+                                                                                   column(2,numericInput("height_png_Motif_ClusTCR2_cluster","Height of PNG", value = 400)),
+                                                                                   column(2,numericInput("resolution_PNG_Motif_ClusTCR2_cluster","Resolution of PNG", value = 144)),
+                                                                                   column(2,style = "margin-top: 25px;",downloadButton('downloadPlotPNG_Motif_ClusTCR2_cluster','Download PNG'))),
 
 
                                                                         )
@@ -1215,11 +1212,13 @@ runSTEGO <- function(){
                                                                       )
 
                                                              ),
-                                                             #
+                                                             # TCR_Explore inspired overlap -----
                                                              tabPanel("Overlap",
                                                                       tabsetPanel(
-                                                                        tabPanel("Overlap",
+                                                                        tabPanel("Table",
                                                                                  div(DT::dataTableOutput("Upset_plot_overlap_Tb")),
+                                                                        ),
+                                                                        tabPanel("UPSET plot",
 
                                                                                  plotOutput("Upset_plot_overlap"),
                                                                                  fluidRow(
@@ -1232,11 +1231,26 @@ runSTEGO <- function(){
                                                                                    column(2,style = "margin-top: 25px;",downloadButton('downloadPlotPNG_Upset_plot_overlap','Download PNG'))),
 
                                                                         ),
-                                                                        tabPanel("UMAP")
+                                                                        tabPanel("UMAP",
+                                                                                 plotOutput("UMAP_plot_overlap", height = "600px"),
+
+                                                                                 fluidRow(
+                                                                                   column(1,numericInput("width_UMAP_plot_overlap", "Width of PDF", value=10)),
+                                                                                   column(1,numericInput("height_UMAP_plot_overlap", "Height of PDF", value=3.5)),
+                                                                                   column(2,style = "margin-top: 25px;",downloadButton('downloadPlot_UMAP_plot_overlap','Download PDF')),
+                                                                                   column(2,numericInput("width_png_UMAP_plot_overlap","Width of PNG", value = 1200)),
+                                                                                   column(2,numericInput("height_png_UMAP_plot_overlap","Height of PNG", value = 600)),
+                                                                                   column(2,numericInput("resolution_PNG_UMAP_plot_overlap","Resolution of PNG", value = 144)),
+                                                                                   column(2,style = "margin-top: 25px;",downloadButton('downloadPlotPNG_MUMAP_plot_overlap','Download PNG'))),
+                                                                        ),
+                                                                        tabPanel("Function",
+                                                                                 plotOutput("Classification_pie_overlap", height = "600px"),
+
+
+                                                                        ),
                                                                       )
                                                              ),
-                                                             # tabPanel("Clonotypes per cluster (Pie/bar plot)"),
-                                                             # tabPanel("Upset plot")
+
                                                  ),
 
 
@@ -4454,7 +4468,7 @@ runSTEGO <- function(){
             CD4>0 & CCR7>0 & SELL>0 ~ "Tcm/Naive helper T cells",
             KLRB1>0 & AQP3>0 & ITGB1>0 ~ "Tem/Effector helper T cells",
             PDCD1>0 & CD4>0 & CTLA4>0 ~ "Tem/Effector helper T cells PD1+",
-            CX3CR1>0 & GZMB>0 & GNLY>0 ~ "Tem/Temra cytotoxic T cells",
+            CX3CR1>0 & GZMB>0 & GNLY>0 ~ "Non-CD4+ T cell",
             GZMK>0 & CD8A>0 & CCL5>0 ~ "Non-CD4+ T cell",
             CD27>0 & CCR7>0 & IKZF2>0 ~ "Treg(diff)",
             ITGA1>0 & ITGAE>0 & CXCR6>0 ~"Non-CD4+ T cell",
@@ -5105,7 +5119,7 @@ runSTEGO <- function(){
       df3.meta3$percent <- 1/rowSums(emtpy)*100
 
       df3 <- as.data.frame(ddply(df3.meta3,meta2.names,numcolwise(sum)))
-      df3 <- df3[order(df3$samp.count,decreasing = T),]
+      df3 <- df3[order(df3$samp.count,decreasing = F),]
 
       df4 <- df3 %>%
         mutate(Clonality = case_when(
@@ -5221,7 +5235,7 @@ runSTEGO <- function(){
       num
     })
 
-    # clonotypes Plot -----
+    # clonotypes Bar Plot -----
 
     cols_clonal_plot <- reactive({
       df4 <- TCR_Expansion()
@@ -5322,12 +5336,12 @@ runSTEGO <- function(){
       ggplot(df4,aes(x=ID_Column,y=frequency,fill=get(input$Graph_type_bar),colour= get(input$Graph_type_bar),label=get(input$Graph_type_bar)))+
         geom_bar(stat="identity")+
         theme_bw() +
-        scale_fill_manual(labels = ~ stringr::str_wrap(.x, width = 50),values=alpha(df.col.1, 1),na.value = input$NA_col_analysis) +
-        scale_color_manual(labels = ~ stringr::str_wrap(.x, width = 50),values = alpha(df.col.1, 1)) +
+        scale_fill_manual(labels = ~ stringr::str_wrap(.x, width = input$string_break_characters),values=alpha(df.col.1, 1),na.value = input$NA_col_analysis) +
+        scale_color_manual(labels = ~ stringr::str_wrap(.x, width = input$string_break_characters),values = alpha(df.col.1, 1)) +
         theme(
           axis.title.y = element_text(colour="black",family=input$font_type,size = input$title.text.sizer2),
           axis.text.y = element_text(colour="black",family=input$font_type,size = input$text_size),
-          axis.text.x = element_text(colour="black",family=input$font_type,size = input$text_size,angle=90),
+          axis.text.x = element_text(colour="black",family=input$font_type,size = input$text_size,angle=input$angle_bar, vjust=input$vjust_bar, hjust=input$hjust_bar),
           axis.title.x = element_blank(),
           legend.text = element_text(colour="black", size=input$Bar_legend_size,family=input$font_type),
           legend.title = element_blank(),
@@ -5445,12 +5459,12 @@ runSTEGO <- function(){
       ggplot(top10,aes(x=ID_Column,y=frequency,fill=v_gene_selected,label=v_gene_selected,colour="black"))+
         geom_bar(stat="identity")+
         theme_bw() +
-        scale_fill_manual(values=alpha(unique.top$col, 1),na.value = input$NA_col_analysis,labels = ~ stringr::str_wrap(.x, width = 20)) +
+        scale_fill_manual(values=alpha(unique.top$col, 1),na.value = input$NA_col_analysis,labels = ~ stringr::str_wrap(.x, width = input$string_break_characters)) +
         scale_colour_manual(values = "black",guide = "none")+
         theme(
           axis.title.y = element_text(colour="black",family=input$font_type,size = input$title.text.sizer2),
           axis.text.y = element_text(colour="black",family=input$font_type,size = input$text_size),
-          axis.text.x = element_text(colour="black",family=input$font_type,size = input$text_size,angle=90),
+          axis.text.x = element_text(colour="black",family=input$font_type,size = input$text_size,angle=input$angle_bar, vjust=input$vjust_bar, hjust=input$hjust_bar),
           axis.title.x = element_blank(),
           legend.text = element_text(colour="black", size=input$Bar_legend_size,family=input$font_type),
           legend.title = element_blank(),
@@ -5720,8 +5734,12 @@ runSTEGO <- function(){
 
     })
 
+
+
     UMAP.TCRclonalit2 <- reactive({
       UMAP.wt.clonality <- UMAP.TCRclonalit()
+      UMAP.wt.clonality <- UMAP.wt.clonality[order(UMAP.wt.clonality$Number_expanded,decreasing = F),]
+
       UMAP.wt.clonality$TYPE.clonality <- factor(UMAP.wt.clonality$TYPE.clonality,levels = unique(UMAP.wt.clonality$TYPE.clonality))
       # UMAP.wt.clonality$TYPE.clonality <- factor(UMAP.wt.clonality$TYPE.clonality,levels =unique(UMAP.wt.clonality$TYPE.clonality))
       # list <- unique(UMAP.wt.clonality$TYPE.clonality)[-is.na(unique(UMAP.wt.clonality$TYPE.clonality))]
@@ -5733,8 +5751,8 @@ runSTEGO <- function(){
 
       plot <- ggplot(UMAP.wt.clonality,aes(x=UMAP_1,UMAP_2,colour=TYPE.clonality,alpha = TYPE.clonality,label=TYPE.clonality))+
         geom_point()+
-        scale_color_manual(values = colorblind_vector, na.value=input$NA_col_analysis,labels = ~ stringr::str_wrap(.x, width = 40))+
-        scale_alpha_manual(values = rep(1,length(unique(UMAP.wt.clonality$TYPE.clonality))), na.value=0.5,labels = ~ stringr::str_wrap(.x, width = 40))+
+        scale_color_manual(values = colorblind_vector, na.value=input$NA_col_analysis,labels = ~ stringr::str_wrap(.x, width = input$string_break_characters))+
+        scale_alpha_manual(values = rep(1,length(unique(UMAP.wt.clonality$TYPE.clonality))), na.value=0.5,labels = ~ stringr::str_wrap(.x, width = input$string_break_characters))+
         theme_bw() +
         theme(
           axis.title.y = element_text(colour="black",family=input$font_type,size = input$title.text.sizer2),
@@ -6009,9 +6027,9 @@ runSTEGO <- function(){
 
       plot <- ggplot(data=UMAP.wt.clonality2,aes(x=UMAP_1,UMAP_2,colour=topclones2,label =topclones2 ))+
         geom_point()+
-        scale_color_manual(values = topclones_col$col, na.value=input$NA_col_analysis,labels = ~ stringr::str_wrap(.x, width = 50))+
+        scale_color_manual(values = topclones_col$col, na.value=input$NA_col_analysis,labels = ~ stringr::str_wrap(.x, width = input$string_break_characters))+
         # scale_color_manual(values = colorblind_vector)+
-        scale_alpha_manual(values = 1, na.value = 0.1,labels = ~ stringr::str_wrap(.x, width = 50))+
+        scale_alpha_manual(values = 1, na.value = 0.1,labels = ~ stringr::str_wrap(.x, width = input$string_break_characters))+
         theme_bw() +
         theme(
           axis.title.y = element_text(colour="black",family=input$font_type,size = input$title.text.sizer2),
@@ -6153,28 +6171,37 @@ runSTEGO <- function(){
 
     ## View featurePlot markers ----
 
-    observeEvent(input$run_string.data3,{
+    # observeEvent(input$run_string.data3,{
+    observe({
       df.test <- input.data_sc_pro()
       validate(
         need(nrow(df.test)>0,
              error_message_val_sc)
       )
-      name.df <- as.data.frame(unique(df.test@assays$RNA@var.features))
-
+      name.df <- as.data.frame(unique(df.test@assays[["RNA"]]@data@Dimnames[[1]]))
+      # name.df <- as.data.frame(unique(df.test@assays$RNA@var.features))
       names(name.df) <- "Gene_Name"
       name.df <- as.data.frame(name.df[order(name.df$Gene_Name),])
       names(name.df) <- "Gene_Name"
-      updateSelectInput(
+      updateSelectizeInput(
         session,
         "string.data3",
         choices=name.df$Gene_Name,
-        selected = c("GZMB"))
+        selected = c("CD4","CD8A","GZMB"),
+        server = T)
 
     })
-    #
+
+
+    # polygonCoords <- reactiveValues(d=data.frame(NULL))
+
     markers_featurePlot <- reactive({
       FeaturePlot(df_sc_clust(), features = c(input$string.data3), min.cutoff = 'q10', label = T)
     })
+
+
+
+
     output$markers_featurePlot_sc <- renderPlot({
       markers_featurePlot()
     })
@@ -6370,9 +6397,9 @@ runSTEGO <- function(){
         # theme(text=element_text(size=20,family=input$font),
         #       axis.title = element_text(colour="black", size=input$axis,family=input$font),
         #       axis.text.x = element_text(colour="black",size=input$axis_text,angle=0,hjust=.5,vjust=.5,face="plain",family=input$font),
-        #       axis.text.y = element_text(colour="black",size=input$axis_text,angle=0,hjust=1,vjust=0,face="plain",family=input$font),
+        #       axis.text.y = element_text(colour="black",size=input$axis_text,angle=0,hjust=input$hjust_bar,vjust=0,face="plain",family=input$font),
         #       axis.title.x=element_text(colour="black",size=input$axis,angle=0,hjust=.5,vjust=.5,face="plain",family=input$font),
-        #       axis.title.y = element_text(colour="black",size=input$axis,angle=90,hjust=.5,vjust=.5,face="plain",family=input$font),
+        #       axis.title.y = element_text(colour="black",size=input$axis,angle=input$angle_bar,hjust=.5,vjust=.5,face="plain",family=input$font),
         #       legend.title  =element_blank(),
         #       legend.text = element_text(size=input$legend_size),
         #       legend.position = input$legend_location,
@@ -6395,9 +6422,6 @@ runSTEGO <- function(){
 
 
     # TCR -> UMAP ------
-    ## upset plot ----
-
-    ## TCR -> UMAP ------
     Percent_tab_df <- reactive({
       sc <- input.data_sc_pro()
       validate(
@@ -6607,8 +6631,8 @@ runSTEGO <- function(){
 
       ggplot(top_BD_cluster,aes(x=UMAP_1,UMAP_2,colour=Selected_function,alpha = Selected_function,label = Selected_function))+
         geom_point()+
-        scale_color_manual(labels = ~ stringr::str_wrap(.x, width = 20),values = col.file$col, na.value=input$NA_col_analysis)+
-        scale_alpha_manual(labels = ~ stringr::str_wrap(.x, width = 20),values = rep(1,length(unique(top_BD_cluster$Selected_function))), na.value=0.1) +
+        scale_color_manual(labels = ~ stringr::str_wrap(.x, width = input$string_break_characters),values = col.file$col, na.value=input$NA_col_analysis)+
+        scale_alpha_manual(labels = ~ stringr::str_wrap(.x, width = input$string_break_characters),values = rep(1,length(unique(top_BD_cluster$Selected_function))), na.value=0.1) +
         theme_bw() +
         theme(
           axis.title.y = element_text(colour="black",family=input$font_type,size = input$title.text.sizer2),
@@ -6648,7 +6672,7 @@ runSTEGO <- function(){
         }
         else {
 
-          df <-  UMAP_all_classification() + facet_wrap(~top_BD_cluster$ID_Column)
+          df <-  UMAP_all_classification() + facet_wrap(~ID_Column)
           plot(df)
         }
 
@@ -6914,7 +6938,7 @@ runSTEGO <- function(){
       )
 
 
-      updateSelectInput(
+      updateSelectizeInput(
         session,
         "Selected_clonotype",
         choices=BD_sum$cluster_name[1:50],
@@ -7058,15 +7082,15 @@ runSTEGO <- function(){
       ggplot(dtop_clonotype_bar_code, aes(x=Selected_group, fill=Selected_chain3,colour = Selected_chain3, label = Selected_chain3)) +
         geom_bar() +
         theme_bw()+
-        scale_color_manual(labels = ~ stringr::str_wrap(.x, width = 10), values = colorblind_vector, na.value=input$NA_col_analysis)+
-        scale_fill_manual(labels = ~ stringr::str_wrap(.x, width = 10), values = colorblind_vector, na.value=input$NA_col_analysis)+
+        scale_color_manual(labels = ~ stringr::str_wrap(.x, width = input$string_break_characters), values = colorblind_vector, na.value=input$NA_col_analysis)+
+        scale_fill_manual(labels = ~ stringr::str_wrap(.x, width = input$string_break_characters), values = colorblind_vector, na.value=input$NA_col_analysis)+
         # scale_alpha_manual(values = rep(1,length(unique(dtop_clonotype_bar_code$Selected_chain))), na.value=0.5)+
         theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank())+
         theme(
           axis.title.y = element_text(colour="black",family=input$font_type,size = input$title.text.sizer2),
           axis.text.y = element_text(colour="black",family=input$font_type,size = input$text_size),
-          axis.text.x = element_text(colour="black",family=input$font_type,size = input$text_size,angle=0),
-          axis.title.x = element_text(colour="black",angle=0,vjust=.5,face="plain",family=input$font_type,size = input$title.text.sizer2),
+          axis.text.x = element_text(colour="black",family=input$font_type,size = input$text_size,angle=input$angle_bar, vjust=input$vjust_bar, hjust=input$hjust_bar),
+          axis.title.x = element_blank(),
           legend.text = element_text(colour="black", size=input$Bar_legend_size,family=input$font_type),
           legend.position = input$legend_position,
           legend.title = element_blank()
@@ -7216,7 +7240,7 @@ runSTEGO <- function(){
         #                  # pattern_aspect_ratio = 0.25,
         #                  pattern_density          = 0.5,
         #                  pattern_key_scale_factor = 0.75)
-        scale_fill_manual(labels = ~ stringr::str_wrap(.x, width = 20),values = df.col, na.value = input$NA_col_analysis) +
+        scale_fill_manual(labels = ~ stringr::str_wrap(.x, width = input$string_break_characters),values = df.col, na.value = input$NA_col_analysis) +
         theme(strip.text = element_text(size = input$strip_size_pie, family = input$font_type),
               legend.text = element_text(colour="black", size=input$Bar_legend_size,family=input$font_type),
               legend.position = input$legend_position,
@@ -7246,9 +7270,6 @@ runSTEGO <- function(){
     })
 
     output$downloadPlot_top_clonotype_pie <- downloadHandler(
-
-
-
       filename = function() {
         x <- gsub(":", ".", Sys.time())
         paste("top_clonotype_pie_",gsub("/", "-", x), ".pdf", sep = "")
@@ -7287,13 +7308,44 @@ runSTEGO <- function(){
     #### top  UMAP -----
     UMAP_chart_alpha_gamma <- reactive({
 
-      df3.meta <- Add.UMAP.reduction()
+      # TCR_Explore <- Overlap_table()
+      # TCR_Explore_overlap <- merge(df3.meta,TCR_Explore,by.x=input$V_gene_sc,by.y="chain")
+      # top_BD_cluster <-  TCR_Explore_overlap
+      # top_BD_cluster$Selected_function <- top_BD_cluster[,names(top_BD_cluster) %in% "Samps"]
+      # top_BD_cluster <- top_BD_cluster[order(top_BD_cluster$Selected_function),]
+      # num= unique(top_BD_cluster$Selected_function)
+      # top_BD_cluster$Selected_group <- top_BD_cluster[,names(top_BD_cluster) %in% input$Samp_col]
+      # top_BD_cluster$Selected_group <- factor(top_BD_cluster$Selected_group,levels = input$ID_Column_factor)
+      # num_leng <- length(unique(top_BD_cluster$Selected_function))
+      # df3.meta$Selected_function <- NA
+      # df3.meta$Selected_function <- factor(df3.meta$Selected_function, levels = unique(TCR_Explore_overlap$Samps))
+      # top_BD_cluster$Selected_function <- factor(top_BD_cluster$Selected_function, levels = unique(TCR_Explore_overlap$Samps))
+      # palette_rainbow <- rainbow(length(num))
+      #
+      # ggplot()+
+      #   geom_point(data = df3.meta,aes(x=UMAP_1,UMAP_2,colour=Selected_function,size=Selected_function,label = Selected_function))+
+      #   geom_point(data = top_BD_cluster,aes(x=UMAP_1,UMAP_2,colour=Selected_function,size=Selected_function,label = Selected_function))+
+      #   scale_color_manual(values = palette_rainbow, na.value="grey90",labels = ~ stringr::str_wrap(.x, width = input$string_break_characters)) +
+      #   scale_size_manual(values = rep(4,num_leng),na.value = 0.55,labels = ~ stringr::str_wrap(.x, width = input$string_break_characters)) +
+      #   # scale_shape_manual(values = c(19,17,15,16,22,37,10,14),na.value = 1) +
+      #   theme_bw()+
+      #   theme(
+      #     legend.text = element_text(colour="black", size=input$Bar_legend_size,family=input$font_type),
+      #     legend.title = element_blank(),
+      #     legend.position = input$legend_position,
+      #   )+
+      #   # scale_size() +
+      #   facet_wrap(~Selected_group,nrow = 3)
 
+
+      df3.meta <- Add.UMAP.reduction()
       top_BD_cluster <-  top_clonotype_bar_code()
       top_BD_cluster$Selected_function <- top_BD_cluster[,names(top_BD_cluster) %in% input$clust_names_top]
       top_BD_cluster <- top_BD_cluster[order(top_BD_cluster$Selected_function),]
       top_BD_cluster$Selected_function <- top_BD_cluster[,names(top_BD_cluster) %in% input$clust_names_top]
       top_BD_cluster$Selected_group <- top_BD_cluster[,names(top_BD_cluster) %in% input$clust_group]
+
+
       df.col <- unlist(colors_cols_Top_pie_clonotype())
       df3.meta$Selected_function <- NA
 
@@ -8159,6 +8211,29 @@ runSTEGO <- function(){
       motif_plot_sc()
     })
 
+
+    output$downloadPlot_Motif_ClusTCR2_cluster <- downloadHandler(
+      filename = function() {
+        x <- gsub(":", ".", Sys.time())
+        paste("_Motif_ClusTCR2_",gsub("/", "-", x), ".pdf", sep = "")
+      },
+      content = function(file) {
+        pdf(file, width=input$width_Motif_ClusTCR2_cluster,height=input$height_Motif_ClusTCR2_cluster, onefile = FALSE) # open the pdf device
+        plot(motif_plot_sc())
+        dev.off()}, contentType = "application/pdf" )
+
+    output$downloadPlotPNG_Motif_ClusTCR2_cluster <- downloadHandler(
+      filename = function() {
+        x <- gsub(":", ".", Sys.time())
+        paste("_UMAP_ClusTCR2_", gsub("/", "-", x), ".png", sep = "")
+      },
+      content = function(file) {
+        png(file, width = input$width_png_Motif_ClusTCR2_cluster,
+            height = input$height_png_Motif_ClusTCR2_cluster,
+            res = input$resolution_PNG_Motif_ClusTCR2_cluster)
+        plot(motif_plot_sc())
+        dev.off()},   contentType = "application/png" # MIME type of the image
+    )
     # Ridge ClusTCR -----
 
     Ridge_clusTCR2 <- reactive({
@@ -8290,7 +8365,7 @@ runSTEGO <- function(){
       },
       content = function(file) {
         pdf(file, width=input$width_Upset_plot_overlap,height=input$height_Upset_plot_overlap, onefile = FALSE) # open the pdf device
-        plot(UMAP_ClusTCR2())
+        plot(Upset_plot())
         dev.off()}, contentType = "application/pdf" )
 
     output$downloadPlotPNG_Upset_plot_overlap <- downloadHandler(
@@ -8301,10 +8376,29 @@ runSTEGO <- function(){
         png(file, width = input$width_png_Upset_plot_overlap,
             height = input$height_png_Upset_plot_overlap,
             res = input$resolution_PNG_Upset_plot_overlap)
-        plot(UMAP_ClusTCR2())
+        plot(Upset_plot())
         dev.off()},   contentType = "application/png" # MIME type of the image
     )
 
+
+    Overlap_table <- reactive({
+      df <-  Add.UMAP.reduction()
+      df <- as.data.frame(df)
+      df_selected <- df[,names(df) %in% c(input$Samp_col,input$V_gene_sc) ]
+      names(df_selected) <- c("group","chain")
+      df_selected$cloneCount <- 1
+      df_selected_Sum <- ddply(df_selected,names(df_selected)[-c(3)] ,numcolwise(sum))
+      df_selected_Sum$group_count <- 1
+      df_selected_Sum <- df_selected_Sum[df_selected_Sum$chain!="NA",]
+      df_selected_Sum <- df_selected_Sum[,!names(df_selected_Sum) %in% "group"]
+      df_selected_Sum_group <- ddply(df_selected_Sum,names(df_selected_Sum)[-c(2:3)] ,numcolwise(sum))
+      df_selected_Sum_group <- subset(df_selected_Sum_group,df_selected_Sum_group$group_count>1)
+      df_selected_Sum_group$Samps <- paste(df_selected_Sum_group$chain," (Time points = ",df_selected_Sum_group$group_count,"; Total = ",df_selected_Sum_group$cloneCount,")",sep = "")
+      rownames(df_selected_Sum_group) <- 1:dim(df_selected_Sum_group)[1]
+      df_selected_Sum_group$clone_lab <- paste("clone",rownames(df_selected_Sum_group))
+      df_selected_Sum_group
+
+    })
 
     output$Upset_plot_overlap_Tb <- DT::renderDataTable(escape = FALSE, filter = list(position = 'top', clear = FALSE),  options = list(autoWidth = FALSE, lengthMenu = c(2,5,10,20,50,100), pageLength = 5, scrollX = TRUE),{
       df <-  Add.UMAP.reduction()
@@ -8312,26 +8406,116 @@ runSTEGO <- function(){
         need(nrow(df)>0,
              "upload file")
       )
+      Overlap_table()
+    })
 
-      df <-  Add.UMAP.reduction()
-      df <- as.data.frame(df)
-      unique.df <- unique(df[,names(df) %in% c(input$Samp_col,input$V_gene_sc) ])
-      names(unique.df) <- c("group","chain")
-      unique.df <- subset(unique.df,unique.df$chain != "NA")
-      unique.df <- subset(unique.df,unique.df$group != "NA")
-      unique.df$cloneCount <- 1
-      unique.df
-      mat <- acast(unique.df, chain~group, value.var="cloneCount")
-      mat[is.na(mat)] <- 0
-      mat
-      # mat <- as.data.frame(mat)
-      # df.x <- make_comb_mat(mat)
-      # list.names <- as.character(input$ID_Column_factor)
+    #### UMAP overlap figure ----
+    UMAP_Overlap <- reactive({
+      df3.meta <-  Add.UMAP.reduction()
+      validate(
+        need(nrow(df3.meta)>0,
+             "upload file")
+      )
+      TCR_Explore <- Overlap_table()
+      TCR_Explore_overlap <- merge(df3.meta,TCR_Explore,by.x=input$V_gene_sc,by.y="chain")
+      top_BD_cluster <-  TCR_Explore_overlap
+      top_BD_cluster$Selected_function <- top_BD_cluster[,names(top_BD_cluster) %in% "Samps"]
+      top_BD_cluster <- top_BD_cluster[order(top_BD_cluster$Selected_function),]
+      num= unique(top_BD_cluster$Selected_function)
+      top_BD_cluster$Selected_group <- top_BD_cluster[,names(top_BD_cluster) %in% input$Samp_col]
+      top_BD_cluster$Selected_group <- factor( top_BD_cluster$Selected_group,levels = input$ID_Column_factor)
+      num_leng <- length(unique(top_BD_cluster$Selected_function))
+      df3.meta$Selected_function <- NA
+      df3.meta$Selected_function <- factor(df3.meta$Selected_function, levels = unique(TCR_Explore_overlap$Samps))
+      top_BD_cluster$Selected_function <- factor(top_BD_cluster$Selected_function, levels = unique(TCR_Explore_overlap$Samps))
+      palette_rainbow <- rainbow(length(num))
+
+      ggplot()+
+        geom_point(data = df3.meta,aes(x=UMAP_1,UMAP_2,colour=Selected_function,size=Selected_function,label = Selected_function))+
+        geom_point(data = top_BD_cluster,aes(x=UMAP_1,UMAP_2,colour=Selected_function,size=Selected_function,label = Selected_function))+
+        scale_color_manual(values = palette_rainbow, na.value="grey90",labels = ~ stringr::str_wrap(.x, width = input$string_break_characters)) +
+        scale_size_manual(values = rep(4,num_leng),na.value = 0.55,labels = ~ stringr::str_wrap(.x, width = input$string_break_characters)) +
+        # scale_shape_manual(values = c(19,17,15,16,22,37,10,14),na.value = 1) +
+        theme_bw()+
+        theme(
+          legend.text = element_text(colour="black", size=input$Bar_legend_size,family=input$font_type),
+          legend.title = element_blank(),
+          legend.position = input$legend_position,
+        )+
+        # scale_size() +
+        facet_wrap(~Selected_group,nrow = 3)
+    })
+
+    output$UMAP_plot_overlap <- renderPlot({
+      UMAP_Overlap()
+    })
+
+    output$downloadPlot_UMAP_plot_overlap <- downloadHandler(
+      filename = function() {
+        x <- gsub(":", ".", Sys.time())
+        paste("_Overlap_",gsub("/", "-", x), ".pdf", sep = "")
+      },
+      content = function(file) {
+        pdf(file, width=input$width_UMAP_plot_overlap,height=input$height_UMAP_plot_overlap, onefile = FALSE) # open the pdf device
+        plot(UMAP_Overlap())
+        dev.off()}, contentType = "application/pdf" )
+
+    output$downloadPlotPNG_UMAP_plot_overlap <- downloadHandler(
+      filename = function() {
+        paste("_Overlap_", gsub("/", "-", x), ".png", sep = "")
+      },
+      content = function(file) {
+        png(file, width = input$width_png_UMAP_plot_overlap,
+            height = input$height_png_UMAP_plot_overlap,
+            res = input$resolution_PNG_UMAP_plot_overlap)
+        plot(UMAP_Overlap())
+        dev.off()},   contentType = "application/png" # MIME type of the image
+    )
+
+    ##### overlap pie expression
+    Pie_chart_Overlap <- reactive({
+      df3.meta <-  Add.UMAP.reduction()
+      validate(
+        need(nrow(df3.meta)>0,
+             "upload file")
+      )
+
+      TCR_Explore <- Overlap_table()
+      TCR_Explore_overlap <- merge(df3.meta,TCR_Explore,by.x=input$V_gene_sc,by.y="chain")
+      top_BD_cluster <-  TCR_Explore_overlap
+      #
+      top_BD_cluster$Selected_function <- top_BD_cluster[,names(top_BD_cluster) %in% input$clust_names_top]
+      top_BD_cluster <- top_BD_cluster[order(top_BD_cluster$Selected_function),]
+      top_BD_cluster
+      num= unique(top_BD_cluster$Selected_function)
+      palette_rainbow <- rainbow(length(num))
+
+      top_BD_cluster$Selected_group <- top_BD_cluster[,names(top_BD_cluster) %in% "clone_lab"]
+      # top_BD_cluster$Selected_group <- factor( top_BD_cluster$Selected_group,levels = input$ID_Column_factor)
+
+      top_BD_cluster %>%
+        count(Selected_group,Selected_function) %>%
+        group_by(Selected_group) %>%
+        mutate(n = n/sum(n)) %>%
+        ggplot(aes(x="", y=n, fill=Selected_function, group = Selected_group)) +
+        geom_bar(stat="identity", width=1)+
+        coord_polar("y", start=0)  +
+        theme_void(20) +
+        facet_wrap(~Selected_group) +
+        theme(
+          legend.key.size = unit(1, 'cm'))+
+        scale_fill_manual(values = palette_rainbow, na.value = input$NA_col_analysis)
 
     })
+
+    output$Classification_pie_overlap <- renderPlot({
+      Pie_chart_Overlap()
+
+
+    })
+
 
     ### end -----
   }
   shinyApp(ui, server)
-
 }
