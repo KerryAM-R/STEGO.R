@@ -3009,8 +3009,6 @@ runSTEGO <- function(){
              "Upload metadata")
       )
 
-      sc
-
     })
     vals_meta.sc <- reactiveValues(metadata_SCobj=NULL)
     observeEvent(input$run_metadata,{
@@ -3027,6 +3025,7 @@ runSTEGO <- function(){
              "Add Metadata")
       )
       sc@meta.data$Cell_Index <- rownames(sc@meta.data)
+      sc@meta.data$Cell_Index <- gsub("[.]","-",sc@meta.data$Cell_Index)
       sc@meta.data$order <- 1:length(sc@meta.data$Cell_Index)
       scMeta.data <- sc@meta.data
       meta.data2 <- merge(scMeta.data,meta.data.import,by="Cell_Index",all.x=T)
@@ -3043,7 +3042,7 @@ runSTEGO <- function(){
         need(nrow(calls)>0,
              "Impute metadata")
       )
-
+      calls@meta.data$Cell_Index <- gsub("[.]","-",calls@meta.data$Cell_Index)
       calls@meta.data
     })
 

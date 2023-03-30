@@ -3,13 +3,8 @@
 # compatibility with Immunarch ----
 options(shiny.maxRequestSize = 20000*1024^2)
 
-if (!require("BiocManager", quietly = TRUE))
-  install.packages("BiocManager")
-if (!require("BiocParallel", quietly = TRUE))
-   BiocManager::install("BiocParallel")
-
 suppressMessages(require("bslib"))
-suppressMessages(require("BiocParallel"))
+suppressMessages(require("BiocParallel")) # no idea why I need this package, I cannot work out what functions dependent.
 suppressMessages(require("circlize")) # colorRamp2
 suppressMessages(suppressWarnings(require("ClusTCR2")))
 suppressMessages(require("colourpicker")) # select visual colour
