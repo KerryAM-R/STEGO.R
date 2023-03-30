@@ -3176,7 +3176,14 @@ runSTEGO <- function(){
       )
       df
     })
-
+    output$create_UMAP_merged <- renderPlot({
+      sc <- Vals_norm$Norm1
+      validate(
+        need(nrow(sc)>0,
+             "Run reduction")
+      )
+      DimPlot(sc, reduction = "umap", group.by = "orig.ident", pt.size = 1)
+    })
 
     # downlaod Harmony merged ----
     output$downloadPlot_sc_merged <- downloadHandler(
