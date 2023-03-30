@@ -2737,21 +2737,16 @@ runSTEGO <- function(){
         need(nrow(df.test)>0,
              error_message_val_sc)
       )
-
       if (input$df_seruatobj_type =="10x Genomics") {
         names(df.test) <- gsub("[.]1","-1",names(df.test))
-        rownames(df.test) <- make.unique(df.test$Gene_Name)
-        df.test2 <- df.test[,!names(df.test) %in% c("Gene_Name","Gene_ID")]
+        df.test2 <- df.test[!rownames(df.test) %in% c("Cell_Index"),]
       }
       else {
         names(df.test) <- gsub("X","",names(df.test))
         df.test2 <- df.test[!rownames(df.test) %in% c("Cell_Index"),]
       }
-
       head(df.test2)[1:6]
-
     })
-
 
     ## reading in 10x and BD data ----
     df_seruatobj <- reactive({
@@ -2763,8 +2758,7 @@ runSTEGO <- function(){
 
       if (input$df_seruatobj_type =="10x Genomics") {
         names(df.test) <- gsub("[.]1","-1",names(df.test))
-        rownames(df.test) <- make.unique(df.test$Gene_Name)
-        df.test2 <- df.test[,!names(df.test) %in% c("Gene_Name","Gene_ID")]
+        df.test2 <- df.test[!rownames(df.test) %in% c("Cell_Index"),]
         sc <- CreateSeuratObject(counts = df.test2, project = input$project_name)
         sc[["percent.mt"]] <- PercentageFeatureSet(sc, pattern = "^MT-")
         sc[["percent.rb"]] <- PercentageFeatureSet(sc, pattern = "^RP[SL]")
@@ -2778,9 +2772,6 @@ runSTEGO <- function(){
         sc[["percent.rb"]] <- PercentageFeatureSet(sc, pattern = "^RP[SL]")
         sc
       }
-
-
-
     })
     before_plot <- reactive({
       sc <- df_seruatobj()
