@@ -70,3 +70,5 @@ Remotes:
   github::MarioniLab/DropletUtils,
   github::KerryAM-R/ClusTCR2,
   github::jokergoo/ComplexHeatmap
+BiocViews:
+  BiocParallel
