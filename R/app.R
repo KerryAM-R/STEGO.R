@@ -2747,7 +2747,7 @@ runSTEGO <- function(){
              error_message_val_sc)
       )
 
-      if (input$df_seruatobj_type =="10x") {
+      if (input$df_seruatobj_type =="10x Genomics") {
         names(df.test) <- gsub("[.]1","-1",names(df.test) )
         rownames(df.test) <- make.unique(df.test$Gene_Name)
         df.test2 <- df.test[,!names(df.test) %in% c("Gene_Name","Gene_ID")]
@@ -3025,7 +3025,7 @@ runSTEGO <- function(){
              "Add Metadata")
       )
       sc@meta.data$Cell_Index <- rownames(sc@meta.data)
-      sc@meta.data$Cell_Index <- gsub("[.]","-",sc@meta.data$Cell_Index)
+
       sc@meta.data$order <- 1:length(sc@meta.data$Cell_Index)
       scMeta.data <- sc@meta.data
       meta.data2 <- merge(scMeta.data,meta.data.import,by="Cell_Index",all.x=T)
