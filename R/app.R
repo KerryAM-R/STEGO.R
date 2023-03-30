@@ -456,12 +456,33 @@ runSTEGO <- function(){
                                        # verbatimTextOutput("testing_mult2")
                               ),
 
-                              tabPanel("Harmony merging",
+                              tabPanel("Scale data",
+                                       add_busy_spinner(spin = "fading-circle"),
+                                       actionButton("run_scale","Run Scale"),
+                                       add_busy_spinner(spin = "fading-circle"),
+                                       verbatimTextOutput("scale_harmony_verbrose")
+                              ),
+
+
+                              tabPanel("PCA",
+                                       add_busy_spinner(spin = "fading-circle"),
+                                       actionButton("run_PCA","Run PCA"),
+                                       add_busy_spinner(spin = "fading-circle"),
+                                       verbatimTextOutput("PCA_harmony_verbrose")
+                              ),
+                              tabPanel("harmony",
+                                       add_busy_spinner(spin = "fading-circle"),
+                                       actionButton("run_harmony","Run Harmony"),
+                                       add_busy_spinner(spin = "fading-circle"),
+                                       verbatimTextOutput("harmony_verbrose"),
+                              ),
+                              tabPanel("Dimentional reduction",
+
                                        fluidRow(
                                          column(3,numericInput("dimension_Merged","Max number of dimensions", value = 30)),
                                          column(6,numericInput("res_merged","Resolution of clusters", value = 0.5)),
                                        ),
-                                       actionButton("run_norm","Run after upload"),
+                                       actionButton("run_reduction_harmony","Run Dimentional reduction"),
                                        add_busy_spinner(spin = "fading-circle"),
                                        verbatimTextOutput("testing_mult3")
 
@@ -483,7 +504,6 @@ runSTEGO <- function(){
                                        ),
 
                               ),
-
 
                             ))
                         )
@@ -2957,33 +2977,9 @@ runSTEGO <- function(){
     })
 
     ## Differential expression with two conditions -----
-    # input.data_sc_meta <- reactive({switch(input$dataset_sc,"test_data_sc" = test.data_sc_meta(),"own_data_sc" = own.data_sc_meta())})
-    # test.data_sc_meta <- reactive({
-    #   if (input$df_seruatobj_type =="10x") {
-    #     # dataframe = read.csv(system.file("extdata","clusTCR/cdr3.csv",package = "STEGO.R"))
-    #     dataframe = read.csv(system.file("extdata","10x/Mahuron_Melanoma_2020/LN/K409_LN metadata_10x_2023.03.08.csv",package = "STEGO.R"))
-    #     # dataframe = read.csv("../Test.metadata/metadata_10x_2022.12.14.csv")
-    #   }
-    #   else {
-    #     # dataframe = read.csv(system.file("extdata","BDrhap/Seurat/BD_Count_Matrix_2023.03.07.csv",package = "STEGO.R"),row.names = 1)
-    #     dataframe = read.csv(system.file("extdata","BDrhap/Seurat/Meta.data 2023.03.07.csv",package = "STEGO.R"))
-    #     # dataframe = read.csv("../Public data/Bd Rhapsody/QC_output/Meta.data 2023.02.27.csv")
-    #   }
-    # })
-
     input.data_sc_meta <- reactive({
       inFile_sc_meta <- input$file_SC_meta
-      if (is.null(inFile_sc_meta)) return(NULL)
-      else {
-        if (input$df_seruatobj_type =="10x") {
           dataframe = read.csv(inFile_sc_meta$datapath)
-        }
-        else {
-          dataframe = read.csv(inFile_sc_meta$datapath)
-        }
-
-      }
-
     })
 
     output$DEx_view.meta.dt <- DT::renderDataTable(escape = FALSE, filter = list(position = 'top', clear = FALSE),  options = list(autoWidth = FALSE, lengthMenu = c(2,5,10,20,50,100), pageLength = 5, scrollX = TRUE),{
@@ -3096,48 +3092,89 @@ runSTEGO <- function(){
     })
 
     Vals_norm <- reactiveValues(Norm1=NULL)
-    observeEvent(input$run_norm,{
-      sc <- merging_sc()
+    Vals_norm1 <- reactiveValues(Norm1=NULL)
+    Vals_norm2 <- reactiveValues(Norm1=NULL)
+    Vals_norm3 <- reactiveValues(Norm1=NULL)
+    Vals_norm4 <- reactiveValues(Norm1=NULL)
 
+    observeEvent(input$run_scale,{
+      sc <- merging_sc()
+      validate(
+        need(nrow(sc)>0,
+             "Run Scale")
+      )
+      sc <- FindVariableFeatures(sc, selection.method = "vst", nfeatures = 2000)
+      all.genes <- rownames(sc)
+      sc <- ScaleData(sc, features = all.genes)
+      Vals_norm1$Norm1 <- sc
+    })
+
+    output$scale_harmony_verbrose <- renderPrint({
+      sc <- Vals_norm1$Norm1
+      validate(
+        need(nrow(sc)>0,
+             "Run Scale")
+      )
+      sc
+    })
+
+    observeEvent(input$run_PCA,{
+      sc <- Vals_norm1$Norm1
+      validate(
+        need(nrow(sc)>0,
+             "Run PCA")
+      )
+      sc <- RunPCA(sc, features = VariableFeatures(object = sc))
+      Vals_norm2$Norm1 <- sc
+    })
+
+    output$PCA_harmony_verbrose <- renderPrint({
+      sc <- Vals_norm2$Norm1
       validate(
         need(nrow(sc)>0,
              "Run Harmony")
       )
+      sc
+    })
 
-      sc <- FindVariableFeatures(sc, selection.method = "vst", nfeatures = 2000)
-      all.genes <- rownames(sc)
-      sc <- ScaleData(sc, features = all.genes)
-      sc <- RunPCA(sc, features = VariableFeatures(object = sc))
+    observeEvent(input$run_harmony,{
+      sc <- Vals_norm2$Norm1
+      validate(
+        need(nrow(sc)>0,
+             "Run Harmony")
+      )
       sc <- sc %>%
         RunHarmony("orig.ident", plot_convergence = TRUE)
+      Vals_norm3$Norm1 <- sc
+    })
 
 
+    output$harmony_verbrose <- renderPrint({
+      sc <- Vals_norm3$Norm1
+      validate(
+        need(nrow(sc)>0,
+             "Run Harmony")
+      )
+      sc
+    })
+
+    observeEvent(input$run_reduction_harmony,{
+      sc <- Vals_norm3$Norm1
       sc <- sc %>%
         RunUMAP(reduction = "harmony", dims = 1:input$dimension_Merged) %>%
         FindNeighbors(reduction = "harmony", dims = 1:input$dimension_Merged) %>%
         FindClusters(resolution = input$res_merged) %>%
         identity()
       sc@meta.data$Cell_Index <- rownames(sc@meta.data)
-      sc@meta.data <- sc@meta.data[,!grepl("classify",names(sc@meta.data))]
-      sc@meta.data <- sc@meta.data[,!grepl("CellTypist",names(sc@meta.data))]
-
       Vals_norm$Norm1 <- sc
     })
     output$testing_mult3 <- renderPrint({
       df <- Vals_norm$Norm1
       validate(
         need(nrow(df)>0,
-             "Run Harmony")
+             "Run reduction")
       )
-      head(df@meta.data)
-    })
-    output$create_UMAP_merged <- renderPlot({
-      sc <- Vals_norm$Norm1
-      validate(
-        need(nrow(sc)>0,
-             "Run Harmony")
-      )
-      DimPlot(sc, reduction = "umap", group.by = "orig.ident", pt.size = 1)
+      df
     })
 
 
