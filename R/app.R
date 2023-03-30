@@ -356,6 +356,9 @@ runSTEGO <- function(){
                               # QC panel -----
                               tabPanel("QC plots",
                                        tabsetPanel(
+                                         tabPanel("Header check",
+                                                  div(DT::dataTableOutput("DEx_header_name_check.dt")),
+                                                  ),
                                          tabPanel("Violin and correlation",
                                                   tabsetPanel(
                                                     tabPanel("Before",
@@ -373,21 +376,11 @@ runSTEGO <- function(){
                                                                column(3,style = "margin-top: 25px;",downloadButton('downloadPlot_Before.after_plot_sc','Download PDF'))),
                                                     )
                                                   ),
-
-                                                  # # fluidRow(
-                                                  # #   column(3,numericInput("width_png_UMAP2","Width of PNG", value = 1200)),
-                                                  # #   column(3,numericInput("height_png_UMAP2","Height of PNG", value = 1000)),
-                                                  # #   column(3,numericInput("resolution_PNG_UMAP2","Resolution of PNG", value = 144)),
-                                                  # #   column(3,style = "margin-top: 25px;",downloadButton('downloadPlotPNG_UMAP2','Download PNG'))
-                                                  #
-                                                  # ),
-
                                          ),
                                          #### Variable features -----
                                          tabPanel("Top variable features",
                                                   add_busy_spinner(spin = "fading-circle"),
                                                   plotOutput("plot_10_features_sc", height = "600px"),
-
                                                   fluidRow(
                                                     column(1,numericInput("width_plot_10_features_sc", "Width of PDF", value=10)),
                                                     column(1,numericInput("height_plot_10_features_sc", "Height of PDF", value=8)),
@@ -397,8 +390,6 @@ runSTEGO <- function(){
                                                     column(2,numericInput("resolution_PNG_plot_10_features_sc","Resolution of PNG", value = 144)),
                                                     column(2,style = "margin-top: 25px;",downloadButton('downloadPlotPNG_plot_10_features_sc','Download PNG')),
                                                   ),
-
-
                                          ),
                                          #### Elbow and heatmap  -----
                                          tabPanel("Elbow Plot",
@@ -2739,6 +2730,29 @@ runSTEGO <- function(){
       }
 
     })
+
+    output$DEx_header_name_check.dt <- DT::renderDataTable(escape = FALSE, filter = list(position = 'top', clear = FALSE),  options = list(autoWidth = FALSE, lengthMenu = c(2,5,10,20,50,100), pageLength = 5, scrollX = TRUE),{
+      df.test <- input.data_sc()
+      validate(
+        need(nrow(df.test)>0,
+             error_message_val_sc)
+      )
+
+      if (input$df_seruatobj_type =="10x Genomics") {
+        names(df.test) <- gsub("[.]1","-1",names(df.test))
+        rownames(df.test) <- make.unique(df.test$Gene_Name)
+        df.test2 <- df.test[,!names(df.test) %in% c("Gene_Name","Gene_ID")]
+      }
+      else {
+        names(df.test) <- gsub("X","",names(df.test))
+        df.test2 <- df.test[!rownames(df.test) %in% c("Cell_Index"),]
+      }
+
+      head(df.test2)[1:6]
+
+    })
+
+
     ## reading in 10x and BD data ----
     df_seruatobj <- reactive({
       df.test <- input.data_sc()
@@ -2748,7 +2762,7 @@ runSTEGO <- function(){
       )
 
       if (input$df_seruatobj_type =="10x Genomics") {
-        names(df.test) <- gsub("[.]1","-1",names(df.test) )
+        names(df.test) <- gsub("[.]1","-1",names(df.test))
         rownames(df.test) <- make.unique(df.test$Gene_Name)
         df.test2 <- df.test[,!names(df.test) %in% c("Gene_Name","Gene_ID")]
         sc <- CreateSeuratObject(counts = df.test2, project = input$project_name)
@@ -2793,9 +2807,7 @@ runSTEGO <- function(){
         need(nrow(sc)>0,
              error_message_val_sc)
       )
-
       vals2$after_violin_plot <- subset(sc, subset = nFeature_RNA >= input$features.min & nFeature_RNA <= input$features.max & percent.mt <= input$percent.mt & percent.rb >= input$percent.rb)
-
     })
 
     output$after_plot_sc <- renderPlot({
@@ -2808,7 +2820,6 @@ runSTEGO <- function(){
     })
 
     output$downloadPlot_Before.after_plot_sc <- downloadHandler(
-
       filename = function() {
         x <- gsub(":", ".", Sys.time())
         paste("inv.simpson.index.",gsub("/", "-", x), ".pdf", sep = "")
@@ -2820,19 +2831,6 @@ runSTEGO <- function(){
         # group.diversity1()
         dev.off()},
       contentType = "application/pdf" )
-
-    # output$downloadPlotPNG_simpson.inv <- downloadHandler(
-    #   filename = function() {
-    #     x <- gsub(":", ".", Sys.time())
-    #     paste("inv.simpson.index.", gsub("/", "-", x), ".png", sep = "")
-    #   },
-    #   content = function(file) {
-    #
-    #     png(file, width = input$width_png_simpson.inv, height = input$height_png_simpson.inv, res = input$resolution_PNG_simpson.inv)
-    #     grid.arrange(print(group.diversity1()),print(group.diversity2()),ncol=2)
-    #     # group.diversity1()
-    #     dev.off()}, contentType = "application/png" # MIME type of the image
-    # )
 
     ### normalisationa and feature plot ------
     feature_serartobj <- reactive({
@@ -2857,9 +2855,7 @@ runSTEGO <- function(){
       plot1 <- VariableFeaturePlot(sc)
       plot2 <- LabelPoints(plot = plot1, points = top10, repel = TRUE)
       plot2
-
     })
-
     output$plot_10_features_sc<- renderPlot({
       plot_10_features()
     })
@@ -2894,8 +2890,6 @@ runSTEGO <- function(){
         need(nrow(sc)>0,
              "Run Clustering")
       )
-
-
       all.genes <- rownames(sc)
       sc <- ScaleData(sc, features = all.genes)
       sc <- RunPCA(sc, features = VariableFeatures(object = sc))
