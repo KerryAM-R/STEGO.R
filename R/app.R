@@ -326,7 +326,7 @@ runSTEGO <- function(){
                                        # selectInput("dataset_sc", "Choose a dataset:", choices = c("test_data_sc", "own_data_sc")),
                                        # upload the file
                                        fileInput('file_SC', 'Unprocessed filtered file (.csv.gz or .csv)',
-                                                 accept=c('text/csv','csv.gz')),
+                                                 accept=c('text/csv','csv.gz',"gz")),
                                        textInput("project_name","Name of sample",value = ""),
                                        # selectInput("species","Species",choices = c("human","mouse","other")),
                                        selectInput("df_seruatobj_type","Data type", choices = c("10x Genomics","BD Rhapsody")),
