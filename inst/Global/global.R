@@ -1,4 +1,9 @@
+#' @param packages load packages
 #' @export
+#'
+#'
+
+packages <- function() {
 options(shiny.maxRequestSize = 20000*1024^2)
 
 suppressMessages(require("bslib"))
@@ -54,6 +59,7 @@ suppressMessages(require("sysfonts"))
 suppressMessages(require("tibble"))
 suppressMessages(require("tidyr"))
 suppressMessages(require("VLF")) ## aa.count.function
+}
 
 font_add_google("Gochi Hand", "gochi")
 font_add_google("Schoolbell", "bell")
