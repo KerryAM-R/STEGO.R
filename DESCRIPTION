@@ -38,6 +38,7 @@ Imports:
     lubridate,
     Matrix,
     motifStack,
+    magrittr,
     network,
     plyr,
     purrr,
