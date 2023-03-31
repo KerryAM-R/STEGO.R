@@ -1,5 +1,5 @@
 Package: STEGO.R
-Title: Analysis of single cell RNA-seq with paired T cell receptor repertiore datasets. 
+Title: Analysis of single cell RNA-seq with paired T cell receptor repertiore datasets
 Version: 1.0.0
 Authors@R: 
     person("Kerry", "Mullan", , "Kerry.Mullan@uantwerpen.be", role = c("aut", "cre"),

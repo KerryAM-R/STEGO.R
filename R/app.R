@@ -1,6 +1,6 @@
 #' Run STEGO application.
 #' @name STEGO
-#'
+#' @importFrom stats chisq.test
 #' @export
 
 runSTEGO <- function(){

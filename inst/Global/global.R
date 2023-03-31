@@ -58,7 +58,9 @@ suppressMessages(require("sysfonts"))
 suppressMessages(require("tibble"))
 suppressMessages(require("tidyr"))
 suppressMessages(require("VLF")) ## aa.count.function
+
 }
+
 
 font_add_google("Gochi Hand", "gochi")
 font_add_google("Schoolbell", "bell")
