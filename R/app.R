@@ -25,7 +25,6 @@ runSTEGO <- function(){
                                                   conditionalPanel(condition="input.panel_10x==2 | input.panel_10x==3",
                                                                    textInput("sample_name_10x","Add sample name","Treatment_group")
                                                   ),
-
                                                   conditionalPanel(condition="input.panel_10x==4",
                                                                    fluidRow(
                                                                      column(6,textInput("group10x","Add sample name","Group")),
@@ -316,7 +315,6 @@ runSTEGO <- function(){
                         )
                ),
                ### end TCR clustering ------
-
                tabPanel("Seurat QC",
                         sidebarLayout(
                           sidebarPanel(id = "tPanel2",style = "overflow-y:scroll; max-height: 800px; position:relative;", width=3,
@@ -458,8 +456,6 @@ runSTEGO <- function(){
                                        add_busy_spinner(spin = "fading-circle"),
                                        verbatimTextOutput("scale_harmony_verbrose")
                               ),
-
-
                               tabPanel("PCA",
                                        add_busy_spinner(spin = "fading-circle"),
                                        actionButton("run_PCA","Run PCA"),
@@ -481,7 +477,6 @@ runSTEGO <- function(){
                                        actionButton("run_reduction_harmony","Run Dimentional reduction"),
                                        add_busy_spinner(spin = "fading-circle"),
                                        verbatimTextOutput("testing_mult3")
-
 
                               ),
                               tabPanel("UMAP",
@@ -2319,13 +2314,12 @@ runSTEGO <- function(){
 
     output$downloadtb_10x_matrix2 <- downloadHandler(
       filename = function(){
-        paste(input$name.10x," count-matrix_10x_",gsub("-", ".", Sys.Date()),".csv.gz", sep = "")
+        paste(input$name.10x,"_count-matrix_10x_",gsub("-", ".", Sys.Date()),".csv", sep = "")
       },
       content = function(file){
         df <- as.data.frame(tb_10x_matrix())
         # write.table(,file, row.names = T)
-        write_csv(df, file)
-
+        write.csv(df,file)
       })
 
     # for TCRex output -----
