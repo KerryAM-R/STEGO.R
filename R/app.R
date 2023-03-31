@@ -16,11 +16,11 @@ runSTEGO <- function(){
                           tabPanel("10x genomics",
                                    sidebarLayout(
                                      sidebarPanel(id = "tPanel4",style = "overflow-y:scroll; max-height: 800px; position:relative;", width=3,
-                                                  # selectInput("dataset_10x", "Choose a dataset:", choices = c("test_data_10x", "own_data_10x")),
-                                                  fileInput('file_calls_10x', 'Barcode file (.tsv.gz or .tsv)'),
-                                                  fileInput('file_features_10x', 'Features file (.tsv.gz or .tsv)'),
-                                                  fileInput('file_matrix_10x', 'Matrix file (.mtx.gz or .mtx)',
-                                                            accept=c('mtx.gz','mtx')),
+                                                  shinyDirButton("dir", "Input directory", "Upload"),
+                                                  verbatimTextOutput("dir", placeholder = TRUE),
+                                                  textInput("file_name","Name of file","Test"),
+                                                  # actionButton("download","download to directory"),
+
                                                   fileInput('file_TCR_10x', 'filtered contig annotations (.csv)'),
                                                   conditionalPanel(condition="input.panel_10x==2 | input.panel_10x==3",
                                                                    textInput("sample_name_10x","Add sample name","Treatment_group")
@@ -48,7 +48,7 @@ runSTEGO <- function(){
                                                   textInput("name.10x","Name added to files",value = ""),
 
                                      ),
-                          ### 10x main panel -----
+### 10x main panel -----
                                      mainPanel(
                                        tabsetPanel(id = "panel_10x",
                                                    tabPanel("Uploaded data",value = 1,
@@ -85,7 +85,7 @@ runSTEGO <- function(){
                                      )
                                    )
                           ),
-                          # 10x genomics end -----
+  # 10x genomics end -----
 
 
                           ## BD Rhapsody  ------
@@ -449,7 +449,12 @@ runSTEGO <- function(){
                                        verbatimTextOutput("testing_mult"),
                                        # verbatimTextOutput("testing_mult2")
                               ),
-
+                              tabPanel("Variable data",
+                                       add_busy_spinner(spin = "fading-circle"),
+                                       actionButton("run_var","Run Scale"),
+                                       add_busy_spinner(spin = "fading-circle"),
+                                       verbatimTextOutput("var_harmony_verbrose")
+                              ),
                               tabPanel("Scale data",
                                        add_busy_spinner(spin = "fading-circle"),
                                        actionButton("run_scale","Run Scale"),
@@ -1847,82 +1852,34 @@ runSTEGO <- function(){
 
 
     # 10x genomics data -----
-    ## barcode file -----
-    # input.data.barcode.10x <- reactive({switch(input$dataset_10x,"test_data_10x" = test.data.barcode.10x(), "own_data_10x" = own.data.barcode.10x())})
-    # test.data.barcode.10x <- reactive({
-    #
-    #   dataframe = read.table(system.file("extdata","10x/RAW/GSM4455933_K409_LN_GEX_barcodes.tsv.gz",package = "STEGO.R"))
-    #   # dataframe = read.table("../RHM003/count/sample_filtered_feature_bc_matrix/barcodes.tsv.gz")
-    # })
-    input.data.barcode.10x <- reactive({
-      inFile_10x_barcode <- input$file_calls_10x
-      if (is.null(inFile_10x_barcode)) return(NULL)
+    ## Directory of files -----
+    shinyDirChoose(
+      input,
+      'dir',
+      roots = c(home = '~'),
+      filetypes = c("tsv","tsv.gz")
+    )
+    global <- reactiveValues(datapath = getwd())
 
-      else {
-        dataframe <- read.table(
-          inFile_10x_barcode$datapath)}
+    dir <- reactive(input$dir)
+
+    output$dir <- renderText({
+      global$datapath
     })
 
-    output$test.files.10x1 <- DT::renderDataTable(escape = FALSE, options = list(autoWidth = FALSE, lengthMenu = c(2,5,10,20,50,100), pageLength = 2, scrollX = TRUE),{
-      calls <- input.data.barcode.10x()
-      validate(
-        need(nrow(calls)>0,
-             error_message_val_10x_barcode)
-      )
-      calls
+    observeEvent(ignoreNULL = TRUE,
+                 eventExpr = {
+                   input$dir
+                 },
+                 handlerExpr = {
+                   if (!"path" %in% names(dir())) return()
+                   home <- normalizePath("~")
+                   global$datapath <- file.path(home, paste(unlist(dir()$path[-1]), collapse = .Platform$file.sep))
+                 })
+    observeEvent(input$download_h5obj,{
+      scCustomize::Create_10X_H5(global$datapath,save_name=paste(input$file_name,"_SC_Merged_UMAP",sep=""),save_file_path=global$datapath)
     })
-    ## features file -----
-    # input.data.features.10x <- reactive({switch(input$dataset_10x,"test_data_10x" = test.data.features.10x(), "own_data_10x" = own.data.features.10x())})
-    # test.data.features.10x <- reactive({
-    #   dataframe = read.table(system.file("extdata","10x/RAW/GSM4455933_K409_LN_GEX_genes.tsv.gz",package = "STEGO.R"))
-    #   # dataframe = read.table("../RHM003/count/sample_filtered_feature_bc_matrix/features.tsv.gz")
-    # })
-    input.data.features.10x <- reactive({
-      inFile_10x_features <- input$file_features_10x
-      if (is.null(inFile_10x_features)) return(NULL)
-
-      else {
-        dataframe <- read.table(
-          inFile_10x_features$datapath)}
-    })
-
-    output$test.files.10x2 <- DT::renderDataTable(escape = FALSE, options = list(autoWidth = FALSE, lengthMenu = c(2,5,10,20,50,100), pageLength = 2, scrollX = TRUE),{
-      calls <- input.data.features.10x()
-      validate(
-        need(nrow(calls)>0,
-             error_message_val_10x_features)
-      )
-      calls
-    })
-
-    # Matrix file
-    # input.data.matrix.10x <- reactive({switch(input$dataset_10x,"test_data_10x" = test.data.matrix.10x(), "own_data_10x" = own.data.matrix.10x())})
-    # test.data.matrix.10x <- reactive({
-    #   dataframe = Matrix::readMM(system.file("extdata","10x/RAW/GSM4455933_K409_LN_GEX_matrix.mtx.gz",package = "STEGO.R"))
-    # })
-    input.data.matrix.10x <- reactive({
-      inFile_10x_matrix <- input$file_matrix_10x
-      if (is.null(inFile_10x_matrix)) return(NULL)
-
-      else {
-        dataframe <- Matrix::readMM(
-          inFile_10x_matrix$datapath)}
-    })
-    output$test.files.10x3 <- DT::renderDataTable(escape = FALSE, options = list(autoWidth = FALSE, lengthMenu = c(2,5,10,20,50,100), pageLength = 2, scrollX = TRUE),{
-      calls <- as.data.frame(input.data.matrix.10x())
-      validate(
-        need(nrow(calls)>0,
-             error_message_val_10x_features)
-      )
-      calls[1:10,1:10]
-    })
-
     ## contig files ----
-    # input.data.TCR.10x <- reactive({switch(input$dataset_10x,"test_data_10x" = test.data.TCR.10x(), "own_data_10x" = own.data.TCR.10x())})
-    # test.data.TCR.10x <- reactive({
-    #   dataframe = read.csv(system.file("extdata","10x/RAW/GSM4455934_K409_LN_VDJ_filtered_contig_annotations.csv.gz",package = "STEGO.R"))
-    # })
-
     input.data.TCR.10x <- reactive({
       inFile_10x_TCR <- input$file_TCR_10x
       if (is.null(inFile_10x_TCR)) return(NULL)
@@ -1939,8 +1896,6 @@ runSTEGO <- function(){
       )
       calls
     })
-
-
 
     ## meta.data for seurat ----
     tb_10x_meta.data_TCR <- function () {
@@ -3087,13 +3042,31 @@ runSTEGO <- function(){
     Vals_norm3 <- reactiveValues(Norm1=NULL)
     Vals_norm4 <- reactiveValues(Norm1=NULL)
 
-    observeEvent(input$run_scale,{
+    observeEvent(input$run_var,{
       sc <- merging_sc()
+      validate(
+        need(nrow(sc)>0,
+             "Run Variable")
+      )
+      sc <- FindVariableFeatures(sc, selection.method = "vst", nfeatures = 2000)
+      Vals_norm4$Norm1 <- sc
+    })
+
+    output$var_harmony_verbrose <- renderPrint({
+      sc <- Vals_norm4$Norm1
+      validate(
+        need(nrow(sc)>0,
+             "Run Variable")
+      )
+      sc
+    })
+
+    observeEvent(input$run_scale,{
+      sc <- Vals_norm4$Norm1
       validate(
         need(nrow(sc)>0,
              "Run Scale")
       )
-      sc <- FindVariableFeatures(sc, selection.method = "vst", nfeatures = 2000)
       all.genes <- rownames(sc)
       sc <- ScaleData(sc, features = all.genes)
       Vals_norm1$Norm1 <- sc
