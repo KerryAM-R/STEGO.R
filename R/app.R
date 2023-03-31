@@ -1848,7 +1848,7 @@ runSTEGO <- function(){
                    global$datapath <- file.path(home, paste(unlist(dir()$path[-1]), collapse = .Platform$file.sep))
                  })
     observeEvent(input$download_h5obj,{
-      scCustomize::Create_10X_H5(global$datapath,save_name=paste(input$name.10x,"_SC_Merged_UMAP",sep=""),save_file_path=global$datapath)
+      scCustomize::Create_10X_H5(global$datapath,save_name=paste(input$name.10x,"_SC_unprocessed_",sep=""),save_file_path=global$datapath)
     })
     ## contig files ----
     input.data.TCR.10x <- reactive({
