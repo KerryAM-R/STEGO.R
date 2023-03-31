@@ -12,19 +12,16 @@ runSTEGO <- function(){
     navbarPage(title = "STEGO_R",
                theme=bs_theme(version = 5, bootswatch = "default"),
                navbarMenu("Quality control",
-                          ## 10x Genomics ----
+## 10x Genomics ----
                           tabPanel("10x genomics",
                                    sidebarLayout(
                                      sidebarPanel(id = "tPanel4",style = "overflow-y:scroll; max-height: 800px; position:relative;", width=3,
                                                   # selectInput("dataset_10x", "Choose a dataset:", choices = c("test_data_10x", "own_data_10x")),
-                                                  fileInput('file_calls_10x', 'Barcode file (.tsv.gz or .tsv)',
-                                                            accept=c('text/tsv','tsv','tsv.gz')),
-                                                  fileInput('file_features_10x', 'Features file (.tsv.gz or .tsv)',
-                                                            accept=c('text/tsv','tsv','tsv.gz')),
+                                                  fileInput('file_calls_10x', 'Barcode file (.tsv.gz or .tsv)'),
+                                                  fileInput('file_features_10x', 'Features file (.tsv.gz or .tsv)'),
                                                   fileInput('file_matrix_10x', 'Matrix file (.mtx.gz or .mtx)',
                                                             accept=c('mtx.gz','mtx')),
-                                                  fileInput('file_TCR_10x', 'filtered contig annotations (.csv)',
-                                                            accept=c('csv')),
+                                                  fileInput('file_TCR_10x', 'filtered contig annotations (.csv)'),
                                                   conditionalPanel(condition="input.panel_10x==2 | input.panel_10x==3",
                                                                    textInput("sample_name_10x","Add sample name","Treatment_group")
                                                   ),
@@ -52,7 +49,7 @@ runSTEGO <- function(){
                                                   textInput("name.10x","Name added to files",value = ""),
 
                                      ),
-                                     ### 10x main panel -----
+                          ### 10x main panel -----
                                      mainPanel(
                                        tabsetPanel(id = "panel_10x",
                                                    tabPanel("Uploaded data",value = 1,
@@ -182,9 +179,9 @@ runSTEGO <- function(){
                                    sidebarLayout(
                                      sidebarPanel(id = "tPanel4",style = "overflow-y:scroll; max-height: 800px; position:relative;", width=3,
                                                   fileInput('file_calls_Array', 'Matrix file (.txt.gz)',
-                                                            accept=c('text/csv', 'text/comma-separated-values,text/plain', '.txt.gz')),
+                                                            accept=c('text/csv', 'text/comma-separated-values,text/plain', 'txt.gz')),
                                                   fileInput('file_contig_Array', 'TCR file (.txt.gz)',
-                                                            accept=c('text/csv', 'text/comma-separated-values,text/plain', '.txt.gz')),
+                                                            accept=c('text/csv', 'text/comma-separated-values,text/plain', 'txt.gz')),
 
                                                   checkboxInput("pairing_TCR_Array","Paired only?"),
                                                   textInput("sample_name_Array","Add sample name","Treatment_group")
@@ -325,8 +322,7 @@ runSTEGO <- function(){
                           sidebarPanel(id = "tPanel2",style = "overflow-y:scroll; max-height: 800px; position:relative;", width=3,
                                        # selectInput("dataset_sc", "Choose a dataset:", choices = c("test_data_sc", "own_data_sc")),
                                        # upload the file
-                                       fileInput('file_SC', 'Unprocessed filtered file (.csv.gz or .csv)',
-                                                 accept=c('text/tsv','.tsv','tsv.gz','text/csv','.csv','csv.gz')),
+                                       fileInput('file_SC', 'Unprocessed filtered file (.csv.gz or .csv)'),
                                        textInput("project_name","Name of sample",value = ""),
                                        # selectInput("species","Species",choices = c("human","mouse","other")),
                                        selectInput("df_seruatobj_type","Data type", choices = c("10x Genomics","BD Rhapsody")),
