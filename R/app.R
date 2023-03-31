@@ -19,7 +19,7 @@ runSTEGO <- function(){
                                                   shinyDirButton("dir", "Input directory", "Upload"),
                                                   verbatimTextOutput("dir", placeholder = TRUE),
                                                   textInput("file_name","Name of file","Test"),
-                                                  # actionButton("download","download to directory"),
+
 
                                                   fileInput('file_TCR_10x', 'filtered contig annotations (.csv)'),
                                                   conditionalPanel(condition="input.panel_10x==2 | input.panel_10x==3",
@@ -33,7 +33,7 @@ runSTEGO <- function(){
                                                   ),
 
                                                   conditionalPanel(condition="input.panel_10x==2",
-                                                                   fluidRow(column(6,downloadButton('downloadtb_10x_matrix2','Download matrix')),
+                                                                   fluidRow(column(6,actionButton("download_h5obj","download to directory")),
                                                                             column(6,downloadButton('downloadtb_10x_metadata2','Download metadata'))
                                                                    )
                                                   ),
