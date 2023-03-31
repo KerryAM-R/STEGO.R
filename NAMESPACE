@@ -2,6 +2,7 @@
 
 export("%>%")
 export()
+export(Load_required_packages)
 export(runSTEGO)
 importFrom(magrittr,"%>%")
 importFrom(stats,chisq.test)
