@@ -1,6 +1,4 @@
 #' @export
-#'
-# compatibility with Immunarch ----
 options(shiny.maxRequestSize = 20000*1024^2)
 
 suppressMessages(require("bslib"))
