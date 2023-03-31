@@ -1,7 +1,6 @@
 #' @param packages load packages
 #' @export
 #'
-#'
 
 packages <- function() {
 options(shiny.maxRequestSize = 20000*1024^2)
