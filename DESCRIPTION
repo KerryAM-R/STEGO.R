@@ -19,6 +19,7 @@ Imports:
     corrplot,
     doParallel,
     dplyr,
+    dior,
     DT,
     forcats,
     foreach,
@@ -49,8 +50,6 @@ Imports:
     reshape2,
     scGate,
     Seurat,
-    SeuratData,
-    SeuratDisk,
     SeuratObject,
     shiny,
     shinyBS,
@@ -65,7 +64,7 @@ Imports:
     tidyr,
     VLF
 Remotes:
-  github::mojaveazure/seurat-disk,
+  github::JiekaiLab/dior,
   github::satijalab/seurat-data,
   github::briatte/ggnet,
   github::omarwagih/ggseqlogo,

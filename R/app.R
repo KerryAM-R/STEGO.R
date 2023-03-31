@@ -12,80 +12,51 @@ runSTEGO <- function(){
     navbarPage(title = "STEGO_R",
                theme=bs_theme(version = 5, bootswatch = "default"),
                navbarMenu("Quality control",
-## 10x Genomics ----
+                          ## 10x Genomics ----
                           tabPanel("10x genomics",
                                    sidebarLayout(
                                      sidebarPanel(id = "tPanel4",style = "overflow-y:scroll; max-height: 800px; position:relative;", width=3,
                                                   shinyDirButton("dir", "Input directory", "Upload"),
                                                   verbatimTextOutput("dir", placeholder = TRUE),
-                                                  textInput("file_name","Name of file","Test"),
-
-
                                                   fileInput('file_TCR_10x', 'filtered contig annotations (.csv)'),
-                                                  conditionalPanel(condition="input.panel_10x==2 | input.panel_10x==3",
-                                                                   textInput("sample_name_10x","Add sample name","Treatment_group")
-                                                  ),
-                                                  conditionalPanel(condition="input.panel_10x==4",
-                                                                   fluidRow(
-                                                                     column(6,textInput("group10x","Add sample name","Group")),
-                                                                     column(6,textInput("Indiv10x","Add sample name","Indiv"))
-                                                                   )
-                                                  ),
-
-                                                  conditionalPanel(condition="input.panel_10x==2",
-                                                                   fluidRow(column(6,actionButton("download_h5obj","download to directory")),
-                                                                            column(6,downloadButton('downloadtb_10x_metadata2','Download metadata'))
-                                                                   )
-                                                  ),
-                                                  conditionalPanel(condition="input.panel_10x==3",
-                                                                   downloadButton('downloadtb_10x_contigues1','Download clusTCR')
-                                                  ),
-                                                  conditionalPanel(condition="input.panel_10x==4",
-                                                                   downloadButton('downloaddt_TCR_Explore_10x','Download TCR_Explore')
+                                                  textInput("name.10x","Name of file","Test"),
+                                                  textInput("sample_name_10x","Add sample name","Treatment_group"),
+                                                  fluidRow(
+                                                    column(6,textInput("group10x","Add sample name","Group")),
+                                                    column(6,textInput("Indiv10x","Add sample name","Indiv"))
                                                   ),
                                                   selectInput("BCR_TCR_10x","Type of data",choices = c("TCR only","BCR only","both")),
-
-                                                  textInput("name.10x","Name added to files",value = ""),
-
                                      ),
-### 10x main panel -----
+                                     ### 10x main panel -----
                                      mainPanel(
                                        tabsetPanel(id = "panel_10x",
-                                                   tabPanel("Uploaded data",value = 1,
-                                                            div(DT::dataTableOutput("test.files.10x1")),
-                                                            div(DT::dataTableOutput("test.files.10x2")),
-                                                            # div(DT::dataTableOutput("test.files.10x3")),
-                                                            div(DT::dataTableOutput("test.files.10x4")),
-                                                   ),
                                                    tabPanel("TCRex",
                                                             add_busy_spinner(spin = "fading-circle"),
                                                             div(DT::dataTableOutput("tb_TCRex_10x_df")),
                                                             downloadButton('downloaddf_TCRex_10x','Download table')
-
                                                    ),
                                                    tabPanel("For Seurat QC",value = 2,
-                                                            tags$head(tags$style("#tb_10x_matrix2  {white-space: nowrap;  }")),
-                                                            add_busy_spinner(spin = "fading-circle"),
-                                                            div(DT::dataTableOutput("tb_10x_matrix2")),
-                                                            tags$head(tags$style("#sum_tb_10x1  {white-space: nowrap;  }")),
-                                                            div(DT::dataTableOutput("sum_tb_10x1")),
-                                                            div(DT::dataTableOutput("tb_10x_meta1")),
+                                                            fluidRow(actionButton("download_h5obj","download to directory"),
+                                                                     downloadButton('downloadtb_10x_metadata2','Download metadata')
+                                                            )
 
                                                    ),
                                                    tabPanel("ClusTCR",value = 3,
                                                             tags$head(tags$style("#tb_10x_contigues1  {white-space: nowrap;  }")),
                                                             div(DT::dataTableOutput("tb_10x_contigues1")),
+                                                            downloadButton('downloadtb_10x_contigues1','Download clusTCR')
                                                    ),
                                                    tabPanel("TCR_Explore",value = 4,
                                                             tags$head(tags$style("#dt_TCR_Explore_10x  {white-space: nowrap;  }")),
                                                             div(DT::dataTableOutput("dt_TCR_Explore_10x")),
+                                                            downloadButton('downloaddt_TCR_Explore_10x','Download TCR_Explore')
 
                                                    ),
                                        ),
                                      )
                                    )
                           ),
-  # 10x genomics end -----
+                          # 10x genomics end -----
 
 
                           ## BD Rhapsody  ------
@@ -230,7 +201,6 @@ runSTEGO <- function(){
                ### TCR clustering with ClusTCR2 -----
                tabPanel("ClusTCR2",
                         sidebarLayout(
-
                           sidebarPanel(id = "tPanel4",style = "overflow-y:scroll; max-height: 800px; position:relative;", width=3,
                                        # selectInput("dataset2", "Choose a dataset:", choices = c("test_data_clusTCR2","own_data_clusTCR2")),
                                        fileInput('file2_ClusTCR2', 'Select file for single samples',
@@ -320,7 +290,9 @@ runSTEGO <- function(){
                           sidebarPanel(id = "tPanel2",style = "overflow-y:scroll; max-height: 800px; position:relative;", width=3,
                                        # selectInput("dataset_sc", "Choose a dataset:", choices = c("test_data_sc", "own_data_sc")),
                                        # upload the file
-                                       fileInput('file_SC', 'Unprocessed filtered file (.csv.gz or .csv)'),
+                                       fileInput('file_SC', 'Load h5 file',
+                                                 accept=c('.csv','.csv.gz','h5','.h5'),
+                                       ),
                                        textInput("project_name","Name of sample",value = ""),
                                        # selectInput("species","Species",choices = c("human","mouse","other")),
                                        selectInput("df_seruatobj_type","Data type", choices = c("10x Genomics","BD Rhapsody")),
@@ -341,7 +313,7 @@ runSTEGO <- function(){
                                        fileInput('file_SC_meta', 'Upload file meta.data file (.csv.gz or .csv)',
                                                  accept=c('.csv','.csv.gz')),
                                        actionButton("run_metadata","Impute metadata after clustering"),
-                                       selectInput("save_type","Type of output",choices = c(".h5Seurat",".rds")),
+                                       # selectInput("save_type","Type of output",choices = c(".h5Seurat",".rds")),
                                        downloadButton('downloaddf_SeruatObj','Download Seurat')
                                        # column(4,numericInput("percent.mt","Mictochondrial DNA cut-off", value = 20)),
                           ),
@@ -352,7 +324,7 @@ runSTEGO <- function(){
                                        tabsetPanel(
                                          tabPanel("Header check",
                                                   div(DT::dataTableOutput("DEx_header_name_check.dt")),
-                                                  ),
+                                         ),
                                          tabPanel("Violin and correlation",
                                                   tabsetPanel(
                                                     tabPanel("Before",
@@ -434,9 +406,9 @@ runSTEGO <- function(){
                           # Sidebar with a slider input
                           sidebarPanel(id = "tPanel5",style = "overflow-y:scroll; max-height: 800px; position:relative;", width=3,
                                        fileInput("file1_h5Seurat.file",
-                                                 "Choose .h5Seurat files from directory",
+                                                 "Choose .h5 Seurat files from directory",
                                                  multiple = TRUE,
-                                                 accept=c('h5Seurat',".h5Seurat")),
+                                                 accept=c(".h5","h5")),
                                        textInput("project_name2","Name of Project",value = ""),
                                        downloadButton('downloaddf_SeruatObj_merged','Download Merged Seurat')
                           ),
@@ -510,11 +482,10 @@ runSTEGO <- function(){
                         sidebarLayout(
                           sidebarPanel(id = "tPanel4",style = "overflow-y:scroll; max-height: 800px; position:relative;", width=3,
                                        fileInput("file1_h5Seurat.file2",
-                                                 "Choose merged or single  .h5Seurat files from directory",
+                                                 "Choose merged or single .h5 Seurat files from directory",
                                                  multiple = TRUE,
-                                                 accept=c('.h5Seurat',"h5Seurat")),
+                                                 accept=c('.h5','h5')),
                                        textInput("project_name3","Name of Project",value = ""),
-
                                        downloadButton('downloaddf_SeruatObj_annotated','Download Annotated Seurat')
                           ),
 
@@ -1877,7 +1848,7 @@ runSTEGO <- function(){
                    global$datapath <- file.path(home, paste(unlist(dir()$path[-1]), collapse = .Platform$file.sep))
                  })
     observeEvent(input$download_h5obj,{
-      scCustomize::Create_10X_H5(global$datapath,save_name=paste(input$file_name,"_SC_Merged_UMAP",sep=""),save_file_path=global$datapath)
+      scCustomize::Create_10X_H5(global$datapath,save_name=paste(input$name.10x,"_SC_Merged_UMAP",sep=""),save_file_path=global$datapath)
     })
     ## contig files ----
     input.data.TCR.10x <- reactive({
@@ -2093,9 +2064,7 @@ runSTEGO <- function(){
     output$tb_10x_meta1 <- DT::renderDataTable(escape = FALSE, options = list(autoWidth = FALSE, lengthMenu = c(2,5,10,20,50,100), pageLength = 5, scrollX = TRUE),{
       if (input$BCR_TCR_10x=="TCR only") {
         tb_10x_meta.data_TCR()
-
       }
-
       else if (input$BCR_TCR_10x=="BCR only") {
         tb_10x_meta.data_BCR()
       }
@@ -2174,7 +2143,6 @@ runSTEGO <- function(){
 
     ## ClusTCR T cell receptor sequences  -----
     tb_10x_contigues_contig <- reactive({
-
       contigs <- input.data.TCR.10x()
       validate(
         need(nrow(contigs)>0,
@@ -2184,6 +2152,7 @@ runSTEGO <- function(){
       contigs2$Sample_Name <- input$sample_name_10x
       names(contigs2)[names(contigs2) %in% c("cdr3")] <- "junction_aa"
       names(contigs2)[names(contigs2) %in% c("v_gene")] <- "v_call"
+      contigs2 <- contigs2[-c(grep("[*]",contigs2$junction_aa)),]
       contigs2 <- subset(contigs2,contigs2$junction_aa!= "None")
       contigs2[!duplicated(contigs2[,c('v_call','junction_aa')]),]
     })
@@ -2287,6 +2256,8 @@ runSTEGO <- function(){
       contigs2 <- contigs[,names(contigs) %in% c("v_gene","j_gene","cdr3")]
 
       names(contigs2)[names(contigs2) %in% c("cdr3")] <- "CDR3_beta"
+      contigs2 <- contigs2[-c(grep("[*]",contigs2$CDR3_beta)),]
+
       names(contigs2)[names(contigs2) %in% c("v_gene")] <- "TRBV_gene"
       names(contigs2)[names(contigs2) %in% c("j_gene")] <- "TRBJ_gene"
       contigs2 <- contigs2 %>%
@@ -2685,8 +2656,8 @@ runSTEGO <- function(){
       inFile_sc <- input$file_SC
       if (is.null(inFile_sc)) return(NULL)
       else {
-        if (input$df_seruatobj_type =="10x") {
-          dataframe = read.csv(inFile_sc$datapath)
+        if (input$df_seruatobj_type =="10x Genomics") {
+          dataframe = Read10X_h5(inFile_sc$datapath)
         }
         else {
           dataframe = read.csv(inFile_sc$datapath,row.names = 1)
@@ -2703,12 +2674,12 @@ runSTEGO <- function(){
              error_message_val_sc)
       )
       if (input$df_seruatobj_type =="10x Genomics") {
-        names(df.test) <- gsub("[.]1","-1",names(df.test))
-        df.test2 <- df.test[!rownames(df.test) %in% c("Cell_Index"),]
+        df.test2 <- head(as.data.frame(df.test))[1:6]
       }
       else {
         names(df.test) <- gsub("X","",names(df.test))
         df.test2 <- df.test[!rownames(df.test) %in% c("Cell_Index"),]
+
       }
       head(df.test2)[1:6]
     })
@@ -2722,8 +2693,7 @@ runSTEGO <- function(){
       )
 
       if (input$df_seruatobj_type =="10x Genomics") {
-        names(df.test) <- gsub("[.]1","-1",names(df.test))
-        df.test2 <- df.test[!rownames(df.test) %in% c("Cell_Index"),]
+        df.test2 <- df.test
         sc <- CreateSeuratObject(counts = df.test2, project = input$project_name)
         sc[["percent.mt"]] <- PercentageFeatureSet(sc, pattern = "^MT-")
         sc[["percent.rb"]] <- PercentageFeatureSet(sc, pattern = "^RP[SL]")
@@ -2924,7 +2894,7 @@ runSTEGO <- function(){
     ## Differential expression with two conditions -----
     input.data_sc_meta <- reactive({
       inFile_sc_meta <- input$file_SC_meta
-          dataframe = read.csv(inFile_sc_meta$datapath)
+      dataframe = read.csv(inFile_sc_meta$datapath)
     })
 
     output$DEx_view.meta.dt <- DT::renderDataTable(escape = FALSE, filter = list(position = 'top', clear = FALSE),  options = list(autoWidth = FALSE, lengthMenu = c(2,5,10,20,50,100), pageLength = 5, scrollX = TRUE),{
@@ -2975,31 +2945,20 @@ runSTEGO <- function(){
     # save Seurat object -----
     output$downloaddf_SeruatObj <- downloadHandler(
       filename = function(){
-        paste(input$project_name,gsub("-", ".", Sys.Date()),".h5Seurat", sep = "")
+        paste(input$project_name,gsub("-", ".", Sys.Date()),".h5", sep = "")
       },
       content = function(file){
-        as.h5Seurat(vals_meta.sc$metadata_SCobj,file)
+        write_h5(vals_meta.sc$metadata_SCobj,file)
       })
 
     # merging multiple Seurat Obj -----
-    # input.data_sc_pro <- reactive({switch(input$dataset_sc_multiple,"test_data_multi" = test.data_sc_multiple(),"own_data_multi" = own.data_sc_multiple())})
-    # test.data_sc_multiple <- reactive({
-    #   fils1 <- list.files(path = "inst/extdata/SeuratObj", pattern = "h5Seurat", full.names = TRUE, ignore.case = TRUE)
-    #   samples_list <- vector("list", length = length(fils1))
-    #   for (i in seq_along(fils1)) {
-    #     sc <- LoadH5Seurat(fils1[i])
-    #     samples_list[[i]] <- sc
-    #   }
-    #   samples_list
-    # })
-
     getData <- reactive({
       inFile.seq <- input$file1_h5Seurat.file
       num <- dim(inFile.seq)[1]
       samples_list <- vector("list", length = num)
       samples_list
       for (i in 1:num) {
-        sc <- LoadH5Seurat(input$file1_h5Seurat.file[[i, 'datapath']])
+        sc <- read_h5(input$file1_h5Seurat.file[[i, 'datapath']])
         samples_list[[i]] <- sc
       }
       samples_list
@@ -3186,7 +3145,7 @@ runSTEGO <- function(){
       inFile_sc_pro2 <- input$file1_h5Seurat.file2
       if (is.null(inFile_sc_pro2)) return(NULL)
       else {
-        dataframe = LoadH5Seurat(inFile_sc_pro2$datapath)
+        dataframe = read_h5(inFile_sc_pro2$datapath)
       }
 
     })

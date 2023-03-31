@@ -6,14 +6,14 @@ Load_required_packages <- function() {
   options(shiny.maxRequestSize = 20000*1024^2)
 
   suppressMessages(require("bslib"))
-  suppressMessages(require("BiocParallel")) # no idea why I need this package, I cannot work out what functions dependent.
   suppressMessages(require("circlize")) # colorRamp2
   suppressMessages(suppressWarnings(require("ClusTCR2")))
   suppressMessages(require("colourpicker")) # select visual colour
   suppressMessages(require("ComplexHeatmap"))
-  suppressMessages(library("corrplot"))
+  suppressMessages(require("corrplot"))
   suppressMessages(require("doParallel"))
   suppressMessages(require("dplyr"))
+  suppressMessages(require("dior"))
   suppressMessages(require("DT"))
   suppressMessages(require("forcats"))
   suppressMessages(require("foreach"))
@@ -33,7 +33,6 @@ Load_required_packages <- function() {
   suppressMessages(require("lubridate")) # create the network graphs.
   suppressMessages(require("Matrix"))
   suppressMessages(require("motifStack")) # function
-  suppressMessages(require("magrittr")) # function
   suppressMessages(require("network"))
   suppressMessages(require("plyr"))
   suppressMessages(require("purrr"))
@@ -44,20 +43,18 @@ Load_required_packages <- function() {
   suppressMessages(require("reshape2")) # acast function
   suppressMessages(require("scGate"))
   suppressMessages(require("Seurat"))
-  suppressMessages(require("SeuratDisk"))
-  suppressMessages(require("SeuratData"))
   suppressMessages(require("SeuratObject"))
   suppressMessages(require("shiny"))
   suppressMessages(require("shinyBS"))
   suppressMessages(require("shinybusy"))
-  suppressMessages(require("shinyFiles"))
   suppressMessages(require("shinyWidgets"))
+  suppressMessages(require("shinyFiles"))
   suppressMessages(require("showtext"))
   suppressMessages(require("showtextdb"))
   suppressMessages(require("stringr"))
   suppressMessages(require("sysfonts"))
   suppressMessages(require("tibble"))
   suppressMessages(require("tidyr"))
-  suppressMessages(require("VLF")) ## aa.count.function
+  suppressMessages(require("VLF"))
 
 }

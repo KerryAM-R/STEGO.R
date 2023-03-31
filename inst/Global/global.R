@@ -1,4 +1,7 @@
 
+source(system.file("Global","global.R",package = "STEGO.R"))
+options(shiny.maxRequestSize = 100000*1024^2)
+
 font_add_google("Gochi Hand", "gochi")
 font_add_google("Schoolbell", "bell")
 font_add_google("Press Start 2P", "Game")
