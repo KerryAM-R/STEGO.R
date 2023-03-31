@@ -326,7 +326,7 @@ runSTEGO <- function(){
                                        # selectInput("dataset_sc", "Choose a dataset:", choices = c("test_data_sc", "own_data_sc")),
                                        # upload the file
                                        fileInput('file_SC', 'Unprocessed filtered file (.csv.gz or .csv)',
-                                                 accept=c('.csv','.csv.gz')),
+                                                 accept=c('text/csv','csv.gz')),
                                        textInput("project_name","Name of sample",value = ""),
                                        # selectInput("species","Species",choices = c("human","mouse","other")),
                                        selectInput("df_seruatobj_type","Data type", choices = c("10x Genomics","BD Rhapsody")),
@@ -347,7 +347,7 @@ runSTEGO <- function(){
                                        fileInput('file_SC_meta', 'Upload file meta.data file (.csv.gz or .csv)',
                                                  accept=c('.csv','.csv.gz')),
                                        actionButton("run_metadata","Impute metadata after clustering"),
-                                       selectInput("save_type","Type of output",choices = c(".h5",".rds")),
+                                       selectInput("save_type","Type of output",choices = c(".h5Seurat",".rds")),
                                        downloadButton('downloaddf_SeruatObj','Download Seurat')
                                        # column(4,numericInput("percent.mt","Mictochondrial DNA cut-off", value = 20)),
                           ),
@@ -442,7 +442,7 @@ runSTEGO <- function(){
                                        fileInput("file1_h5Seurat.file",
                                                  "Choose .h5Seurat files from directory",
                                                  multiple = TRUE,
-                                                 accept=c('.h5Seurat')),
+                                                 accept=c('h5Seurat',".h5Seurat")),
                                        textInput("project_name2","Name of Project",value = ""),
                                        downloadButton('downloaddf_SeruatObj_merged','Download Merged Seurat')
                           ),
@@ -516,7 +516,7 @@ runSTEGO <- function(){
                                        fileInput("file1_h5Seurat.file2",
                                                  "Choose merged or single  .h5Seurat files from directory",
                                                  multiple = TRUE,
-                                                 accept=c('.h5Seurat')),
+                                                 accept=c('.h5Seurat',"h5Seurat")),
                                        textInput("project_name3","Name of Project",value = ""),
 
                                        downloadButton('downloaddf_SeruatObj_annotated','Download Annotated Seurat')
@@ -621,11 +621,11 @@ runSTEGO <- function(){
 
 
                                                         fileInput('file_SC_pro', 'Upload seurat file',
-                                                                  accept=c('.h5Seurat','.rds')),
+                                                                  accept=c("h5Seurat",'.h5Seurat','rds')),
                                                         fileInput('file_cluster_file', 'Upload clustering file from clusTCR2 (.csv)',
-                                                                  accept=c('.csv')),
+                                                                  accept=c('csv')),
                                                         fileInput('upload_TCRex_file', 'Upload TCRex (.tsv)',
-                                                                  accept=c('.tsv')),
+                                                                  accept=c('tsv','.tsv')),
                                                         textInput("name.file_clust","Name added to files",value = ""),
                                        ),
                                        conditionalPanel(condition="input.STEGO_R_pro == 'STEGO_R (.h5Seurat)'",
