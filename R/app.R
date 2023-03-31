@@ -18,13 +18,13 @@ runSTEGO <- function(){
                                      sidebarPanel(id = "tPanel4",style = "overflow-y:scroll; max-height: 800px; position:relative;", width=3,
                                                   # selectInput("dataset_10x", "Choose a dataset:", choices = c("test_data_10x", "own_data_10x")),
                                                   fileInput('file_calls_10x', 'Barcode file (.tsv.gz or .tsv)',
-                                                            accept=c('.tsv','.tsv.gz')),
+                                                            accept=c('text/tsv','tsv','tsv.gz')),
                                                   fileInput('file_features_10x', 'Features file (.tsv.gz or .tsv)',
-                                                            accept=c('.tsv','.tsv.gz')),
+                                                            accept=c('text/tsv','tsv','tsv.gz')),
                                                   fileInput('file_matrix_10x', 'Matrix file (.mtx.gz or .mtx)',
-                                                            accept=c('.mtx.gz','.mtx')),
+                                                            accept=c('mtx.gz','mtx')),
                                                   fileInput('file_TCR_10x', 'filtered contig annotations (.csv)',
-                                                            accept=c('.csv')),
+                                                            accept=c('csv')),
                                                   conditionalPanel(condition="input.panel_10x==2 | input.panel_10x==3",
                                                                    textInput("sample_name_10x","Add sample name","Treatment_group")
                                                   ),
@@ -3224,7 +3224,6 @@ runSTEGO <- function(){
       if (is.null(inFile_sc_pro2)) return(NULL)
       else {
         dataframe = LoadH5Seurat(inFile_sc_pro2$datapath)
-
       }
 
     })
