@@ -1,0 +1,6 @@
+levels	use_as	name	signature
+level1	positive	CD8A	
+level2	positive	CD8_TEMRA	
+level2	negative	CD8_INN	
+level2	negative	CD8_INN2	
+level2	negative	CD8_GD	

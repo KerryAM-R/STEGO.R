@@ -1,0 +1,18 @@
+levels	use_as	name	signature
+level1	positive	Immune	
+level1	positive	Myeloid	
+level1	negative	Lymphoid	
+level2	positive	Myeloid	
+level3	positive	DC	
+level3	positive	DC1	
+level3	positive	DC2	
+level3	positive	DC3	
+level3	positive	Migratory_DC	
+level3	positive	Transitional_DC	
+level3	positive	DC_precursor	
+level3	positive	APC	
+level3	negative	Mono.mac	
+level3	negative	Monocyte_precursor	
+level3	negative	Classical_monocytes	
+level3	negative	Monocytes	
+level3	negative	Non.classical_monocytes	

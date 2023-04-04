@@ -1,0 +1,8 @@
+levels	use_as	name	signature
+level1	positive	CD8A	
+level2	positive	Exhausted	
+level2	positive	CD8_TPEX	
+level2	negative	CD8_TEMRA	
+level3	positive	CD8_TPEX	
+level3	positive	Stemness	
+level3	negative	Cytotoxic	
