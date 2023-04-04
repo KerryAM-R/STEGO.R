@@ -51,6 +51,8 @@ Imports:
     scGate,
     Seurat,
     SeuratObject,
+    SeuratData,
+    SeuratDisk,
     shiny,
     shinyBS,
     shinybusy,
@@ -65,6 +67,7 @@ Imports:
     VLF
 Remotes:
   github::JiekaiLab/dior,
+  github::mojaveazure/seurat-disk,
   github::satijalab/seurat-data,
   github::briatte/ggnet,
   github::omarwagih/ggseqlogo,

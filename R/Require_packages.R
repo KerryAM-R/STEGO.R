@@ -3,8 +3,8 @@
 #' @export
 
 Load_required_packages <- function() {
-  options(shiny.maxRequestSize = 20000*1024^2)
-
+  # options(shiny.maxRequestSize = 20000*1024^2)
+  options(shiny.maxRequestSize = 100000*1024^2)
   suppressMessages(require("bslib"))
   suppressMessages(require("circlize")) # colorRamp2
   suppressMessages(suppressWarnings(require("ClusTCR2")))
