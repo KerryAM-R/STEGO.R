@@ -29,5 +29,3 @@ files.to.impute <- list.files(file.path(model_path),"_scGate_Model.tsv")
     }
     df.models.toimpute
 }
-
-custom_db_scGATE("inst/extdata/scGate_models-master/human/CD8_TIL")
