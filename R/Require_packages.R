@@ -59,4 +59,3 @@ Load_required_packages <- function() {
   suppressMessages(require("tidyr"))
   suppressMessages(require("VLF"))
 }
-
