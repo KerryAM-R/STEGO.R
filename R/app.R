@@ -5,6 +5,7 @@
 
 runSTEGO <- function(){
   source(system.file("Global","required_functions.R",package = "STEGO.R"))
+
   # UI page -----
   ui <- fluidPage(
     theme=bs_theme(version = 5, bootswatch = "default"),

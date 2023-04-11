@@ -1,0 +1,18 @@
+levels	use_as	name	signature
+level1	positive	Immune	
+level1	positive	Lymphoid	
+level1	negative	Myeloid	
+level1	negative	Neutrophils	
+level2	positive	Tcell	
+level3	negative	CD4Tcells	
+level3	positive	CD8Tcells	
+level4	negative	CD8aa_T_cells	
+level4	negative	CD8a.bentry	
+level4	negative	KLRB1_MAIT_cells_TRAV1.2	
+level4	positive	NK_CD8_T_cells	
+level4	negative	Tcm.Naive_cytotoxic_T_cells	
+level4	negative	Tem.Temra_cytotoxic_T_cells	
+level4	negative	Tem.Trm_cytotoxic_CD8_T_cells	
+level4	negative	Trm_cytotoxic_T_cells	
+level4	negative	Gamma.delta_T_cells	
+level4	negative	CD8Tcells	
