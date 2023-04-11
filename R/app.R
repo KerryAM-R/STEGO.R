@@ -173,12 +173,9 @@ runSTEGO <- function(){
                                                             accept=c('text/csv', 'text/comma-separated-values,text/plain', 'txt.gz')),
                                                   fileInput('file_contig_Array', 'TCR file (.txt.gz)',
                                                             accept=c('text/csv', 'text/comma-separated-values,text/plain', 'txt.gz')),
-
                                                   checkboxInput("pairing_TCR_Array","Paired only?"),
-                                                  textInput("sample_name_Array","Add sample name","Treatment_group")
-
-
-
+                                                  textInput("sample_name_Array","Add sample name","Treatment_group"),
+                                                  textInput("name.array","Add file name","FileName")
                                      ),
                                      mainPanel(
                                        tabsetPanel(
@@ -197,11 +194,21 @@ runSTEGO <- function(){
                                                   add_busy_spinner(spin = "fading-circle"),
                                                   div(DT::dataTableOutput("test.files_ClusTCR2_array")),
                                                   downloadButton("download_ClusTCR2_labs_array"),
+                                         ),
+                                         tabPanel("TCRex"),
+                                         tabPanel("Seurat",
+                                                  add_busy_spinner(spin = "fading-circle"),
+                                                  div(DT::dataTableOutput("tb_array_matrix2")),
+                                                  div(DT::dataTableOutput("tb_Array_meta1")),
+                                                  fluidRow(column(3,downloadButton('downloadtb_array_matrix2','Download matrix')),
+                                                           column(3,downloadButton('downloadtb_array_metadata2','Download metadata'))
+                                                  ),
+
+
+
 
 
                                          ),
-                                         tabPanel("TCRex"),
-                                         tabPanel("Seurat"),
                                          tabPanel("TCR_Explore")
 
 
@@ -224,82 +231,87 @@ runSTEGO <- function(){
                         sidebarLayout(
                           sidebarPanel(id = "tPanel4",style = "overflow-y:scroll; max-height: 800px; position:relative;", width=3,
                                        # selectInput("dataset2", "Choose a dataset:", choices = c("test_data_clusTCR2","own_data_clusTCR2")),
-                                       fileInput('file2_ClusTCR2', 'Select file for single samples',
-                                                 accept=c('text/csv', 'text/comma-separated-values,text/plain', '.csv')),
-                                       #
-                                       # fluidRow(
-                                       #   column(6,radioButtons('sep_clusTCR2', 'Separator', c( Tab='\t', Comma=','), ',')),
-                                       #   column(6,radioButtons('quote_clusTCR2', 'Quote', c(None='', 'Double Quote'='"', 'Single Quote'="'"), '"'))
-                                       # ),
-                                       actionButton("run_ClusTCR2","Update Clustering"),
-                                       fluidRow(
-                                         column(6,selectInput( "clusTCR2_names",label = h5("CDR3"),"")),
-                                         column(6,selectInput( "clusTCR2_Vgene",label = h5("V gene"),"")),
-                                         # column(6,selectInput( "clusTCR2_group_column",label = h5("Group"),"")),
-                                         # checkboxInput("include_V_gene", "Include V gene for clustering?", value = T, width = NULL),
-                                       ),
-                                       fluidRow(
-                                         column(6,checkboxInput("allele_ClusTCR2","Remove allele *00?", value = T)),
-                                         column(6, numericInput("cores_ClusTCR2","Number of cores to parallel",value=4))
-                                       )
+                                       conditionalPanel(condition="input.clusTCR2_tabs=='merge'",
+                                                        fileInput('file1_ClusTCR2_multiple', 'Select files to merge',
+                                                                  multiple = TRUE,
+                                                                  accept=c('text/csv', 'text/comma-separated-values,text/plain', '.csv'))
 
+                                       ),
+
+                                       conditionalPanel(condition="input.clusTCR2_tabs=='processing1' || input.clusTCR2_tabs=='processing2'",
+                                                        fileInput('file2_ClusTCR2', 'Select file for single samples',
+                                                                  accept=c('text/csv', 'text/comma-separated-values,text/plain', '.csv')),
+
+                                                        actionButton("run_ClusTCR2","Update Clustering"),
+                                                        fluidRow(
+                                                          column(6,selectInput( "clusTCR2_names",label = h5("CDR3"),"")),
+                                                          column(6,selectInput( "clusTCR2_Vgene",label = h5("V gene"),"")),
+                                                        ),
+                                                        fluidRow(
+                                                          column(6,checkboxInput("allele_ClusTCR2","Remove allele *00?", value = T)),
+                                                          column(6, numericInput("cores_ClusTCR2","Number of cores to parallel",value=4))
+                                                        )
+                                       ),
                           ),
                           mainPanel(
-                            tabsetPanel(
-                              tabPanel("Uploaded file",
-                                       div(DT::dataTableOutput("clust_dt2")),
-                              ),
-                              tabPanel("Outputs",
-                                       tabsetPanel(
-                                         tabPanel('Cluster Labels',
-                                                  add_busy_spinner(spin = "fading-circle"),
-                                                  div(DT::dataTableOutput("ClusTCR2_lab")),
-                                                  downloadButton('download_ClusTCR_labels','Download Cluster table'),
+                            tabsetPanel(id = "clusTCR2_tabs",
+                                        tabPanel("Merge Multiple Files",value = "merge",
+                                                 div(DT::dataTableOutput("DEx_multiple_ClusTCR2")),
+                                                 downloadButton('downloaddf_multiple_ClusTCR2','Download table')
+                                        ),
+                                        tabPanel("Uploaded file",value = "processing1",
+                                                 div(DT::dataTableOutput("clust_dt2")),
+                                        ),
+                                        tabPanel("Outputs",value = "processing2",
+                                                 tabsetPanel(
+                                                   tabPanel('Cluster Labels',
+                                                            add_busy_spinner(spin = "fading-circle"),
+                                                            div(DT::dataTableOutput("ClusTCR2_lab")),
+                                                            downloadButton('download_ClusTCR_labels','Download Cluster table'),
+                                                   ),
+                                                   tabPanel("Figures",
+                                                            # cluster number
+                                                            fluidRow(
+                                                              column(3,numericInput("selected_Cluster","Selected cluster",value = 1)),
+                                                              column(3,numericInput("filter_connections","Keep connections >",value = 1)),
+                                                              #Name (CDR3_V_gene_Cluster), cluster, CDR3, V_gene, Len (length of CDR3 sequence),CDR3_selected,Name_selected,cluster_selected, (_selected only prints names of the chosen cluster), None
+                                                              column(3,selectInput('lab_clust_by',"Label cluster by:",choices = c("Name", "cluster", "CDR3", "V_gene", "Len","CDR3_selected","Name_selected", "cluster_selected","None"),selected = "cluster")),
+                                                              column(3,selectInput('Clust_size_order',"Order of cluster",choices = c("cluster", "Original_cluster", "Clust_size_order"),selected = "Clust_size_order")),
+                                                              column(3,selectInput('colour_ClusTCR2',"Type of colouring",choices = c("color_all", "color_test"),selected = "color_test")),
+                                                              column(3,numericInput("text_size1","Size of selected cluster",value = 4)),
+                                                              column(3,numericInput("text_size2","Size of non-selected cluster",value = 2)),
 
+                                                            ),
+                                                            fluidRow(
+                                                              column(8,plotOutput("NP_ClusTCR",height="600px")),
+                                                              column(4,plotOutput("MP_ClusTCR",height="200px")),
+                                                            ),
+                                                            fluidRow(
+                                                              column(1,numericInput("width_Network_plot2", "Width of PDF", value=10)),
+                                                              column(1,numericInput("height_Network_plot2", "Height of PDF", value=8)),
+                                                              column(2,style = "margin-top: 25px;",downloadButton('downloadPlot_Network_plot2','Download Network PDF')),
+                                                              column(2,numericInput("width_png_Network_plot2","Width of PNG", value = 1200)),
+                                                              column(2,numericInput("height_png_Network_plot2","Height of PNG", value = 1000)),
+                                                              column(2,numericInput("resolution_PNG_Network_plot2","Resolution of PNG", value = 144)),
+                                                              column(2,style = "margin-top: 25px;",downloadButton('downloadPlotPNG_Network_plot2','Download Network PNG')),
 
-                                         ),
-                                         tabPanel("Figures",
-                                                  # cluster number
-                                                  fluidRow(
-                                                    column(3,numericInput("selected_Cluster","Selected cluster",value = 1)),
-                                                    #Name (CDR3_V_gene_Cluster), cluster, CDR3, V_gene, Len (length of CDR3 sequence),CDR3_selected,Name_selected,cluster_selected, (_selected only prints names of the chosen cluster), None
-                                                    column(3,selectInput('lab_clust_by',"Label cluster by:",choices = c("Name", "cluster", "CDR3", "V_gene", "Len","CDR3_selected","Name_selected", "cluster_selected","None"),selected = "cluster")),
-                                                    column(3,selectInput('Clust_size_order',"Order of cluster",choices = c("cluster", "Original_cluster", "Clust_size_order"),selected = "Clust_size_order")),
-                                                    column(3,selectInput('colour_ClusTCR2',"Type of colouring",choices = c("color_all", "color_test"),selected = "color_test")),
-                                                    column(3,numericInput("text_size1","Size of selected cluster",value = 4)),
-                                                    column(3,numericInput("text_size2","Size of non-selected cluster",value = 2)),
+                                                            ),
+                                                            fluidRow(
+                                                              column(1,numericInput("width_Motif_plot2", "Width of PDF", value=10)),
+                                                              column(1,numericInput("height_Motif_plot2", "Height of PDF", value=3.5)),
+                                                              column(2,style = "margin-top: 25px;",downloadButton('downloadPlot_Motif_plot2','Download Motif PDF')),
+                                                              column(2,numericInput("width_png_Motif_plot2","Width of PNG", value = 1200)),
+                                                              column(2,numericInput("height_png_Motif_plot2","Height of PNG", value = 600)),
+                                                              column(2,numericInput("resolution_PNG_Motif_plot2","Resolution of PNG", value = 144)),
+                                                              column(2,style = "margin-top: 25px;",downloadButton('downloadPlotPNG_Motif_plot2','Download Motif PNG'))),
 
-                                                  ),
-                                                  fluidRow(
-                                                    column(8,plotOutput("NP_ClusTCR",height="600px")),
-                                                    column(4,plotOutput("MP_ClusTCR",height="200px")),
-                                                  ),
-                                                  fluidRow(
-                                                    column(1,numericInput("width_Network_plot2", "Width of PDF", value=10)),
-                                                    column(1,numericInput("height_Network_plot2", "Height of PDF", value=8)),
-                                                    column(2,style = "margin-top: 25px;",downloadButton('downloadPlot_Network_plot2','Download Network PDF')),
-                                                    column(2,numericInput("width_png_Network_plot2","Width of PNG", value = 1200)),
-                                                    column(2,numericInput("height_png_Network_plot2","Height of PNG", value = 1000)),
-                                                    column(2,numericInput("resolution_PNG_Network_plot2","Resolution of PNG", value = 144)),
-                                                    column(2,style = "margin-top: 25px;",downloadButton('downloadPlotPNG_Network_plot2','Download Network PNG')),
-
-                                                  ),
-                                                  fluidRow(
-                                                    column(1,numericInput("width_Motif_plot2", "Width of PDF", value=10)),
-                                                    column(1,numericInput("height_Motif_plot2", "Height of PDF", value=3.5)),
-                                                    column(2,style = "margin-top: 25px;",downloadButton('downloadPlot_Motif_plot2','Download Motif PDF')),
-                                                    column(2,numericInput("width_png_Motif_plot2","Width of PNG", value = 1200)),
-                                                    column(2,numericInput("height_png_Motif_plot2","Height of PNG", value = 600)),
-                                                    column(2,numericInput("resolution_PNG_Motif_plot2","Resolution of PNG", value = 144)),
-                                                    column(2,style = "margin-top: 25px;",downloadButton('downloadPlotPNG_Motif_plot2','Download Motif PNG'))),
-
-                                         ),
-                                         tabPanel("Time",
-                                                  add_busy_spinner(spin = "fading-circle"),
-                                                  verbatimTextOutput('ClusTCR2_Time'),
-                                                  # div(DT::dataTableOutput("")),
-                                         )
-                                       ))
+                                                   ),
+                                                   tabPanel("Time",
+                                                            add_busy_spinner(spin = "fading-circle"),
+                                                            verbatimTextOutput('ClusTCR2_Time'),
+                                                            # div(DT::dataTableOutput("")),
+                                                   )
+                                                 ))
 
                             )
                           )
@@ -316,7 +328,7 @@ runSTEGO <- function(){
                                        ),
                                        textInput("project_name","Name of sample",value = ""),
                                        # selectInput("species","Species",choices = c("human","mouse","other")),
-                                       selectInput("df_seruatobj_type","Data type", choices = c("10x Genomics","BD Rhapsody")),
+                                       selectInput("df_seruatobj_type","Data type", choices = c("10x Genomics","BD Rhapsody","Array")),
                                        uiOutput("feature_input"),
                                        actionButton("run","Update Violin plot"),
                                        fluidRow(
@@ -352,6 +364,19 @@ runSTEGO <- function(){
                                                     tabPanel("Before",
                                                              add_busy_spinner(spin = "fading-circle"),
                                                              plotOutput("before_plot_sc", height = "600px"),
+
+                                                             fluidRow(
+                                                               column(1,numericInput("width_before_plot_sc", "Width of PDF", value=10)),
+                                                               column(1,numericInput("height_before_plot_sc", "Height of PDF", value=8)),
+                                                               column(2,style = "margin-top: 25px;",downloadButton('downloadPlot_before_plot_sc','Download Network PDF')),
+                                                               column(2,numericInput("width_png_before_plot_sc","Width of PNG", value = 1200)),
+                                                               column(2,numericInput("height_png_before_plot_sc","Height of PNG", value = 1000)),
+                                                               column(2,numericInput("resolution_PNG_before_plot_sc","Resolution of PNG", value = 144)),
+                                                               column(2,style = "margin-top: 25px;",downloadButton('downloadPlotPNG_before_plot_sc','Download Network PNG')),
+
+                                                             ),
+
+
                                                     ),
                                                     tabPanel("After",
                                                              p("hit 'update Violin plot' to check cut-offs"),
@@ -426,7 +451,7 @@ runSTEGO <- function(){
                           # Sidebar with a slider input
                           sidebarPanel(id = "tPanel5",style = "overflow-y:scroll; max-height: 800px; position:relative;", width=3,
                                        fileInput("file1_h5Seurat.file",
-                                                 "Choose .h5 Seurat files from directory",
+                                                 "Choose .h5Seurat files from directory",
                                                  multiple = TRUE,
                                                  accept=c("h5Seurat",".h5Seurat")),
                                        textInput("project_name2","Name of Project",value = ""),
@@ -443,7 +468,7 @@ runSTEGO <- function(){
                               ),
                               tabPanel("Variable data",
                                        add_busy_spinner(spin = "fading-circle"),
-                                       actionButton("run_var","Run Scale"),
+                                       actionButton("run_var","Run VariableFeatures"),
                                        add_busy_spinner(spin = "fading-circle"),
                                        verbatimTextOutput("var_harmony_verbrose")
                               ),
@@ -517,25 +542,34 @@ runSTEGO <- function(){
                               tabPanel("scGATE",
                                        tabsetPanel(
                                          tabPanel("Annotations to add",
-                                                  fluidRow(column(3,checkboxInput("generic_scGATE","Generic (Human)", value = T)),
-                                                           column(3,checkboxInput("CD4_scGATE","CD4 T cell (Human)", value = T)),
-                                                           column(3,checkboxInput("CD8_scGATE","CD8 T cell (Human)", value = T)),
+                                                  selectInput("GenericID_scGATE","Generic To include",choices = c("Bcell","CD4T","CD8T","CD8TIL" ,"Erythrocyte" ,"Megakaryocyte" , "MoMacDC","Myeloid","NK","PanBcell","panDC","PlasmaCell","Tcell","Tcell.alphabeta"), selected = c("Bcell","MoMacDC","NK","CD8T","CD4T","PlasmaCell"), multiple = T),
+                                                  fluidRow(column(3,checkboxInput("generic_scGATE","Generic (Human)", value = F)),
+                                                           column(3,checkboxInput("CD4_scGATE","CD4 T cell (Human)", value = F)),
+                                                           column(3,checkboxInput("CD8_scGATE","CD8 T cell (Human)", value = F)),
+                                                           column(3,checkboxInput("cellTypist_higher_scGATE","CellTypist (higher) T cell (Human)", value = F)),
+                                                           column(3,checkboxInput("cellTypist_lowerBcells_scGATE","CellTypist (lower) B cell (Human)", value = F)),
+                                                           column(3,checkboxInput("cellTypist_lowerCD4T_scGATE","CellTypist (lower) CD4 T cell (Human)", value = F)),
+                                                           column(3,checkboxInput("cellTypist_lowerCD8T_scGATE","CellTypist (lower) CD8 T cell (Human)", value = F)),
+                                                           column(3,checkboxInput("cellTypist_lowerOtherT_scGATE","CellTypist (lower) Other T cell (Human)", value = F)),
                                                   ),
                                                   add_busy_spinner(spin = "fading-circle"),
-                                                  verbatimTextOutput("scGATE_verbatum_Generic"),
-                                                  verbatimTextOutput("scGATE_verbatum_CD4"),
-                                                  verbatimTextOutput("scGATE_verbatum_CD8"),
+                                                  fluidRow(
+                                                    column(6,verbatimTextOutput("scGATE_verbatum_Generic")),
+                                                    column(6,verbatimTextOutput("scGATE_verbatum_CD4")),
+                                                    column(6,verbatimTextOutput("scGATE_verbatum_CD8")),
+                                                    column(6,verbatimTextOutput("scGATE_verbatum_cellTypist_higher")),
+                                                    column(6,verbatimTextOutput("scGATE_verbatum_cellTypist_lower_Bcells")),
+                                                    column(6,verbatimTextOutput("scGATE_verbatum_cellTypist_lower_CD8T")),
+                                                    column(6,verbatimTextOutput("scGATE_verbatum_cellTypist_lower_CD4T")),
+                                                    column(6,verbatimTextOutput("scGATE_verbatum_cellTypist_lower_OtherT")),
+                                                  )
                                          ),
                                          tabPanel("Table",
                                                   add_busy_spinner(spin = "fading-circle"),
                                                   div(DT::dataTableOutput("DEx_table_TcellClass_scGATE")),
                                          )
                                        )
-
-
-
                               ),
-
                               tabPanel("K-means clustering",
                                        tabsetPanel(
                                          tabPanel("Checking annotation",
@@ -544,10 +578,6 @@ runSTEGO <- function(){
                                                   div(DT::dataTableOutput("DEx_table_TcellClass_3")),
                                          ),
                                          tabPanel("Classification to include",
-
-
-                                                  # actionButton("run_norm2","Run annotation"),
-
                                                   p("Curated list"),
                                                   fluidRow(column(3,checkboxInput("add.classification_T_cell_2","General Adaptive cell markers", value = T)),
                                                            column(3,checkboxInput("add.classification_T_cell_Function_2","Function", value = T)),
@@ -563,7 +593,6 @@ runSTEGO <- function(){
                                                   fluidRow(
                                                     column(3,checkboxInput("add.classification_CellTypist_list_overview_2","CellTypist Overview", value = T)),
                                                     column(3,checkboxInput("add.classification_CellTypist_list_2","CellTypist T cell classification", value = T)),
-
                                                     column(3,checkboxInput("add.classification_CellTypist_cycling_2","CellTypist Cell cycle", value = T)),
                                                     column(3,checkboxInput("add.classification_CellTypist_list_overview_3","CellTypist & curated list", value = T)),
                                                     # column(3,)
@@ -610,6 +639,8 @@ runSTEGO <- function(){
                                                                   accept=c("h5Seurat",'.h5Seurat','rds')),
                                                         fileInput('file_cluster_file', 'Upload clustering file from clusTCR2 (.csv)',
                                                                   accept=c('csv')),
+
+                                                        numericInput("skip_TCRex_up","Skip # of lines for TCRex file",value = 7),
                                                         fileInput('upload_TCRex_file', 'Upload TCRex (.tsv)',
                                                                   accept=c('tsv','.tsv')),
                                                         textInput("name.file_clust","Name added to files",value = ""),
@@ -912,8 +943,6 @@ runSTEGO <- function(){
                                         ),
                                         ### end of differential expression -----
                                         ### TCR and GEX analysis section-----
-
-
                                         tabPanel("TCR and GEX",
 
                                                  fluidRow(
@@ -925,8 +954,6 @@ runSTEGO <- function(){
                                                                     column(4,actionButton("run_top","Update selected clonotype")),
                                                                     column(4, selectInput("Selected_clonotype","Select clonotype:",choices ="")),
                                                                     column(4, selectInput("Selected_chain","Select chain:",choices ="")),
-
-
                                                                   )),
                                                  conditionalPanel(condition="input.Panel_TCRUMAP=='ClusTCR2'",
                                                                   fluidRow(
@@ -936,9 +963,18 @@ runSTEGO <- function(){
                                                                   ),
                                                  ),
 
+                                                 conditionalPanel(condition="input.Panel_TCRUMAP=='Epitope'",
+                                                                  fluidRow(
+                                                                    column(4,uiOutput("classification_to_add_epitope")),
+                                                                    column(4,uiOutput("classification_to_add_epitope2")),
+                                                                  ),
+                                                 ),
+
+
+
+
                                                  ##### Classification to include ------
                                                  tabsetPanel(id = "Panel_TCRUMAP",
-
                                                              # T cell classification ------
                                                              tabPanel("GEX",
                                                                       tabsetPanel(id = "Panel_class",
@@ -958,7 +994,6 @@ runSTEGO <- function(){
                                                                                                               uiOutput('cols_UMAP_all_classification'))),
                                                                                              column(9, plotOutput("UMAP_all_classification2",height="600px"))
                                                                                            ),
-
                                                                                            fluidRow(
                                                                                              column(1,numericInput("width_UMAP_all_classification", "Width of PDF", value=10)),
                                                                                              column(1,numericInput("height_UMAP_all_classification", "Height of PDF", value=8)),
@@ -967,24 +1002,28 @@ runSTEGO <- function(){
                                                                                              column(2,numericInput("height_png_UMAP_all_classification","Height of PNG", value = 1000)),
                                                                                              column(2,numericInput("resolution_PNG_UMAP_all_classification","Resolution of PNG", value = 144)),
                                                                                              column(2,style = "margin-top: 25px;",downloadButton('downloadPlotPNG_UMAP_all_classification','Download PNG'))),
-
-
-
                                                                                   ),
 
                                                                                   tabPanel("Pie chart",value = 15,
                                                                                            add_busy_spinner(spin = "fading-circle"),
                                                                                            fluidRow(
                                                                                              column(3,numericInput("strip_size","Size of header",value = 10)),
-
-
+                                                                                             column(9,p("Fill = Select function type; Group = Select cluster"))
                                                                                            ),
                                                                                            fluidRow(column(3,
                                                                                                            wellPanel(id = "tPanel23",style = "overflow-y:scroll; max-height: 600px",
                                                                                                                      uiOutput('myPanel_pie'))), # pie chart
                                                                                                     column(9, plotOutput("Classification_clonotype_pie",height="600px"))),
 
-                                                                                           # plotOutput("",height="600px")
+                                                                                           fluidRow(
+                                                                                             column(1,numericInput("width_Classification_clonotype_pie", "Width of PDF", value=10)),
+                                                                                             column(1,numericInput("height_Classification_clonotype_pie", "Height of PDF", value=8)),
+                                                                                             column(2,style = "margin-top: 25px;",downloadButton('downloadPlot_Classification_clonotype_pie','Download PDF')),
+                                                                                             column(2,numericInput("width_png_Classification_clonotype_pie","Width of PNG", value = 1200)),
+                                                                                             column(2,numericInput("height_png_Classification_clonotype_pie","Height of PNG", value = 1000)),
+                                                                                             column(2,numericInput("resolution_PNG_Classification_clonotype_pie","Resolution of PNG", value = 144)),
+                                                                                             column(2,style = "margin-top: 25px;",downloadButton('downloadPlotPNG_Classification_clonotype_pie','Download PNG'))),
+
                                                                                   ),
                                                                                   tabPanel("Longitudinal (χ2) ",
                                                                                            h5("balloonplot of χ2"),
@@ -999,19 +1038,20 @@ runSTEGO <- function(){
                                                                                              ),
                                                                                              tabPanel("balloonplot",
                                                                                                       plotOutput("Chi_square_plot",height="600px"),
+                                                                                                      fluidRow(
+                                                                                                        column(1,numericInput("width_Chi_square_plot", "Width of PDF", value=10)),
+                                                                                                        column(1,numericInput("height_Chi_square_plot", "Height of PDF", value=8)),
+                                                                                                        column(2,style = "margin-top: 25px;",downloadButton('downloadPlot_Chi_square_plot','Download PDF')),
+                                                                                                        column(2,numericInput("width_png_Chi_square_plot","Width of PNG", value = 1200)),
+                                                                                                        column(2,numericInput("height_png_Chi_square_plot","Height of PNG", value = 1000)),
+                                                                                                        column(2,numericInput("resolution_png_Chi_square_plot","Resolution of PNG", value = 144)),
+                                                                                                        column(2,style = "margin-top: 25px;",downloadButton('downloadPlotPNG_Chi_square_plot','Download PNG'))),
                                                                                              )
-
                                                                                            ),
-
                                                                                   )
-
-
 
                                                                       ),
                                                              ),
-
-
-
                                                              # top clonotypes plot -----
                                                              tabPanel("Top clonotypes", value = "top_clone",
                                                                       # fluidRow(column(3,selectInput("View_AG_or_BD_top_clone","Select top chain:",choices = c("Alpha or Gamma","Beta or Delta"))),
@@ -1054,10 +1094,8 @@ runSTEGO <- function(){
                                                                                    column(3,
                                                                                           wellPanel(id = "tPanel23",style = "overflow-y:scroll; max-height: 600px",
                                                                                                     uiOutput('myPanel_Top_pie_clonotype'))),
-                                                                                   column(9, plotOutput("top_clonotype_pie",height="600px"))
-
+                                                                                   column(9, plotOutput("top_clonotype_pie",height="600px")),
                                                                                  ),
-
                                                                                  fluidRow(
                                                                                    column(1,numericInput("width_top_clonotype_pie", "Width of PDF", value=10)),
                                                                                    column(1,numericInput("height_top_clonotype_pie", "Height of PDF", value=8)),
@@ -1071,10 +1109,7 @@ runSTEGO <- function(){
                                                                                  actionButton("run_string.data_Exp_top","View Ridge plot"),
                                                                                  fluidRow(column(12, selectInput("string.data_Exp_top","column names for summary","",multiple = F, width = "1200px") )),
                                                                                  tabsetPanel(
-
-
                                                                                    tabPanel("Plots",
-
                                                                                             div(DT::dataTableOutput("Violin_chart_alpha_gamma")),
                                                                                             fluidRow(
                                                                                               column(3, checkboxInput("restric_ex","Restrict to above a threshold?", value = F )),
@@ -1114,20 +1149,26 @@ runSTEGO <- function(){
                                                              # clusTCR specific analysis
                                                              # tabPanel("clusTCR"),
                                                              # epitope analysis -----
-                                                             tabPanel("Epitope",
+                                                             tabPanel("Epitope", value = "Epitope",
                                                                       tabsetPanel(
+
                                                                         tabPanel("Uploaded Epitope file",
                                                                                  add_busy_spinner(spin = "fading-circle"),
-
-
                                                                                  div(DT::dataTableOutput("MainTcell_Check")),
+                                                                        ),
+
+                                                                        tabPanel("Summary Table",
+                                                                                 add_busy_spinner(spin = "fading-circle"),
+                                                                                 div(DT::dataTableOutput("Pie_Epitope_dt")),
+                                                                                 downloadButton('downloaddf_Pie_Epitope_dt','Download table')
+
+
                                                                         ),
 
                                                                         tabPanel("Heatmap",
                                                                                  fluidRow(
                                                                                    column(3,selectInput("epitope_hm","y-axis",choices = c("CDR3_beta","epitope","pathology"),selected = "epitope")),
                                                                                    column(3,selectInput("pathology_hm","x-axis",choices = c("CDR3_beta","epitope","pathology"),selected = "pathology")),
-
                                                                                  ),
 
                                                                                  plotOutput("Heatmap_epi_plot",height="600px"),
@@ -1144,7 +1185,7 @@ runSTEGO <- function(){
 
                                                                         ),
                                                                         tabPanel("UMAP",
-                                                                                 column(3,selectInput("epitope_umap_selected","Select",choices = c("beta","epitope","pathology"),selected = "pathology")),
+                                                                                 # column(3,selectInput("epitope_umap_selected","Select",choices = c("beta","epitope","pathology"),selected = "pathology")),
                                                                                  fluidRow(
                                                                                    column(3,
                                                                                           wellPanel(id = "tPanel23",style = "overflow-y:scroll; max-height: 600px",
@@ -1161,9 +1202,24 @@ runSTEGO <- function(){
                                                                                    column(2,numericInput("resolution_PNG_UMAP_Epitope","Resolution of PNG", value = 144)),
                                                                                    column(2,style = "margin-top: 25px;",downloadButton('downloadPlotPNG_UMAP_Epitope','Download PNG'))),
 
+                                                                        ),
+                                                                        tabPanel("Pie (Expression)",
+                                                                                 fluidRow(
+                                                                                   column(3,
+                                                                                          wellPanel(id = "tPanel23",style = "overflow-y:scroll; max-height: 600px",
+                                                                                                    uiOutput('myPanel_cols_epitope_pie'))),
+                                                                                   column(9, plotOutput("Pie_Epitope_plot",height="600px"))
+                                                                                 ),
+
+                                                                                 fluidRow(
+                                                                                   column(1,numericInput("width_Pie_Epitope", "Width of PDF", value=10)),
+                                                                                   column(1,numericInput("height_Pie_Epitope", "Height of PDF", value=8)),
+                                                                                   column(2,style = "margin-top: 25px;",downloadButton('downloadPlot_Pie_Epitope','Download PDF')),
+                                                                                   column(2,numericInput("width_png_Pie_Epitope","Width of PNG", value = 1200)),
+                                                                                   column(2,numericInput("height_png_Pie_Epitope","Height of PNG", value = 1000)),
+                                                                                   column(2,numericInput("resolution_PNG_Pie_Epitope","Resolution of PNG", value = 144)),
+                                                                                   column(2,style = "margin-top: 25px;",downloadButton('downloadPlotPNG_Pie_Epitope','Download PNG'))),
                                                                         )
-
-
                                                                       ),
 
                                                              ),
@@ -1203,20 +1259,18 @@ runSTEGO <- function(){
                                                                         ),
                                                                         tabPanel("motif",
                                                                                  plotOutput("Motif_ClusTCR2_cluster",height="300px"),
-
-
                                                                         )
-
-
-
                                                                       )
 
                                                              ),
-                                                             #
+                                                             # Overlap ------
                                                              tabPanel("Overlap",
                                                                       tabsetPanel(
-                                                                        tabPanel("Overlap",
+                                                                        tabPanel("Table",
                                                                                  div(DT::dataTableOutput("Upset_plot_overlap_Tb")),
+                                                                                 downloadButton('downloaddf_Upset_plot_overlap_Tb','Download table')
+                                                                        ),
+                                                                        tabPanel("Upset Plot",
 
                                                                                  plotOutput("Upset_plot_overlap"),
                                                                                  fluidRow(
@@ -1227,7 +1281,6 @@ runSTEGO <- function(){
                                                                                    column(2,numericInput("height_png_Upset_plot_overlap","Height of PNG", value = 1000)),
                                                                                    column(2,numericInput("resolution_PNG_Upset_plot_overlap","Resolution of PNG", value = 144)),
                                                                                    column(2,style = "margin-top: 25px;",downloadButton('downloadPlotPNG_Upset_plot_overlap','Download PNG'))),
-
                                                                         ),
                                                                         tabPanel("UMAP")
                                                                       )
@@ -1235,9 +1288,6 @@ runSTEGO <- function(){
                                                              # tabPanel("Clonotypes per cluster (Pie/bar plot)"),
                                                              # tabPanel("Upset plot")
                                                  ),
-
-
-
                                         ),
                                         ### Longitudinal  -----
                                         #
@@ -1265,7 +1315,6 @@ runSTEGO <- function(){
                ),
                # end of Integration -----
                # tabPanel("Epitope")
-
     ) # nav page
   )
 
@@ -1274,20 +1323,65 @@ runSTEGO <- function(){
   server <- function(input, output,session) {
     # add UI ------
     output$classification_to_add <- renderUI({
-
       sc <- input.data_sc_pro()
-
       validate(
         need(nrow(sc)>0,
              error_message_val_UMAP)
       )
 
       df3.meta <- c(names(sc@meta.data))
-      df3.meta <- df3.meta[!grepl("RNA",df3.meta) & !grepl("BCR",df3.meta) &!grepl("orig.ident",df3.meta) & !grepl("TCR",df3.meta)& !grepl("_gene",df3.meta) & !grepl("allele",df3.meta) & !grepl("percent",df3.meta) & !grepl("cdr3",df3.meta)]
+      df3.meta <- df3.meta[!grepl("RNA",df3.meta) & !grepl("BCR",df3.meta) & !grepl("TCR",df3.meta)& !grepl("_gene",df3.meta) & !grepl("allele",df3.meta) & !grepl("percent",df3.meta) & !grepl("cdr3",df3.meta)]
       selectInput("clust_names_top","Select function type:",choices = df3.meta,selected="seurat_clusters")
 
     })
 
+
+    output$classification_to_add_epitope <- renderUI({
+      df3.meta <-  Add.UMAP.reduction()
+      # summarising the clonality
+      epi <- input.data_sc_TCRex()
+      validate(
+        need(nrow(df3.meta)>0 & nrow(epi)>0,
+             "Upload Files")
+      )
+      if(input$datasource == "BD rhapsody") {
+        df3.meta$CDR3_beta <- paste("C",df3.meta$cdr3_BD,"F",sep="")
+
+      }
+      else {
+        df3.meta$CDR3_beta <- df3.meta$cdr3_BD
+      }
+      epi$beta <- epi$CDR3_beta
+      df3.meta <- merge(df3.meta,epi,by="CDR3_beta")
+
+      selectInput("epitope_umap_selected","Colour Pie by (hm = y-axis):",choices = names(df3.meta),selected="beta")
+
+    })
+
+
+    output$classification_to_add_epitope2 <- renderUI({
+      df3.meta <-  Add.UMAP.reduction()
+      # summarising the clonality
+      epi <- input.data_sc_TCRex()
+      validate(
+        need(nrow(df3.meta)>0 & nrow(epi)>0,
+             "Upload Files")
+      )
+      if(input$datasource == "BD rhapsody") {
+        df3.meta$CDR3_beta <- paste("C",df3.meta$cdr3_BD,"F",sep="")
+
+      }
+      else {
+        df3.meta$CDR3_beta <- df3.meta$cdr3_BD
+      }
+      epi$beta <- epi$CDR3_beta
+      df3.meta <- merge(df3.meta,epi,by="CDR3_beta")
+
+      selectInput("epitope_umap_selected2","Split Pie by (hm = x-axis):",choices = names(df3.meta),selected="beta")
+
+    })
+
+    # column(3,selectInput("epitope_umap_selected","Select",choices = c("beta","epitope","pathology"),selected = "pathology")),
 
     # user interface parameters-----
     output$feature_input <- renderUI({
@@ -1296,14 +1390,25 @@ runSTEGO <- function(){
           column(6,numericInput("features.min","minimum features (<)", value = 200)),
           column(6,numericInput("features.max","Maximum features (<)", value = 6000)),
           column(6,numericInput("percent.mt","Mictochondrial DNA cut-off (<)", value = 20)),
+          column(6,numericInput("percent.rb","Ribosomal RNA cut-off (>)", value = 5)),
+        )
+      }
+
+
+
+      else if (input$df_seruatobj_type=="BD Rhapsody") {
+        fluidRow(
+          column(6,numericInput("features.min","minimum features (<)", value = 45)),
+          column(6,numericInput("features.max","Maximum features (<)", value = 160)),
+          column(6,numericInput("percent.mt","Mictochondrial DNA cut-off (<)", value = 20)),
           column(6,numericInput("percent.rb","Ribosomal RNA cut-off (>)", value = 0)),
         )
       }
 
       else {
         fluidRow(
-          column(6,numericInput("features.min","minimum features (<)", value = 45)),
-          column(6,numericInput("features.max","Maximum features (<)", value = 160)),
+          column(6,numericInput("features.min","minimum features (<)", value = 200)),
+          column(6,numericInput("features.max","Maximum features (<)", value = 6000)),
           column(6,numericInput("percent.mt","Mictochondrial DNA cut-off (<)", value = 20)),
           column(6,numericInput("percent.rb","Ribosomal RNA cut-off (>)", value = 0)),
         )
@@ -1435,8 +1540,6 @@ runSTEGO <- function(){
       else {
         productive <- calls_TCR_count
       }
-
-
       # filter out un-paired TCR's
       if (input$filtering_TCR ==T) {
 
@@ -1446,18 +1549,12 @@ runSTEGO <- function(){
         else {
           paired <- productive[productive$paired_TCR %in% "paired TCR",]
         }
-
       }
-
       else {
-
         paired <- productive
       }
-
       paired
     }
-
-
     output$Filtering_BD <- DT::renderDataTable(escape = FALSE, filter = list(position = 'top', clear = FALSE),  options = list(autoWidth = FALSE, lengthMenu = c(2,5,10,20,50,100), pageLength = 5, scrollX = TRUE),{
       df()
 
@@ -1490,7 +1587,7 @@ runSTEGO <- function(){
 
     output$downloadtb_sample_tags <- downloadHandler(
       filename = function(){
-        paste(input$name.BD," Sample_Tags ",gsub("-", ".", Sys.Date()),".csv", sep = "")
+        paste(input$name.BD,"_Sample_Tags_",gsub("-", ".", Sys.Date()),".csv", sep = "")
       },
       content = function(file){
         df <- as.data.frame(samp.tags())
@@ -1521,6 +1618,8 @@ runSTEGO <- function(){
       }
 
       df_nocouts3 <- df_nocouts3[-c(grep("^$",df_nocouts3$junction_aa)),] # remove blank columns
+      df_nocouts3 <- df_nocouts3[-c(grep("[*]",df_nocouts3$junction_aa)),] # remove st
+
       df_nocouts3
 
     }
@@ -1751,7 +1850,7 @@ runSTEGO <- function(){
 
     output$downloaddf_TCRex_BDrap <- downloadHandler(
       filename = function(){
-        paste(input$name.BD," TCRex ",gsub("-", ".", Sys.Date()),".tsv", sep = "")
+        paste(input$name.BD,"_TCRex_",gsub("-", ".", Sys.Date()),".tsv", sep = "")
       },
       content = function(file){
         df <- as.data.frame(TCRex_BDrap_df())
@@ -1762,7 +1861,7 @@ runSTEGO <- function(){
     # count matrix download ----
     output$downloadtb_count_matrix <- downloadHandler(
       filename = function(){
-        paste(input$name.BD," BD_Count_Matrix_",gsub("-", ".", Sys.Date()),".csv", sep = "")
+        paste(input$name.BD,"_BD_Count_Matrix_",gsub("-", ".", Sys.Date()),".csv", sep = "")
       },
       content = function(file){
         df <- as.data.frame(t(df_count.matrix()))
@@ -2331,6 +2430,7 @@ runSTEGO <- function(){
 
 
 
+
     # Array ------
     input.data.calls.array <- reactive({
       inFile_arrayM <- input$file_calls_Array
@@ -2452,7 +2552,7 @@ runSTEGO <- function(){
       calls <- Filtering_TCR_Array()
       validate(
         need(nrow(calls)>0,
-             "Upload Contig/TCR file")
+             "Upload Contig TCR file")
       )
       calls
     })
@@ -2464,7 +2564,12 @@ runSTEGO <- function(){
       df_nocouts2_BD <- df[,names(df) %in% c("Sample_Name","cdr3_BD","v_gene_BD")]
       names(df_nocouts2_AG) <- c("Sample_Name","junction_aa","v_call")
       names(df_nocouts2_BD) <- c("Sample_Name","junction_aa","v_call")
+
+
+
       df_nocouts3 <-as.data.frame(rbind(df_nocouts2_AG,df_nocouts2_BD))
+
+      df_nocouts3 <- df_nocouts3[-c(grep("[*]",df_nocouts3$junction_aa)),] # remove st
       df_nocouts3 <- subset(df_nocouts3,df_nocouts3$v_call!="None")
       df_nocouts3
 
@@ -2484,30 +2589,123 @@ runSTEGO <- function(){
       } )
     # TCRex array  -----
 
+    ## seurat count table ----
+    tb_Array_matrix <- function () {
+      mmMat <- as.data.frame(input.data.calls.array())
+
+      validate(
+        need(nrow(mmMat)>0,
+             "Upload files")
+      )
+      mmMat
+    }
+
+    output$tb_array_matrix2 <- DT::renderDataTable(escape = FALSE, options = list(autoWidth = FALSE, lengthMenu = c(2,5,10,20,50,100), pageLength = 2, scrollX = TRUE),{
+      tb_Array_matrix()[1:6,1:6]
+    })
+
+    output$downloadtb_array_matrix2 <- downloadHandler(
+      filename = function(){
+        paste(input$name.array,"_count-matrix_array_",gsub("-", ".", Sys.Date()),".csv", sep = "")
+      },
+      content = function(file){
+        df <- as.data.frame(t(tb_Array_matrix()))
+        # write.table(,file, row.names = T)
+        write.csv(df,file)
+      })
+
+    ## meta.data for seurat ----
+    tb_Array_meta.data_TCR <- function () {
+      contigs <- Filtering_TCR_Array()
+      validate(
+        need(nrow(contigs)>0,
+             "Upload file")
+      )
+      contigs$Cell_Index <- rownames(contigs)
+      contigs$Cell_Index <- gsub("[:]","-",contigs$Cell_Index)
+      contigs$Cell_Index <- gsub("[.]","-",contigs$Cell_Index)
+      contigs$Sample_Name <- input$sample_name_Array
+
+      contig_paired_only <- contigs %>%
+        select(all_of(c("Cell_Index","Sample_Name")), everything())
+
+      contig_paired_only
+    }
+
+    output$tb_Array_meta1 <- DT::renderDataTable(escape = FALSE, options = list(autoWidth = FALSE, lengthMenu = c(2,5,10,20,50,100), pageLength = 5, scrollX = TRUE),{
+      tb_Array_meta.data_TCR()
+    })
+    output$downloadtb_array_metadata2 <- downloadHandler(
+      filename = function(){
+        paste(input$name.array,"_metadata_array_",gsub("-", ".", Sys.Date()),".csv", sep = "")
+      },
+      content = function(file){
+
+        df <-  tb_Array_meta.data_TCR()
+        write.csv(df, file, row.names = F)
+
+      } )
+
+
+
+
+
     # ClusTCR2 ------
-    # input.data_ClusTCR2 <- reactive({switch(input$dataset2,"test_data_clusTCR2" = test.data_clusTCR2(),"own_data_clusTCR2" = own.data_clusTCR2())})
-    # test.data_clusTCR2 <- reactive({
-    #   # system.file("extdata","inst/extdata/clusTCR/cdr3.csv",package = "STEGO.R")
-    #   dataframe = read.csv(system.file("extdata","clusTCR/cdr3.csv",package = "STEGO.R"))
-    #   # dataframe = read.csv("../cdr3.csv")
-    # })
     input.data_ClusTCR2  <- reactive({
       inFile2_ClusTCR2 <- input$file2_ClusTCR2
       if (is.null(inFile2_ClusTCR2)) return(NULL)
       else {
         dataframe <- read.csv(
-          inFile2_ClusTCR2$datapath,
-          header=TRUE,
-          # sep=input$sep_ClusTCR2,
-          # quote=input$quote_ClusTCR2
-        )}
+          inFile2_ClusTCR2$datapath,header=TRUE)
+      }
     })
 
+
+    input.data_ClusTCR2_multiple <- reactive({
+
+      inFile.seq <- input$file1_ClusTCR2_multiple
+      num <- dim(inFile.seq)[1]
+      samples_list <- vector("list", length = num)
+      samples_list
+      for (i in 1:num) {
+        sc <- read.csv(input$file1_ClusTCR2_multiple[[i, 'datapath']])
+        samples_list[[i]] <- sc
+      }
+      samples_list
+    })
+
+    merged_Clust_filtered <- reactive({
+      myfiles <- input.data_ClusTCR2_multiple()
+      df <- rbind(myfiles[[1]])
+      for (i in 2:length(myfiles)) {
+        df <- rbind(df,myfiles[[i]])
+      }
+      # df <- df[-c(grep("[*]",df$junction_aa)),]
+      df
+      df[!duplicated(df$junction_aa,df$v_call),]
+    })
+
+    output$DEx_multiple_ClusTCR2 <-  DT::renderDataTable(escape = FALSE, filter = list(position = 'top', clear = FALSE), options = list(autoWidth = FALSE, lengthMenu = c(2,5,10,20,50,100), pageLength = 5, scrollX = TRUE),{
+      df <- merged_Clust_filtered()
+      # validate(
+      #   need(nrow(df)>0,
+      #        "Upload mutliple CLusTCR2 files to merge")
+      # )
+      df
+    })
+
+    output$downloaddf_multiple_ClusTCR2 <- downloadHandler(
+      filename = function(){
+        paste("Multi_ClusTCR",gsub("-", ".", Sys.Date()),".csv", sep = "")
+      },
+      content = function(file){
+        df <- merged_Clust_filtered()
+        write.csv(df,file, row.names = F)
+      })
 
     # rendering the table
 
     observe({
-
       updateSelectInput(
         session,
         "clusTCR2_names",
@@ -2570,7 +2768,6 @@ runSTEGO <- function(){
       end <- proc.time() - ptm
       cluster_lab[[3]] <- end
       vals_ClusTCR2$output_dt2 <- cluster_lab
-
     })
 
     ClusTCR2_lab_df <- reactive({
@@ -2605,16 +2802,17 @@ runSTEGO <- function(){
       Network_df <- vals_ClusTCR2$output_dt2
       set.seed(123)
       # ?netplot
-      netplot(Network_df,
-              Clust_selected = input$selected_Cluster,
-              label=input$lab_clust_by,
-              Clust_column_name = input$Clust_size_order,
-              colour = input$colour_ClusTCR2,
-              selected_text_size = input$text_size1,
-              non_selected_text_size = input$text_size2,
-              alpha_selected = 1,alpha_non_selected = 1,
-              selected_text_col = "black",
-              non_selected_text_col = "black")
+      netplot_ClusTCR2(Network_df,
+                       filter_plot = input$filter_connections,
+                       Clust_selected = input$selected_Cluster,
+                       label=input$lab_clust_by,
+                       Clust_column_name = input$Clust_size_order,
+                       colour = input$colour_ClusTCR2,
+                       selected_text_size = input$text_size1,
+                       non_selected_text_size = input$text_size2,
+                       alpha_selected = 1,alpha_non_selected = 1,
+                       selected_text_col = "black",
+                       non_selected_text_col = "black")
 
     })
     output$NP_ClusTCR <- renderPlot({
@@ -2680,19 +2878,6 @@ runSTEGO <- function(){
 
     # Seurat -----
     ## uploading the raw files ----
-    # input.data_sc <- reactive({switch(input$dataset_sc,"test_data_sc" = test.data_sc(),"own_data_sc" = own.data_sc())})
-    # test.data_sc <- reactive({
-    #   if (input$df_seruatobj_type =="10x") {
-    #     # dataframe = read.csv(system.file("extdata","clusTCR/cdr3.csv",package = "STEGO.R"))
-    #     dataframe = read.csv(system.file("extdata","10x/Mahuron_Melanoma_2020/LN/K409_LN.count-matrix_10x_2023.03.08.csv.gz",package = "STEGO.R"))
-    #     # head(dataframe)[1:6,1:6]
-    #     # dataframe = read.csv("../filename.csv.gz")
-    #   }
-    #   else {
-    #     dataframe = read.csv(system.file("extdata","BDrhap/Seurat/BD_Count_Matrix_2023.03.07.csv",package = "STEGO.R"),row.names = 1)
-    #     # dataframe = read.csv("../Public data/Bd Rhapsody/QC_output/BD_Count_Matrix_2023.02.27.csv",row.names = 1)
-    #   }
-    # })
     input.data_sc <- reactive({
       inFile_sc <- input$file_SC
       if (is.null(inFile_sc)) return(NULL)
@@ -2700,6 +2885,7 @@ runSTEGO <- function(){
         if (input$df_seruatobj_type =="10x Genomics") {
           dataframe = read.csv(inFile_sc$datapath)
         }
+
         else {
           dataframe = read.csv(inFile_sc$datapath,row.names = 1)
         }
@@ -2719,8 +2905,14 @@ runSTEGO <- function(){
         rownames(df.test) <- make.unique(df.test$Gene_Name)
         df.test2 <- df.test[,!names(df.test) %in% c("Gene_Name")]
       }
-      else {
+
+      else if (input$df_seruatobj_type=="BD Rhapsody") {
         names(df.test) <- gsub("X","",names(df.test))
+        df.test2 <- df.test[!rownames(df.test) %in% c("Cell_Index"),]
+      }
+
+      else {
+        names(df.test) <- gsub("[.]","-",names(df.test))
         df.test2 <- df.test[!rownames(df.test) %in% c("Cell_Index"),]
 
       }
@@ -2744,10 +2936,18 @@ runSTEGO <- function(){
         sc[["percent.rb"]] <- PercentageFeatureSet(sc, pattern = "^RP[SL]")
         sc
       }
-      else {
+      else if (input$df_seruatobj_type=="BD Rhapsody") {
         names(df.test) <- gsub("X","",names(df.test))
         df.test2 <- df.test[!rownames(df.test) %in% c("Cell_Index"),]
         sc <- CreateSeuratObject(counts = df.test2, project = input$project_name)
+        sc[["percent.mt"]] <- PercentageFeatureSet(sc, pattern = "^MT-")
+        sc[["percent.rb"]] <- PercentageFeatureSet(sc, pattern = "^RP[SL]")
+        sc
+      }
+
+      else {
+        names(df.test) <- gsub("[.]","-",names(df.test))
+        sc <- CreateSeuratObject(counts = df.test, project = input$project_name)
         sc[["percent.mt"]] <- PercentageFeatureSet(sc, pattern = "^MT-")
         sc[["percent.rb"]] <- PercentageFeatureSet(sc, pattern = "^RP[SL]")
         sc
@@ -2760,7 +2960,6 @@ runSTEGO <- function(){
              "Upload files")
       )
       VlnPlot(sc, features = c("nFeature_RNA", "nCount_RNA", "percent.mt","percent.rb"), ncol = 2)
-
     })
 
     output$before_plot_sc <- renderPlot({
@@ -2770,6 +2969,31 @@ runSTEGO <- function(){
                    })
       before_plot()
     })
+
+
+    output$downloadPlot_before_plot_sc <- downloadHandler(
+      filename = function() {
+        x <- gsub(":", ".", Sys.time())
+        paste(input$project_name2,"_before_plot_sc_",gsub("/", "-", x), ".pdf", sep = "")
+      },
+      content = function(file) {
+        pdf(file, width=input$width_before_plot_sc,height=input$height_before_plot_sc, onefile = FALSE) # open the pdf device
+        plot(before_plot())
+        dev.off()}, contentType = "application/pdf" )
+
+    output$downloadPlotPNG_before_plot_sc <- downloadHandler(
+      filename = function() {
+        x <- gsub(":", ".", Sys.time())
+        paste(input$project_name2,"_before_plot_sc_", gsub("/", "-", x), ".png", sep = "")
+      },
+      content = function(file) {
+        png(file, width = input$width_png_before_plot_sc, height = input$height_png_before_plot_sc, res = input$resolution_PNG_before_plot_sc)
+        plot(before_plot())
+        dev.off()},   contentType = "application/png" # MIME type of the image
+    )
+
+    ##### after filtering plot
+
 
     vals2 <- reactiveValues(after_violin_plot=NULL)
     observeEvent(input$run,{
@@ -3052,9 +3276,6 @@ runSTEGO <- function(){
         need(nrow(sc)>0,
              "Run Variable")
       )
-
-
-
       sc <- FindVariableFeatures(sc, selection.method = "vst", nfeatures = 2000)
       Vals_norm4$Norm1 <- sc
     })
@@ -3074,8 +3295,13 @@ runSTEGO <- function(){
         need(nrow(sc)>0,
              "Run Scale")
       )
-      all.genes <- rownames(sc)
-      sc <- ScaleData(sc, features = all.genes)
+
+      kmeans <- read.csv("../inst/Kmeans.requires.annotation.csv")
+
+      var.genes <- as.data.frame(sc@assays$RNA@var.features)
+      names(var.genes) <- "V1"
+      all.genes <- rbind(kmeans,all.genes)
+      sc <- ScaleData(sc, features = all.genes$V1)
       Vals_norm1$Norm1 <- sc
     })
 
@@ -3155,7 +3381,7 @@ runSTEGO <- function(){
       DimPlot(sc, reduction = "umap", group.by = "orig.ident", pt.size = 1)
     })
 
-    # downlaod Harmony merged ----
+    # download Harmony merged ----
     output$downloadPlot_sc_merged <- downloadHandler(
       filename = function() {
         x <- gsub(":", ".", Sys.time())
@@ -3262,7 +3488,7 @@ runSTEGO <- function(){
       sc <- test.data_anno()
       head(sc)[1:6]
     })
-
+    # add T cell classification
     add.classification_T_cell_Df_2 <- reactive({
       MainTcell <- test.data_anno()
 
@@ -3278,8 +3504,8 @@ runSTEGO <- function(){
 
         centre_size <- round(dim(MainTcell_test)[1]/20,0)
 
-        if(centre_size>100) {
-          centre_size=100
+        if(centre_size>500) {
+          centre_size=500
         }
 
         else {
@@ -3292,14 +3518,15 @@ runSTEGO <- function(){
 
         df_centres <- as.data.frame(kmeans10$centers)
 
+
+
+
         df_centres <- df_centres %>%
           mutate(classify.Adaptive.cell = case_when(
             TRAC>0 & TRDC <0 & c(CD3D>0 | CD3E >0 |CD3G>0 ) & CD4 >0 & CD8B > 0 & CD8A > 0 ~ "CD4+CD8ab+ ab T cells",
             TRAC<0 & TRDC >0 & c(CD3D>0 | CD3E >0 |CD3G>0 ) & CD4 >0 & CD8B > 0 & CD8A > 0 ~ "CD4+CD8ab+ gd T cells",
             c(CD3D>0 | CD3E >0 |CD3G>0 ) & CD4 >0 & CD8B < 0 & CD8A > 0 ~ "CD4+CD8a+",
-
             c(CD3D>0 | CD3E >0 |CD3G>0 ) & CD4 >0 & CD8B < 0 & CD8A < 0 & TRAC> 0 ~ "CD4+ ab T cell",
-
             c(CD3D>0 | CD3E >0 |CD3G>0 ) & CD4 <0 & CD8B > 0 & CD8A > 0 & TRDV1>0 ~ "CD8ab+ Vd1 T cells",
             c(CD3D>0 | CD3E >0 |CD3G>0 ) & CD4 <0 & CD8B > 0 & CD8A > 0 ~ "CD8ab+",
             c(CD3D>0 | CD3E >0 |CD3G>0 ) & CD4 <0 & CD8B < 0 & CD8A > 0 & TRDC>0 & TRDV2>0 & TRGV9>0 ~ "CD8a+ Vd2g9 T cell",
@@ -3368,13 +3595,10 @@ runSTEGO <- function(){
 
         d_frame <- na.omit(MainTcell_test)
         centre_size <- round(dim(MainTcell_test)[1]/10,0)
-
         if(centre_size>500) {
           centre_size=500
         }
-
         else {
-
           centre_size <- round(dim(MainTcell_test)[1]/10,0)
         }
 
@@ -4626,9 +4850,7 @@ runSTEGO <- function(){
 
 
     })
-
     Vals_norm3 <- reactiveValues(Norm3=NULL)
-
     anno_final_kmeans <- reactive({
       sc <- getData_2()
       validate(
@@ -4678,12 +4900,13 @@ runSTEGO <- function(){
         need(nrow(sc)>0,
              "Upload file for annotation")
       )
-      scGate_models_DB <- get_scGateDB()
 
       df <- as.data.frame(sc@meta.data[,names(sc@meta.data) %in% c("Cell_Index")])
       names(df) <- "Cell_Index"
-      if (input$CD8_scGATE==T) {
-        models.list <- scGate_models_DB$human$generic[c("Bcell","MoMacDC","NK","CD8T","CD4T","Erythrocyte","PlasmaCell")]
+      if (input$generic_scGATE==T) {
+        scGate_models_DB <- custom_db_scGATE(system.file("scGATE","human/generic",package = "STEGO.R"))
+        names(scGate_models_DB)
+        models.list <- scGate_models_DB[c(input$GenericID_scGATE)]
         obj <- scGate(sc, model = models.list)
         df$generic <- obj@meta.data$scGate_multi
       }
@@ -4692,19 +4915,17 @@ runSTEGO <- function(){
       }
       df
     })
-
     scGATE_anno_CD4 <- reactive({
       sc <- getData_2()
       validate(
         need(nrow(sc)>0,
              "Upload file for annotation")
       )
-      scGate_models_DB <- get_scGateDB()
-
       df <- as.data.frame(sc@meta.data[,names(sc@meta.data) %in% c("Cell_Index")])
       names(df) <- "Cell_Index"
       if (input$CD4_scGATE==T) {
-        models.list <- scGate_models_DB$human$CD4_TIL
+        scGate_models_DB <- suppressWarnings(custom_db_scGATE(system.file("scGATE","human/CD4_TIL",package = "STEGO.R")))
+        models.list <- scGate_models_DB
         obj <- scGate(sc, model = models.list)
         df$CD4_TIL <- obj@meta.data$scGate_multi
       }
@@ -4719,14 +4940,114 @@ runSTEGO <- function(){
         need(nrow(sc)>0,
              "Upload file for annotation")
       )
-      scGate_models_DB <- get_scGateDB()
-
       df <- as.data.frame(sc@meta.data[,names(sc@meta.data) %in% c("Cell_Index")])
       names(df) <- "Cell_Index"
       if (input$CD8_scGATE==T) {
-        models.list <- scGate_models_DB$human$CD8_TIL
+        scGate_models_DB <- suppressWarnings(custom_db_scGATE(system.file("scGATE","human/CD8_TIL",package = "STEGO.R")))
+        models.list <- scGate_models_DB
         obj <- scGate(sc, model = models.list)
         df$CD8_TIL <- obj@meta.data$scGate_multi
+      }
+      else {
+        df
+      }
+      df
+    })
+
+
+    scGATE_anno_cellTypist_higher <- reactive({
+      sc <- getData_2()
+      validate(
+        need(nrow(sc)>0,
+             "Upload file for annotation")
+      )
+      df <- as.data.frame(sc@meta.data[,names(sc@meta.data) %in% c("Cell_Index")])
+      names(df) <- "Cell_Index"
+      if (input$cellTypist_higher_scGATE==T) {
+        scGate_models_DB <- suppressWarnings(custom_db_scGATE(system.file("scGATE","human/CellTypist_higher",package = "STEGO.R")))
+        models.list <- scGate_models_DB[c("Bcell","CD4Tcell","CD8Tcell","DC","DNTcell", "MonoMac","NK","Plasma")]
+        obj <- scGate(sc, model = models.list)
+        df$CellTypist_higher <- obj@meta.data$scGate_multi
+      }
+      else {
+        df
+      }
+      df
+    })
+
+    scGATE_anno_cellTypist_lowerBcells <- reactive({
+      sc <- getData_2()
+      validate(
+        need(nrow(sc)>0,
+             "Upload file for annotation")
+      )
+      df <- as.data.frame(sc@meta.data[,names(sc@meta.data) %in% c("Cell_Index")])
+      names(df) <- "Cell_Index"
+      if (input$cellTypist_lowerBcells_scGATE==T) {
+        scGate_models_DB <- suppressWarnings(custom_db_scGATE(system.file("scGATE","human/CellTypist_lower_B_cells",package = "STEGO.R")))
+        models.list <- scGate_models_DB
+        obj <- scGate(sc, model = models.list)
+        df$CellTypist_lower_B_cells <- obj@meta.data$scGate_multi
+      }
+      else {
+        df
+      }
+      df
+    })
+    scGATE_anno_cellTypist_lowerCD4T <- reactive({
+      sc <- getData_2()
+      validate(
+        need(nrow(sc)>0,
+             "Upload file for annotation")
+      )
+      df <- as.data.frame(sc@meta.data[,names(sc@meta.data) %in% c("Cell_Index")])
+      names(df) <- "Cell_Index"
+      if (input$cellTypist_lowerCD4T_scGATE==T) {
+        scGate_models_DB <- suppressWarnings(custom_db_scGATE(system.file("scGATE","human/CellTypist_lower_CD4",package = "STEGO.R")))
+        scGate_models_DB
+        models.list <- scGate_models_DB
+        obj <- scGate(sc, model = models.list)
+        df$CellTypist_lower_CD4 <- obj@meta.data$scGate_multi
+      }
+      else {
+        df
+      }
+      df
+    })
+    scGATE_anno_cellTypist_lowerCD8T <- reactive({
+      sc <- getData_2()
+      validate(
+        need(nrow(sc)>0,
+             "Upload file for annotation")
+      )
+      df <- as.data.frame(sc@meta.data[,names(sc@meta.data) %in% c("Cell_Index")])
+      names(df) <- "Cell_Index"
+      if (input$cellTypist_lowerCD8T_scGATE==T) {
+        scGate_models_DB <- suppressWarnings(custom_db_scGATE(system.file("scGATE","human/CellTypist_lower_CD8",package = "STEGO.R")))
+        scGate_models_DB
+        models.list <- scGate_models_DB
+        obj <- scGate(sc, model = models.list)
+        df$CellTypist_lower_CD8 <- obj@meta.data$scGate_multi
+      }
+      else {
+        df
+      }
+      df
+    })
+    scGATE_anno_cellTypist_lowerOtherT <- reactive({
+      sc <- getData_2()
+      validate(
+        need(nrow(sc)>0,
+             "Upload file for annotation")
+      )
+      df <- as.data.frame(sc@meta.data[,names(sc@meta.data) %in% c("Cell_Index")])
+      names(df) <- "Cell_Index"
+      if (input$cellTypist_lowerOtherT_scGATE==T) {
+        scGate_models_DB <- suppressWarnings(custom_db_scGATE(system.file("scGATE","human/CellTypist_lower_Other",package = "STEGO.R")))
+        scGate_models_DB
+        models.list <- scGate_models_DB
+        obj <- scGate(sc, model = models.list)
+        df$CellTypist_lower_Other <- obj@meta.data$scGate_multi
       }
       else {
         df
@@ -4778,6 +5099,76 @@ runSTEGO <- function(){
       sink(type = "output")
       cat(readLines(FN), sep="\n")
     })
+    output$scGATE_verbatum_cellTypist_higher <- renderPrint({
+      FN <- tempfile()
+      zz <- file(FN, open = "wt")
+      sink(zz ,type = "output")
+      sink(zz, type = "message")
+      if (input$cellTypist_higher_scGATE==T) {
+        scGATE_anno_cellTypist_higher()}
+      else{
+        print("cellTypist_higher not run")
+      }
+      sink(type = "message")
+      sink(type = "output")
+      cat(readLines(FN), sep="\n")
+    })
+    output$scGATE_verbatum_cellTypist_lower_Bcells <- renderPrint({
+      FN <- tempfile()
+      zz <- file(FN, open = "wt")
+      sink(zz ,type = "output")
+      sink(zz, type = "message")
+      if (input$cellTypist_lowerBcells_scGATE==T) {
+        scGATE_anno_cellTypist_lowerBcells()}
+      else{
+        print("cellTypist lower Bcells not run")
+      }
+      sink(type = "message")
+      sink(type = "output")
+      cat(readLines(FN), sep="\n")
+    })
+    output$scGATE_verbatum_cellTypist_lower_CD4T <- renderPrint({
+      FN <- tempfile()
+      zz <- file(FN, open = "wt")
+      sink(zz ,type = "output")
+      sink(zz, type = "message")
+      if (input$cellTypist_lowerCD4T_scGATE==T) {
+        scGATE_anno_cellTypist_lowerCD4T()}
+      else{
+        print("cellTypist lower CD4 T cells not run")
+      }
+      sink(type = "message")
+      sink(type = "output")
+      cat(readLines(FN), sep="\n")
+    })
+    output$scGATE_verbatum_cellTypist_lower_CD8T <- renderPrint({
+      FN <- tempfile()
+      zz <- file(FN, open = "wt")
+      sink(zz ,type = "output")
+      sink(zz, type = "message")
+      if (input$cellTypist_lowerCD8T_scGATE==T) {
+        scGATE_anno_cellTypist_lowerCD8T()}
+      else{
+        print("cellTypist lower CD8 T cells not run")
+      }
+      sink(type = "message")
+      sink(type = "output")
+      cat(readLines(FN), sep="\n")
+    })
+    output$scGATE_verbatum_cellTypist_lower_OtherT <- renderPrint({
+      FN <- tempfile()
+      zz <- file(FN, open = "wt")
+      sink(zz ,type = "output")
+      sink(zz, type = "message")
+      if (input$cellTypist_lowerOtherT_scGATE==T) {
+        scGATE_anno_cellTypist_lowerOtherT()}
+      else{
+        print("cellTypist lower Other T cells not run")
+      }
+      sink(type = "message")
+      sink(type = "output")
+      cat(readLines(FN), sep="\n")
+    })
 
     scGATE_anno <- reactive({
       sc <- getData_2()
@@ -4787,7 +5178,12 @@ runSTEGO <- function(){
       )
       df <- cbind(scGATE_anno_generic(),
                   scGATE_anno_CD4(),
-                  scGATE_anno_CD8()
+                  scGATE_anno_CD8(),
+                  scGATE_anno_cellTypist_higher(),
+                  scGATE_anno_cellTypist_lowerBcells(),
+                  scGATE_anno_cellTypist_lowerCD4T(),
+                  scGATE_anno_cellTypist_lowerCD8T(),
+                  scGATE_anno_cellTypist_lowerOtherT()
       )
 
       rownames(df) <- df$Cell_Index
@@ -4910,7 +5306,7 @@ runSTEGO <- function(){
       inupload_TCRex_file <- input$upload_TCRex_file
       if (is.null(inupload_TCRex_file)) return(NULL)
       else {
-        dataframe = read.table(inupload_TCRex_file$datapath,skip = 7,header = T,sep="\t")
+        dataframe = read.table(inupload_TCRex_file$datapath,skip = input$skip_TCRex_up,header = T,sep="\t")
       }
 
     })
@@ -6041,7 +6437,7 @@ runSTEGO <- function(){
         dev.off()},   contentType = "application/png" # MIME type of the image
     )
 
-    ## differental expression -----
+    ## differential expression -----
     observe({
       df.test <- input.data_sc_pro()
       validate(
@@ -6415,8 +6811,6 @@ runSTEGO <- function(){
 
       Percent_tab_df()
     })
-
-
     output$downloaddf_Percent_tab <- downloadHandler(
       filename = function(){
         paste(input$name.file_clust,"_Percent_",input$clust_names_top,"_",gsub("-", ".", Sys.Date()),".tsv", sep = "")
@@ -6441,7 +6835,6 @@ runSTEGO <- function(){
       }
       else {
         meta.data$Cell_Index <- rownames(meta.data)
-
       }
 
       meta.data$Motif_gene <- meta.data[,names(meta.data) %in% input$V_gene_sc]
@@ -6469,8 +6862,7 @@ runSTEGO <- function(){
       sc <- input.data_sc_pro()
       validate(
         need(nrow(sc)>0,
-             error_message_val_UMAP)
-      )
+             error_message_val_UMAP))
 
       df_class <- sc@meta.data
       df_class$selected <- df_class[,names(df_class) %in% input$clust_names_top]
@@ -6586,7 +6978,7 @@ runSTEGO <- function(){
       names(top_BD_cluster)[names(top_BD_cluster) %in% input$Samp_col] <- "ID_Column"
       top_BD_cluster$ID_Column <- factor(top_BD_cluster$ID_Column,levels = input$ID_Column_factor)
 
-      ggplot(top_BD_cluster,aes(x=UMAP_1,UMAP_2,colour=Selected_function,alpha = Selected_function,label = Selected_function))+
+      df <- ggplot(top_BD_cluster,aes(x=UMAP_1,UMAP_2,colour=Selected_function,alpha = Selected_function,label = Selected_function))+
         geom_point()+
         scale_color_manual(labels = ~ stringr::str_wrap(.x, width = 20),values = col.file$col, na.value=input$NA_col_analysis)+
         scale_alpha_manual(labels = ~ stringr::str_wrap(.x, width = 20),values = rep(1,length(unique(top_BD_cluster$Selected_function))), na.value=0.1) +
@@ -6601,20 +6993,17 @@ runSTEGO <- function(){
           legend.position = input$legend_position,
         )
 
+      if (input$Split_by_group=="no") {
+        df <- df
+      }
+      else {
+        df <- df + facet_wrap(~ID_Column)
+      }
+      df
     })
 
     output$UMAP_all_classification2 <- renderPlot({
-
-
-      if (input$Split_by_group=="no") {
-        UMAP_all_classification()
-      }
-      else {
-
-        UMAP_all_classification() + facet_wrap(~ID_Column)
-      }
-
-
+      UMAP_all_classification()
     })
 
     output$downloadPlot_UMAP_all_classification  <- downloadHandler(
@@ -6624,16 +7013,7 @@ runSTEGO <- function(){
       },
       content = function(file) {
         pdf(file, width=input$width_UMAP_all_classification ,height=input$height_UMAP_all_classification , onefile = FALSE) # open the pdf device
-        if (input$Split_by_group=="no") {
-          plot(UMAP_all_classification())
-        }
-        else {
-
-          df <-  UMAP_all_classification() + facet_wrap(~top_BD_cluster$ID_Column)
-          plot(df)
-        }
-
-
+        plot(UMAP_all_classification())
         dev.off()}, contentType = "application/pdf" )
 
     output$downloadPlotPNG_UMAP_all_classification  <- downloadHandler(
@@ -6645,14 +7025,7 @@ runSTEGO <- function(){
         png(file, width = input$width_png_UMAP_all_classification ,
             height = input$height_png_UMAP_all_classification ,
             res = input$resolution_PNG_UMAP_all_classification )
-        if (input$Split_by_group=="no") {
-          plot(UMAP_all_classification())
-        }
-        else {
-
-          df <-  UMAP_all_classification() + facet_wrap(~top_BD_cluster$ID_Column)
-          plot(df)
-        }
+        plot(UMAP_all_classification())
         dev.off()},   contentType = "application/png" # MIME type of the image
     )
 
@@ -6665,7 +7038,6 @@ runSTEGO <- function(){
              error_message_val1)
       )
       meta.data <- as.data.frame(sc@meta.data)
-
       updateSelectInput(
         session,
         "clust_group",
@@ -6736,13 +7108,6 @@ runSTEGO <- function(){
     })
     output$myPanel_pie <- renderUI({cols_pie()})
     colors_pie <- reactive({
-      # top_BD_cluster <-  Add.UMAP.reduction()
-      # top_BD_cluster$Selected_function <- top_BD_cluster[,names(top_BD_cluster) %in% input$clust_names_top]
-      # top_BD_cluster$Selected_function[is.na(top_BD_cluster$Selected_function )] <- "unknown"
-      # top_BD_cluster <- top_BD_cluster[order(top_BD_cluster$Selected_function),]
-      # top_BD_cluster$Selected_function <- factor(top_BD_cluster$Selected_function,levels = unique(top_BD_cluster$Selected_function))
-      # num <- as.data.frame(unique(top_BD_cluster$Selected_function))
-      # num
       top_BD_cluster <-  Add.UMAP.reduction()
       top_BD_cluster$Selected_function <- top_BD_cluster[,names(top_BD_cluster) %in% input$clust_names_top]
       top_BD_cluster <- top_BD_cluster[order(top_BD_cluster$Selected_function),]
@@ -6762,22 +7127,24 @@ runSTEGO <- function(){
       top_BD_cluster$Selected_group <- top_BD_cluster[,names(top_BD_cluster) %in% input$clust_group]
       df.col <- unlist(colors_pie())
 
-      top_BD_cluster %>%
-        count(Selected_group,Selected_function) %>%
-        group_by(Selected_group) %>%
-        mutate(n = n/sum(n)) %>%
-        ggplot(aes(x="", y=n, fill=Selected_function, group = Selected_group)) +
+      df3.meta3 <-  as.data.frame(table(top_BD_cluster$Selected_group,top_BD_cluster$Selected_function))
+      total.condition <- as.data.frame(ddply(df3.meta3,"Var1",numcolwise(sum)))
+      emtpy <- matrix(nrow =dim(df3.meta3)[1],ncol=dim(total.condition)[1])
+      for (i in 1:dim(df3.meta3)[1]) {
+        emtpy[i,] <- ifelse(df3.meta3$Var1[i]==total.condition$Var1[1:dim(total.condition)[1]],
+                            total.condition[total.condition$Var1==total.condition$Var1[1:dim(total.condition)[1]],2],F)
+      }
+
+      df3.meta3$n <- df3.meta3$Freq/rowSums(emtpy)
+
+
+      ggplot(df3.meta3,aes(x="", y=n, fill=Var2, group = Var1)) +
         geom_bar(stat="identity", width=1)+
         coord_polar("y", start=0)  +
         theme_void(20) +
-        facet_wrap(~Selected_group) +
+        facet_wrap(~Var1) +
         theme(
           legend.key.size = unit(1, 'cm'))+
-        # geom_col_pattern(aes(pattern=Selected_function,fill=Selected_function,pattern_fill = Selected_function),
-        #                  # colour                   = 'black',
-        #                  # pattern_aspect_ratio = 0.25,
-        #                  pattern_density          = 0.5,
-        #                  pattern_key_scale_factor = 0.75)
         scale_fill_manual(values = df.col, na.value = input$NA_col_analysis) +
         theme(strip.text = element_text(size = input$strip_size, family = input$font_type),
               legend.text = element_text(size = input$Bar_legend_size, family = input$font_type),
@@ -6791,9 +7158,29 @@ runSTEGO <- function(){
 
     output$Classification_clonotype_pie <- renderPlot({
       Pie_chart_Class()
-
-
     })
+    output$downloadPlot_Classification_clonotype_pie <- downloadHandler(
+      filename = function() {
+        x <- gsub(":", ".", Sys.time())
+        paste("_Classification_clonotype_pie_",gsub("/", "-", x), ".pdf", sep = "")
+      },
+      content = function(file) {
+        pdf(file, width=input$width_Classification_clonotype_pie,height=input$height_Classification_clonotype_pie, onefile = FALSE) # open the pdf device
+        plot(Pie_chart_Class())
+        dev.off()}, contentType = "application/pdf" )
+
+    output$downloadPlotPNG_Classification_clonotype_pie <- downloadHandler(
+      filename = function() {
+        x <- gsub(":", ".", Sys.time())
+        paste("_Classification_clonotype_pie_", gsub("/", "-", x), ".png", sep = "")
+      },
+      content = function(file) {
+        png(file, width = input$width_png_Classification_clonotype_pie,
+            height = input$height_png_Classification_clonotype_pie,
+            res = input$resolution_PNG_Classification_clonotype_pie)
+        plot(Pie_chart_Class())
+        dev.off()},   contentType = "application/png" # MIME type of the image
+    )
 
     # chi-square of expression -----
     chi_squ <- reactive({
@@ -6809,30 +7196,56 @@ runSTEGO <- function(){
     })
 
     output$Chi_tab_before <- DT::renderDataTable(escape = FALSE, filter = list(position = 'top', clear = FALSE), options = list(autoWidth = FALSE, lengthMenu = c(2,5,10,20,50,100), pageLength = 10, scrollX = TRUE),{
-
       chi_squ()
+    })
+    # Chi_square <- reactiveValues(plot_chi=NULL)
 
+
+
+    Chi_square_plot2 <- reactive({
+      totals <- chi_squ()
+      tb_totals <- table(totals$groups,totals$Function)
+      chisq <- chisq.test(tb_totals)
+      if (input$type_res=="Residuals") {
+        plot_chi <- corrplot(chisq$residuals, is.cor = FALSE,hclust.method ="ward.D2",tl.col = "black")
+      }
+      else {
+        contrib <- 100*chisq$residuals^2/chisq$statistic
+        plot_chi <- corrplot(contrib, is.cor = FALSE,tl.col = "black",col = topo.colors(100) )
+      }
+      plot_chi
     })
 
     output$Chi_square_plot <- renderPlot({
-      totals <- chi_squ()
-      tb_totals <- table(totals$groups,totals$Function)
-
-      chisq <- chisq.test(tb_totals)
-
-      if (input$type_res=="Residuals") {
-        corrplot(chisq$residuals, is.cor = FALSE,hclust.method ="ward.D2",tl.col = "black")
-      }
-
-      else {
-        contrib <- 100*chisq$residuals^2/chisq$statistic
-        corrplot(contrib, is.cor = FALSE,tl.col = "black",col = topo.colors(100) )
-      }
-
+      Chi_square_plot2()
     })
 
-    # Select top clonotype ----
 
+    output$downloadPlot_Chi_square_plot <- downloadHandler(
+      filename = function() {
+        paste("_Chi_square_plot", ".pdf", sep = "")
+      },
+      content = function(file) {
+        pdf(file, width=input$width_Chi_square_plot,height=input$height_Chi_square_plot, onefile = FALSE) # open the pdf device
+        plot(Chi_square_plot2())
+        dev.off()
+      }, contentType = "application/pdf")
+
+    output$downloadPlotPNG_Chi_square_plot <- downloadHandler(
+      filename = function() {
+        x <- gsub(":", ".", Sys.time())
+        paste("_Chi_square_plot_", gsub("/", "-", x), ".png", sep = "")
+      },
+      content = function(file) {
+        png(file, width = input$width_png_Chi_square_plot,
+            height = input$height_png_Chi_square_plot,
+            res = input$resolution_PNG_Chi_square_plot)
+        plot(Chi_square_plot2())
+        dev.off()},   contentType = "application/png" # MIME type of the image
+    )
+
+
+    # Select top clonotype ----
     observe({
       sc <- input.data_sc_pro()
       validate(
@@ -6865,7 +7278,6 @@ runSTEGO <- function(){
       #  selected = "v_gene_cdr3_AG")
 
     })
-
     Top_clonotype_df2 <- reactive({
       df3.meta <- Add.UMAP.reduction()
       # summarising the clonality
@@ -6884,9 +7296,6 @@ runSTEGO <- function(){
       BD_sum2 <- BD_sum[!BD_sum$cluster_name %in% "NA",]
       BD_sum2
     })
-
-
-
     observeEvent(input$run_top,{
       BD_sum <- Top_clonotype_df2()
       validate(
@@ -6901,7 +7310,6 @@ runSTEGO <- function(){
         choices=BD_sum$cluster_name[1:50],
         selected = BD_sum$cluster_name[1])
     })
-
     observeEvent(input$run_top,{
       BD_sum <- Add.UMAP.reduction()
       validate(
@@ -6915,14 +7323,12 @@ runSTEGO <- function(){
         choices=names(BD_sum),
         selected = "Motif_gene")
     })
-
-    output$Top_clonotype_df<- DT::renderDataTable( {
+    output$Top_clonotype_df<- DT::renderDataTable({
       Top_clonotype_df2()
 
       df3.meta <- Add.UMAP.reduction()
       # summarising the clonality
       df3.meta$cluster_name <- df3.meta[,names(df3.meta) %in% input$Gene_V_top]
-
       top_BD_clonotype <- df3.meta[df3.meta$cluster_name %in% input$Selected_clonotype,]
       top_BD_clonotype
       datatable(top_BD_clonotype, extensions = "Buttons", options = list(searching = TRUE,
@@ -7014,7 +7420,6 @@ runSTEGO <- function(){
         input[[paste("col.Top_bar_clonotype", i, sep="_")]]
       })
     })
-
     top_clonotype_bar_code <- reactive({
       df3.meta <- Add.UMAP.reduction()
       # summarising the clonality
@@ -7024,8 +7429,6 @@ runSTEGO <- function(){
       top_BD_clonotype
 
     })
-
-
     ggplot_top_BD_clonotype_vs_SC <- reactive({
       dtop_clonotype_bar_code <- top_clonotype_bar_code()
       dtop_clonotype_bar_code$Selected_group <- dtop_clonotype_bar_code[,names(dtop_clonotype_bar_code) %in% input$clust_group]
@@ -7056,10 +7459,8 @@ runSTEGO <- function(){
 
     })
 
-
     output$top_clonotype <- renderPlot({
       ggplot_top_BD_clonotype_vs_SC()
-
     })
 
     output$downloadPlot_top_clonotype <- downloadHandler(
@@ -7172,7 +7573,6 @@ runSTEGO <- function(){
         input[[paste("col.Top_pie_clonotype", i, sep="_")]]
       })
     })
-
     Pie_chart_alpha_gamma <- reactive({
       top_BD_cluster <-  top_clonotype_bar_code()
       top_BD_cluster$Selected_function <- top_BD_cluster[,names(top_BD_cluster) %in% input$clust_names_top]
@@ -7181,22 +7581,30 @@ runSTEGO <- function(){
       top_BD_cluster$Selected_group <- top_BD_cluster[,names(top_BD_cluster) %in% input$clust_group]
       df.col <- unlist(colors_cols_Top_pie_clonotype())
 
-      top_BD_cluster %>%
-        count(Selected_group,Selected_function) %>%
-        group_by(Selected_group) %>%
-        mutate(n = n/sum(n)) %>%
-        ggplot(aes(x="", y=n, fill=Selected_function, group = Selected_group)) +
+      df3.meta3 <-  as.data.frame(table(top_BD_cluster$Selected_group,top_BD_cluster$Selected_function))
+      total.condition <- as.data.frame(ddply(df3.meta3,"Var1",numcolwise(sum)))
+      dim(total.condition)[1]
+      dim(df3.meta3)[1]
+      emtpy <- matrix(nrow =dim(df3.meta3)[1],ncol=dim(total.condition)[1])
+      length(empty)
+
+      for (i in 1:dim(df3.meta3)[1]) {
+
+        emtpy[i,] <- ifelse(df3.meta3$Var1[i]==total.condition$Var1[1:dim(total.condition)[1]],
+                            total.condition[total.condition$Var1==total.condition$Var1[1:dim(total.condition)[1]],2],F)
+      }
+      as.data.frame(emtpy)
+
+      df3.meta3$n <- df3.meta3$Freq/rowSums(emtpy)
+
+      ggplot(df3.meta3,aes(x="", y=n, fill=Var2, group = Var1)) +
         geom_bar(stat="identity", width=1)+
         coord_polar("y", start=0)  +
         theme_void(20) +
-        facet_wrap(~Selected_group) +
+        facet_wrap(~Var1) +
         theme(
-          legend.key.size = unit(1, 'cm'))+
-        # geom_col_pattern(aes(pattern=Selected_function,fill=Selected_function,pattern_fill = Selected_function),
-        #                  # colour                   = 'black',
-        #                  # pattern_aspect_ratio = 0.25,
-        #                  pattern_density          = 0.5,
-        #                  pattern_key_scale_factor = 0.75)
+          legend.key.size = unit(1, 'cm'),
+          legend.title = element_blank()) +
         scale_fill_manual(labels = ~ stringr::str_wrap(.x, width = 20),values = df.col, na.value = input$NA_col_analysis) +
         theme(strip.text = element_text(size = input$strip_size_pie, family = input$font_type),
               legend.text = element_text(colour="black", size=input$Bar_legend_size,family=input$font_type),
@@ -7227,9 +7635,6 @@ runSTEGO <- function(){
     })
 
     output$downloadPlot_top_clonotype_pie <- downloadHandler(
-
-
-
       filename = function() {
         x <- gsub(":", ".", Sys.time())
         paste("top_clonotype_pie_",gsub("/", "-", x), ".pdf", sep = "")
@@ -7349,10 +7754,6 @@ runSTEGO <- function(){
 
 
     })
-
-
-
-
     output$Ridge_chart_alpha_gamma_stat_comp <- DT::renderDataTable(escape = FALSE, options = list(autoWidth = FALSE, lengthMenu = c(2,5,10,20,50,100), pageLength =10, scrollX = TRUE),{
 
       sc <-input.data_sc_pro()
@@ -7663,13 +8064,31 @@ runSTEGO <- function(){
 
     #### Epitope heatmap -----
     heatmap_epitope <- reactive({
-      df <- input.data_sc_TCRex()
-      dat <-df
-      dat <- as.data.frame(dat)
-      dat$cloneCount <- 1
-      df <- as.data.frame(ddply(dat,(c("CDR3_beta","epitope","pathology","cloneCount")),numcolwise(sum)))
+      df3.meta <-  Add.UMAP.reduction()
+      # summarising the clonality
+      epi <- input.data_sc_TCRex()
+      validate(
+        need(nrow(df3.meta)>0 & nrow(epi)>0,
+             "Upload Files")
+      )
+      if(input$datasource == "BD rhapsody") {
+        df3.meta$CDR3_beta <- paste("C",df3.meta$cdr3_BD,"F",sep="")
 
-      df.1 <- acast(df, get(input$epitope_hm)~get(input$pathology_hm), value.var="cloneCount")
+      }
+      else {
+        df3.meta$CDR3_beta <- df3.meta$cdr3_BD
+      }
+      epi$beta <- epi$CDR3_beta
+      df3.meta <- merge(df3.meta,epi,by="CDR3_beta")
+      df3.meta$selected <- df3.meta[,names(df3.meta) %in% input$epitope_umap_selected]
+      df3.meta <- df3.meta[order(df3.meta$selected,decreasing = F),]
+      df3.meta$selected <- factor(df3.meta$selected,levels = unique(df3.meta$selected))
+      df3.meta$Selected_group <- df3.meta[,names(df3.meta) %in% input$epitope_umap_selected2]
+      df3.meta$cloneCount <- 1
+
+      # df <- as.data.frame(ddply(df3.meta,(c("selected","Selected_group","cloneCount")),numcolwise(sum)))
+
+      df.1 <- acast(df3.meta, selected~Selected_group, value.var="cloneCount")
       df.1
       head(df.1)
       df.1[is.na(df.1)] <- 0
@@ -7690,8 +8109,6 @@ runSTEGO <- function(){
       )
 
       draw(ht, padding = unit(c(10, 10, 10, 10), "mm"))
-
-
     })
     output$Heatmap_epi_plot <- renderPlot({
       heatmap_epitope()
@@ -7813,7 +8230,6 @@ runSTEGO <- function(){
              "Upload Files")
       )
 
-
       if(input$datasource == "BD rhapsody") {
         df3.meta$CDR3_beta <- paste("C",df3.meta$cdr3_BD,"F",sep="")
 
@@ -7840,11 +8256,9 @@ runSTEGO <- function(){
     })
 
     UMAP_Epitope <- reactive({
-
       df3.meta <-  Add.UMAP.reduction()
       # summarising the clonality
       epi <- input.data_sc_TCRex()
-
       validate(
         need(nrow(df3.meta)>0 & nrow(epi)>0,
              "Upload Files")
@@ -7860,11 +8274,16 @@ runSTEGO <- function(){
       df3.meta$selected <- df3.meta[,names(df3.meta) %in% input$epitope_umap_selected]
       df3.meta <- df3.meta[order(df3.meta$selected,decreasing = F),]
       df3.meta$selected <- factor(df3.meta$selected,levels = unique(df3.meta$selected))
+
+
+      names(df3.meta)[names(df3.meta) %in% input$Samp_col] <- "ID_Column"
+      df3.meta$ID_Column <- factor(df3.meta$ID_Column,levels = input$ID_Column_factor)
+
       num <- as.data.frame(unique(df3.meta$selected))
       num <- as.data.frame(num[complete.cases(num)==T,])
       palette_rainbow <- unlist(colors_cols_epitope())
 
-      ggplot(data=df3.meta,aes(x=UMAP_1,UMAP_2,colour=selected,size= selected))+
+      df <- ggplot(data=df3.meta,aes(x=UMAP_1,UMAP_2,colour=selected,size= selected))+
         geom_point()+
         scale_color_manual(na.value=input$NA_col_analysis, values = palette_rainbow)+
         scale_size_manual(na.value=0.25,values = rep(3,dim(num)[1]))+
@@ -7874,17 +8293,13 @@ runSTEGO <- function(){
           legend.position = input$legend_position,
         )+
         theme_bw()
-
-
-      # ggplot(top_BD_cluster,aes(x=UMAP_1,UMAP_2,colour=Selected_function))+
-      #   geom_point()+
-      #   scale_color_manual(na.value=, values = df.col)+
-      #   theme(
-      #     legend.text = element_text(colour="black", size=input$Bar_legend_size,family=input$font_type),
-      #     legend.title = element_blank(),
-      #     legend.position = ,
-      #   )+
-      #   theme_bw()
+      if (input$Split_by_group=="no") {
+        df <- df
+      }
+      else {
+        df <- df + facet_wrap(~ID_Column)
+      }
+      df
     })
     output$UMAP_Epitope_plot <- renderPlot({
       UMAP_Epitope()
@@ -7913,6 +8328,272 @@ runSTEGO <- function(){
         dev.off()},   contentType = "application/png" # MIME type of the image
     )
 
+    # pie chart function -----
+    cols_epitope_pie <- reactive({
+      df3.meta <-  Add.UMAP.reduction()
+      # summarising the clonality
+      epi <- input.data_sc_TCRex()
+      validate(
+        need(nrow(df3.meta)>0 & nrow(epi)>0,
+             "Upload Files")
+      )
+      if(input$datasource == "BD rhapsody") {
+        df3.meta$CDR3_beta <- paste("C",df3.meta$cdr3_BD,"F",sep="")
+
+      }
+      else {
+        df3.meta$CDR3_beta <- df3.meta$cdr3_BD
+      }
+      epi$beta <- epi$CDR3_beta
+      df3.meta <- merge(df3.meta,epi,by="CDR3_beta")
+      df3.meta$selected <- df3.meta[,names(df3.meta) %in% input$epitope_umap_selected]
+
+
+      df3.meta <- df3.meta[order(df3.meta$selected,decreasing = F),]
+      df3.meta$selected <- factor(df3.meta$selected,levels = unique(df3.meta$selected))
+
+      num <- as.data.frame(unique(df3.meta$selected))
+      num <- as.data.frame(num[complete.cases(num)==T,])
+
+      col.gg <- gg_fill_hue(dim(num)[1])
+      palette_rainbow <- rainbow(dim(num)[1])
+      heat_col <- heat.colors(dim(num)[1])
+      col.terrain <- terrain.colors(dim(num)[1])
+      col.topo <- topo.colors(dim(num)[1])
+      col.hcl <- hcl.colors(dim(num)[1], palette = "viridis")
+
+      if (input$colourtype == "default") {
+        lapply(1:dim(num)[1], function(i) {
+          colourInput(paste("col.cols_epitope_pie", i, sep="_"), paste(num[i,]), col.gg[i])
+        })
+      }
+      else if (input$colourtype == "hcl.colors") {
+        lapply(1:dim(num)[1], function(i) {
+          colourInput(paste("col.cols_epitope_pie", i, sep="_"), paste(num[i,]), col.hcl[i])
+        })
+      }
+      else if (input$colourtype == "topo.colors") {
+        lapply(1:dim(num)[1], function(i) {
+          colourInput(paste("col.cols_epitope_pie", i, sep="_"), paste(num[i,]), col.topo[i])
+        })
+      }
+      else if (input$colourtype == "heat.colors") {
+        lapply(1:dim(num)[1], function(i) {
+          colourInput(paste("col.cols_epitope_pie", i, sep="_"), paste(num[i,]), heat_col[i])
+        })
+      }
+      else if (input$colourtype == "terrain.colors") {
+        lapply(1:dim(num)[1], function(i) {
+          colourInput(paste("col.cols_epitope_pie", i, sep="_"), paste(num[i,]), col.terrain[i])
+        })
+      }
+
+      else if (input$colourtype == "rainbow") {
+        lapply(1:dim(num)[1], function(i) {
+          colourInput(paste("col.cols_epitope_pie", i, sep="_"), paste(num[i,]), palette_rainbow[i])
+        }) }
+      else if (input$colourtype == "random") {
+        palette1 <- distinctColorPalette(dim(num)[1])
+        lapply(1:dim(num)[1], function(i) {
+          colourInput(paste("col.cols_epitope_pie", i, sep="_"), paste(num[i,]), palette1[i])
+        })
+
+      }
+      else {
+        lapply(1:dim(num)[1], function(i) {
+          colourInput(paste("col.cols_epitope_pie", i, sep="_"), paste(num[i,]), input$one.colour.default)
+        })
+
+
+      } # one colour
+
+    })
+
+    output$myPanel_cols_epitope_pie <- renderUI({cols_epitope_pie()})
+    colors_cols_epitope_pie <- reactive({
+      df3.meta <-  Add.UMAP.reduction()
+      # summarising the clonality
+      epi <- input.data_sc_TCRex()
+
+      validate(
+        need(nrow(df3.meta)>0 & nrow(epi)>0,
+             "Upload Files")
+      )
+
+      if(input$datasource == "BD rhapsody") {
+        df3.meta$CDR3_beta <- paste("C",df3.meta$cdr3_BD,"F",sep="")
+
+      }
+      else {
+
+        df3.meta$CDR3_beta <- df3.meta$cdr3_BD
+
+      }
+      epi$beta <- epi$CDR3_beta
+      df3.meta <- merge(df3.meta,epi,by="CDR3_beta")
+      df3.meta$selected <- df3.meta[,names(df3.meta) %in% input$epitope_umap_selected]
+
+      df3.meta <- df3.meta[order(df3.meta$selected,decreasing = F),]
+      df3.meta$selected <- factor(df3.meta$selected,levels = unique(df3.meta$selected))
+
+      num <- as.data.frame(unique(df3.meta$selected))
+      num <- as.data.frame(num[complete.cases(num)==T,])
+
+      lapply(1:dim(num)[1], function(i) {
+        input[[paste("col.cols_epitope_pie", i, sep="_")]]
+      })
+    })
+
+    Pie_chart_Epitope <- reactive({
+      df3.meta <-  Add.UMAP.reduction()
+      # summarising the clonality
+      epi <- input.data_sc_TCRex()
+      validate(
+        need(nrow(df3.meta)>0 & nrow(epi)>0,
+             "Upload Files")
+      )
+      if(input$datasource == "BD rhapsody") {
+        df3.meta$CDR3_beta <- paste("C",df3.meta$cdr3_BD,"F",sep="")
+      }
+      else {
+        df3.meta$CDR3_beta <- df3.meta$cdr3_BD
+      }
+      epi$beta <- epi$CDR3_beta
+      df3.meta <- merge(df3.meta,epi,by="CDR3_beta")
+      df3.meta$Selected_function <- df3.meta[,names(df3.meta) %in% input$epitope_umap_selected]
+      df3.meta <- df3.meta[order(df3.meta$Selected_function,decreasing = F),]
+      df3.meta$Selected_function <- factor(df3.meta$Selected_function,levels = unique(df3.meta$Selected_function))
+
+      top_BD_cluster <-  df3.meta
+      top_BD_cluster$Selected_group <- top_BD_cluster[,names(top_BD_cluster) %in% input$epitope_umap_selected2]
+
+      df.col <- unlist(colors_cols_epitope_pie())
+
+      df3.meta3 <-  as.data.frame(table(top_BD_cluster$Selected_group,top_BD_cluster$Selected_function))
+      total.condition <- as.data.frame(ddply(df3.meta3,"Var1",numcolwise(sum)))
+      dim(total.condition)[1]
+      dim(df3.meta3)[1]
+      emtpy <- matrix(nrow =dim(df3.meta3)[1],ncol=dim(total.condition)[1])
+
+      for (i in 1:dim(df3.meta3)[1]) {
+
+        emtpy[i,] <- ifelse(df3.meta3$Var1[i]==total.condition$Var1[1:dim(total.condition)[1]],
+                            total.condition[total.condition$Var1==total.condition$Var1[1:dim(total.condition)[1]],2],F)
+      }
+      df3.meta3$n <- df3.meta3$Freq/rowSums(emtpy)
+
+      ggplot(df3.meta3,aes(x="", y=n, fill=Var2, group = Var1)) +
+        geom_bar(stat="identity", width=1)+
+        coord_polar("y", start=0)  +
+        theme_void(20) +
+        facet_wrap(~Var1) +
+        theme(
+          legend.key.size = unit(1, 'cm'),
+          legend.title = element_blank()) +
+        scale_fill_manual(labels = ~ stringr::str_wrap(.x, width = 20),values = df.col, na.value = input$NA_col_analysis) +
+        theme(strip.text = element_text(size = input$strip_size_pie, family = input$font_type),
+              legend.text = element_text(colour="black", size=input$Bar_legend_size,family=input$font_type),
+              legend.position = input$legend_position,
+              legend.title = element_blank()
+        )
+
+    })
+
+    output$Pie_Epitope_plot <- renderPlot({
+      Pie_chart_Epitope()
+    })
+
+    Pie_Epitope_dt_process <- reactive({
+      df3.meta <-  Add.UMAP.reduction()
+      epi <- input.data_sc_TCRex()
+      validate(
+        need(nrow(df3.meta)>0 & nrow(epi)>0,
+             "Upload Files")
+      )
+      if(input$datasource == "BD rhapsody") {
+        df3.meta$CDR3_beta <- paste("C",df3.meta$cdr3_BD,"F",sep="")
+      }
+      else {
+        df3.meta$CDR3_beta <- df3.meta$cdr3_BD
+      }
+      epi$beta <- epi$CDR3_beta
+      df3.meta <- merge(df3.meta,epi,by="CDR3_beta")
+      df3.meta$Selected_function <- df3.meta[,names(df3.meta) %in% input$epitope_umap_selected]
+      top_BD_cluster <-  df3.meta
+      top_BD_cluster$Selected_group <- top_BD_cluster[,names(top_BD_cluster) %in% input$epitope_umap_selected2]
+      top_BD_cluster$cloneCount <- 1
+      top_BD_cluster2 <-  top_BD_cluster[,names(top_BD_cluster) %in% c("cloneCount","Selected_function","Selected_group")]
+      top_BD_cluster2 <- top_BD_cluster2 %>%
+        select(cloneCount, everything())
+      df2 <- as.data.frame(ddply(top_BD_cluster2,names(top_BD_cluster2)[-c(1)],numcolwise(sum)))
+      df2$fraction <- df2$cloneCount/sum(df2$cloneCount)
+      df2$Percent <- round(df2$cloneCount/sum(df2$cloneCount)*100,2)
+      df2$Selected_function <- ifelse(grepl("NA", df2$Selected_function),NA,df2$Selected_function)
+      df2[order(df2$Percent,decreasing = T),]
+    })
+
+    output$Pie_Epitope_dt <- DT::renderDataTable(escape = FALSE, options = list(autoWidth = FALSE, lengthMenu = c(2,5,10,20,50,100), pageLength = 5, scrollX = TRUE),{
+
+      Pie_Epitope_dt_process()
+
+    })
+
+    #### download Epitope files ------
+    output$downloadPlot_Pie_Epitope <- downloadHandler(
+      filename = function() {
+        x <- gsub(":", ".", Sys.time())
+        paste(input$epitope_Pie_Epitope,"_Pie_epi_",gsub("/", "-", x), ".pdf", sep = "")
+      },
+      content = function(file) {
+        pdf(file, width=input$width_Pie_Epitope,height=input$height_Pie_Epitope, onefile = FALSE) # open the pdf device
+        plot(Pie_chart_Epitope())
+        dev.off()}, contentType = "application/pdf" )
+
+    output$downloadPlotPNG_Pie_Epitope <- downloadHandler(
+      filename = function() {
+        x <- gsub(":", ".", Sys.time())
+        paste(input$epitope_umap_selected,"_Pie_epi_", gsub("/", "-", x), ".png", sep = "")
+      },
+      content = function(file) {
+        png(file, width = input$width_png_Pie_Epitope,
+            height = input$height_png_Pie_Epitope,
+            res = input$resolution_PNG_Pie_Epitope)
+        plot(Pie_chart_Epitope())
+        dev.off()},   contentType = "application/png" # MIME type of the image
+    )
+
+
+    output$downloadPlot_UMAP_Epitope <- downloadHandler(
+      filename = function() {
+        x <- gsub(":", ".", Sys.time())
+        paste(input$epitope_umap_selected,"_UMAP_",gsub("/", "-", x), ".pdf", sep = "")
+      },
+      content = function(file) {
+        pdf(file, width=input$width_UMAP_Epitope,height=input$height_UMAP_Epitope, onefile = FALSE) # open the pdf device
+        plot(UMAP_Epitope())
+        dev.off()}, contentType = "application/pdf" )
+
+    output$downloadPlotPNG_UMAP_Epitope <- downloadHandler(
+      filename = function() {
+        x <- gsub(":", ".", Sys.time())
+        paste(input$epitope_umap_selected,"_UMAP_", gsub("/", "-", x), ".png", sep = "")
+      },
+      content = function(file) {
+        png(file, width = input$width_png_UMAP_Epitope,
+            height = input$height_png_UMAP_Epitope,
+            res = input$resolution_PNG_UMAP_Epitope)
+        plot(UMAP_Epitope())
+        dev.off()},   contentType = "application/png" # MIME type of the image
+    )
+
+    output$downloaddf_Pie_Epitope_dt <- downloadHandler(
+      filename = function(){
+        paste("Summary_table_",gsub("-", ".", Sys.Date()),".csv", sep = "")
+      },
+      content = function(file){
+        df <- as.data.frame(Pie_Epitope_dt_process())
+        write.csv(df,file, row.names = F)
+      } )
 
     #### clusTCR2 figure -----
     clusTCR2_df <- reactive({
@@ -7946,9 +8627,6 @@ runSTEGO <- function(){
         split <- as.data.frame(do.call(rbind, strsplit(as.character(md$CDR3_Vgene), "-")))[1]
         md$CDR3_Vgene <- split$V1
         df4 <- merge(md,clust,by = "CDR3_Vgene")
-
-
-
         cluster <- rbind(df3,df4)
       }
       else {
@@ -7977,6 +8655,10 @@ runSTEGO <- function(){
       cluster <- cluster[order(cluster$Clust_size_order),]
       cluster
     })
+
+
+
+
 
     output$Tb_ClusTCR_selected <- DT::renderDataTable(escape = FALSE, options = list(autoWidth = FALSE, lengthMenu = c(2,5,10,20,50,100), pageLength = 5, scrollX = TRUE),{
       clusTCR2_df()
@@ -8086,8 +8768,6 @@ runSTEGO <- function(){
     output$UMAP_ClusTCR2_plot <- renderPlot({
       UMAP_ClusTCR2()
     })
-
-
     output$downloadPlot_UMAP_ClusTCR2_plot <- downloadHandler(
       filename = function() {
         x <- gsub(":", ".", Sys.time())
@@ -8141,7 +8821,6 @@ runSTEGO <- function(){
     })
 
     # Ridge ClusTCR -----
-
     Ridge_clusTCR2 <- reactive({
       cluster <- clusTCR2_df()
       md <- Add.UMAP.reduction()
@@ -8170,7 +8849,6 @@ runSTEGO <- function(){
           )
 
       }
-
       else {
 
         cluster <- cluster[order(cluster$Clust_size_order),]
@@ -8207,8 +8885,6 @@ runSTEGO <- function(){
       Pie_ClusTCR2()
     })
 
-
-
     ###
 
     ##### Overlap -----
@@ -8234,6 +8910,8 @@ runSTEGO <- function(){
       df.x <- make_comb_mat(mat)
       list.names <- as.character(input$ID_Column_factor)
 
+
+
       ht = draw(UpSet(df.x,
                       pt_size = unit(5, "mm"),
                       lwd = 1,
@@ -8244,8 +8922,6 @@ runSTEGO <- function(){
                                                             annotation_name_gp = gpar(fontfamily = input$font_type),
                                                             gp = gpar(fill = "black"),
                       ),
-
-
                       right_annotation = upset_right_annotation(df.x,
                                                                 add_numbers = T,
                                                                 numbers_gp = gpar(fontfamily = input$font_type,fontsize =12),
@@ -8271,23 +8947,23 @@ runSTEGO <- function(){
       },
       content = function(file) {
         pdf(file, width=input$width_Upset_plot_overlap,height=input$height_Upset_plot_overlap, onefile = FALSE) # open the pdf device
-        plot(UMAP_ClusTCR2())
+        plot(Upset_plot())
         dev.off()}, contentType = "application/pdf" )
 
     output$downloadPlotPNG_Upset_plot_overlap <- downloadHandler(
       filename = function() {
+        x <- gsub(":", ".", Sys.time())
         paste("_Overlap_", gsub("/", "-", x), ".png", sep = "")
       },
       content = function(file) {
-        png(file, width = input$width_png_Upset_plot_overlap,
-            height = input$height_png_Upset_plot_overlap,
-            res = input$resolution_PNG_Upset_plot_overlap)
-        plot(UMAP_ClusTCR2())
+        png(file, width = input$width_png_Upset_plot_overlap,height = input$height_png_Upset_plot_overlap,res = input$resolution_PNG_Upset_plot_overlap)
+        plot(Upset_plot())
         dev.off()},   contentType = "application/png" # MIME type of the image
     )
 
+    # upset plot table
 
-    output$Upset_plot_overlap_Tb <- DT::renderDataTable(escape = FALSE, filter = list(position = 'top', clear = FALSE),  options = list(autoWidth = FALSE, lengthMenu = c(2,5,10,20,50,100), pageLength = 5, scrollX = TRUE),{
+    Upset_plot_overlap <- reactive({
       df <-  Add.UMAP.reduction()
       validate(
         need(nrow(df)>0,
@@ -8305,11 +8981,20 @@ runSTEGO <- function(){
       mat <- acast(unique.df, chain~group, value.var="cloneCount")
       mat[is.na(mat)] <- 0
       mat
-      # mat <- as.data.frame(mat)
-      # df.x <- make_comb_mat(mat)
-      # list.names <- as.character(input$ID_Column_factor)
-
     })
+    output$Upset_plot_overlap_Tb <- DT::renderDataTable(escape = FALSE, filter = list(position = 'top', clear = FALSE),  options = list(autoWidth = FALSE, lengthMenu = c(2,5,10,20,50,100), pageLength = 5, scrollX = TRUE),{
+      Upset_plot_overlap()
+    })
+
+    output$downloaddf_Upset_plot_overlap_Tb <- downloadHandler(
+      filename = function(){
+        paste(input$name.BD,"_Overlap_",gsub("-", ".", Sys.Date()),".tsv", sep = "")
+      },
+      content = function(file){
+        df <- as.data.frame(Upset_plot_overlap())
+        write.csv(df,file)
+      } )
+
 
     ### end -----
   }
