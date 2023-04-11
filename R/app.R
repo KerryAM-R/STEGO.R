@@ -1,6 +1,60 @@
 #' Run STEGO application.
 #' @name STEGO
 #' @importFrom stats chisq.test
+#' @import BiocParallel
+#' @import ClusTCR2
+#' @import ComplexHeatmap
+#' @import GGally
+#' @import RColorBrewer
+#' @import Rcpp
+#' @import Seurat
+#' @import SeuratData
+#' @import SeuratDisk
+#' @import SeuratObject
+#' @import VLF
+#' @import bslib
+#' @import circlize
+#' @import colourpicker
+#' @import corrplot
+#' @import dior
+#' @import doParallel
+#' @import Matrix
+#' @import DT
+#' @import dplyr
+#' @import forcats
+#' @import foreach
+#' @import fpc
+#' @import ggnet
+#' @import ggpattern
+#' @import ggplot2
+#' @import ggrepel
+#' @import ggridges
+#' @import ggseqlogo
+#' @import gridExtra
+#' @import harmony
+#' @import igraph
+#' @import iterators
+#' @import linkcomm
+#' @import lubridate
+#' @import motifStack
+#' @import network
+#' @import plyr
+#' @import purrr
+#' @import randomcoloR
+#' @import readr
+#' @import reshape2
+#' @import scGate
+#' @import shinyBS
+#' @import shinyWidgets
+#' @import shinybusy
+#' @import showtext
+#' @import showtextdb
+#' @import sysfonts
+#' @import tibble
+#' @import tidyr
+#' @import shiny
+#' @import stringr
+#'
 #' @export
 
 runSTEGO <- function(){
@@ -7207,11 +7261,11 @@ runSTEGO <- function(){
       tb_totals <- table(totals$groups,totals$Function)
       chisq <- chisq.test(tb_totals)
       if (input$type_res=="Residuals") {
-        plot_chi <- corrplot(chisq$residuals, is.cor = FALSE,hclust.method ="ward.D2",tl.col = "black")
+        plot_chi <- corrplot(chisq$residuals, is.corr = FALSE,hclust.method ="ward.D2",tl.col = "black")
       }
       else {
         contrib <- 100*chisq$residuals^2/chisq$statistic
-        plot_chi <- corrplot(contrib, is.cor = FALSE,tl.col = "black",col = topo.colors(100) )
+        plot_chi <- corrplot(contrib, is.corr  = FALSE,tl.col = "black",col = topo.colors(100) )
       }
       plot_chi
     })
