@@ -2,6 +2,6 @@ levels	use_as	name	signature
 level1	negative	Naive	
 level1	negative	Memory	
 level1	negative	Effector	
-level1	positive	exhausted-like 	
+level1	positive	exhausted	
 level1	negative	proliferative	
 level1	negative	Senescence	
