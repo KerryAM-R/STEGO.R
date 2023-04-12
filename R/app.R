@@ -4905,7 +4905,6 @@ runSTEGO <- function(){
       names(df) <- "Cell_Index"
       if (input$generic_scGATE==T) {
         scGate_models_DB <- custom_db_scGATE(system.file("scGATE","human/generic",package = "STEGO.R"))
-        names(scGate_models_DB)
         models.list <- scGate_models_DB[c(input$GenericID_scGATE)]
         obj <- scGate(sc, model = models.list)
         df$generic <- obj@meta.data$scGate_multi
@@ -5004,7 +5003,6 @@ runSTEGO <- function(){
       names(df) <- "Cell_Index"
       if (input$cellTypist_lowerCD4T_scGATE==T) {
         scGate_models_DB <- suppressWarnings(custom_db_scGATE(system.file("scGATE","human/CellTypist_lower_CD4",package = "STEGO.R")))
-        scGate_models_DB
         models.list <- scGate_models_DB
         obj <- scGate(sc, model = models.list)
         df$CellTypist_lower_CD4 <- obj@meta.data$scGate_multi
@@ -5024,7 +5022,6 @@ runSTEGO <- function(){
       names(df) <- "Cell_Index"
       if (input$cellTypist_lowerCD8T_scGATE==T) {
         scGate_models_DB <- suppressWarnings(custom_db_scGATE(system.file("scGATE","human/CellTypist_lower_CD8",package = "STEGO.R")))
-        scGate_models_DB
         models.list <- scGate_models_DB
         obj <- scGate(sc, model = models.list)
         df$CellTypist_lower_CD8 <- obj@meta.data$scGate_multi
@@ -5044,7 +5041,6 @@ runSTEGO <- function(){
       names(df) <- "Cell_Index"
       if (input$cellTypist_lowerOtherT_scGATE==T) {
         scGate_models_DB <- suppressWarnings(custom_db_scGATE(system.file("scGATE","human/CellTypist_lower_Other",package = "STEGO.R")))
-        scGate_models_DB
         models.list <- scGate_models_DB
         obj <- scGate(sc, model = models.list)
         df$CellTypist_lower_Other <- obj@meta.data$scGate_multi

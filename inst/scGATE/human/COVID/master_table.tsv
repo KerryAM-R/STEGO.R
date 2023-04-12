@@ -2,7 +2,6 @@ name	signature
 Naive	LEF1;TCF7;CCR7
 Memory	GZMK
 Effector	GZMB;GNLY;PRF1;PRDM1;KLRD1;SLC9A3R1
-exhausted-like1	LAG3
-exhausted-like 	TIGIT;PDCD1
+exhausted-like 	LAG3;TIGIT;PDCD1
 proliferative	MKI67;TYMS
-senecence	B3GAT1
+Senescence	B3GAT1
