@@ -1,6 +1,4 @@
 levels	use_as	name	signature
-level1	negative	Interferon.gamma	
-level1	positive	TNFalpha	
 level1	negative	IL10	
 level1	negative	IL4	
 level1	negative	IL17	
@@ -10,3 +8,6 @@ level1	negative	Granulysin
 level1	negative	Early	
 level1	negative	Late	
 level1	negative	Very.late	
+level1	negative	IFNgTNF	
+level1	negative	IFNg	
+level1	positive	TNFa	
