@@ -1,6 +1,7 @@
 name	signature
-Interferon.gamma	IFNG
-TNFalpha	TNF
+IFNgTNF	IFNG;TNF
+IFNg	IFNG;TNF-
+TNFa	IFNG-;TNF
 IL10	IL10
 IL4	IL4
 IL17	IL17A;IL17F
@@ -9,4 +10,4 @@ Perforin	PRF1
 Granulysin	GNLY
 Early	CD69
 Late	IL2RA
-Very.late	CD38;HLA.DRA;HLA.DRB1;HLA.DRB5
+Very.late	CD38;HLA-DRA;HLA-DRB1;HLA-DRB5
