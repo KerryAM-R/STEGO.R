@@ -1,0 +1,12 @@
+name	signature
+Interferon-gamma	IFNG
+TNF-alpha	TNF
+IL10	IL10
+IL4	IL4
+IL17	IL17A;IL17F
+GranzymeB	GZMB
+Perforin	PRF1
+Granulysin	GNLY
+Early activation	CD69
+Later activation (CD25+)	IL2RA
+Very late activation	CD38;HLA.DRA;HLA.DRB1;HLA.DRB5

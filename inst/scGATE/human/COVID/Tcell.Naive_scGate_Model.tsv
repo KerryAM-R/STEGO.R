@@ -1,0 +1,27 @@
+levels	use_as	name	signature
+level1	positive	Immune	
+level1	positive	Lymphoid	
+level1	negative	Myeloid	
+level1	positive	Tcell	
+level2	positive	Tcell	
+level2	positive	Na•ve	
+level2	negative	Memory	
+level2	negative	Effector	
+level2	negative	exhausted-like (LAG3)	
+level2	negative	exhausted-like 	
+level2	negative	proliferative	
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			

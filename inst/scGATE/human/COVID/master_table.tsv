@@ -1,0 +1,12 @@
+name	signature
+Immune	PTPRC
+Lymphoid	LCK
+Myeloid	SPI1
+APC	HLA.DRA;HLA.DMB;HLA.DMA;HLA.DQA1;HLA.DQB1;HLA.DRB1;HLA.DPA1;HLA.DPB1
+Tcell	CD3D;CD3E;CD3G;CD2
+Na•ve	LEF1;TCF7;CCR7
+Memory	GZMK
+Effector	GZMB;GNLY;PRF1;PRDM1;KLRD1;SLC9A3R1
+exhausted-like (LAG3)	LAG3
+exhausted-like 	TIGIT;PDCD1
+proliferative	MKI67;TYMS
