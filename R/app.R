@@ -2,6 +2,7 @@
 #' @name STEGO
 #' @importFrom stats chisq.test
 #' @import BiocParallel
+#' @import ClusTCR2
 #' @export
 
 runSTEGO <- function(){
@@ -337,13 +338,11 @@ runSTEGO <- function(){
                                          column(6,numericInput("dimension_heatmap.max","View heatmap dimensions.max", value = 10)),
                                          column(6,numericInput("numberofcells","Number of cells to use for heatmap", value = 500))
                                        ),
-
                                        actionButton("run_reduction","Run clustering"),
                                        fluidRow(
                                          column(6,numericInput("dimension_sc","Max dimensions for clustering", value = 15)),
                                          column(6,numericInput("resolution","Resolution of clusters", value = 1)),
                                        ),
-
                                        fileInput('file_SC_meta', 'Upload file meta.data file (.csv.gz or .csv)',
                                                  accept=c('.csv','.csv.gz')),
                                        actionButton("run_metadata","Impute metadata after clustering"),
@@ -4076,7 +4075,7 @@ runSTEGO <- function(){
             IL2RA>0 & CD40LG >0 ~ "CD25+CD40LG+",
             IL2RA>0 & TNFRSF4 >0 ~ "CD25+TNFRSF4+",
             IL2RA>0 & ICAM1> 0 ~  "CD25+CD54+",
-            PDCD1>0 ~ "Exhaused (PD1+)", # PDCD1= PD1 AND B3GAT1=CD57
+            PDCD1>0 ~ "Exhausted (PD1+)", # PDCD1= PD1 AND B3GAT1=CD57
             B3GAT1>0 ~ "Senescence (CD57+)", # PDCD1= PD1 AND B3GAT1=CD57
             JCHAIN>0 & IL6>0 ~ "IL6+ Plasma cell",
             MS4A1>0 & IL6>0 ~ "IL6+ B cell",
