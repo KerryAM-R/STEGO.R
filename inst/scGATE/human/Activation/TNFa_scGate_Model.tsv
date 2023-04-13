@@ -1,4 +1,6 @@
 levels	use_as	name	signature
+level1	negative	IFNg	
+level1	positive	TNFa	
 level1	negative	IL10	
 level1	negative	IL4	
 level1	negative	IL17	
@@ -9,5 +11,3 @@ level1	negative	Early
 level1	negative	Late	
 level1	negative	Very.late	
 level1	negative	Very.late2	
-level1	negative	IFNg	
-level1	positive	TNFa	
