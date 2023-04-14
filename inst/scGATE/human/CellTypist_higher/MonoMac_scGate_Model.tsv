@@ -2,5 +2,4 @@ levels	use_as	name	signature
 level1	positive	Immune	
 level1	positive	Myeloid	
 level1	negative	Lymphoid	
-level2	negative	Tcell	
 level2	positive	Macrophage	

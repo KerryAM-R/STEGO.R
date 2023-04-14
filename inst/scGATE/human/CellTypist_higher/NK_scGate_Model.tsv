@@ -24,3 +24,11 @@ level2	negative	Monocyte_precursor
 level2	negative	Classical_monocytes	
 level2	negative	Monocytes	
 level2	negative	Non.classical_monocytes	
+level3	positive	CD16_NK_cells	
+level3	positive	CD16neg_NK_cells	
+level3	positive	ILC	
+level3	positive	ILC1	
+level3	positive	ILC2	
+level3	positive	ILC3	
+level3	positive	NK_cells	
+level3	positive	Traditional_NK_cells	
