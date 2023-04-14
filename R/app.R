@@ -338,11 +338,13 @@ runSTEGO <- function(){
                                          column(6,numericInput("dimension_heatmap.max","View heatmap dimensions.max", value = 10)),
                                          column(6,numericInput("numberofcells","Number of cells to use for heatmap", value = 500))
                                        ),
+
                                        actionButton("run_reduction","Run clustering"),
                                        fluidRow(
                                          column(6,numericInput("dimension_sc","Max dimensions for clustering", value = 15)),
                                          column(6,numericInput("resolution","Resolution of clusters", value = 1)),
                                        ),
+
                                        fileInput('file_SC_meta', 'Upload file meta.data file (.csv.gz or .csv)',
                                                  accept=c('.csv','.csv.gz')),
                                        actionButton("run_metadata","Impute metadata after clustering"),
@@ -551,6 +553,12 @@ runSTEGO <- function(){
                                                            column(3,checkboxInput("cellTypist_lowerCD4T_scGATE","CellTypist (lower) CD4 T cell (Human)", value = F)),
                                                            column(3,checkboxInput("cellTypist_lowerCD8T_scGATE","CellTypist (lower) CD8 T cell (Human)", value = F)),
                                                            column(3,checkboxInput("cellTypist_lowerOtherT_scGATE","CellTypist (lower) Other T cell (Human)", value = F)),
+                                                           column(3,checkboxInput("Ex.Sen_scGATE","Exhausted/Senescence (Human)", value = F)),
+                                                           column(3,checkboxInput("COVID_scGATE","COVID markers (Human)", value = F)),
+                                                           column(3,checkboxInput("Activation_scGATE","Activation markers (Human)", value = F)),
+                                                           column(3,checkboxInput("IFNgTNFa_scGATE","IFNg and TNFa (Human)", value = F)),
+                                                           column(3,checkboxInput("GNLY.PFR1.GZMB_scGATE","GNLY.PFR1.GZMB markers (Human)", value = F)),
+                                                           column(3,checkboxInput("Interlukin_scGATE","Interlukin markers (Human)", value = F)),
                                                   ),
                                                   add_busy_spinner(spin = "fading-circle"),
                                                   fluidRow(
@@ -559,9 +567,15 @@ runSTEGO <- function(){
                                                     column(6,verbatimTextOutput("scGATE_verbatum_CD8")),
                                                     column(6,verbatimTextOutput("scGATE_verbatum_cellTypist_higher")),
                                                     column(6,verbatimTextOutput("scGATE_verbatum_cellTypist_lower_Bcells")),
-                                                    column(6,verbatimTextOutput("scGATE_verbatum_cellTypist_lower_CD8T")),
                                                     column(6,verbatimTextOutput("scGATE_verbatum_cellTypist_lower_CD4T")),
+                                                    column(6,verbatimTextOutput("scGATE_verbatum_cellTypist_lower_CD8T")),
                                                     column(6,verbatimTextOutput("scGATE_verbatum_cellTypist_lower_OtherT")),
+                                                    column(6,verbatimTextOutput("scGATE_verbatum_Ex.Sen")),
+                                                    column(6,verbatimTextOutput("scGATE_verbatum_COVID")),
+                                                    column(6,verbatimTextOutput("scGATE_verbatum_Activation")),
+                                                    column(6,verbatimTextOutput("scGATE_verbatum_IFNgTNFa")),
+                                                    column(6,verbatimTextOutput("scGATE_verbatum_GNLY.PFR1.GZMB")),
+                                                    column(6,verbatimTextOutput("scGATE_verbatum_Interlukin")),
                                                   )
                                          ),
                                          tabPanel("Table",
@@ -599,6 +613,14 @@ runSTEGO <- function(){
                                                   ),
 
                                          ),
+
+                                         # tabPanel("Data2Talk",
+                                         #          p("Upload",tags$a(href="https://talk2data.bioturing.com/predict", "Data2Talk prediction")),
+                                         #
+                                         #
+                                         #
+                                         #          ),
+
                                          tabPanel("Table",
                                                   add_busy_spinner(spin = "fading-circle"),
                                                   div(DT::dataTableOutput("DEx_table_TcellClass_2")),
@@ -632,6 +654,7 @@ runSTEGO <- function(){
                           sidebarPanel(id = "tPanel4",style = "overflow-y:scroll; max-height: 800px; position:relative;", width=3,
 
                                        selectInput("STEGO_R_pro","QC processed",choices = c("STEGO_R (.h5Seurat)")), #,"Seurat (.rds)"
+                                       textInput("name.file_clust","Name added to files",value = ""),
                                        conditionalPanel(condition="input.check_up_files== 'up'",
 
 
@@ -643,7 +666,7 @@ runSTEGO <- function(){
                                                         numericInput("skip_TCRex_up","Skip # of lines for TCRex file",value = 7),
                                                         fileInput('upload_TCRex_file', 'Upload TCRex (.tsv)',
                                                                   accept=c('tsv','.tsv')),
-                                                        textInput("name.file_clust","Name added to files",value = ""),
+
                                        ),
                                        conditionalPanel(condition="input.STEGO_R_pro == 'STEGO_R (.h5Seurat)'",
                                                         selectInput("datasource", "Data source",choices=c("10x Genomics","BD Rhapsody")),
@@ -1027,13 +1050,26 @@ runSTEGO <- function(){
                                                                                   ),
                                                                                   tabPanel("Longitudinal (χ2) ",
                                                                                            h5("balloonplot of χ2"),
-                                                                                           p("The plots include the pearsons resudical for each cell (aka standardized residuals), for the proportion of cell contribution. The Contrib = contribution in percentage (%)"),p("See:",tags$a(href="http://www.sthda.com/english/wiki/chi-square-test-of-independence-in-r", " for Information")),
+                                                                                           p("The plots include the pearsons residuals for each cell (aka standardized residuals), for the proportion of cell contribution. The Contrib = contribution in percentage (%)"),p("See:",tags$a(href="http://www.sthda.com/english/wiki/chi-square-test-of-independence-in-r", " for Information")),
 
 
                                                                                            selectInput("type_res","Type of comparison",choices = c("Residuals","Contrib")),
+                                                                                           conditionalPanel(condition="input.type_res=='Residuals'",
+                                                                                                            fluidRow(
+                                                                                                              column(3,colourInput("lower_col_chi","Lower colour:","purple")),
+                                                                                                              column(3,colourInput("mid_col_chi","Mid colour:","White")),
+                                                                                                              column(3,colourInput("high_col_chi","Higher colour:","Gold")),
+                                                                                                            )),
+
+                                                                                           conditionalPanel(condition="input.type_res=='Contrib'",
+                                                                                                            fluidRow(
+                                                                                                              column(3,colourInput("lower_col_chi2","Lower colour:","purple")),
+                                                                                                              # column(3,colourInput("mid_col_chi","Mid colour:","White")),
+                                                                                                              column(3,colourInput("high_col_chi2","Higher colour:","Gold")),
+                                                                                                            )),
+
                                                                                            tabsetPanel(
                                                                                              tabPanel("Table",
-
                                                                                                       div(DT::dataTableOutput("Chi_tab_before")),
                                                                                              ),
                                                                                              tabPanel("balloonplot",
@@ -1044,7 +1080,7 @@ runSTEGO <- function(){
                                                                                                         column(2,style = "margin-top: 25px;",downloadButton('downloadPlot_Chi_square_plot','Download PDF')),
                                                                                                         column(2,numericInput("width_png_Chi_square_plot","Width of PNG", value = 1200)),
                                                                                                         column(2,numericInput("height_png_Chi_square_plot","Height of PNG", value = 1000)),
-                                                                                                        column(2,numericInput("resolution_png_Chi_square_plot","Resolution of PNG", value = 144)),
+                                                                                                        column(2,numericInput("resolution_PNG_Chi_square_plot","Resolution of PNG", value = 144)),
                                                                                                         column(2,style = "margin-top: 25px;",downloadButton('downloadPlotPNG_Chi_square_plot','Download PNG'))),
                                                                                              )
                                                                                            ),
@@ -1185,6 +1221,8 @@ runSTEGO <- function(){
 
                                                                         ),
                                                                         tabPanel("UMAP",
+                                                                                 numericInput("value_size_epi_umap","Size of epitope dots",value = 2),
+
                                                                                  # column(3,selectInput("epitope_umap_selected","Select",choices = c("beta","epitope","pathology"),selected = "pathology")),
                                                                                  fluidRow(
                                                                                    column(3,
@@ -4075,7 +4113,7 @@ runSTEGO <- function(){
             IL2RA>0 & CD40LG >0 ~ "CD25+CD40LG+",
             IL2RA>0 & TNFRSF4 >0 ~ "CD25+TNFRSF4+",
             IL2RA>0 & ICAM1> 0 ~  "CD25+CD54+",
-            PDCD1>0 ~ "Exhausted (PD1+)", # PDCD1= PD1 AND B3GAT1=CD57
+            PDCD1>0 ~ "Exhaused (PD1+)", # PDCD1= PD1 AND B3GAT1=CD57
             B3GAT1>0 ~ "Senescence (CD57+)", # PDCD1= PD1 AND B3GAT1=CD57
             JCHAIN>0 & IL6>0 ~ "IL6+ Plasma cell",
             MS4A1>0 & IL6>0 ~ "IL6+ B cell",
@@ -4952,8 +4990,6 @@ runSTEGO <- function(){
       }
       df
     })
-
-
     scGATE_anno_cellTypist_higher <- reactive({
       sc <- getData_2()
       validate(
@@ -4973,7 +5009,6 @@ runSTEGO <- function(){
       }
       df
     })
-
     scGATE_anno_cellTypist_lowerBcells <- reactive({
       sc <- getData_2()
       validate(
@@ -5050,6 +5085,120 @@ runSTEGO <- function(){
       }
       df
     })
+    scGATE_anno_Ex.Sen <- reactive({
+      sc <- getData_2()
+      validate(
+        need(nrow(sc)>0,
+             "Upload file for annotation")
+      )
+      df <- as.data.frame(sc@meta.data[,names(sc@meta.data) %in% c("Cell_Index")])
+      names(df) <- "Cell_Index"
+      if (input$Ex.Sen_scGATE==T) {
+        scGate_models_DB <- suppressWarnings(custom_db_scGATE(system.file("scGATE","human/Exhausted_Senescence",package = "STEGO.R")))
+        models.list <- scGate_models_DB
+        obj <- scGate(sc, model = models.list)
+        df$Exhausted_Senescence <- obj@meta.data$scGate_multi
+      }
+      else {
+        df
+      }
+      df
+    })
+    scGATE_anno_COVID <- reactive({
+      sc <- getData_2()
+      validate(
+        need(nrow(sc)>0,
+             "Upload file for annotation")
+      )
+      df <- as.data.frame(sc@meta.data[,names(sc@meta.data) %in% c("Cell_Index")])
+      names(df) <- "Cell_Index"
+      if (input$COVID_scGATE==T) {
+        scGate_models_DB <- suppressWarnings(custom_db_scGATE(system.file("scGATE","human/COVID",package = "STEGO.R")))
+        models.list <- scGate_models_DB
+        obj <- scGate(sc, model = models.list)
+        df$COVID <- obj@meta.data$scGate_multi
+      }
+      else {
+        df
+      }
+      df
+    })
+    scGATE_anno_Activation <- reactive({
+      sc <- getData_2()
+      validate(
+        need(nrow(sc)>0,
+             "Upload file for annotation")
+      )
+      df <- as.data.frame(sc@meta.data[,names(sc@meta.data) %in% c("Cell_Index")])
+      names(df) <- "Cell_Index"
+      if (input$Activation_scGATE==T) {
+        scGate_models_DB <- suppressWarnings(custom_db_scGATE(system.file("scGATE","human/Activation",package = "STEGO.R")))
+        models.list <- scGate_models_DB
+        obj <- scGate(sc, model = models.list)
+        df$Activation <- obj@meta.data$scGate_multi
+      }
+      else {
+        df
+      }
+      df
+    })
+    scGATE_anno_IFNgTNFa <- reactive({
+      sc <- getData_2()
+      validate(
+        need(nrow(sc)>0,
+             "Upload file for annotation")
+      )
+      df <- as.data.frame(sc@meta.data[,names(sc@meta.data) %in% c("Cell_Index")])
+      names(df) <- "Cell_Index"
+      if (input$IFNgTNFa_scGATE==T) {
+        scGate_models_DB <- suppressWarnings(custom_db_scGATE(system.file("scGATE","human/IFNgTNFa",package = "STEGO.R")))
+        models.list <- scGate_models_DB
+        obj <- scGate(sc, model = models.list)
+        df$IFNgTNFa <- obj@meta.data$scGate_multi
+      }
+      else {
+        df
+      }
+      df
+    })
+    scGATE_anno_GNLY.PFR1.GZMB <- reactive({
+      sc <- getData_2()
+      validate(
+        need(nrow(sc)>0,
+             "Upload file for annotation")
+      )
+      df <- as.data.frame(sc@meta.data[,names(sc@meta.data) %in% c("Cell_Index")])
+      names(df) <- "Cell_Index"
+      if (input$GNLY.PFR1.GZMB_scGATE==T) {
+        scGate_models_DB <- suppressWarnings(custom_db_scGATE(system.file("scGATE","human/GNLY.PFR1.GZMB",package = "STEGO.R")))
+        models.list <- scGate_models_DB
+        obj <- scGate(sc, model = models.list)
+        df$GNLY.PFR1.GZMB <- obj@meta.data$scGate_multi
+      }
+      else {
+        df
+      }
+      df
+    })
+    scGATE_anno_Interlukin <- reactive({
+      sc <- getData_2()
+      validate(
+        need(nrow(sc)>0,
+             "Upload file for annotation")
+      )
+      df <- as.data.frame(sc@meta.data[,names(sc@meta.data) %in% c("Cell_Index")])
+      names(df) <- "Cell_Index"
+      if (input$Interlukin_scGATE==T) {
+        scGate_models_DB <- suppressWarnings(custom_db_scGATE(system.file("scGATE","human/Interlukins",package = "STEGO.R")))
+        models.list <- scGate_models_DB
+        obj <- scGate(sc, model = models.list)
+        df$Interlukins <- obj@meta.data$scGate_multi
+      }
+      else {
+        df
+      }
+      df
+    })
 
     output$scGATE_verbatum_Generic <- renderPrint({
       FN <- tempfile()
@@ -5057,7 +5206,8 @@ runSTEGO <- function(){
       sink(zz ,type = "output")
       sink(zz, type = "message")
       if (input$generic_scGATE==T) {
-        scGATE_anno_generic()}
+        scGATE_anno_generic()
+      }
 
       else{
         print("Generic not run")
@@ -5165,6 +5315,96 @@ runSTEGO <- function(){
       sink(type = "output")
       cat(readLines(FN), sep="\n")
     })
+    output$scGATE_verbatum_Ex.Sen <- renderPrint({
+      FN <- tempfile()
+      zz <- file(FN, open = "wt")
+      sink(zz ,type = "output")
+      sink(zz, type = "message")
+      if (input$Ex.Sen_scGATE==T) {
+        scGATE_anno_Ex.Sen()
+      }
+      else{
+        print("Exhausted/Senescence not run")
+      }
+      sink(type = "message")
+      sink(type = "output")
+      cat(readLines(FN), sep="\n")
+    })
+    output$scGATE_verbatum_COVID <- renderPrint({
+      FN <- tempfile()
+      zz <- file(FN, open = "wt")
+      sink(zz ,type = "output")
+      sink(zz, type = "message")
+      if (input$COVID_scGATE==T) {
+        scGATE_anno_COVID()
+      }
+      else{
+        print("COVID not run")
+      }
+      sink(type = "message")
+      sink(type = "output")
+      cat(readLines(FN), sep="\n")
+    })
+    output$scGATE_verbatum_Activation <- renderPrint({
+      FN <- tempfile()
+      zz <- file(FN, open = "wt")
+      sink(zz ,type = "output")
+      sink(zz, type = "message")
+      if (input$Activation_scGATE==T) {
+        scGATE_anno_Activation()
+      }
+      else{
+        print("Activation not run")
+      }
+      sink(type = "message")
+      sink(type = "output")
+      cat(readLines(FN), sep="\n")
+    })
+    output$scGATE_verbatum_IFNgTNFa <- renderPrint({
+      FN <- tempfile()
+      zz <- file(FN, open = "wt")
+      sink(zz ,type = "output")
+      sink(zz, type = "message")
+      if (input$IFNgTNFa_scGATE==T) {
+        scGATE_anno_IFNgTNFa()
+      }
+      else{
+        print("IFNg/TNFa not run")
+      }
+      sink(type = "message")
+      sink(type = "output")
+      cat(readLines(FN), sep="\n")
+    })
+    output$scGATE_verbatum_GNLY.PFR1.GZMB <- renderPrint({
+      FN <- tempfile()
+      zz <- file(FN, open = "wt")
+      sink(zz ,type = "output")
+      sink(zz, type = "message")
+      if (input$GNLY.PFR1.GZMB_scGATE==T) {
+        scGATE_anno_GNLY.PFR1.GZMB()
+      }
+      else{
+        print("GNLY.PFR1.GZMB not run")
+      }
+      sink(type = "message")
+      sink(type = "output")
+      cat(readLines(FN), sep="\n")
+    })
+    output$scGATE_verbatum_Interlukin <- renderPrint({
+      FN <- tempfile()
+      zz <- file(FN, open = "wt")
+      sink(zz ,type = "output")
+      sink(zz, type = "message")
+      if (input$Interlukin_scGATE==T) {
+        scGATE_anno_Interlukin()
+      }
+      else{
+        print("Interlukins not run")
+      }
+      sink(type = "message")
+      sink(type = "output")
+      cat(readLines(FN), sep="\n")
+    })
 
     scGATE_anno <- reactive({
       sc <- getData_2()
@@ -5175,11 +5415,16 @@ runSTEGO <- function(){
       df <- cbind(scGATE_anno_generic(),
                   scGATE_anno_CD4(),
                   scGATE_anno_CD8(),
-                  scGATE_anno_cellTypist_higher(),
                   scGATE_anno_cellTypist_lowerBcells(),
                   scGATE_anno_cellTypist_lowerCD4T(),
                   scGATE_anno_cellTypist_lowerCD8T(),
-                  scGATE_anno_cellTypist_lowerOtherT()
+                  scGATE_anno_cellTypist_lowerOtherT(),
+                  scGATE_anno_Ex.Sen(),
+                  scGATE_anno_COVID(),
+                  scGATE_anno_Activation(),
+                  scGATE_anno_IFNgTNFa(),
+                  scGATE_anno_GNLY.PFR1.GZMB(),
+                  scGATE_anno_Interlukin()
       )
 
       rownames(df) <- df$Cell_Index
@@ -5504,12 +5749,10 @@ runSTEGO <- function(){
     ## Umap -----
     create_UMAP2 <- reactive({
       sc <- input.data_sc_pro()
-
       validate(
         need(nrow(sc)>0,
              error_message_val_UMAP)
       )
-
       reduction <- (sc@reductions$umap)
       UMAP <- as.data.frame(reduction@cell.embeddings)
       UMAP$Cell_Index <- rownames(UMAP)
@@ -5519,7 +5762,6 @@ runSTEGO <- function(){
         umap.meta <- merge(UMAP,meta.data,by="Cell_Index")
         names(umap.meta)[names(umap.meta) %in% input$Samp_col] <- "ID_Column"
         names(umap.meta)[names(umap.meta) %in% input$V_gene_sc] <- "v_gene_selected"
-
       }
       else {
         meta.data$Cell_Index <- rownames(meta.data)
@@ -5530,18 +5772,12 @@ runSTEGO <- function(){
         meta.data$v_gene_cdr3_BD <- paste(meta.data$v_gene_BD,meta.data$cdr3_BD,sep="_")
         meta.data$v_gene_cdr3_AG<- paste(meta.data$v_gene_AG,meta.data$cdr3_AG,sep="_")
         meta.data$v_gene_cdr3_AG_BD <- paste(meta.data$v_gene_cdr3_AG,meta.data$v_gene_cdr3_BD,sep=" & ")
-
         umap.meta <- merge(UMAP,meta.data,by="Cell_Index")
         names(umap.meta)[names(umap.meta) %in% input$Samp_col] <- "ID_Column"
         names(umap.meta)[names(umap.meta) %in% "v_gene_cdr3_AG_BD"] <- "v_gene_selected"
-
       }
 
-
       sc <- merge(umap.meta,TCR_Expansion(),by=c("v_gene_selected","ID_Column"),all.x=T)
-
-
-
       ggplot(sc,aes(x=UMAP_1,UMAP_2,colour=seurat_clusters))+
         geom_point()+
         scale_color_manual(values = rainbow(length(unique(sc$seurat_clusters))) , na.value=input$NA_col_analysis)+
@@ -6556,7 +6792,7 @@ runSTEGO <- function(){
     output$downloadPlot_markers_featurePlot_sc <- downloadHandler(
       filename = function() {
         x <- gsub(":", ".", Sys.time())
-        paste("TCR_Explore_markers_featurePlot_sc_",gsub("/", "-", x), ".pdf", sep = "")
+        paste(input$name.file_clust,"TCR_Explore_markers_featurePlot_sc_",gsub("/", "-", x), ".pdf", sep = "")
       },
       content = function(file) {
         pdf(file, width=input$width_markers_featurePlot_sc,height=input$height_markers_featurePlot_sc, onefile = FALSE) # open the pdf device
@@ -6567,7 +6803,7 @@ runSTEGO <- function(){
     output$downloadPlotPNG_markers_featurePlot_sc <- downloadHandler(
       filename = function() {
         x <- gsub(":", ".", Sys.time())
-        paste("TCR_Explore_markers_featurePlot_sc_", gsub("/", "-", x), ".png", sep = "")
+        paste(input$name.file_clust,"TCR_Explore_markers_featurePlot_sc_", gsub("/", "-", x), ".png", sep = "")
       },
       content = function(file) {
         png(file, width = input$width_png_markers_featurePlot_sc,height = input$height_png_markers_featurePlot_sc,res = input$resolution_PNG_markers_featurePlot_sc)
@@ -7005,7 +7241,7 @@ runSTEGO <- function(){
     output$downloadPlot_UMAP_all_classification  <- downloadHandler(
       filename = function() {
         x <- gsub(":", ".", Sys.time())
-        paste("top_clonotype_",gsub("/", "-", x), ".pdf", sep = "")
+        paste(input$name.file_clust,"top_clonotype_",gsub("/", "-", x), ".pdf", sep = "")
       },
       content = function(file) {
         pdf(file, width=input$width_UMAP_all_classification ,height=input$height_UMAP_all_classification , onefile = FALSE) # open the pdf device
@@ -7015,7 +7251,7 @@ runSTEGO <- function(){
     output$downloadPlotPNG_UMAP_all_classification  <- downloadHandler(
       filename = function() {
         x <- gsub(":", ".", Sys.time())
-        paste("top_clonotype_", gsub("/", "-", x), ".png", sep = "")
+        paste(input$name.file_clust,"top_clonotype_", gsub("/", "-", x), ".png", sep = "")
       },
       content = function(file) {
         png(file, width = input$width_png_UMAP_all_classification ,
@@ -7158,7 +7394,7 @@ runSTEGO <- function(){
     output$downloadPlot_Classification_clonotype_pie <- downloadHandler(
       filename = function() {
         x <- gsub(":", ".", Sys.time())
-        paste("_Classification_clonotype_pie_",gsub("/", "-", x), ".pdf", sep = "")
+        paste(input$name.file_clust,"_Classification_clonotype_pie_",gsub("/", "-", x), ".pdf", sep = "")
       },
       content = function(file) {
         pdf(file, width=input$width_Classification_clonotype_pie,height=input$height_Classification_clonotype_pie, onefile = FALSE) # open the pdf device
@@ -7168,7 +7404,7 @@ runSTEGO <- function(){
     output$downloadPlotPNG_Classification_clonotype_pie <- downloadHandler(
       filename = function() {
         x <- gsub(":", ".", Sys.time())
-        paste("_Classification_clonotype_pie_", gsub("/", "-", x), ".png", sep = "")
+        paste(input$name.file_clust,"_Classification_clonotype_pie_", gsub("/", "-", x), ".png", sep = "")
       },
       content = function(file) {
         png(file, width = input$width_png_Classification_clonotype_pie,
@@ -7184,11 +7420,9 @@ runSTEGO <- function(){
       totals <- meta.data[,names(meta.data) %in% c(input$Samp_col,input$clust_names_top)]
       names(totals) <- c("groups","Function")
       totals <- totals[!totals$Function %in% c("NA"),]
+      totals <- totals[!totals$groups %in% c("NA"),]
       totals$groups <- factor(totals$groups,levels = input$ID_Column_factor)
       totals
-
-      # tb_totals <- table(totals$groups,totals$Function)
-      # tb_totals
     })
 
     output$Chi_tab_before <- DT::renderDataTable(escape = FALSE, filter = list(position = 'top', clear = FALSE), options = list(autoWidth = FALSE, lengthMenu = c(2,5,10,20,50,100), pageLength = 10, scrollX = TRUE),{
@@ -7196,18 +7430,78 @@ runSTEGO <- function(){
     })
     # Chi_square <- reactiveValues(plot_chi=NULL)
 
+    chi.seq.residuals <- reactive({
+
+    })
+
 
 
     Chi_square_plot2 <- reactive({
       totals <- chi_squ()
       tb_totals <- table(totals$groups,totals$Function)
       chisq <- chisq.test(tb_totals)
+      chisq
       if (input$type_res=="Residuals") {
-        plot_chi <- corrplot(chisq$residuals, is.corr = FALSE,hclust.method ="ward.D2",tl.col = "black")
+        res <- chisq$residuals
+        res <- setNames(melt(res), c('x', 'y', 'residuals'))
+        res <- res[res$x %in% input$ID_Column_factor,]
+
+        plot_chi <- ggplot(res, aes(x = x, y = y,size = residuals, fill = residuals)) +
+          geom_point(shape = 21, colour = "black")+
+          scale_size_area(max_size = 10) +
+          scale_fill_gradient2(
+            low = input$lower_col_chi,
+            mid = input$mid_col_chi,
+            high = input$high_col_chi,
+            space = "Lab",
+            na.value = "grey90",
+            guide = "colourbar",
+            aesthetics = "fill")+
+          theme_bw()+
+          theme(
+            axis.title = element_blank(),
+            axis.title.x = element_blank(),
+            axis.title.y = element_blank(),
+            axis.text.y = element_text(colour="black", size=input$Bar_legend_size,family=input$font_type),
+            axis.text.x = element_text(colour="black", size=input$Bar_legend_size,family=input$font_type,angle = 90),
+            legend.text = element_text(colour="black", size=input$Bar_legend_size,family=input$font_type),
+            legend.title = element_blank(),
+            axis.line.x = element_blank(),
+            panel.grid = element_blank(),
+            legend.position = "right",
+          )+
+          guides(size = "none")
+
       }
       else {
         contrib <- 100*chisq$residuals^2/chisq$statistic
-        plot_chi <- corrplot(contrib, is.corr  = FALSE,tl.col = "black",col = topo.colors(100) )
+        contrib <- setNames(melt(contrib), c('x', 'y', 'Percentage'))
+        contrib <- contrib[contrib$x %in% input$ID_Column_factor,]
+        plot_chi <- ggplot(contrib, aes(x = x, y = y,size = Percentage, fill = Percentage)) +
+          geom_point(shape = 21, colour = "black")+
+          scale_size_area(max_size = 10) +
+          scale_fill_gradient2(
+            # low = input$lower_col_chi2,
+            mid = input$lower_col_chi2,
+            high = input$high_col_chi2,
+            space = "Lab",
+            na.value = "grey90",
+            guide = "colourbar",
+            aesthetics = "fill" )+
+          theme_bw()+
+          theme(
+            axis.title = element_blank(),
+            axis.title.x = element_blank(),
+            axis.title.y = element_blank(),
+            axis.text.y = element_text(colour="black", size=input$Bar_legend_size,family=input$font_type),
+            axis.text.x = element_text(colour="black", size=input$Bar_legend_size,family=input$font_type,angle = 90),
+            legend.text = element_text(colour="black", size=input$Bar_legend_size,family=input$font_type),
+            # legend.title = element_blank(),
+            axis.line.x = element_blank(),
+            panel.grid = element_blank()
+            # legend.position = input$legend_position,
+          )+
+          guides(size = "none")
       }
       plot_chi
     })
@@ -7219,7 +7513,7 @@ runSTEGO <- function(){
 
     output$downloadPlot_Chi_square_plot <- downloadHandler(
       filename = function() {
-        paste("_Chi_square_plot", ".pdf", sep = "")
+        paste(input$name.file_clust,"_Chi_square_plot", ".pdf", sep = "")
       },
       content = function(file) {
         pdf(file, width=input$width_Chi_square_plot,height=input$height_Chi_square_plot, onefile = FALSE) # open the pdf device
@@ -7229,13 +7523,10 @@ runSTEGO <- function(){
 
     output$downloadPlotPNG_Chi_square_plot <- downloadHandler(
       filename = function() {
-        x <- gsub(":", ".", Sys.time())
-        paste("_Chi_square_plot_", gsub("/", "-", x), ".png", sep = "")
+        paste(input$name.file_clust,"_Chi_square_plot_",".png", sep = "")
       },
       content = function(file) {
-        png(file, width = input$width_png_Chi_square_plot,
-            height = input$height_png_Chi_square_plot,
-            res = input$resolution_PNG_Chi_square_plot)
+        png(file, width = input$width_png_Chi_square_plot,height = input$height_png_Chi_square_plot,res = input$resolution_PNG_Chi_square_plot)
         plot(Chi_square_plot2())
         dev.off()},   contentType = "application/png" # MIME type of the image
     )
@@ -7462,7 +7753,7 @@ runSTEGO <- function(){
     output$downloadPlot_top_clonotype <- downloadHandler(
       filename = function() {
         x <- gsub(":", ".", Sys.time())
-        paste("top_clonotype_",gsub("/", "-", x), ".pdf", sep = "")
+        paste(input$name.file_clust,"top_clonotype_",gsub("/", "-", x), ".pdf", sep = "")
       },
       content = function(file) {
         pdf(file, width=input$width_top_clonotype,height=input$height_top_clonotype, onefile = FALSE) # open the pdf device
@@ -7472,7 +7763,7 @@ runSTEGO <- function(){
     output$downloadPlotPNG_top_clonotype <- downloadHandler(
       filename = function() {
         x <- gsub(":", ".", Sys.time())
-        paste("top_clonotype_", gsub("/", "-", x), ".png", sep = "")
+        paste(input$name.file_clust,"top_clonotype_", gsub("/", "-", x), ".png", sep = "")
       },
       content = function(file) {
         png(file, width = input$width_png_top_clonotype,
@@ -7633,7 +7924,7 @@ runSTEGO <- function(){
     output$downloadPlot_top_clonotype_pie <- downloadHandler(
       filename = function() {
         x <- gsub(":", ".", Sys.time())
-        paste("top_clonotype_pie_",gsub("/", "-", x), ".pdf", sep = "")
+        paste(input$name.file_clust,"top_clonotype_pie_",gsub("/", "-", x), ".pdf", sep = "")
       },
       content = function(file) {
         pdf(file, width=input$width_top_clonotype_pie ,height=input$height_top_clonotype_pie , onefile = FALSE) # open the pdf device
@@ -7648,7 +7939,7 @@ runSTEGO <- function(){
     output$downloadPlotPNG_top_clonotype_pie  <- downloadHandler(
       filename = function() {
         x <- gsub(":", ".", Sys.time())
-        paste("top_clonotype_", gsub("/", "-", x), ".png", sep = "")
+        paste(input$name.file_clust,"top_clonotype_", gsub("/", "-", x), ".png", sep = "")
       },
       content = function(file) {
         png(file, width = input$width_png_top_clonotype_pie ,
@@ -7850,7 +8141,7 @@ runSTEGO <- function(){
 
     output$downloaddf_clusTCR_GEx <- downloadHandler(
       filename = function(){
-        paste("Stats_",gsub("-", ".", Sys.Date()),".csv", sep = "")
+        paste(input$name.file_clust,"Stats_",gsub("-", ".", Sys.Date()),".csv", sep = "")
       },
       content = function(file){
         df <- as.data.frame(Ridge_chart_alpha_gamma_stat_comp())
@@ -7988,7 +8279,7 @@ runSTEGO <- function(){
     output$downloadPlot_Ridge_chart_alpha_gamma_plot_out <- downloadHandler(
       filename = function() {
         x <- gsub(":", ".", Sys.time())
-        paste(input$plot_type_ridgvi,"_",gsub("/", "-", x), ".pdf", sep = "")
+        paste(input$name.file_clust,"_",input$plot_type_ridgvi,"_",gsub("/", "-", x), ".pdf", sep = "")
       },
       content = function(file) {
         pdf(file, width=input$width_Ridge_chart_alpha_gamma_plot_out,height=input$height_Ridge_chart_alpha_gamma_plot_out, onefile = FALSE) # open the pdf device
@@ -8010,7 +8301,7 @@ runSTEGO <- function(){
     output$downloadPlotPNG_Ridge_chart_alpha_gamma_plot_out  <- downloadHandler(
       filename = function() {
         x <- gsub(":", ".", Sys.time())
-        paste(input$epitope_hm,"_",input$pathology_hm,"_Heatmap_", gsub("/", "-", x), ".png", sep = "")
+        paste(input$name.file_clust,"_",input$epitope_hm,"_",input$pathology_hm,"_Heatmap_", gsub("/", "-", x), ".png", sep = "")
       },
       content = function(file) {
         png(file, width = input$width_png_Ridge_chart_alpha_gamma_plot_out,
@@ -8051,7 +8342,7 @@ runSTEGO <- function(){
 
     output$downloaddf_TCRex_meta <- downloadHandler(
       filename = function(){
-        paste(" TCRex_metadata ",gsub("-", ".", Sys.Date()),".tsv", sep = "")
+        paste(input$name.file_clust,"_","TCRex_metadata_",gsub("-", ".", Sys.Date()),".tsv", sep = "")
       },
       content = function(file){
         df <- as.data.frame(df_tcrex())
@@ -8114,7 +8405,7 @@ runSTEGO <- function(){
     output$downloadPlot_Heatmap_epi_plot <- downloadHandler(
       filename = function() {
         x <- gsub(":", ".", Sys.time())
-        paste(input$epitope_hm,"_",input$pathology_hm,"_Heatmap_",gsub("/", "-", x), ".pdf", sep = "")
+        paste(input$name.file_clust,"_",input$epitope_hm,"_",input$pathology_hm,"_Heatmap_",gsub("/", "-", x), ".pdf", sep = "")
       },
       content = function(file) {
         pdf(file, width=input$width_Heatmap_epi_plot ,height=input$height_Heatmap_epi_plot , onefile = FALSE) # open the pdf device
@@ -8124,7 +8415,7 @@ runSTEGO <- function(){
     output$downloadPlotPNG_Heatmap_epi_plot  <- downloadHandler(
       filename = function() {
         x <- gsub(":", ".", Sys.time())
-        paste(input$epitope_hm,"_",input$pathology_hm,"_Heatmap_", gsub("/", "-", x), ".png", sep = "")
+        paste(input$name.file_clust,"_",input$epitope_hm,"_",input$pathology_hm,"_Heatmap_", gsub("/", "-", x), ".png", sep = "")
       },
       content = function(file) {
         png(file, width = input$width_png_Heatmap_epi_plot,
@@ -8279,10 +8570,11 @@ runSTEGO <- function(){
       num <- as.data.frame(num[complete.cases(num)==T,])
       palette_rainbow <- unlist(colors_cols_epitope())
 
-      df <- ggplot(data=df3.meta,aes(x=UMAP_1,UMAP_2,colour=selected,size= selected))+
+      df <- ggplot(data=df3.meta,aes(x=UMAP_1,UMAP_2,colour=selected,size= selected,alpha = selected))+
         geom_point()+
         scale_color_manual(na.value=input$NA_col_analysis, values = palette_rainbow)+
-        scale_size_manual(na.value=0.25,values = rep(3,dim(num)[1]))+
+        scale_size_manual(na.value=0.25,values = rep(input$value_size_epi_umap,dim(num)[1]))+
+        scale_alpha_manual(na.value=0.25,values = rep(1,dim(num)[1]))+
         theme(
           legend.text = element_text(colour="black", size=12,family=input$font_type),
           legend.title = element_blank(),
@@ -8304,7 +8596,7 @@ runSTEGO <- function(){
     output$downloadPlot_UMAP_Epitope <- downloadHandler(
       filename = function() {
         x <- gsub(":", ".", Sys.time())
-        paste(input$epitope_umap_selected,"_UMAP_",gsub("/", "-", x), ".pdf", sep = "")
+        paste(input$name.file_clust,"_",input$epitope_umap_selected,"_UMAP_",gsub("/", "-", x), ".pdf", sep = "")
       },
       content = function(file) {
         pdf(file, width=input$width_UMAP_Epitope,height=input$height_UMAP_Epitope, onefile = FALSE) # open the pdf device
@@ -8314,7 +8606,7 @@ runSTEGO <- function(){
     output$downloadPlotPNG_UMAP_Epitope <- downloadHandler(
       filename = function() {
         x <- gsub(":", ".", Sys.time())
-        paste(input$epitope_umap_selected,"_UMAP_", gsub("/", "-", x), ".png", sep = "")
+        paste(input$name.file_clust,"_",input$epitope_umap_selected,"_UMAP_", gsub("/", "-", x), ".png", sep = "")
       },
       content = function(file) {
         png(file, width = input$width_png_UMAP_Epitope,
@@ -8931,7 +9223,6 @@ runSTEGO <- function(){
       ), padding = unit(c(20, 20, 20, 20), "mm"))
       ht
     })
-
     output$Upset_plot_overlap <- renderPlot({
       Upset_plot()
     })
@@ -8939,7 +9230,7 @@ runSTEGO <- function(){
     output$downloadPlot_Upset_plot_overlap <- downloadHandler(
       filename = function() {
         x <- gsub(":", ".", Sys.time())
-        paste("_Overlap_",gsub("/", "-", x), ".pdf", sep = "")
+        paste(input$name.file_clust,"_Overlap_",gsub("/", "-", x), ".pdf", sep = "")
       },
       content = function(file) {
         pdf(file, width=input$width_Upset_plot_overlap,height=input$height_Upset_plot_overlap, onefile = FALSE) # open the pdf device
@@ -8949,7 +9240,7 @@ runSTEGO <- function(){
     output$downloadPlotPNG_Upset_plot_overlap <- downloadHandler(
       filename = function() {
         x <- gsub(":", ".", Sys.time())
-        paste("_Overlap_", gsub("/", "-", x), ".png", sep = "")
+        paste(input$name.file_clust,"_Overlap_", gsub("/", "-", x), ".png", sep = "")
       },
       content = function(file) {
         png(file, width = input$width_png_Upset_plot_overlap,height = input$height_png_Upset_plot_overlap,res = input$resolution_PNG_Upset_plot_overlap)
@@ -8957,7 +9248,7 @@ runSTEGO <- function(){
         dev.off()},   contentType = "application/png" # MIME type of the image
     )
 
-    # upset plot table
+    # upset plot table -----
 
     Upset_plot_overlap <- reactive({
       df <-  Add.UMAP.reduction()
@@ -8976,6 +9267,12 @@ runSTEGO <- function(){
       unique.df
       mat <- acast(unique.df, chain~group, value.var="cloneCount")
       mat[is.na(mat)] <- 0
+      sum_data <- as.data.frame(rowSums(mat))
+      names(sum_data) <- "V1"
+
+      mat <- as.data.frame(mat)
+
+      mat$sum <-sum_data$V1
       mat
     })
     output$Upset_plot_overlap_Tb <- DT::renderDataTable(escape = FALSE, filter = list(position = 'top', clear = FALSE),  options = list(autoWidth = FALSE, lengthMenu = c(2,5,10,20,50,100), pageLength = 5, scrollX = TRUE),{
@@ -8991,6 +9288,68 @@ runSTEGO <- function(){
         write.csv(df,file)
       } )
 
+
+    # overlap UMAP plot
+
+    create_UMAP_overlap <- reactive({
+      sc <- input.data_sc_pro()
+
+      validate(
+        need(nrow(sc)>0,
+             error_message_val_UMAP)
+      )
+
+      reduction <- (sc@reductions$umap)
+      UMAP <- as.data.frame(reduction@cell.embeddings)
+      UMAP$Cell_Index <- rownames(UMAP)
+      meta.data <- as.data.frame(sc@meta.data)
+      if(input$STEGO_R_pro == "STEGO_R (.h5Seurat)") {
+        meta.data <- meta.data
+        umap.meta <- merge(UMAP,meta.data,by="Cell_Index")
+        names(umap.meta)[names(umap.meta) %in% input$Samp_col] <- "ID_Column"
+        names(umap.meta)[names(umap.meta) %in% input$V_gene_sc] <- "v_gene_selected"
+
+      }
+      else {
+        meta.data$Cell_Index <- rownames(meta.data)
+        meta.data$v_gene_AG <- meta.data[,names(meta.data) %in% input$RDS_V_gene_A]
+        meta.data$v_gene_BD <- meta.data[,names(meta.data) %in% input$RDS_V_gene_B]
+        meta.data$cdr3_AG <- meta.data[,names(meta.data) %in% input$RDS_cdr3_A]
+        meta.data$cdr3_BD <- meta.data[,names(meta.data) %in% input$RDS_cdr3_B]
+        meta.data$v_gene_cdr3_BD <- paste(meta.data$v_gene_BD,meta.data$cdr3_BD,sep="_")
+        meta.data$v_gene_cdr3_AG<- paste(meta.data$v_gene_AG,meta.data$cdr3_AG,sep="_")
+        meta.data$v_gene_cdr3_AG_BD <- paste(meta.data$v_gene_cdr3_AG,meta.data$v_gene_cdr3_BD,sep=" & ")
+
+        umap.meta <- merge(UMAP,meta.data,by="Cell_Index")
+        names(umap.meta)[names(umap.meta) %in% input$Samp_col] <- "ID_Column"
+        names(umap.meta)[names(umap.meta) %in% "v_gene_cdr3_AG_BD"] <- "v_gene_selected"
+
+      }
+
+
+      sc <- merge(umap.meta,TCR_Expansion(),by=c("v_gene_selected","ID_Column"),all.x=T)
+
+
+
+      ggplot(sc,aes(x=UMAP_1,UMAP_2,colour=seurat_clusters))+
+        geom_point()+
+        scale_color_manual(values = rainbow(length(unique(sc$seurat_clusters))) , na.value=input$NA_col_analysis)+
+        theme_bw() +
+        theme(
+          axis.title.y = element_text(colour="black",family=input$font_type,size = input$title.text.sizer2),
+          axis.text.y = element_text(colour="black",family=input$font_type,size = input$text_size),
+          axis.text.x = element_text(colour="black",family=input$font_type,size = input$text_size,angle=0),
+          axis.title.x = element_text(colour="black",angle=0,vjust=.5,face="plain",family=input$font_type,size = input$title.text.sizer2),
+          legend.text = element_text(colour="black", size=input$Bar_legend_size,family=input$font_type),
+          legend.title = element_blank(),
+          legend.position = input$legend_position,
+        )
+
+
+    })
+    output$create_UMAP_overlap <- renderPlot({
+      create_UMAP_overlap()
+    })
 
     ### end -----
   }
