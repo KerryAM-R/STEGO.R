@@ -1,13 +1,5 @@
 levels	use_as	name	signature
 level1	positive	IFNg	
-level1	negative	TNFa	
-level1	negative	IL10	
-level1	negative	IL4	
-level1	negative	IL17	
 level1	negative	GranzymeB	
 level1	positive	Perforin	
 level1	negative	Granulysin	
-level1	negative	Early	
-level1	negative	Late	
-level1	negative	Very.late	
-level1	negative	Very.late2	

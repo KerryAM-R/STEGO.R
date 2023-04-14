@@ -1,6 +1,0 @@
-levels	use_as	name	signature
-level1	positive	Immune	
-level1	positive	Lymphoid	
-level1	negative	Myeloid	
-level1	negative	Neutrophils	
-level2	positive	Lymphoid	

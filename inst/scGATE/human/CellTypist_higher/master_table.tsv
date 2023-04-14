@@ -19,7 +19,7 @@ Proliferative_germinal_center_B_cells	MKI67;SUGCT;AICDA
 Transitional_B_cells	CD24;MYO1C;MS4A1
 Large_pre.B_cells	MME;CD24;MKI67
 Pre.pro.B_cells	IL7R;ZCCHC7;RAG1
-Pro.B_cells	MME;DNTT;GLL1
+Pro.B_cells	MME;DNTT;IGLL1
 Small_pre.B_cells	MME;CD24;IGLL5
 Plasma_cell	JCHAIN;MZB1;XBP1
 ETP	ACY3;CD34;SPINK2
