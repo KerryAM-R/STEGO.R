@@ -3,4 +3,5 @@ level1	negative	IFNg
 level1	negative	TNFa	
 level1	negative	IL2	
 level1	negative	IL4	
-level1	positive	IL6	
+level1	negative	IL6	
+level1	positive	IL10	
