@@ -6,3 +6,4 @@ level1	negative	Neutrophils
 level1	positive	Tcell	
 level2	negative	CD4Tcells	
 level2	positive	CD8Tcells	
+level3	positive	CD8Tcells	
