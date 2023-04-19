@@ -228,6 +228,30 @@ runSTEGO <- function(){
                           # array data -----
 
                ), # NavbarMenu
+               #### TCRex merge files ----
+               tabPanel("TCRex merge",
+                        sidebarLayout(
+                          sidebarPanel(id = "tPanel4",style = "overflow-y:scroll; max-height: 800px; position:relative;", width=3,
+                                       # selectInput("dataset2", "Choose a dataset:", choices = c("test_data_clusTCR2","own_data_clusTCR2")),
+                                       fileInput('file2_TCRexMerge', 'Select files to merge',
+                                                 multiple = TRUE,
+                                                 accept=c('text/csv', 'text/comma-separated-values,text/plain', '.csv')),
+                                       downloadButton('downloaddf_TCRexFiltered','Download table')
+                          ),
+                          mainPanel(
+                            tabsetPanel(id = "TCRex_tabs",
+                                        tabPanel("Merge Multiple Files",value = "merge",
+                                                 div(DT::dataTableOutput("DEx_TCRexFiltered")),
+                                                 # downloadButton('downloaddf_multiple_ClusTCR2','Download table')
+                                        ),
+
+
+                            )
+                          )
+                        )
+               ),
+
+
                ### TCR clustering with ClusTCR2 -----
                tabPanel("ClusTCR2",
                         sidebarLayout(
@@ -558,7 +582,7 @@ runSTEGO <- function(){
                                                            column(3,checkboxInput("Activation_scGATE","Activation markers (Human)", value = F)),
                                                            column(3,checkboxInput("IFNgTNFa_scGATE","IFNg and TNFa (Human)", value = F)),
                                                            column(3,checkboxInput("GNLY.PFR1.GZMB_scGATE","GNLY.PFR1.GZMB markers (Human)", value = F)),
-                                                           column(3,checkboxInput("Interlukin_scGATE","Interlukin markers (Human)", value = F)),
+                                                           column(3,checkboxInput("Interlukin_scGATE","Interleukins markers (Human)", value = F)),
                                                   ),
                                                   add_busy_spinner(spin = "fading-circle"),
                                                   fluidRow(
@@ -721,6 +745,9 @@ runSTEGO <- function(){
                                        ),
                                        # ),
                                        p(""),
+                                       fluidRow(
+                                         column(4, numericInput("Strip_text_size","Strip text size", value = 12))
+                                       )
                                        # selectInput("dataset_cluster_file", "Choose a dataset:", choices = c("test_data_clusTCR", "own_data_clusTCR")),
                                        # numericInput("num", label = h3("Numeric input"), value = 1),
                                        # materialSwitch(inputId = "mode", label = icon("moon"),
@@ -1030,7 +1057,7 @@ runSTEGO <- function(){
                                                                                   tabPanel("Pie chart",value = 15,
                                                                                            add_busy_spinner(spin = "fading-circle"),
                                                                                            fluidRow(
-                                                                                             column(3,numericInput("strip_size","Size of header",value = 10)),
+                                                                                             # column(3,numericInput("strip_size","Size of header",value = 10)),
                                                                                              column(9,p("Fill = Select function type; Group = Select cluster"))
                                                                                            ),
                                                                                            fluidRow(column(3,
@@ -1123,7 +1150,7 @@ runSTEGO <- function(){
                                                                                  add_busy_spinner(spin = "fading-circle"),
                                                                                  fluidRow(
                                                                                    column(3,selectInput("Plot_type_selected","Plot",choices = c("pie","UMAP"))),
-                                                                                   column(3,numericInput("strip_size_pie","Size of header",value = 10)),
+                                                                                   # column(3,numericInput("strip_size_pie","Size of header",value = 10)),
                                                                                    column(3,numericInput("size_selected_top","Size of Point",value = 2)),
                                                                                  ),
                                                                                  fluidRow(
@@ -1320,7 +1347,26 @@ runSTEGO <- function(){
                                                                                    column(2,numericInput("resolution_PNG_Upset_plot_overlap","Resolution of PNG", value = 144)),
                                                                                    column(2,style = "margin-top: 25px;",downloadButton('downloadPlotPNG_Upset_plot_overlap','Download PNG'))),
                                                                         ),
-                                                                        tabPanel("UMAP")
+                                                                        tabPanel("UMAP",
+                                                                                 fluidRow(
+                                                                                   column(3,
+                                                                                          wellPanel(id = "tPanel23",style = "overflow-y:scroll; max-height: 600px",
+                                                                                                    # uiOutput('cols_overlap_classification')
+                                                                                          )),
+                                                                                   column(9, plotOutput("UMAP_overlap_classification",height="600px"))
+                                                                                 ),
+
+                                                                        ),
+                                                                        tabPanel("Pie",
+                                                                                 fluidRow(
+                                                                                   column(3,
+                                                                                          wellPanel(id = "tPanel23",style = "overflow-y:scroll; max-height: 600px",
+                                                                                                    # uiOutput('cols_overlap_classification')
+                                                                                          )),
+                                                                                   column(9, plotOutput("Classification_Overlap_pie",height="600px"))
+                                                                                 ),
+
+                                                                        )
                                                                       )
                                                              ),
                                                              # tabPanel("Clonotypes per cluster (Pie/bar plot)"),
@@ -2688,6 +2734,51 @@ runSTEGO <- function(){
 
 
 
+
+    # TCRex Merge  ------
+    input.data_TCRexMerge <- reactive({
+      inFile2_TCRexMerge <- input$file2_TCRexMerge
+      num <- dim(inFile2_TCRexMerge)[1]
+      samples_list <- vector("list", length = num)
+      samples_list
+      for (i in 1:num) {
+        sc <- read.table(input$file2_TCRexMerge[[i, 'datapath']],sep="\t",header = T)
+        samples_list[[i]] <- sc
+      }
+      samples_list
+    })
+
+    merged_TCRexFiltered <- reactive({
+      myfiles <- input.data_TCRexMerge()
+      df <- rbind(myfiles[[1]])
+      for (i in 2:length(myfiles)) {
+        df <- rbind(df,myfiles[[i]])
+      }
+      df <- df[-c(grep("[*]",df$CDR3_beta)),]
+      df[!duplicated(df$CDR3_beta),]
+    })
+
+    output$DEx_TCRexFiltered <-  DT::renderDataTable(escape = FALSE, filter = list(position = 'top', clear = FALSE), options = list(autoWidth = FALSE, lengthMenu = c(2,5,10,20,50,100), pageLength = 5, scrollX = TRUE),{
+      df <- merged_TCRexFiltered()
+      # validate(
+      #   need(nrow(df)>0,
+      #        "Upload mutliple CLusTCR2 files to merge")
+      # )
+      df
+    })
+
+
+    output$downloaddf_TCRexFiltered <- downloadHandler(
+      filename = function(){
+        paste("TCRex_merged",gsub("-", ".", Sys.Date()),".tsv", sep = "")
+      },
+      content = function(file){
+        df <- merged_TCRexFiltered()
+        write.table(df,file, row.names = F,sep = "\t")
+      })
+
+
+
     # ClusTCR2 ------
     input.data_ClusTCR2  <- reactive({
       inFile2_ClusTCR2 <- input$file2_ClusTCR2
@@ -2697,10 +2788,7 @@ runSTEGO <- function(){
           inFile2_ClusTCR2$datapath,header=TRUE)
       }
     })
-
-
     input.data_ClusTCR2_multiple <- reactive({
-
       inFile.seq <- input$file1_ClusTCR2_multiple
       num <- dim(inFile.seq)[1]
       samples_list <- vector("list", length = num)
@@ -2720,7 +2808,7 @@ runSTEGO <- function(){
       }
       # df <- df[-c(grep("[*]",df$junction_aa)),]
       df
-      df[!duplicated(df$junction_aa,df$v_call),]
+      df[!duplicated(df$junction_aa),]
     })
 
     output$DEx_multiple_ClusTCR2 <-  DT::renderDataTable(escape = FALSE, filter = list(position = 'top', clear = FALSE), options = list(autoWidth = FALSE, lengthMenu = c(2,5,10,20,50,100), pageLength = 5, scrollX = TRUE),{
@@ -3116,7 +3204,7 @@ runSTEGO <- function(){
     )
 
 
-    ## PCA and chosing # of dimentions to reduce ----
+    ## PCA and choosing # of dimensions to reduce ----
     create_PCA <- reactive({
       sc <- feature_serartobj()
       validate(
@@ -3333,12 +3421,11 @@ runSTEGO <- function(){
         need(nrow(sc)>0,
              "Run Scale")
       )
-
-      kmeans <- read.csv("../inst/Kmeans.requires.annotation.csv")
+      kmeans <- read.csv(system.file("Kmean","Kmeans.requires.annotation.csv",package = "STEGO.R"))
 
       var.genes <- as.data.frame(sc@assays$RNA@var.features)
       names(var.genes) <- "V1"
-      all.genes <- rbind(kmeans,all.genes)
+      all.genes <- rbind(kmeans,var.genes)
       sc <- ScaleData(sc, features = all.genes$V1)
       Vals_norm1$Norm1 <- sc
     })
@@ -5189,10 +5276,12 @@ runSTEGO <- function(){
       df <- as.data.frame(sc@meta.data[,names(sc@meta.data) %in% c("Cell_Index")])
       names(df) <- "Cell_Index"
       if (input$Interlukin_scGATE==T) {
-        scGate_models_DB <- suppressWarnings(custom_db_scGATE(system.file("scGATE","human/Interlukins",package = "STEGO.R")))
+        scGate_models_DB <- suppressWarnings(custom_db_scGATE(system.file("scGATE","human/IL",package = "STEGO.R")))
+
         models.list <- scGate_models_DB
+        models.list
         obj <- scGate(sc, model = models.list)
-        df$Interlukins <- obj@meta.data$scGate_multi
+        df$Interleukins <- obj@meta.data$scGate_multi
       }
       else {
         df
@@ -5448,12 +5537,9 @@ runSTEGO <- function(){
         need(nrow(sc)>0,
              "Upload file for annotation")
       )
-
-
       if (input$add.scGATE==T && input$add.kmeans==T) {
         annotation <- merge(scGATE_anno(),anno_final_kmeans(),by = "Cell_Index", sort=F,all=T)
       }
-
       else if (input$add.scGATE==T && input$add.kmeans==F) {
         annotation <- cbind(scGATE_anno())
         annotation
@@ -6346,6 +6432,7 @@ runSTEGO <- function(){
         scale_alpha_manual(values = rep(1,length(unique(UMAP.wt.clonality$TYPE.clonality))), na.value=0.5,labels = ~ stringr::str_wrap(.x, width = 40))+
         theme_bw() +
         theme(
+          strip.text = element_text(size = input$Strip_text_size, family = input$font_type),
           axis.title.y = element_text(colour="black",family=input$font_type,size = input$title.text.sizer2),
           axis.text.y = element_text(colour="black",family=input$font_type,size = input$text_size),
           axis.text.x = element_text(colour="black",family=input$font_type,size = input$text_size,angle=0),
@@ -6427,14 +6514,13 @@ runSTEGO <- function(){
 
 
       UMAP.wt.clonality <- UMAP.TCRclonalit()
-      UMAP.wt.clonality2 <- merge(UMAP.wt.clonality,top10.2,by=c("v_gene_selected","ID_Column"),all.x=T)
+      UMAP.wt.clonality2 <- merge(UMAP.wt.clonality,top10.2,by=c("v_gene_selected","ID_Column"))
       UMAP.wt.clonality2 <- UMAP.wt.clonality2[order(UMAP.wt.clonality2$Cell_Index),]
       UMAP.wt.clonality2 %>% mutate(across(where(is.factor), as.character)) -> UMAP.wt.clonality2
       UMAP.wt.clonality2$topclones[is.na(UMAP.wt.clonality2$topclones)]<- "not selected"
       UMAP.wt.clonality2$topclones <- factor(UMAP.wt.clonality2$topclones,levels = c("not selected",unique(as.character(top10.2$v_gene_selected))))
       # UMAP.wt.clonality2 <- UMAP.wt.clonality2[order(UMAP.wt.clonality2$Cell_Index),]
       UMAP.wt.clonality2 <- UMAP.wt.clonality2[order(UMAP.wt.clonality2$topclones),]
-      UMAP.wt.clonality2
 
     })
 
@@ -6442,6 +6528,7 @@ runSTEGO <- function(){
       UMAP.wt.clonality2 <- For_col_top()
 
       num <- as.data.frame(unique(UMAP.wt.clonality2$topclones))
+
 
       col.gg <- c("grey",gg_fill_hue(dim(num)[1]))
       palette_rainbow <- c("grey",rainbow(dim(num)[1]))
@@ -6623,6 +6710,7 @@ runSTEGO <- function(){
         scale_alpha_manual(values = 1, na.value = 0.1,labels = ~ stringr::str_wrap(.x, width = 50))+
         theme_bw() +
         theme(
+          strip.text = element_text(size = input$Strip_text_size, family = input$font_type),
           axis.title.y = element_text(colour="black",family=input$font_type,size = input$title.text.sizer2),
           axis.text.y = element_text(colour="black",family=input$font_type,size = input$text_size),
           axis.text.x = element_text(colour="black",family=input$font_type,size = input$text_size,angle=0),
@@ -7378,7 +7466,7 @@ runSTEGO <- function(){
         theme(
           legend.key.size = unit(1, 'cm'))+
         scale_fill_manual(values = df.col, na.value = input$NA_col_analysis) +
-        theme(strip.text = element_text(size = input$strip_size, family = input$font_type),
+        theme(strip.text = element_text(size = input$Strip_text_size, family = input$font_type),
               legend.text = element_text(size = input$Bar_legend_size, family = input$font_type),
               legend.title = element_blank()
 
@@ -7893,7 +7981,7 @@ runSTEGO <- function(){
           legend.key.size = unit(1, 'cm'),
           legend.title = element_blank()) +
         scale_fill_manual(labels = ~ stringr::str_wrap(.x, width = 20),values = df.col, na.value = input$NA_col_analysis) +
-        theme(strip.text = element_text(size = input$strip_size_pie, family = input$font_type),
+        theme(strip.text = element_text(size = input$Strip_text_size, family = input$font_type),
               legend.text = element_text(colour="black", size=input$Bar_legend_size,family=input$font_type),
               legend.position = input$legend_position,
               legend.title = element_blank()
@@ -7909,14 +7997,8 @@ runSTEGO <- function(){
         Pie_chart_alpha_gamma()
       }
       else {
+        UMAP_chart_alpha_gamma()
 
-        if (input$Split_by_group=="no") {
-          UMAP_chart_alpha_gamma()
-        }
-        else {
-
-          UMAP_chart_alpha_gamma() + facet_wrap(~get(input$Samp_col))
-        }
 
       }
     })
@@ -7959,32 +8041,38 @@ runSTEGO <- function(){
 
     #### top  UMAP -----
     UMAP_chart_alpha_gamma <- reactive({
-
-      df3.meta <- Add.UMAP.reduction()
-
       top_BD_cluster <-  top_clonotype_bar_code()
       top_BD_cluster$Selected_function <- top_BD_cluster[,names(top_BD_cluster) %in% input$clust_names_top]
       top_BD_cluster <- top_BD_cluster[order(top_BD_cluster$Selected_function),]
       top_BD_cluster$Selected_function <- top_BD_cluster[,names(top_BD_cluster) %in% input$clust_names_top]
       top_BD_cluster$Selected_group <- top_BD_cluster[,names(top_BD_cluster) %in% input$clust_group]
       df.col <- unlist(colors_cols_Top_pie_clonotype())
-      df3.meta$Selected_function <- NA
 
       names(top_BD_cluster)[names(top_BD_cluster) %in% input$Samp_col] <- "ID_Column"
       top_BD_cluster$ID_Column <- factor(top_BD_cluster$ID_Column,levels = input$ID_Column_factor)
 
-      ggplot()+
-        geom_point(data = df3.meta,aes(x=UMAP_1,UMAP_2,colour=Selected_function))+
-        geom_point(data = top_BD_cluster,aes(x=UMAP_1,UMAP_2,colour=Selected_function))+
+      plot_pie <- ggplot(data = top_BD_cluster,aes(x=UMAP_1,UMAP_2,colour=Selected_function))+
+        geom_point()+
         scale_color_manual(values = df.col, na.value=input$NA_col_analysis) +
         # scale_size_manual(values = rep(input$size_selected_top,dim(top_BD_cluster)[1]),na.value = 1) +
         theme_bw()+
         theme(
+          strip.text = element_text(size = input$Strip_text_size, family = input$font_type),
           legend.text = element_text(colour="black", size=input$Bar_legend_size,family=input$font_type),
           legend.title = element_blank(),
           legend.position = input$legend_position,
         )+
         scale_size(guide = 'none')
+
+      if (input$Split_by_group=="no") {
+        plot_pie
+      }
+      else {
+
+        plot_pie <- plot_pie + facet_wrap(~top_BD_cluster$ID_Column)
+      }
+
+      plot_pie
 
     })
 
@@ -8779,7 +8867,7 @@ runSTEGO <- function(){
           legend.key.size = unit(1, 'cm'),
           legend.title = element_blank()) +
         scale_fill_manual(labels = ~ stringr::str_wrap(.x, width = 20),values = df.col, na.value = input$NA_col_analysis) +
-        theme(strip.text = element_text(size = input$strip_size_pie, family = input$font_type),
+        theme(strip.text = element_text(size = input$Strip_text_size, family = input$font_type),
               legend.text = element_text(colour="black", size=input$Bar_legend_size,family=input$font_type),
               legend.position = input$legend_position,
               legend.title = element_blank()
@@ -9198,8 +9286,6 @@ runSTEGO <- function(){
       df.x <- make_comb_mat(mat)
       list.names <- as.character(input$ID_Column_factor)
 
-
-
       ht = draw(UpSet(df.x,
                       pt_size = unit(5, "mm"),
                       lwd = 1,
@@ -9249,7 +9335,6 @@ runSTEGO <- function(){
     )
 
     # upset plot table -----
-
     Upset_plot_overlap <- reactive({
       df <-  Add.UMAP.reduction()
       validate(
@@ -9289,11 +9374,9 @@ runSTEGO <- function(){
       } )
 
 
-    # overlap UMAP plot
-
-    create_UMAP_overlap <- reactive({
+    # overlap table with UMAP and expression -----
+    overlap_table <- reactive({
       sc <- input.data_sc_pro()
-
       validate(
         need(nrow(sc)>0,
              error_message_val_UMAP)
@@ -9303,39 +9386,33 @@ runSTEGO <- function(){
       UMAP <- as.data.frame(reduction@cell.embeddings)
       UMAP$Cell_Index <- rownames(UMAP)
       meta.data <- as.data.frame(sc@meta.data)
-      if(input$STEGO_R_pro == "STEGO_R (.h5Seurat)") {
-        meta.data <- meta.data
-        umap.meta <- merge(UMAP,meta.data,by="Cell_Index")
-        names(umap.meta)[names(umap.meta) %in% input$Samp_col] <- "ID_Column"
-        names(umap.meta)[names(umap.meta) %in% input$V_gene_sc] <- "v_gene_selected"
+      umap.meta <- merge(UMAP,meta.data,by="Cell_Index")
+      names(umap.meta)[names(umap.meta) %in% input$V_gene_sc] <- "chain"
+      names(umap.meta)[names(umap.meta) %in% input$Samp_col] <- "ID_Column"
+      names(umap.meta)[names(umap.meta) %in% input$clust_names_top] <- "Selected_function"
+      names(umap.meta)[names(umap.meta) %in% input$clust_group] <- "Selected_group"
+      # sc <- merge(umap.meta,TCR_Expansion(),by=c("v_gene_selected","ID_Column"),all.x=T)
 
-      }
-      else {
-        meta.data$Cell_Index <- rownames(meta.data)
-        meta.data$v_gene_AG <- meta.data[,names(meta.data) %in% input$RDS_V_gene_A]
-        meta.data$v_gene_BD <- meta.data[,names(meta.data) %in% input$RDS_V_gene_B]
-        meta.data$cdr3_AG <- meta.data[,names(meta.data) %in% input$RDS_cdr3_A]
-        meta.data$cdr3_BD <- meta.data[,names(meta.data) %in% input$RDS_cdr3_B]
-        meta.data$v_gene_cdr3_BD <- paste(meta.data$v_gene_BD,meta.data$cdr3_BD,sep="_")
-        meta.data$v_gene_cdr3_AG<- paste(meta.data$v_gene_AG,meta.data$cdr3_AG,sep="_")
-        meta.data$v_gene_cdr3_AG_BD <- paste(meta.data$v_gene_cdr3_AG,meta.data$v_gene_cdr3_BD,sep=" & ")
+      Upset_plot_overlap <- Upset_plot_overlap()
+      Upset_plot_overlap_top <- subset(Upset_plot_overlap,Upset_plot_overlap$sum>1)
+      Upset_plot_overlap_top$chain <- rownames(Upset_plot_overlap_top)
+      umap.meta.overlap <- merge(Upset_plot_overlap_top,umap.meta,by="chain")
+    })
 
-        umap.meta <- merge(UMAP,meta.data,by="Cell_Index")
-        names(umap.meta)[names(umap.meta) %in% input$Samp_col] <- "ID_Column"
-        names(umap.meta)[names(umap.meta) %in% "v_gene_cdr3_AG_BD"] <- "v_gene_selected"
+    # overlap UMAP plot
+    create_UMAP_overlap <- reactive({
+      umap.meta.overlap <- overlap_table()
+      validate(
+        need(nrow(umap.meta.overlap)>0,
+             error_message_val_UMAP)
+      )
 
-      }
-
-
-      sc <- merge(umap.meta,TCR_Expansion(),by=c("v_gene_selected","ID_Column"),all.x=T)
-
-
-
-      ggplot(sc,aes(x=UMAP_1,UMAP_2,colour=seurat_clusters))+
+      ggplot(umap.meta.overlap,aes(x=UMAP_1,UMAP_2,colour=Selected_function))+
         geom_point()+
-        scale_color_manual(values = rainbow(length(unique(sc$seurat_clusters))) , na.value=input$NA_col_analysis)+
+        scale_color_manual(values = rainbow(length(unique(umap.meta.overlap$Selected_function))), na.value=input$NA_col_analysis)+
         theme_bw() +
         theme(
+          strip.text = element_text(size = input$Strip_text_size, family = input$font_type),
           axis.title.y = element_text(colour="black",family=input$font_type,size = input$title.text.sizer2),
           axis.text.y = element_text(colour="black",family=input$font_type,size = input$text_size),
           axis.text.x = element_text(colour="black",family=input$font_type,size = input$text_size,angle=0),
@@ -9347,9 +9424,49 @@ runSTEGO <- function(){
 
 
     })
-    output$create_UMAP_overlap <- renderPlot({
+    output$UMAP_overlap_classification <- renderPlot({
       create_UMAP_overlap()
     })
+
+
+    # Umap Overlap plot -------
+
+    Overlap_Pie_chart_Class <- reactive({
+      top_BD_cluster <- overlap_table()
+
+      # df.col <- unlist(colors_pie())
+
+      df3.meta3 <-  as.data.frame(table(top_BD_cluster$Selected_group,top_BD_cluster$Selected_function))
+      total.condition <- as.data.frame(ddply(df3.meta3,"Var1",numcolwise(sum)))
+      emtpy <- matrix(nrow =dim(df3.meta3)[1],ncol=dim(total.condition)[1])
+      for (i in 1:dim(df3.meta3)[1]) {
+        emtpy[i,] <- ifelse(df3.meta3$Var1[i]==total.condition$Var1[1:dim(total.condition)[1]],
+                            total.condition[total.condition$Var1==total.condition$Var1[1:dim(total.condition)[1]],2],F)
+      }
+
+      df3.meta3$n <- df3.meta3$Freq/rowSums(emtpy)
+
+
+      ggplot(df3.meta3,aes(x="", y=n, fill=Var2, group = Var1)) +
+        geom_bar(stat="identity", width=1)+
+        coord_polar("y", start=0)  +
+        theme_void(20) +
+        facet_wrap(~Var1) +
+        theme(
+          legend.key.size = unit(1, 'cm'))+
+        # scale_fill_manual(values = df.col, na.value = input$NA_col_analysis) +
+        theme(strip.text = element_text(size = input$Strip_text_size, family = input$font_type),
+              legend.text = element_text(size = input$Bar_legend_size, family = input$font_type),
+              legend.title = element_blank()
+        )
+
+    })
+
+    output$Classification_Overlap_pie <- renderPlot({
+      Overlap_Pie_chart_Class()
+    })
+
+
 
     ### end -----
   }
