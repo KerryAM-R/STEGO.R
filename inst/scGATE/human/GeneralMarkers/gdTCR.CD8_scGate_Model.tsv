@@ -3,4 +3,4 @@ level1	positive	Tcell
 level2	negative	abTCR	
 level2	positive	gdTCR	
 level3	positive	CD8	
-level2	positive	gdTCR	
+level3	positive	gdTCR	

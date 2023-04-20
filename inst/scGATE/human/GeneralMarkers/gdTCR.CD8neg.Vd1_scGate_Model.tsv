@@ -2,6 +2,5 @@ levels	use_as	name	signature
 level1	positive	Tcell	
 level2	negative	abTCR	
 level2	positive	gdTCR	
-level3	negative	CD8aa	
-level3	negative	CD8ab	
-level4	positive	Vd1	
+level3	negative	CD8	
+level3	positive	gdTCR	
