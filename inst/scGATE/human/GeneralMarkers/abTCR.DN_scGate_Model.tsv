@@ -1,5 +1,2 @@
 levels	use_as	name	signature
-level1	positive	Tcell	
-level2	positive	abTCR	
-level2	negative	gdTCR	
-level3	positive	DN	
+level1	positive	DN	
