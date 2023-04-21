@@ -1,8 +1,5 @@
 levels	use_as	name	signature
 level1	positive	Tcell	
-level2	negative	Monocyte	
-level3	negative	DC	
-level4	negative	Macrophages	
-level5	negative	NK	
-level6	negative	CD4	
-level7	negative	CD8	
+level2	negative	NK	
+level3	negative	CD4	
+level4	negative	CD8	
