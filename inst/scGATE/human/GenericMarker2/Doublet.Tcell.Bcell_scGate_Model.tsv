@@ -1,0 +1,6 @@
+levels	use_as	name	signature
+level1	negative	DC	
+level2	negative	Monocyte	
+level3	negative	Macrophages	
+level4	positive	Tcell	
+level5	positive	Bcell	
