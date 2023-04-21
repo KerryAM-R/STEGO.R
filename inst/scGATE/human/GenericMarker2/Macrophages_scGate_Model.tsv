@@ -1,3 +1,9 @@
 levels	use_as	name	signature
 level1	positive	Macrophages	
 level2	negative	pDC	
+level3	negative	nonclassMono1	
+level4	negative	nonclassMono2	
+level5	negative	nonclassMono3	
+level6	negative	classMono1	
+level7	negative	classMono2	
+level8	negative	classMono3	
