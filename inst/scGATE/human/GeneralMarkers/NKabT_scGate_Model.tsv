@@ -1,5 +1,4 @@
 levels	use_as	name	signature
 level1	positive	Tcell	
-level2	negative	Monocyte	
 level2	positive	abTCR	
-level3	negative	DN	
+level3	positive	NK	
