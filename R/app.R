@@ -577,7 +577,7 @@ runSTEGO <- function(){
                                                            column(3,checkboxInput("cellTypist_lowerCD4T_scGATE","CellTypist (lower) CD4 T cell (Human)", value = F)),
                                                            column(3,checkboxInput("cellTypist_lowerCD8T_scGATE","CellTypist (lower) CD8 T cell (Human)", value = F)),
                                                            column(3,checkboxInput("cellTypist_lowerOtherT_scGATE","CellTypist (lower) Other T cell (Human)", value = F)),
-                                                           column(3,checkboxInput("GeneralMarkers_scGATE","General Markers (Human; Lit)", value = F)),
+                                                           column(3,checkboxInput("GeneralMarkers_scGATE","ESGA general markers (Human; Lit)", value = F)),
                                                            column(3,checkboxInput("Function_scGATE","T cell Function types (Human; Lit)", value = F)),
                                                            column(3,checkboxInput("Ex.Sen_scGATE","Exhausted/Senescence (Human)", value = F)),
                                                            column(3,checkboxInput("COVID_scGATE","COVID markers (Human)", value = F)),
@@ -586,7 +586,6 @@ runSTEGO <- function(){
                                                            column(3,checkboxInput("GNLY.PFR1.GZMB_scGATE","GNLY.PFR1.GZMB markers (Human)", value = F)),
                                                            column(3,checkboxInput("Interlukin_scGATE","Interleukins markers (Human)", value = F)),
                                                            # column(3,checkboxInput("genericMM_scGATE","Generic (Mouse)", value = F)),
-
                                                   ),
                                                   add_busy_spinner(spin = "fading-circle"),
 
@@ -3784,11 +3783,11 @@ runSTEGO <- function(){
       df <- as.data.frame(sc@meta.data[,names(sc@meta.data) %in% c("Cell_Index")])
       names(df) <- "Cell_Index"
       if (input$GeneralMarkers_scGATE==T) {
-        scGate_models_DB <- suppressWarnings(custom_db_scGATE(system.file("scGATE","human/GeneralMarkers",package = "STEGO.R")))
+        scGate_models_DB <- suppressWarnings(custom_db_scGATE(system.file("scGATE","human/ECSA",package = "STEGO.R")))
         models.list <- scGate_models_DB
         models.list
         obj <- scGate(sc, model = models.list)
-        df$Interleukins <- obj@meta.data$scGate_multi
+        df$GeneralMarkers <- obj@meta.data$scGate_multi
       }
       else {
         df
@@ -3809,7 +3808,7 @@ runSTEGO <- function(){
         models.list <- scGate_models_DB
         models.list
         obj <- scGate(sc, model = models.list)
-        df$Interleukins <- obj@meta.data$scGate_multi
+        df$Function <- obj@meta.data$scGate_multi
       }
       else {
         df
@@ -5798,8 +5797,11 @@ runSTEGO <- function(){
     })
 
     output$Percent_tab <- DT::renderDataTable(escape = FALSE, filter = list(position = 'top', clear = FALSE), options = list(autoWidth = FALSE, lengthMenu = c(2,5,10,20,50,100), pageLength = 10, scrollX = TRUE),{
-
-      Percent_tab_df()
+      obj <- input.data_sc_pro()
+      tab <- table(obj$scGate_multi)
+      num <- dim(obj@meta.data)[1]
+      round(tab/num*100,2)
+      sum(round(tab/num*100,2))
     })
     output$downloaddf_Percent_tab <- downloadHandler(
       filename = function(){
@@ -5974,6 +5976,7 @@ runSTEGO <- function(){
         scale_alpha_manual(labels = ~ stringr::str_wrap(.x, width = 20),values = rep(1,length(unique(top_BD_cluster$Selected_function))), na.value=0.1) +
         theme_bw() +
         theme(
+          strip.text = element_text(size = input$Strip_text_size, family = input$font_type),
           axis.title.y = element_text(colour="black",family=input$font_type,size = input$title.text.sizer2),
           axis.text.y = element_text(colour="black",family=input$font_type,size = input$text_size),
           axis.text.x = element_text(colour="black",family=input$font_type,size = input$text_size,angle=0),
@@ -8141,5 +8144,4 @@ runSTEGO <- function(){
     ### end -----
   }
   shinyApp(ui, server)
-
 }

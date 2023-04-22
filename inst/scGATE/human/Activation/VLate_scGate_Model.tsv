@@ -1,5 +1,5 @@
 levels	use_as	name	signature
 level1	negative	Early	
-level1	negative	Late	
-level1	positive	Very.late	
-level1	positive	Very.late2	
+level2	negative	Late	
+level3	positive	Very.late	
+level4	positive	Very.late2	
