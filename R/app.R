@@ -19,12 +19,21 @@ runSTEGO <- function(){
                                    sidebarLayout(
                                      sidebarPanel(id = "tPanel4",style = "overflow-y:scroll; max-height: 800px; position:relative;", width=3,
                                                   # selectInput("dataset_10x", "Choose a dataset:", choices = c("test_data_10x", "own_data_10x")),
-                                                  fileInput('file_calls_10x', 'Barcode file (.tsv.gz or .tsv)',
-                                                            accept=c('.tsv','.tsv.gz')),
-                                                  fileInput('file_features_10x', 'Features file (.tsv.gz or .tsv)',
-                                                            accept=c('.tsv','.tsv.gz')),
-                                                  fileInput('file_matrix_10x', 'Matrix file (.mtx.gz or .mtx)',
-                                                            accept=c('.mtx.gz','.mtx')),
+                                                  selectInput("Source_type_10x","Input types",choices = c("Raw",".h5")),
+                                                  conditionalPanel(condition="input.Source_type_10x=='Raw'",
+                                                                   fileInput('file_calls_10x', 'Barcode file (.tsv.gz or .tsv)',
+                                                                             accept=c('.tsv','.tsv.gz')),
+                                                                   fileInput('file_features_10x', 'Features file (.tsv.gz or .tsv)',
+                                                                             accept=c('.tsv','.tsv.gz')),
+                                                                   fileInput('file_matrix_10x', 'Matrix file (.mtx.gz or .mtx)',
+                                                                             accept=c('.mtx.gz','.mtx')),
+
+                                                  ),
+
+
+
+
+
                                                   fileInput('file_TCR_10x', 'filtered contig annotations (.csv)',
                                                             accept=c('.csv')),
                                                   textInput("name.10x","Name added to files",value = ""),
@@ -41,8 +50,12 @@ runSTEGO <- function(){
                                      mainPanel(
                                        tabsetPanel(id = "panel_10x",
                                                    tabPanel("Uploaded data",value = 1,
-                                                            div(DT::dataTableOutput("test.files.10x1")),
-                                                            div(DT::dataTableOutput("test.files.10x2")),
+                                                            conditionalPanel(condition="input.Source_type_10x=='Raw'",
+                                                                             div(DT::dataTableOutput("test.files.10x1")),
+                                                                             div(DT::dataTableOutput("test.files.10x2")),
+
+                                                            ),
+
                                                             # div(DT::dataTableOutput("test.files.10x3")),
                                                             div(DT::dataTableOutput("test.files.10x4")),
                                                    ),
@@ -349,12 +362,13 @@ runSTEGO <- function(){
                           sidebarPanel(id = "tPanel2",style = "overflow-y:scroll; max-height: 800px; position:relative;", width=3,
                                        # selectInput("dataset_sc", "Choose a dataset:", choices = c("test_data_sc", "own_data_sc")),
                                        # upload the file
-                                       fileInput('file_SC', 'Load csv (BDrhap) or csv.gz (10x)',
+                                       fileInput('file_SC', 'Load csv (BDrhap), csv.gz (10x), .h5 (10x)',
                                                  accept=c('text/csv','.csv','.csv.gz','gz','csv.gz','h5','.h5'),
                                        ),
+
                                        textInput("project_name","Name of sample",value = ""),
                                        # selectInput("species","Species",choices = c("human","mouse","other")),
-                                       selectInput("df_seruatobj_type","Data type", choices = c("10x Genomics","BD Rhapsody","Array")),
+                                       selectInput("df_seruatobj_type","Data type", choices = c("10x Genomics (raw)","10x Genomics (.h5)","BD Rhapsody","Array")),
                                        uiOutput("feature_input"),
                                        actionButton("run","Update Violin plot"),
                                        fluidRow(
@@ -1474,7 +1488,7 @@ runSTEGO <- function(){
 
     # user interface parameters-----
     output$feature_input <- renderUI({
-      if (input$df_seruatobj_type=="10x Genomics") {
+      if (input$df_seruatobj_type=="10x Genomics (raw)") {
         fluidRow(
           column(6,numericInput("features.min","minimum features (<)", value = 200)),
           column(6,numericInput("features.max","Maximum features (<)", value = 6000)),
@@ -1483,7 +1497,14 @@ runSTEGO <- function(){
         )
       }
 
-
+      else if (input$df_seruatobj_type=="10x Genomics (.h5)") {
+        fluidRow(
+          column(6,numericInput("features.min","minimum features (<)", value = 200)),
+          column(6,numericInput("features.max","Maximum features (<)", value = 6000)),
+          column(6,numericInput("percent.mt","Mictochondrial DNA cut-off (<)", value = 20)),
+          column(6,numericInput("percent.rb","Ribosomal RNA cut-off (>)", value = 5)),
+        )
+      }
 
       else if (input$df_seruatobj_type=="BD Rhapsody") {
         fluidRow(
@@ -1707,6 +1728,10 @@ runSTEGO <- function(){
       }
 
       df_nocouts3 <- df_nocouts3[-c(grep("^$",df_nocouts3$junction_aa)),] # remove blank columns
+
+      if (nrow(df_nocouts3[-c(grep("[*]",df_nocouts3$junction_aa)),]>0)) {
+        df_nocouts3 <- df_nocouts3[-c(grep("[*]",df_nocouts3$junction_aa)),]
+      }
       df_nocouts3 <- df_nocouts3[-c(grep("[*]",df_nocouts3$junction_aa)),] # remove st
 
       df_nocouts3
@@ -1917,7 +1942,11 @@ runSTEGO <- function(){
     TCRex_BDrap_df <- function () {
 
       calls_TCR_paired.fun <- df()
-      calls_TCR_paired.fun <- calls_TCR_paired.fun[-c(grep("[*]",calls_TCR_paired.fun$TCR_Beta_Delta_CDR3_Translation_Dominant)),] # remove st
+
+      if (nrow(calls_TCR_paired.fun[-c(grep("[*]",calls_TCR_paired.fun$TCR_Beta_Delta_CDR3_Translation_Dominant)),]>0)) {
+        calls_TCR_paired.fun <- calls_TCR_paired.fun[-c(grep("[*]",calls_TCR_paired.fun$TCR_Beta_Delta_CDR3_Translation_Dominant)),] # remove st
+      }
+
       calls_TCR_paired.fun$TRBV_gene <- gsub("[*]0.","",calls_TCR_paired.fun$TCR_Beta_Delta_V_gene_Dominant)
       calls_TCR_paired.fun$CDR3_beta <- paste("C",calls_TCR_paired.fun$TCR_Beta_Delta_CDR3_Translation_Dominant,"F",sep="")
       calls_TCR_paired.fun$TRBJ_gene<- gsub("[*]0.","",calls_TCR_paired.fun$TCR_Beta_Delta_J_gene_Dominant)
@@ -2100,7 +2129,6 @@ runSTEGO <- function(){
       )
       calls
     })
-
     ## meta.data for seurat ----
     tb_10x_meta.data_TCR <- function () {
       contigs <- input.data.TCR.10x()
@@ -2326,11 +2354,11 @@ runSTEGO <- function(){
 
         }
         # write.table(,file, row.names = T)
-        write.csv(df, file)
+        write.csv(df, file,row.names = F)
 
       } )
 
-    # meta-data summary
+    # meta-data summary ----
     sum_tb_10x <- function () {
       contigs <- input.data.TCR.10x()
       validate(
@@ -2380,7 +2408,9 @@ runSTEGO <- function(){
       contigs2$Sample_Name <- input$sample_name_10x
       names(contigs2)[names(contigs2) %in% c("cdr3")] <- "junction_aa"
       names(contigs2)[names(contigs2) %in% c("v_gene")] <- "v_call"
-      contigs2 <- contigs2[-c(grep("[*]",contigs2$junction_aa)),]
+      if (nrow(contigs2[-c(grep("[*]",contigs2$junction_aa)),]>0)) {
+        contigs2 <- contigs2[-c(grep("[*]",contigs2$junction_aa)),]
+      }
       contigs2 <- subset(contigs2,contigs2$junction_aa!= "None")
       contigs2[!duplicated(contigs2[,c('v_call','junction_aa')]),]
     })
@@ -2461,6 +2491,16 @@ runSTEGO <- function(){
 
     }
 
+    tb_10x_matrix_h5 <- function () {
+      mmMat <- as.data.frame(input.data.h5.10x())
+
+      validate(
+        need(nrow(mmMat)>0,
+             "Upload h5 files")
+      )
+      mmMat
+    }
+
     output$tb_10x_matrix2 <- DT::renderDataTable(escape = FALSE, options = list(autoWidth = FALSE, lengthMenu = c(2,5,10,20,50,100), pageLength = 2, scrollX = TRUE),{
       tb_10x_matrix()[1:6,1:6]
     })
@@ -2485,7 +2525,10 @@ runSTEGO <- function(){
       contigs2 <- contigs[,names(contigs) %in% c("v_gene","j_gene","cdr3")]
 
       names(contigs2)[names(contigs2) %in% c("cdr3")] <- "CDR3_beta"
-      contigs2 <- contigs2[-c(grep("[*]",contigs2$CDR3_beta)),]
+      if (nrow(contigs2[-c(grep("[*]",contigs2$CDR3_beta)),]>0)) {
+        contigs2 <- contigs2[-c(grep("[*]",contigs2$CDR3_beta)),]
+      }
+      #
 
       names(contigs2)[names(contigs2) %in% c("v_gene")] <- "TRBV_gene"
       names(contigs2)[names(contigs2) %in% c("j_gene")] <- "TRBJ_gene"
@@ -2657,8 +2700,9 @@ runSTEGO <- function(){
 
 
       df_nocouts3 <-as.data.frame(rbind(df_nocouts2_AG,df_nocouts2_BD))
-
-      df_nocouts3 <- df_nocouts3[-c(grep("[*]",df_nocouts3$junction_aa)),] # remove st
+      if (nrow(df_nocouts3[-c(grep("[*]",df_nocouts3$junction_aa)),]>0)) {
+        df_nocouts3 <- df_nocouts3[-c(grep("[*]",df_nocouts3$junction_aa)),]
+      }
       df_nocouts3 <- subset(df_nocouts3,df_nocouts3$v_call!="None")
       df_nocouts3
 
@@ -2759,7 +2803,11 @@ runSTEGO <- function(){
       for (i in 2:length(myfiles)) {
         df <- rbind(df,myfiles[[i]])
       }
-      df <- df[-c(grep("[*]",df$CDR3_beta)),]
+
+      if (nrow(df[-c(grep("[*]",df$CDR3_beta)),]>0)) {
+        df <- df[-c(grep("[*]",df$CDR3_beta)),]
+      }
+
       df[!duplicated(df$CDR3_beta),]
     })
 
@@ -2811,8 +2859,11 @@ runSTEGO <- function(){
       for (i in 2:length(myfiles)) {
         df <- rbind(df,myfiles[[i]])
       }
-      # df <- df[-c(grep("[*]",df$junction_aa)),]
-      df
+
+      if (nrow(df[-c(grep("[*]",df$junction_aa)),]>0)) {
+        df <- df[-c(grep("[*]",df$junction_aa)),]
+      }
+
       df[!duplicated(df$junction_aa),]
     })
 
@@ -3013,9 +3064,20 @@ runSTEGO <- function(){
       inFile_sc <- input$file_SC
       if (is.null(inFile_sc)) return(NULL)
       else {
-        if (input$df_seruatobj_type =="10x Genomics") {
+        if (input$df_seruatobj_type =="10x Genomics (raw)") {
           dataframe = read.csv(inFile_sc$datapath)
         }
+
+        else if (input$df_seruatobj_type =="10x Genomics (.h5)") {
+          dataframe <- Read10X_h5(inFile_sc$datapath, use.names = TRUE, unique.features = TRUE)
+
+        }
+
+        else if (input$df_seruatobj_type =="BD Rhapsody") {
+          dataframe = read.csv(inFile_sc$datapath,row.names = 1)
+
+        }
+
 
         else {
           dataframe = read.csv(inFile_sc$datapath,row.names = 1)
@@ -3026,15 +3088,20 @@ runSTEGO <- function(){
     })
 
     output$DEx_header_name_check.dt <- DT::renderDataTable(escape = FALSE, filter = list(position = 'top', clear = FALSE),  options = list(autoWidth = FALSE, lengthMenu = c(2,5,10,20,50,100), pageLength = 5, scrollX = TRUE),{
+
       df.test <- input.data_sc()
       validate(
         need(nrow(df.test)>0,
              error_message_val_sc)
       )
-      if (input$df_seruatobj_type =="10x Genomics") {
+      if (input$df_seruatobj_type =="10x Genomics (raw)") {
         names(df.test) <- gsub("[.]1","-1",names(df.test) )
         rownames(df.test) <- make.unique(df.test$Gene_Name)
         df.test2 <- df.test[,!names(df.test) %in% c("Gene_Name")]
+      }
+
+      else if (input$df_seruatobj_type =="10x Genomics (.h5)") {
+        df.test2 <- as.data.frame("file possibly too big and will not be rendered")
       }
 
       else if (input$df_seruatobj_type=="BD Rhapsody") {
@@ -3058,7 +3125,7 @@ runSTEGO <- function(){
              error_message_val_sc)
       )
 
-      if (input$df_seruatobj_type =="10x Genomics") {
+      if (input$df_seruatobj_type =="10x Genomics (raw)") {
         names(df.test) <- gsub("[.]1","-1",names(df.test) )
         rownames(df.test) <- make.unique(df.test$Gene_Name)
         df.test2 <- df.test[,!names(df.test) %in% c("Gene_Name")]
@@ -3067,6 +3134,15 @@ runSTEGO <- function(){
         sc[["percent.rb"]] <- PercentageFeatureSet(sc, pattern = "^RP[SL]")
         sc
       }
+
+      else if (input$df_seruatobj_type=="10x Genomics (.h5)") {
+        rownames(df.test$`Gene Expression`) <- gsub("GRCh38___","",rownames(df.test$`Gene Expression`))
+        sc <- CreateSeuratObject(counts = df.test$`Gene Expression`, project = input$project_name)
+        sc[["percent.mt"]] <- PercentageFeatureSet(sc, pattern = "^MT-")
+        sc[["percent.rb"]] <- PercentageFeatureSet(sc, pattern = "^RP[SL]")
+        sc
+      }
+
       else if (input$df_seruatobj_type=="BD Rhapsody") {
         names(df.test) <- gsub("X","",names(df.test))
         df.test2 <- df.test[!rownames(df.test) %in% c("Cell_Index"),]
@@ -3078,6 +3154,7 @@ runSTEGO <- function(){
 
       else {
         names(df.test) <- gsub("[.]","-",names(df.test))
+        rownames(df.test) <- gsub("[.]","-",rownames(df.test))
         sc <- CreateSeuratObject(counts = df.test, project = input$project_name)
         sc[["percent.mt"]] <- PercentageFeatureSet(sc, pattern = "^MT-")
         sc[["percent.rb"]] <- PercentageFeatureSet(sc, pattern = "^RP[SL]")
