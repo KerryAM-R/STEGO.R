@@ -63,7 +63,8 @@ Imports:
     sysfonts,
     tibble,
     tidyr,
-    VLF
+    VLF,
+    chisq.posthoc.test
 Remotes:
   github::JiekaiLab/dior,
   github::mojaveazure/seurat-disk,

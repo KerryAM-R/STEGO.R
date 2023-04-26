@@ -58,4 +58,5 @@ Load_required_packages <- function() {
   suppressMessages(require("tibble"))
   suppressMessages(require("tidyr"))
   suppressMessages(require("VLF"))
+  require("chisq.posthoc.test")
 }
