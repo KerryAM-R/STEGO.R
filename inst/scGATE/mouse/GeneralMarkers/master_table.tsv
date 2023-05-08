@@ -1,0 +1,21 @@
+name	signature
+Bcell	Ms4a1;Cd19
+NK	Klrc1;Klrd1
+DC	Clec10a
+Monocyte	S100a9;Cd14
+Tcell	Cd3d;Cd3e;Cd3g;Cd2
+CD4	Cd4
+CD8	Cd8a
+DN	Cd4;Cd8a
+abTCR	Trdc-;Trac
+gdTCR	Trdc;Trac-
+TCRneg	Trdc;Trac
+APC	H2-Aa;H2-Ab1
+Macrophages	Cxcl8;Sod2;S100a8
+Plasma	Jchain
+CD16.DC	Fcgr3a;Cd14-
+DC1	Clec9A;Xcr1
+DC2	
+pDC	Sct;Clec4c
+TCRab	Trac
+TCRgd	Trdc

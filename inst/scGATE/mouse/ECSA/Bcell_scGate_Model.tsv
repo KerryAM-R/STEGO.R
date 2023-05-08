@@ -1,0 +1,5 @@
+levels	use_as	name	signature
+level1	negative	Tcell	
+level2	positive	Bcell	
+level3	negative	Endothelial	
+level4	negative	pDC	

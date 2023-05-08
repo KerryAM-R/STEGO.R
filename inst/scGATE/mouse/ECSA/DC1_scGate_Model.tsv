@@ -1,0 +1,9 @@
+levels	use_as	name	signature
+level1	positive	DC1_1	
+level2	positive	DC1_2	
+level3	negative	pDC	
+level4	negative	Mac1	
+level5	negative	Mac2	
+level6	negative	Mac3	
+level7	negative	DC2_1	
+level8	negative	DC2_2	

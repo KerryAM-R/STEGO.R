@@ -1,0 +1,7 @@
+levels	use_as	name	signature
+level1	positive	Tcell	
+level2	negative	Monocyte	
+level3	negative	CD8	
+level4	positive	CD4	
+level5	negative	pDC	
+level6	negative	classMono3	

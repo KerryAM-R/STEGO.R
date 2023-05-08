@@ -15,7 +15,7 @@ Neutrophils	Csf3r;S100a9;S100a8;Mmp9
 CD4T	Cd4;Cd40lg
 Treg	Foxp3
 CD8T	Cd8a;Cd8b1
-Tgammadelta	Trdc;Trgc1;Trgc2;Trdv1
+Tgammadelta	Trdc;Trgc1;Trgc2
 Talphabeta	Trac;Trbc1;Trbc2
 Erythrocyte	Hba-a1;Hba-a2
 APC	H2-Aa;H2-Ab1
