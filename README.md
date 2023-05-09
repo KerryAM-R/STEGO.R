@@ -16,6 +16,9 @@ You can install the development version of STEGO.R from
 ``` r
 install.packages("devtools")
 
+if (!require("BiocManager", quietly = TRUE))
+    install.packages("BiocManager")
+
 devtools::install_github("KerryAM-R/STEGO.R")
 ```
 
@@ -23,5 +26,8 @@ devtools::install_github("KerryAM-R/STEGO.R")
 
 ``` r
 library(STEGO.R)
-#> 
+
+STEGO.R::Load_required_packages()
+STEGO.R::runSTEGO()
+
 ```

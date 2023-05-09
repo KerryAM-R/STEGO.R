@@ -30,10 +30,6 @@ runSTEGO <- function(){
 
                                                   ),
 
-
-
-
-
                                                   fileInput('file_TCR_10x', 'filtered contig annotations (.csv)',
                                                             accept=c('.csv')),
                                                   textInput("name.10x","Name added to files",value = ""),
@@ -369,6 +365,8 @@ runSTEGO <- function(){
                                        textInput("project_name","Name of sample",value = ""),
                                        # selectInput("species","Species",choices = c("human","mouse","other")),
                                        selectInput("df_seruatobj_type","Data type", choices = c("10x Genomics (raw)","10x Genomics (.h5)","BD Rhapsody","Array")),
+                                       selectInput("stored_in_expression","Does the .h5 object has multiple part?",choices = c("no","yes")),
+
                                        uiOutput("feature_input"),
                                        actionButton("run","Update Violin plot"),
                                        fluidRow(
@@ -3136,8 +3134,15 @@ runSTEGO <- function(){
       }
 
       else if (input$df_seruatobj_type=="10x Genomics (.h5)") {
-        rownames(df.test$`Gene Expression`) <- gsub("GRCh38___","",rownames(df.test$`Gene Expression`))
-        sc <- CreateSeuratObject(counts = df.test$`Gene Expression`, project = input$project_name)
+        if (input$stored_in_expression=="yes") {
+          rownames(df.test$`Gene Expression`) <- gsub("GRCh38___","",rownames(df.test$`Gene Expression`))
+          sc <- CreateSeuratObject(counts = df.test$`Gene Expression`, project = input$project_name)
+
+        }
+
+        else {
+          sc <- CreateSeuratObject(counts = df.test, project = input$project_name)
+        }
         sc[["percent.mt"]] <- PercentageFeatureSet(sc, pattern = "^MT-")
         sc[["percent.rb"]] <- PercentageFeatureSet(sc, pattern = "^RP[SL]")
         sc
