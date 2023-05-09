@@ -64,7 +64,8 @@ Imports:
     tibble,
     tidyr,
     VLF,
-    chisq.posthoc.test
+    chisq.posthoc.test,
+    stringi
 Remotes:
   github::JiekaiLab/dior,
   github::mojaveazure/seurat-disk,

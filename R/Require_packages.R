@@ -50,7 +50,6 @@ Load_required_packages <- function() {
   suppressMessages(require("shinyBS"))
   suppressMessages(require("shinybusy"))
   suppressMessages(require("shinyWidgets"))
-  suppressMessages(require("shinyFiles"))
   suppressMessages(require("showtext"))
   suppressMessages(require("showtextdb"))
   suppressMessages(require("stringr"))

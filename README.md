@@ -14,7 +14,8 @@ You can install the development version of STEGO.R from
 [GitHub](https://github.com/KerryAM-R/STEGO.R) with:
 
 ``` r
-# install.packages("devtools")
+install.packages("devtools")
+
 devtools::install_github("KerryAM-R/STEGO.R")
 ```
 
@@ -22,4 +23,5 @@ devtools::install_github("KerryAM-R/STEGO.R")
 
 ``` r
 library(STEGO.R)
+#> 
 ```
