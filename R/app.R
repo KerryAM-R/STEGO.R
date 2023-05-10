@@ -970,7 +970,7 @@ runSTEGO <- function(){
                                                                       actionButton("run_string.data3","View Feature plot"),
                                                                       fluidRow(column(12, selectInput("string.data3","column names for summary","",multiple = T, width = "1200px") )),
                                                                       fluidRow(
-                                                                        column(2,checkboxInput("label_is_true_features","Add plot lables",value=F)),
+                                                                        column(2,checkboxInput("label_is_true_features","Add plot lables",value=T)),
                                                                         column(2,selectInput("norm_expression_for_all","Set Maximum",choices=c("no","yes"))),
                                                                         column(2,numericInput("max_norm_FP","Set maximum scale value",value = 10)),
                                                                         column(2,colourInput("lower_col_FP","Min (Colour)",value = "grey90")),
@@ -5662,6 +5662,7 @@ runSTEGO <- function(){
     })
     #
     markers_featurePlot <- reactive({
+      sc <- df_sc_clust()
       Feture_plots <- list()
       feature_name <- c(input$string.data3)
       x <- length(feature_name)
@@ -5669,19 +5670,19 @@ runSTEGO <- function(){
       if (input$norm_expression_for_all=="yes") {
 
         for (i in 1:x) {
-          Feture_plots[[i]] <- FeaturePlot(sc,features = feature_name[i],raster=FALSE, label = input$label_is_true_features) +
+          Feture_plots[[i]] <- FeaturePlot(sc,features = feature_name[i],raster=FALSE,label=label_is_true_features) +
             scale_color_gradientn(colours = c(input$lower_col_FP,input$upper_col_FP),limits=c(0,input$max_norm_FP))
         }
       }
 
       else {
         for (i in 1:x) {
-          Feture_plots[[i]] <- FeaturePlot(sc,features = feature_name[i],raster=FALSE, label = input$label_is_true_features) +
+          Feture_plots[[i]] <- FeaturePlot(sc,features = feature_name[i],raster=FALSE,label=label_is_true_features) +
             scale_color_gradientn(colours = c(input$lower_col_FP,input$upper_col_FP))
         }
       }
 
-      n <- length(plots)
+      n <- length(Feture_plots)
       nCol <- round(sqrt(n),0)
       do.call("grid.arrange", c(Feture_plots, ncol=nCol))
 
