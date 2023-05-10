@@ -5670,14 +5670,14 @@ runSTEGO <- function(){
       if (input$norm_expression_for_all=="yes") {
 
         for (i in 1:x) {
-          Feture_plots[[i]] <- FeaturePlot(sc,features = feature_name[i],raster=FALSE,label=label_is_true_features) +
+          Feture_plots[[i]] <- FeaturePlot(sc,features = feature_name[i],raster=FALSE,label=input$label_is_true_features) +
             scale_color_gradientn(colours = c(input$lower_col_FP,input$upper_col_FP),limits=c(0,input$max_norm_FP))
         }
       }
 
       else {
         for (i in 1:x) {
-          Feture_plots[[i]] <- FeaturePlot(sc,features = feature_name[i],raster=FALSE,label=label_is_true_features) +
+          Feture_plots[[i]] <- FeaturePlot(sc,features = feature_name[i],raster=FALSE,label=input$label_is_true_features) +
             scale_color_gradientn(colours = c(input$lower_col_FP,input$upper_col_FP))
         }
       }
@@ -8280,7 +8280,6 @@ runSTEGO <- function(){
       }
 
       df3.meta3$n <- df3.meta3$Freq/rowSums(emtpy)
-
 
       ggplot(df3.meta3,aes(x="", y=n, fill=Var2, group = Var1)) +
         geom_bar(stat="identity", width=1)+
