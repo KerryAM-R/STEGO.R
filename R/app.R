@@ -373,6 +373,8 @@ runSTEGO <- function(){
                                          column(6,numericInput("dimension_heatmap.max","View heatmap dimensions.max", value = 10)),
                                          column(6,numericInput("numberofcells","Number of cells to use for heatmap", value = 500))
                                        ),
+                                       selectInput("method_Seurat","Method",choices = c("vst","dist","mvp")),
+
 
                                        actionButton("run_reduction","Run clustering"),
                                        fluidRow(
@@ -3280,7 +3282,7 @@ runSTEGO <- function(){
              "Run Clustering")
       )
       sc <- NormalizeData(sc)
-      sc <- FindVariableFeatures(sc, selection.method = "vst", nfeatures = 2000)
+      sc <- FindVariableFeatures(sc, selection.method = input$method_Seurat, nfeatures = 2000)
     })
 
     plot_10_features <- reactive({
