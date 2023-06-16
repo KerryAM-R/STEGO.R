@@ -3168,7 +3168,7 @@ runSTEGO <- function(){
         names(df.test) <- gsub("[.]1","-1",names(df.test) )
         rownames(df.test) <- make.unique(df.test$Gene_Name)
         df.test2 <- df.test[,!names(df.test) %in% c("Gene_Name")]
-        sc <- CreateSeuratObject(counts = df.test2, project = input$project_name)
+        sc <- CreateSeuratObject(counts = df.test2, project = input$project_name,assay = "RNA" )
         sc[["percent.mt"]] <- PercentageFeatureSet(sc, pattern = "^MT-")
         sc[["percent.rb"]] <- PercentageFeatureSet(sc, pattern = "^RP[SL]")
         sc
@@ -3176,7 +3176,7 @@ runSTEGO <- function(){
 
       else if (input$df_seruatobj_type=="10x Genomics (.h5)") {
         # rownames(df.test$`Gene Expression`) <- gsub("GRCh38___","",rownames(df.test$`Gene Expression`))
-        sc <- CreateSeuratObject(counts = df.test[[1]], project = input$project_name)
+        sc <- CreateSeuratObject(counts = df.test[[1]], project = input$project_name,assay = "RNA")
         sc[["percent.mt"]] <- PercentageFeatureSet(sc, pattern = "MT-")
         sc[["percent.rb"]] <- PercentageFeatureSet(sc, pattern = "RP[SL]")
         sc
@@ -3185,7 +3185,7 @@ runSTEGO <- function(){
       else if (input$df_seruatobj_type=="BD Rhapsody") {
         names(df.test) <- gsub("X","",names(df.test))
         df.test2 <- df.test[!rownames(df.test) %in% c("Cell_Index"),]
-        sc <- CreateSeuratObject(counts = df.test2, project = input$project_name)
+        sc <- CreateSeuratObject(counts = df.test2, project = input$project_name,assay = "RNA")
         sc[["percent.mt"]] <- PercentageFeatureSet(sc, pattern = "^MT-")
         sc[["percent.rb"]] <- PercentageFeatureSet(sc, pattern = "^RP[SL]")
         sc
