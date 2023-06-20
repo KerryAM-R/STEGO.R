@@ -6,8 +6,14 @@
 #' @export
 
 runSTEGO <- function(){
+  STEGO.R::Load_required_packages()
   source(system.file("Global","required_functions.R",package = "STEGO.R"))
   suppressWarnings(source(system.file("scGATE","custom_df_scGATE.R",package = "STEGO.R")))
+  require("DescTools")
+  library(doParallel)
+
+  # source(system.file("Global","global.R",package = "STEGO.R"))
+  options(shiny.maxRequestSize = 100000*1024^2)
   # UI page -----
   ui <- fluidPage(
     theme=bs_theme(version = 5, bootswatch = "default"),
@@ -32,8 +38,7 @@ runSTEGO <- function(){
 
                                                   fileInput('file_TCR_10x', 'filtered contig annotations (.csv)',
                                                             accept=c('.csv')),
-                                                  textInput("name.10x","Name added to files",value = ""),
-                                                  textInput("sample_name_10x","Add sample name","Treatment_group"),
+                                                  textInput("sample_name_10x","Add file and sample name","Treatment_group"),
                                                   h6("TCR_explore name"),
                                                   fluidRow(
                                                     column(6,textInput("group10x","Add Group name","Group")),
@@ -371,11 +376,9 @@ runSTEGO <- function(){
                                        fluidRow(
                                          column(6,numericInput("dimension_heatmap.min","View heatmap dimensions.min", value = 1)),
                                          column(6,numericInput("dimension_heatmap.max","View heatmap dimensions.max", value = 10)),
-                                         column(6,numericInput("numberofcells","Number of cells to use for heatmap", value = 500))
+                                         column(6,numericInput("numberofcells","Number of cells to use for heatmap", value = 500)),
                                        ),
                                        selectInput("method_Seurat","Method",choices = c("vst","dist","mvp")),
-
-
                                        actionButton("run_reduction","Run clustering"),
                                        fluidRow(
                                          column(6,numericInput("dimension_sc","Max dimensions for clustering", value = 15)),
@@ -585,11 +588,6 @@ runSTEGO <- function(){
                                                   fluidRow(column(3,checkboxInput("generic_scGATE","Generic (Human)", value = F)),
                                                            column(3,checkboxInput("CD4_scGATE","CD4 T cell (Human)", value = F)),
                                                            column(3,checkboxInput("CD8_scGATE","CD8 T cell (Human)", value = F)),
-                                                           # column(3,checkboxInput("cellTypist_higher_scGATE","CellTypist (higher) T cell (Human)", value = F)),
-                                                           # column(3,checkboxInput("cellTypist_lowerBcells_scGATE","CellTypist (lower) B cell (Human)", value = F)),
-                                                           # column(3,checkboxInput("cellTypist_lowerCD4T_scGATE","CellTypist (lower) CD4 T cell (Human)", value = F)),
-                                                           # column(3,checkboxInput("cellTypist_lowerCD8T_scGATE","CellTypist (lower) CD8 T cell (Human)", value = F)),
-                                                           # column(3,checkboxInput("cellTypist_lowerOtherT_scGATE","CellTypist (lower) Other T cell (Human)", value = F)),
                                                            column(3,checkboxInput("GeneralMarkers_scGATE","ESGA general markers (Human; Lit)", value = F)),
                                                            column(3,checkboxInput("Function_scGATE","T cell Function types (Human; Lit)", value = F)),
                                                            column(3,checkboxInput("Ex.Sen_scGATE","Exhausted/Senescence (Human)", value = F)),
@@ -601,15 +599,9 @@ runSTEGO <- function(){
                                                            # column(3,checkboxInput("genericMM_scGATE","Generic (Mouse)", value = F)),
                                                   ),
                                                   add_busy_spinner(spin = "fading-circle"),
-
                                                   verbatimTextOutput("scGATE_verbatum_Generic"),
                                                   verbatimTextOutput("scGATE_verbatum_CD4"),
                                                   verbatimTextOutput("scGATE_verbatum_CD8"),
-                                                  # verbatimTextOutput("scGATE_verbatum_cellTypist_higher"),
-                                                  # verbatimTextOutput("scGATE_verbatum_cellTypist_lower_Bcells"),
-                                                  # verbatimTextOutput("scGATE_verbatum_cellTypist_lower_CD4T"),
-                                                  # verbatimTextOutput("scGATE_verbatum_cellTypist_lower_CD8T"),
-                                                  # verbatimTextOutput("scGATE_verbatum_cellTypist_lower_OtherT"),
                                                   verbatimTextOutput("scGATE_verbatum_GeneralMarkers"),
                                                   verbatimTextOutput("scGATE_verbatum_Function"),
                                                   verbatimTextOutput("scGATE_verbatum_Ex.Sen"),
@@ -618,7 +610,6 @@ runSTEGO <- function(){
                                                   verbatimTextOutput("scGATE_verbatum_IFNgTNFa"),
                                                   verbatimTextOutput("scGATE_verbatum_GNLY.PFR1.GZMB"),
                                                   verbatimTextOutput("scGATE_verbatum_Interlukin"),
-
                                          ),
                                          tabPanel("Table",
                                                   add_busy_spinner(spin = "fading-circle"),
@@ -713,11 +704,9 @@ runSTEGO <- function(){
                                        conditionalPanel(condition="input.STEGO_R_pro == 'STEGO_R (.h5Seurat)'",
                                                         selectInput("datasource", "Data source",choices=c("10x Genomics","BD Rhapsody")),
                                        ),
-                                       fluidRow(column(6,selectInput("Samp_col","Sample column name",choices = "")),
-                                                column(6,selectInput("Split_by_group","Include group comparison",choices=c("no","yes"))),
-                                                column(6,conditionalPanel(condition="input.STEGO_R_pro == 'STEGO_R (.h5Seurat)'",
-                                                                          selectInput("V_gene_sc","V gene with/without CDR3",choices = "")))
-                                       ),
+
+
+
 
                                        fluidRow(
                                          column(4,selectInput("colourtype","Type of colouring",choices = c("default","rainbow","random","heat.colors","terrain.colors","topo.colors","hcl.colors","one colour"))),
@@ -738,16 +727,25 @@ runSTEGO <- function(){
                                                         ),
                                        ),
 
-                                       conditionalPanel(condition="input.STEGO_R_pro=='Seurat (.rds)'",
-                                                        h4("Add in chain information"),
-                                                        fluidRow(
-                                                          column(6,selectInput("RDS_V_gene_A","A/G gene column",choices = "")),
-                                                          column(6,selectInput("RDS_V_gene_B","B/D gene column",choices = "")),
-                                                          column(6,selectInput("RDS_cdr3_A","A/G cdr3 column",choices = "")),
-                                                          column(6,selectInput("RDS_cdr3_B","B/D cdr3 column",choices = "")),
-                                                        ),
+                                       # conditionalPanel(condition="input.STEGO_R_pro=='Seurat (.rds)'",
+                                       #                  h4("Add in chain information"),
+                                       #                  fluidRow(
+                                       #                    column(6,selectInput("RDS_V_gene_A","A/G gene column",choices = "")),
+                                       #                    column(6,selectInput("RDS_V_gene_B","B/D gene column",choices = "")),
+                                       #                    column(6,selectInput("RDS_cdr3_A","A/G cdr3 column",choices = "")),
+                                       #                    column(6,selectInput("RDS_cdr3_B","B/D cdr3 column",choices = "")),
+                                       #                  ),
+                                       # ),
+                                       h4("What individuals to include"),
+                                       fluidRow(
+                                         column(6,selectInput("by_indiv_pie_epi","Display one individual?",choices = c("no","yes"))),
+                                         column(6,selectInput("selected_Indiv","Display one individual",choices = ""),)
                                        ),
-
+                                       fluidRow(column(6,selectInput("Samp_col","Sample column name",choices = "")),
+                                                column(6,selectInput("Split_by_group","Include group comparison",choices=c("no","yes"))),
+                                                column(6,conditionalPanel(condition="input.STEGO_R_pro == 'STEGO_R (.h5Seurat)'",
+                                                                          selectInput("V_gene_sc","V gene with/without CDR3",choices = "")))
+                                       ),
                                        column(12,selectInput("ID_Column_factor","Order of graph",choices = "", multiple = T, width = "1200px")),
 
 
@@ -1058,6 +1056,7 @@ runSTEGO <- function(){
                                                                   fluidRow(
                                                                     column(4,uiOutput("classification_to_add_epitope")),
                                                                     column(4,uiOutput("classification_to_add_epitope2")),
+
                                                                   ),
                                                  ),
 
@@ -1106,6 +1105,9 @@ runSTEGO <- function(){
                                                                                                            wellPanel(id = "tPanel23",style = "overflow-y:scroll; max-height: 600px",
                                                                                                                      uiOutput('myPanel_pie'))), # pie chart
                                                                                                     column(9, plotOutput("Classification_clonotype_pie",height="600px"))),
+                                                                                           fluidRow(
+                                                                                             div(DT::dataTableOutput("table_pie")),
+                                                                                           ),
 
                                                                                            fluidRow(
                                                                                              column(1,numericInput("width_Classification_clonotype_pie", "Width of PDF", value=10)),
@@ -1314,6 +1316,7 @@ runSTEGO <- function(){
                                                                         ),
                                                                         tabPanel("Pie (Expression)",
 
+
                                                                                  fluidRow(
                                                                                    column(3,
                                                                                           wellPanel(id = "tPanel23",style = "overflow-y:scroll; max-height: 600px",
@@ -1379,6 +1382,11 @@ runSTEGO <- function(){
                                                                         tabPanel("Table",
                                                                                  div(DT::dataTableOutput("Upset_plot_overlap_Tb")),
                                                                                  downloadButton('downloaddf_Upset_plot_overlap_Tb','Download table')
+                                                                        ),
+                                                                        tabPanel("table 2",
+                                                                                 div(DT::dataTableOutput("Tb_ClusTCR_col")),
+
+
                                                                         ),
                                                                         tabPanel("Upset Plot",
 
@@ -2364,7 +2372,7 @@ runSTEGO <- function(){
     })
     output$downloadtb_10x_metadata2 <- downloadHandler(
       filename = function(){
-        paste(input$name.10x,"_metadata_10x_",gsub("-", ".", Sys.Date()),".csv", sep = "")
+        paste(input$sample_name_10x,"_metadata_10x_",gsub("-", ".", Sys.Date()),".csv", sep = "")
       },
       content = function(file){
 
@@ -2447,7 +2455,7 @@ runSTEGO <- function(){
 
     output$downloadtb_10x_contigues1 <- downloadHandler(
       filename = function(){
-        paste(input$name.10x,"_clusTCR_10x_",gsub("-", ".", Sys.Date()),".csv", sep = "")
+        paste(input$sample_name_10x,"_clusTCR_10x_",gsub("-", ".", Sys.Date()),".csv", sep = "")
       },
       content = function(file){
         df <- as.data.frame(tb_10x_contigues_contig())
@@ -2490,7 +2498,7 @@ runSTEGO <- function(){
 
     output$downloaddt_TCR_Explore_10x <- downloadHandler(
       filename = function(){
-        paste(input$name.10x,"_TCR_Explore_10x_",gsub("-", ".", Sys.Date()),".csv", sep = "")
+        paste(input$sample_name_10x,"_TCR_Explore_10x_",gsub("-", ".", Sys.Date()),".csv", sep = "")
       },
       content = function(file){
         df <- as.data.frame(TCR_Explore_10x())
@@ -2533,7 +2541,7 @@ runSTEGO <- function(){
 
     output$downloadtb_10x_matrix2 <- downloadHandler(
       filename = function(){
-        paste(input$name.10x,"_count-matrix_10x_",gsub("-", ".", Sys.Date()),".csv.gz", sep = "")
+        paste(input$sample_name_10x,"_count-matrix_10x_",gsub("-", ".", Sys.Date()),".csv.gz", sep = "")
       },
       content = function(file){
         df <- as.data.frame(tb_10x_matrix())
@@ -2578,7 +2586,7 @@ runSTEGO <- function(){
 
     output$downloaddf_TCRex_10x <- downloadHandler(
       filename = function(){
-        paste(input$name.10x," TCRex ",gsub("-", ".", Sys.Date()),".tsv", sep = "")
+        paste(input$sample_name_10x," TCRex ",gsub("-", ".", Sys.Date()),".tsv", sep = "")
       },
       content = function(file){
         df <- as.data.frame(TCRex_10x_df())
@@ -3108,25 +3116,18 @@ runSTEGO <- function(){
             sc <- CreateSeuratObject(counts = df.test, project = input$project_name)
           }
           dataframe <- suppressMessages(Read10X_h5(inFile_sc$datapath, use.names = TRUE, unique.features = TRUE))
-
         }
 
         else if (input$df_seruatobj_type =="BD Rhapsody") {
           dataframe = read.csv(inFile_sc$datapath,row.names = 1)
-
         }
-
-
         else {
           dataframe = read.csv(inFile_sc$datapath,row.names = 1)
         }
-
       }
-
     })
 
     output$DEx_header_name_check.dt <- DT::renderDataTable(escape = FALSE, filter = list(position = 'top', clear = FALSE),  options = list(autoWidth = FALSE, lengthMenu = c(2,5,10,20,50,100), pageLength = 5, scrollX = TRUE),{
-
       df.test <- input.data_sc()
       validate(
         need(nrow(df.test)>0,
@@ -3168,7 +3169,7 @@ runSTEGO <- function(){
         names(df.test) <- gsub("[.]1","-1",names(df.test) )
         rownames(df.test) <- make.unique(df.test$Gene_Name)
         df.test2 <- df.test[,!names(df.test) %in% c("Gene_Name")]
-        sc <- CreateSeuratObject(counts = df.test2, project = input$project_name,assay = "RNA" )
+        sc <- CreateSeuratObject(counts = df.test2, project = input$project_name)
         sc[["percent.mt"]] <- PercentageFeatureSet(sc, pattern = "^MT-")
         sc[["percent.rb"]] <- PercentageFeatureSet(sc, pattern = "^RP[SL]")
         sc
@@ -3176,7 +3177,7 @@ runSTEGO <- function(){
 
       else if (input$df_seruatobj_type=="10x Genomics (.h5)") {
         # rownames(df.test$`Gene Expression`) <- gsub("GRCh38___","",rownames(df.test$`Gene Expression`))
-        sc <- CreateSeuratObject(counts = df.test[[1]], project = input$project_name,assay = "RNA")
+        sc <- CreateSeuratObject(counts = df.test[[1]], project = input$project_name)
         sc[["percent.mt"]] <- PercentageFeatureSet(sc, pattern = "MT-")
         sc[["percent.rb"]] <- PercentageFeatureSet(sc, pattern = "RP[SL]")
         sc
@@ -3185,7 +3186,7 @@ runSTEGO <- function(){
       else if (input$df_seruatobj_type=="BD Rhapsody") {
         names(df.test) <- gsub("X","",names(df.test))
         df.test2 <- df.test[!rownames(df.test) %in% c("Cell_Index"),]
-        sc <- CreateSeuratObject(counts = df.test2, project = input$project_name,assay = "RNA")
+        sc <- CreateSeuratObject(counts = df.test2, project = input$project_name)
         sc[["percent.mt"]] <- PercentageFeatureSet(sc, pattern = "^MT-")
         sc[["percent.rb"]] <- PercentageFeatureSet(sc, pattern = "^RP[SL]")
         sc
@@ -3813,83 +3814,6 @@ runSTEGO <- function(){
       }
       df
     })
-    scGATE_anno_cellTypist_lowerBcells <- reactive({
-      sc <- getData_2()
-      validate(
-        need(nrow(sc)>0,
-             "Upload file for annotation")
-      )
-      df <- as.data.frame(sc@meta.data[,names(sc@meta.data) %in% c("Cell_Index")])
-      names(df) <- "Cell_Index"
-      if (input$cellTypist_lowerBcells_scGATE==T) {
-        scGate_models_DB <- suppressWarnings(custom_db_scGATE(system.file("scGATE","human/CellTypist_lower_B_cells",package = "STEGO.R")))
-        models.list <- scGate_models_DB
-        obj <- scGate(sc, model = models.list)
-        df$CellTypist_lower_B_cells <- obj@meta.data$scGate_multi
-      }
-      else {
-        df
-      }
-      df
-    })
-    scGATE_anno_cellTypist_lowerCD4T <- reactive({
-      sc <- getData_2()
-      validate(
-        need(nrow(sc)>0,
-             "Upload file for annotation")
-      )
-      df <- as.data.frame(sc@meta.data[,names(sc@meta.data) %in% c("Cell_Index")])
-      names(df) <- "Cell_Index"
-      if (input$cellTypist_lowerCD4T_scGATE==T) {
-        scGate_models_DB <- suppressWarnings(custom_db_scGATE(system.file("scGATE","human/CellTypist_lower_CD4",package = "STEGO.R")))
-        models.list <- scGate_models_DB
-        obj <- scGate(sc, model = models.list)
-        df$CellTypist_lower_CD4 <- obj@meta.data$scGate_multi
-      }
-      else {
-        df
-      }
-      df
-    })
-    scGATE_anno_cellTypist_lowerCD8T <- reactive({
-      sc <- getData_2()
-      validate(
-        need(nrow(sc)>0,
-             "Upload file for annotation")
-      )
-      df <- as.data.frame(sc@meta.data[,names(sc@meta.data) %in% c("Cell_Index")])
-      names(df) <- "Cell_Index"
-      if (input$cellTypist_lowerCD8T_scGATE==T) {
-        scGate_models_DB <- suppressWarnings(custom_db_scGATE(system.file("scGATE","human/CellTypist_lower_CD8",package = "STEGO.R")))
-        models.list <- scGate_models_DB
-        obj <- scGate(sc, model = models.list)
-        df$CellTypist_lower_CD8 <- obj@meta.data$scGate_multi
-      }
-      else {
-        df
-      }
-      df
-    })
-    scGATE_anno_cellTypist_lowerOtherT <- reactive({
-      sc <- getData_2()
-      validate(
-        need(nrow(sc)>0,
-             "Upload file for annotation")
-      )
-      df <- as.data.frame(sc@meta.data[,names(sc@meta.data) %in% c("Cell_Index")])
-      names(df) <- "Cell_Index"
-      if (input$cellTypist_lowerOtherT_scGATE==T) {
-        scGate_models_DB <- suppressWarnings(custom_db_scGATE(system.file("scGATE","human/CellTypist_lower_Other",package = "STEGO.R")))
-        models.list <- scGate_models_DB
-        obj <- scGate(sc, model = models.list)
-        df$CellTypist_lower_Other <- obj@meta.data$scGate_multi
-      }
-      else {
-        df
-      }
-      df
-    })
-
     scGATE_anno_GeneralMarkers <- reactive({
       sc <- getData_2()
       validate(
@@ -4296,10 +4220,6 @@ runSTEGO <- function(){
       df <- cbind(scGATE_anno_generic(),
                   scGATE_anno_CD4(),
                   scGATE_anno_CD8(),
-                  # scGATE_anno_cellTypist_lowerBcells(),
-                  # scGATE_anno_cellTypist_lowerCD4T(),
-                  # scGATE_anno_cellTypist_lowerCD8T(),
-                  # scGATE_anno_cellTypist_lowerOtherT(),
                   scGATE_anno_GeneralMarkers(),
                   scGATE_anno_Function(),
                   scGATE_anno_Ex.Sen(),
@@ -4349,7 +4269,7 @@ runSTEGO <- function(){
                                                                                        sc <- getData_2()
                                                                                        validate(
                                                                                          need(nrow(sc)>0,
-                                                                                              "K-means processing")
+                                                                                              "Add in Annotation to meta-data table")
                                                                                        )
                                                                                        # sc <- final_anno()
                                                                                        # sc@meta.data
@@ -4787,6 +4707,7 @@ runSTEGO <- function(){
 
       df4 <- TCR_Expansion()
       names(df4)[names(df4) %in% input$Samp_col] <- "ID_Column"
+      df4 <- df4[df4$ID_Column %in% input$ID_Column_factor,]
       df4$ID_Column <- factor(df4$ID_Column,levels = input$ID_Column_factor)
       df.col.1 <- unlist(colors_clonal_plot())
 
@@ -5185,15 +5106,15 @@ runSTEGO <- function(){
 
 
       if (input$Graph_type_bar== "Number_expanded") {
-        UMAP.wt.clonality$TYPE.clonality <- paste(UMAP.wt.clonality$Chain,UMAP.wt.clonality$Number_expanded)
+        UMAP.wt.clonality$TYPE.clonality <- paste(UMAP.wt.clonality$Number_expanded)
       }
       else {
-        UMAP.wt.clonality$TYPE.clonality <- paste(UMAP.wt.clonality$Chain,UMAP.wt.clonality$Clonality)
+        UMAP.wt.clonality$TYPE.clonality <- paste(UMAP.wt.clonality$Clonality)
 
       }
 
-      UMAP.wt.clonality$TYPE.clonality<- ifelse(grepl("NA", UMAP.wt.clonality$TYPE.clonality),NA,UMAP.wt.clonality$TYPE.clonality)
-
+      # UMAP.wt.clonality$TYPE.clonality<- ifelse(grepl("NA", UMAP.wt.clonality$TYPE.clonality),NA,UMAP.wt.clonality$TYPE.clonality)
+      UMAP.wt.clonality <- subset(UMAP.wt.clonality,UMAP.wt.clonality$TYPE.clonality != "NA")
       UMAP.wt.clonality
 
     })
@@ -5201,13 +5122,18 @@ runSTEGO <- function(){
     UMAP.TCRclonalit2 <- reactive({
       UMAP.wt.clonality <- UMAP.TCRclonalit()
       UMAP.wt.clonality <-  UMAP.wt.clonality[order(UMAP.wt.clonality$TYPE.clonality),]
-      UMAP.wt.clonality$TYPE.clonality <- factor(UMAP.wt.clonality$TYPE.clonality,levels = unique(UMAP.wt.clonality$TYPE.clonality))
+      # UMAP.wt.clonality$TYPE.clonality <- factor(UMAP.wt.clonality$TYPE.clonality,levels = unique(UMAP.wt.clonality$TYPE.clonality))
       # UMAP.wt.clonality$TYPE.clonality <- factor(UMAP.wt.clonality$TYPE.clonality,levels =unique(UMAP.wt.clonality$TYPE.clonality))
-      list <- unique(UMAP.wt.clonality$TYPE.clonality)[-is.na(unique(UMAP.wt.clonality$TYPE.clonality))]
+      # list <- unique(UMAP.wt.clonality$TYPE.clonality)[-is.na(unique(UMAP.wt.clonality$TYPE.clonality))]
       # UMAP.wt.clonality$TYPE.clonality <- factor(UMAP.wt.clonality$TYPE.clonality,levels = unique(UMAP.wt.clonality$TYPE.clonality), exclude = NA, ordered = T)
 
       colorblind_vector <- unlist(colors_UMAP_clonal_plot())
       names(UMAP.wt.clonality)[names(UMAP.wt.clonality) %in% input$Samp_col] <- "ID_Column"
+
+      if (input$Split_by_group=="yes") {
+        UMAP.wt.clonality <- UMAP.wt.clonality[UMAP.wt.clonality$ID_Column %in% input$ID_Column_factor,]
+      }
+
       UMAP.wt.clonality$ID_Column <- factor(UMAP.wt.clonality$ID_Column,levels = input$ID_Column_factor)
 
       if (input$filter_umap_expand == 'yes') {
@@ -5457,8 +5383,37 @@ runSTEGO <- function(){
 
     })
 
+    observe({
+
+      df2 <- select_group_metadata()
+
+      validate(
+        need(nrow(df2)>0,
+             error_message_val1)
+      )
+
+      df2 <- as.data.frame(df2)
+      names(df2) <- "V1"
+      df2 <- as.data.frame(df2[order(df2$V1),])
+      names(df2) <- "V1"
+      df2
+      df2 <- subset(df2,df2$V1 != "NA")
+
+      updateSelectInput(
+        session,
+        "selected_Indiv",
+        choices=df2,
+        selected = df2
+      )
+
+
+    })
+
+
+
     Topclonotypes <- reactive({
       UMAP.wt.clonality2 <- For_col_top()
+      UMAP.wt.clonality2 <- UMAP.wt.clonality2[UMAP.wt.clonality2$ID_Column %in% input$ID_Column_factor,]
       UMAP.wt.clonality2$ID_Column <- factor(UMAP.wt.clonality2$ID_Column, levels = input$ID_Column_factor)
 
       colorblind_vector <-as.data.frame(unlist(colors_UMAP_Topclonotypes()))
@@ -5492,6 +5447,7 @@ runSTEGO <- function(){
       UMAP.wt.clonality2$topclones2 <- gsub(" & "," ",UMAP.wt.clonality2$topclones)
 
       names(UMAP.wt.clonality2)[names(UMAP.wt.clonality2) %in% input$Samp_col] <- "ID_Column"
+      UMAP.wt.clonality2 <- UMAP.wt.clonality2[UMAP.wt.clonality2$ID_Column %in% input$ID_Column_factor,]
       UMAP.wt.clonality2$ID_Column <- factor(UMAP.wt.clonality2$ID_Column,levels = input$ID_Column_factor)
 
       plot <- ggplot(data=UMAP.wt.clonality2,aes(x=UMAP_1,UMAP_2,colour=topclones2,label =topclones2 ))+
@@ -6097,6 +6053,7 @@ runSTEGO <- function(){
       # top_BD_cluster$alpha_val <- ifelse(is.na(top_BD_cluster$Selected_function)==T,0.1,1)
 
       names(top_BD_cluster)[names(top_BD_cluster) %in% input$Samp_col] <- "ID_Column"
+      top_BD_cluster <- top_BD_cluster[top_BD_cluster$ID_Column %in% input$ID_Column_factor,]
       top_BD_cluster$ID_Column <- factor(top_BD_cluster$ID_Column,levels = input$ID_Column_factor)
 
       df <- ggplot(top_BD_cluster,aes(x=UMAP_1,UMAP_2,colour=Selected_function,alpha = Selected_function,label = Selected_function))+
@@ -6241,13 +6198,38 @@ runSTEGO <- function(){
       })
     })
 
+    output$table_pie <- DT::renderDataTable(escape = FALSE, filter = list(position = 'top', clear = FALSE),  options = list(autoWidth = FALSE, lengthMenu = c(2,5,10,20,50,100), pageLength = 10, scrollX = TRUE),{
+      top_BD_cluster <-  Add.UMAP.reduction()
+      top_BD_cluster$Selected_function <- top_BD_cluster[,names(top_BD_cluster) %in% input$clust_names_top]
+      top_BD_cluster <- top_BD_cluster[order(top_BD_cluster$Selected_function),]
+      top_BD_cluster$Selected_function <- top_BD_cluster[,names(top_BD_cluster) %in% input$clust_names_top]
+      top_BD_cluster$Selected_group <- top_BD_cluster[,names(top_BD_cluster) %in% input$clust_group]
+
+      top_BD_cluster$Selected_indiv <- top_BD_cluster[,names(top_BD_cluster) %in% input$Samp_col]
+
+      df.col <- unlist(colors_pie())
+      df.col
+    })
+
     Pie_chart_Class <- reactive({
       top_BD_cluster <-  Add.UMAP.reduction()
       top_BD_cluster$Selected_function <- top_BD_cluster[,names(top_BD_cluster) %in% input$clust_names_top]
       top_BD_cluster <- top_BD_cluster[order(top_BD_cluster$Selected_function),]
       top_BD_cluster$Selected_function <- top_BD_cluster[,names(top_BD_cluster) %in% input$clust_names_top]
       top_BD_cluster$Selected_group <- top_BD_cluster[,names(top_BD_cluster) %in% input$clust_group]
+
+      top_BD_cluster$Selected_indiv <- top_BD_cluster[,names(top_BD_cluster) %in% input$Samp_col]
+
       df.col <- unlist(colors_pie())
+
+
+      if (input$by_indiv_pie_epi == "yes") {
+        top_BD_cluster <- top_BD_cluster[top_BD_cluster$Selected_indiv %in% input$selected_Indiv,]
+      }
+
+
+
+
 
       df3.meta3 <-  as.data.frame(table(top_BD_cluster$Selected_group,top_BD_cluster$Selected_function))
       total.condition <- as.data.frame(ddply(df3.meta3,"Var1",numcolwise(sum)))
@@ -6258,7 +6240,6 @@ runSTEGO <- function(){
       }
 
       df3.meta3$n <- df3.meta3$Freq/rowSums(emtpy)
-
 
       ggplot(df3.meta3,aes(x="", y=n, fill=Var2, group = Var1)) +
         geom_bar(stat="identity", width=1)+
@@ -6311,6 +6292,7 @@ runSTEGO <- function(){
       names(totals) <- c("groups","Function")
       totals <- totals[!totals$Function %in% c("NA"),]
       totals <- totals[!totals$groups %in% c("NA"),]
+      totals$groups <- totals[totals$groups %in% input$ID_Column_factor,]
       totals$groups <- factor(totals$groups,levels = input$ID_Column_factor)
       totals
     })
@@ -6348,6 +6330,7 @@ runSTEGO <- function(){
       if (input$type_res=="Residuals") {
         res <- chisq$residuals
         res <- setNames(melt(res), c('y', 'x', 'residuals'))
+        res$x <- res[res$x %in% input$ID_Column_factor,]
         res <- res[res$x %in% input$ID_Column_factor,]
 
         plot_chi <- ggplot(res, aes(x = y, y = x,size = residuals, fill = residuals)) +
@@ -6380,6 +6363,7 @@ runSTEGO <- function(){
       else {
         contrib <- 100*chisq$residuals^2/chisq$statistic
         contrib <- setNames(melt(contrib), c('y', 'x', 'Percentage'))
+        contrib$x <- contrib[contrib$x %in% input$ID_Column_factor,]
         contrib <- contrib[contrib$x %in% input$ID_Column_factor,]
         plot_chi <- ggplot(contrib, aes(x = y, y = x,size = Percentage, fill = Percentage)) +
           geom_point(shape = 21, colour = "black")+
@@ -6865,6 +6849,7 @@ runSTEGO <- function(){
       df.col <- unlist(colors_cols_Top_pie_clonotype())
 
       names(top_BD_cluster)[names(top_BD_cluster) %in% input$Samp_col] <- "ID_Column"
+      top_BD_cluster$ID_Column<- top_BD_cluster[top_BD_cluster$ID_Column %in% input$ID_Column_factor,]
       top_BD_cluster$ID_Column <- factor(top_BD_cluster$ID_Column,levels = input$ID_Column_factor)
 
       plot_pie <- ggplot(data = top_BD_cluster,aes(x=UMAP_1,UMAP_2,colour=Selected_function))+
@@ -7361,8 +7346,6 @@ runSTEGO <- function(){
       epi$beta <- epi$CDR3_beta
       df3.meta <- merge(df3.meta,epi,by="CDR3_beta",all.x=T)
       df3.meta$selected <- df3.meta[,names(df3.meta) %in% input$epitope_umap_selected]
-
-
       df3.meta <- df3.meta[order(df3.meta$selected,decreasing = F),]
       df3.meta$selected <- factor(df3.meta$selected,levels = unique(df3.meta$selected))
 
@@ -7481,6 +7464,7 @@ runSTEGO <- function(){
 
 
       names(df3.meta)[names(df3.meta) %in% input$Samp_col] <- "ID_Column"
+      # df3.meta$ID_Column<- df3.meta[df3.meta$ID_Column %in% input$ID_Column_factor,]
       df3.meta$ID_Column <- factor(df3.meta$ID_Column,levels = input$ID_Column_factor)
 
       num <- as.data.frame(unique(df3.meta$selected))
@@ -7533,8 +7517,11 @@ runSTEGO <- function(){
         dev.off()},   contentType = "application/png" # MIME type of the image
     )
 
-    # pie chart function -----
+    # Epitope pie chart function -----
     cols_epitope_pie <- reactive({
+
+
+
       df3.meta <-  Add.UMAP.reduction()
       # summarising the clonality
       epi <- input.data_sc_TCRex()
@@ -7671,6 +7658,11 @@ runSTEGO <- function(){
 
       top_BD_cluster <-  df3.meta
       top_BD_cluster$Selected_group <- top_BD_cluster[,names(top_BD_cluster) %in% input$epitope_umap_selected2]
+      top_BD_cluster$Selected_indiv <- top_BD_cluster[,names(top_BD_cluster) %in% input$Samp_col]
+
+      if (input$by_indiv_pie_epi == "yes") {
+        top_BD_cluster <- top_BD_cluster[top_BD_cluster$Selected_indiv %in% input$selected_Indiv,]
+      }
 
       df.col <- unlist(colors_cols_epitope_pie())
 
@@ -7686,6 +7678,8 @@ runSTEGO <- function(){
                             total.condition[total.condition$Var1==total.condition$Var1[1:dim(total.condition)[1]],2],F)
       }
       df3.meta3$n <- df3.meta3$Freq/rowSums(emtpy)
+
+
 
       ggplot(df3.meta3,aes(x="", y=n, fill=Var2, group = Var1)) +
         geom_bar(stat="identity", width=1)+
@@ -7726,14 +7720,15 @@ runSTEGO <- function(){
       df3.meta$Selected_function <- df3.meta[,names(df3.meta) %in% input$epitope_umap_selected]
       top_BD_cluster <-  df3.meta
       top_BD_cluster$Selected_group <- top_BD_cluster[,names(top_BD_cluster) %in% input$epitope_umap_selected2]
+      top_BD_cluster$Selected_indiv <- top_BD_cluster[,names(top_BD_cluster) %in% input$Samp_col]
       top_BD_cluster$cloneCount <- 1
-      top_BD_cluster2 <-  top_BD_cluster[,names(top_BD_cluster) %in% c("cloneCount","Selected_function","Selected_group")]
+      top_BD_cluster2 <-  top_BD_cluster[,names(top_BD_cluster) %in% c("cloneCount","Selected_function","Selected_group","Selected_indiv")]
       top_BD_cluster2 <- top_BD_cluster2 %>%
         select(cloneCount, everything())
       df2 <- as.data.frame(ddply(top_BD_cluster2,names(top_BD_cluster2)[-c(1)],numcolwise(sum)))
       df2$fraction <- df2$cloneCount/sum(df2$cloneCount)
       df2$Percent <- round(df2$cloneCount/sum(df2$cloneCount)*100,2)
-      df2$Selected_function <- ifelse(grepl("NA", df2$Selected_function),NA,df2$Selected_function)
+      df2$Selected_function <- ifelse(grepl("NA", df2$Selected_function),"unknown",df2$Selected_function)
       df2[order(df2$Percent,decreasing = T),]
     })
 
@@ -7894,17 +7889,18 @@ runSTEGO <- function(){
       md <- Add.UMAP.reduction()
       validate(
         need(nrow(cluster)>0 & nrow(md)>0,
-             "Upload clusTCR table, which is needed for TCR -> UMAP section")
+             "Upload clusTCR table")
       )
 
       cluster <- cluster[order(cluster$Clust_size_order),]
       cluster$Clust_size_order <- factor(cluster$Clust_size_order, levels = unique(cluster$Clust_size_order))
+      cluster
       # cluster <- cluster[cluster$Clust_size_order %in% input$Clusters_to_dis,]
-      col.df <- as.data.frame(unique(cluster$Clust_size_order))
-      names(col.df) <- "V1"
-      col.df$palette_rainbow <- rainbow(length(unique(cluster$Clust_size_order)))
-      col.df2 <- col.df
-      col.df2
+      # col.df <- as.data.frame(unique(cluster$Clust_size_order))
+      # names(col.df) <- "V1"
+      # col.df$palette_rainbow <- rainbow(length(unique(cluster$Clust_size_order)))
+      # col.df2 <- col.df
+      # col.df2
 
     })
 
@@ -8114,6 +8110,8 @@ runSTEGO <- function(){
       df <- as.data.frame(df)
       unique.df <- unique(df[,names(df) %in% c(input$Samp_col,input$V_gene_sc) ])
       names(unique.df) <- c("group","chain")
+      unique.df$group<- unique.df[unique.df$group %in% input$ID_Column_factor,]
+
       unique.df <- subset(unique.df,unique.df$chain != "NA")
       unique.df <- subset(unique.df,unique.df$group != "NA")
       unique.df$cloneCount <- 1
@@ -8282,6 +8280,7 @@ runSTEGO <- function(){
       }
 
       df3.meta3$n <- df3.meta3$Freq/rowSums(emtpy)
+
 
       ggplot(df3.meta3,aes(x="", y=n, fill=Var2, group = Var1)) +
         geom_bar(stat="identity", width=1)+
