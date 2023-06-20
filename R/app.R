@@ -684,7 +684,7 @@ runSTEGO <- function(){
                ## Analysis (UI side panel)---------
                tabPanel("Analysis",
                         sidebarLayout(
-                          sidebarPanel(id = "tPanel4",style = "overflow-y:scroll; max-height: 800px; position:relative;", width=3,
+                          sidebarPanel(id = "tPanel4",style = "overflow-y:scroll; max-height: 1000px; position:relative;", width=3,
 
                                        selectInput("STEGO_R_pro","QC processed",choices = c("STEGO_R (.h5Seurat)")), #,"Seurat (.rds)"
                                        textInput("name.file_clust","Name added to files",value = ""),
@@ -718,24 +718,11 @@ runSTEGO <- function(){
                                        conditionalPanel(condition="input.QC_panel==2 || input.QC_panel==3",
                                                         fluidRow(column(12,selectInput("Graph_type_bar","Type of graph",choices = c("Number_expanded","Clonality","Top_clonotypes")))),
                                                         fluidRow(
-                                                          # column(4,selectInput("Graph_type_bar","Type of graph",choices = c("Number_expanded","Clonality","Top_clonotypes")),),
-
-                                                          # column(4,numericInput("number_colour_req","Number of colours needed",value = 5))
                                                           conditionalPanel(condition="input.Graph_type_bar =='Top_clonotypes'",
                                                                            column(6,numericInput("top_no_clonotypes","Top clonotypes per group",value = 1,step = 1, min = 0, max = 20)),
                                                           ),
                                                         ),
                                        ),
-
-                                       # conditionalPanel(condition="input.STEGO_R_pro=='Seurat (.rds)'",
-                                       #                  h4("Add in chain information"),
-                                       #                  fluidRow(
-                                       #                    column(6,selectInput("RDS_V_gene_A","A/G gene column",choices = "")),
-                                       #                    column(6,selectInput("RDS_V_gene_B","B/D gene column",choices = "")),
-                                       #                    column(6,selectInput("RDS_cdr3_A","A/G cdr3 column",choices = "")),
-                                       #                    column(6,selectInput("RDS_cdr3_B","B/D cdr3 column",choices = "")),
-                                       #                  ),
-                                       # ),
                                        h4("What individuals to include"),
                                        fluidRow(
                                          column(6,selectInput("by_indiv_pie_epi","Display one individual?",choices = c("no","yes"))),
@@ -746,12 +733,10 @@ runSTEGO <- function(){
                                                 column(6,conditionalPanel(condition="input.STEGO_R_pro == 'STEGO_R (.h5Seurat)'",
                                                                           selectInput("V_gene_sc","V gene with/without CDR3",choices = "")))
                                        ),
-                                       column(12,selectInput("ID_Column_factor","Order of graph",choices = "", multiple = T, width = "1200px")),
+
 
 
                                        selectInput("font_type",label = h4("Type of font"),choices = font,selected = "serif"),
-
-                                       # conditionalPanel(condition="input.QC_panel==2 || input.QC_panel==3",
                                        fluidRow(
                                          column(6,numericInput("text_size","Size of #",value=16)),
                                          column(6,numericInput("title.text.sizer2","Axis text size",value=30)),
@@ -764,15 +749,13 @@ runSTEGO <- function(){
                                        fluidRow(
                                          column(4, numericInput("Strip_text_size","Strip text size", value = 12))
                                        )
-                                       # selectInput("dataset_cluster_file", "Choose a dataset:", choices = c("test_data_clusTCR", "own_data_clusTCR")),
-                                       # numericInput("num", label = h3("Numeric input"), value = 1),
-                                       # materialSwitch(inputId = "mode", label = icon("moon"),
-                                       #                right=TRUE,status = "success")
                           ),
 
                           # add in clustering  -----
                           mainPanel(
+                            column(12,selectInput("ID_Column_factor","Order of graph",choices = "", multiple = T, width = "1200px")),
                             tabsetPanel(id = "check_up_files",
+
                                         tabPanel("Check files uploaded",value = 'up',
                                                  add_busy_spinner(spin = "fading-circle"),
                                                  fluidRow(column(12,  div(DT::dataTableOutput("Tb_TCR_clonotypes.Umap"))),
@@ -972,13 +955,10 @@ runSTEGO <- function(){
                                                                       fluidRow(
                                                                         column(2,checkboxInput("label_is_true_features","Add plot lables",value=T)),
                                                                         column(2,selectInput("norm_expression_for_all","Set Maximum",choices=c("no","yes"))),
-                                                                        column(2,numericInput("max_norm_FP","Set maximum scale value",value = 10)),
+                                                                        column(2,numericInput("max_norm_FP","Set maximum scale value",value = 10, step = 1, min=1)),
                                                                         column(2,colourInput("lower_col_FP","Min (Colour)",value = "grey90")),
                                                                         column(2,colourInput("upper_col_FP","Max (colour)",value = "Darkblue"))
                                                                       ),
-
-
-
                                                                       plotOutput("markers_featurePlot_sc", height = "600px"),
 
                                                                       fluidRow(
@@ -1340,24 +1320,23 @@ runSTEGO <- function(){
                                                              tabPanel("ClusTCR2",value = "ClusTCR2",
                                                                       tabsetPanel(
                                                                         tabPanel("Table",
-
                                                                                  add_busy_spinner(spin = "fading-circle"),
                                                                                  div(DT::dataTableOutput("Tb_ClusTCR_selected")),
-
                                                                         ),
+                                                                        tabPanel("table 2",
+                                                                                 div(DT::dataTableOutput("Tb_ClusTCR_col"))),
                                                                         tabPanel("UMAP",
                                                                                  fluidRow(
                                                                                    column(3,selectInput("ClusTCR_display","Colour by:",choices = c("all","Selected"))),
+                                                                                   column(3,numericInput("lower_cluster","Lower range",value = 1, min = 1)),
+                                                                                   column(3,numericInput("upper_cluster","Upper range",value = 50, min = 1)),
                                                                                    column(3,conditionalPanel(condition="input.ClusTCR_display=='Selected'",selectInput("Clusters_to_dis","Clusters to display",
                                                                                                                                                                        choices = "",multiple = T))),
-
-                                                                                   column(3,selectInput("Clusters_to_dis_motif","Clusters to display (motif)",
-                                                                                                        choices = "",multiple = F))
                                                                                  ),
                                                                                  fluidRow(
-                                                                                   # column(3,
-                                                                                   #        wellPanel(id = "tPanel23",style = "overflow-y:scroll; max-height: 600px",
-                                                                                   #                  uiOutput('myPanel_cols_epitope'))),
+                                                                                   column(3,
+                                                                                          wellPanel(id = "tPanel23",style = "overflow-y:scroll; max-height: 600px",
+                                                                                                    uiOutput('myPanel_cols_clust_UMAP'))),
                                                                                    column(9, plotOutput("UMAP_ClusTCR2_plot",height="600px"))
                                                                                  ),
                                                                                  fluidRow(
@@ -1371,10 +1350,42 @@ runSTEGO <- function(){
 
                                                                         ),
                                                                         tabPanel("motif",
+                                                                                 column(3,selectInput("Clusters_to_dis_motif","Clusters to display (motif)",
+                                                                                                      choices = "",multiple = F)),
                                                                                  plotOutput("Motif_ClusTCR2_cluster",height="300px"),
+
+
+
+
+                                                                                 fluidRow(
+                                                                                   column(1,numericInput("width_Motif_ClusTCR2_cluster", "Width of PDF", value=10)),
+                                                                                   column(1,numericInput("height_Motif_ClusTCR2_cluster", "Height of PDF", value=4)),
+                                                                                   column(2,style = "margin-top: 25px;",downloadButton('downloadPlot_Motif_ClusTCR2_cluster','Download PDF')),
+                                                                                   column(2,numericInput("width_png_Motif_ClusTCR2_cluster","Width of PNG", value = 1200)),
+                                                                                   column(2,numericInput("height_png_Motif_ClusTCR2_cluster","Height of PNG", value = 400)),
+                                                                                   column(2,numericInput("resolution_PNG_Motif_ClusTCR2_cluster","Resolution of PNG", value = 144)),
+                                                                                   column(2,style = "margin-top: 25px;",downloadButton('downloadPlotPNG_Motif_ClusTCR2_cluster','Download PNG'))),
+                                                                                 div(DT::dataTableOutput("Tb_motif_cluster",height = "300px")),
+                                                                        ),
+                                                                        tabPanel("Pie (Expression)",
+                                                                                 fluidRow(
+                                                                                   column(3,selectInput("Clusters_to_dis_PIE","Clusters to display (Pie expression)",
+                                                                                                        choices = "",multiple = F)),
+                                                                                   column(3,
+                                                                                          wellPanel(id = "tPanel23",style = "overflow-y:scroll; max-height: 600px",
+                                                                                                    uiOutput('myPanel_cols_clusTCR2_pie'))),
+                                                                                   column(9, plotOutput("Pie_ClusTCR2_plot",height="600px"))
+                                                                                 ),
+                                                                                 fluidRow(
+                                                                                   column(1,numericInput("width_Pie_ClusTCR2_plot", "Width of PDF", value=10)),
+                                                                                   column(1,numericInput("height_Pie_ClusTCR2_plot", "Height of PDF", value=8)),
+                                                                                   column(2,style = "margin-top: 25px;",downloadButton('downloadPlot_Pie_ClusTCR2_plot','Download PDF')),
+                                                                                   column(2,numericInput("width_png_Pie_ClusTCR2_plot","Width of PNG", value = 1200)),
+                                                                                   column(2,numericInput("height_png_Pie_ClusTCR2_plot","Height of PNG", value = 1000)),
+                                                                                   column(2,numericInput("resolution_PNG_Pie_ClusTCR2_plot","Resolution of PNG", value = 144)),
+                                                                                   column(2,style = "margin-top: 25px;",downloadButton('downloadPlotPNG_Pie_ClusTCR2_plot','Download PNG'))),
                                                                         )
                                                                       )
-
                                                              ),
                                                              # Overlap ------
                                                              tabPanel("Overlap",
@@ -1382,9 +1393,7 @@ runSTEGO <- function(){
                                                                         tabPanel("Table",
                                                                                  div(DT::dataTableOutput("Upset_plot_overlap_Tb")),
                                                                                  downloadButton('downloaddf_Upset_plot_overlap_Tb','Download table')
-                                                                        ),
-                                                                        tabPanel("table 2",
-                                                                                 div(DT::dataTableOutput("Tb_ClusTCR_col")),
+
 
 
                                                                         ),
@@ -1468,7 +1477,7 @@ runSTEGO <- function(){
 
       df3.meta <- c(names(sc@meta.data))
       df3.meta <- df3.meta[!grepl("RNA",df3.meta) & !grepl("BCR",df3.meta) & !grepl("TCR",df3.meta)& !grepl("_gene",df3.meta) & !grepl("allele",df3.meta) & !grepl("percent",df3.meta) & !grepl("cdr3",df3.meta)]
-      selectInput("clust_names_top","Select function type:",choices = df3.meta,selected="seurat_clusters")
+      selectInput("clust_names_top","Colour by: ",choices = df3.meta,selected="seurat_clusters")
 
     })
 
@@ -4304,40 +4313,21 @@ runSTEGO <- function(){
       }
 
     })
-
-    # input.data_sc_clusTCR <- reactive({switch(input$dataset_sc_pro,"test_data_sc_pro" = test.data_sc_clusTCR(),"own_data_sc_pro" = own.data_sc_clusTCR())})
-    # # input.data_sc_clusTCR <- reactive({switch(input$dataset_cluster_file,"test_data_clusTCR" = test.data_sc_clusTCR(),"own_data_clusTCR" = own.data_sc_clusTCR())})
-    # test.data_sc_clusTCR <- reactive({
-    #   dataframe = read.csv(system.file("extdata","BDrhap/clusTCR/ClusTCR2.csv",package = "STEGO.R"))
-    #
-    #   # dataframe = read.csv("../Test.Cluster/Cluster_table  2022.12.15.csv")
-    # })
     input.data_sc_clusTCR <- reactive({
       inFile_cluster_file <- input$file_cluster_file
       if (is.null(inFile_cluster_file)) return(NULL)
       else {
         dataframe = read.csv(inFile_cluster_file$datapath)
       }
-
     })
 
     # upload TCRex file ----
-    # input.data_sc_TCRex <- reactive({switch(input$dataset_sc_pro,"test_data_sc_pro" = test.data_sc_TCRex(),"own_data_sc_pro" = own.data_sc_TCRex())})
-    # # input.data_sc_clusTCR <- reactive({switch(input$dataset_cluster_file,"test_data_clusTCR" = test.data_sc_clusTCR(),"own_data_clusTCR" = own.data_sc_clusTCR())})
-    # test.data_sc_TCRex <- reactive({
-    #
-    #   dataframe = read.table(system.file("extdata","BDrhap/TCRex/tcrex_nsjhx29ivo.tsv",package = "STEGO.R"),skip=7,header = T,sep="\t")
-    #
-    #   # read.table("../Public data/Bd Rhapsody/TCRex/tcrex_nsjhx29ivo.tsv",skip = 7,header = T,sep="\t")
-    # })
-
     input.data_sc_TCRex <- reactive({
       inupload_TCRex_file <- input$upload_TCRex_file
       if (is.null(inupload_TCRex_file)) return(NULL)
       else {
         dataframe = read.table(inupload_TCRex_file$datapath,skip = input$skip_TCRex_up,header = T,sep="\t")
       }
-
     })
 
     ## uploaded clusTCR table -----
@@ -5098,13 +5088,8 @@ runSTEGO <- function(){
       }
       # umap.meta <- merge(UMAP,meta.data,by="Cell_Index")
       # head(umap.meta)
-      #
       # names(umap.meta)[names(umap.meta) %in% input$Samp_col] <- "ID_Column"
       # names(umap.meta)[names(umap.meta) %in% input$V_gene_sc] <- "v_gene_selected"
-
-
-
-
       if (input$Graph_type_bar== "Number_expanded") {
         UMAP.wt.clonality$TYPE.clonality <- paste(UMAP.wt.clonality$Number_expanded)
       }
@@ -5112,7 +5097,6 @@ runSTEGO <- function(){
         UMAP.wt.clonality$TYPE.clonality <- paste(UMAP.wt.clonality$Clonality)
 
       }
-
       # UMAP.wt.clonality$TYPE.clonality<- ifelse(grepl("NA", UMAP.wt.clonality$TYPE.clonality),NA,UMAP.wt.clonality$TYPE.clonality)
       UMAP.wt.clonality <- subset(UMAP.wt.clonality,UMAP.wt.clonality$TYPE.clonality != "NA")
       UMAP.wt.clonality
@@ -5139,9 +5123,7 @@ runSTEGO <- function(){
       if (input$filter_umap_expand == 'yes') {
         UMAP.wt.clonality <- subset(UMAP.wt.clonality,UMAP.wt.clonality$UMAP_1 < input$UMAP_1x & UMAP.wt.clonality$UMAP_1 > input$UMAP_1y)
         UMAP.wt.clonality <- subset(UMAP.wt.clonality,UMAP.wt.clonality$UMAP_2 < input$UMAP_2x & UMAP.wt.clonality$UMAP_2 > input$UMAP_2y)
-
       }
-
 
       plot <- ggplot(UMAP.wt.clonality,aes(x=UMAP_1,UMAP_2,colour=TYPE.clonality,alpha = TYPE.clonality,label=TYPE.clonality))+
         geom_point()+
@@ -5158,14 +5140,10 @@ runSTEGO <- function(){
           legend.title = element_blank(),
           legend.position = input$legend_position,
         )
-
       if (input$Split_by_group=="no") {
         plot
       }
       else {
-        # UMAP.wt.clonality2$ID.names <- UMAP.wt.clonality2[,names(UMAP.wt.clonality2) %in% input$meta_data_sc_]
-        # UMAP.wt.clonality2$ID.names <- UMAP.wt.clonality2[,names(UMAP.wt.clonality2) %in% input$Samp_col_UMAP]
-
         plot+ facet_wrap(~ID_Column)
       }
 
@@ -5198,12 +5176,10 @@ runSTEGO <- function(){
     # clonality ------
     observe({
       sc <- input.data_sc_pro()
-      # sc$ID_Column <-"ID_Column"
       validate(
         need(nrow(sc)>0,
              error_message_val_UMAP)
       )
-
       df3.meta <- sc@meta.data
       updateSelectInput(
         session,
@@ -5229,24 +5205,19 @@ runSTEGO <- function(){
       top10.2$ID_Column <- top10$ID_Column
       top10.2$topclones <- top10.2$v_gene_selected
 
-
       UMAP.wt.clonality <- UMAP.TCRclonalit()
       UMAP.wt.clonality2 <- merge(UMAP.wt.clonality,top10.2,by=c("v_gene_selected","ID_Column"))
       UMAP.wt.clonality2 <- UMAP.wt.clonality2[order(UMAP.wt.clonality2$Cell_Index),]
       UMAP.wt.clonality2 %>% mutate(across(where(is.factor), as.character)) -> UMAP.wt.clonality2
       UMAP.wt.clonality2$topclones[is.na(UMAP.wt.clonality2$topclones)]<- "not selected"
       UMAP.wt.clonality2$topclones <- factor(UMAP.wt.clonality2$topclones,levels = c("not selected",unique(as.character(top10.2$v_gene_selected))))
-      # UMAP.wt.clonality2 <- UMAP.wt.clonality2[order(UMAP.wt.clonality2$Cell_Index),]
       UMAP.wt.clonality2 <- UMAP.wt.clonality2[order(UMAP.wt.clonality2$topclones),]
 
     })
 
     cols_UMAP_Topclonotypes <- reactive({
       UMAP.wt.clonality2 <- For_col_top()
-
       num <- as.data.frame(unique(UMAP.wt.clonality2$topclones))
-
-
       col.gg <- c("grey",gg_fill_hue(dim(num)[1]))
       palette_rainbow <- c("grey",rainbow(dim(num)[1]))
       heat_col <- c("grey",heat.colors(dim(num)[1]))
@@ -6127,7 +6098,9 @@ runSTEGO <- function(){
     cols_pie <- reactive({
       top_BD_cluster <-  Add.UMAP.reduction()
       top_BD_cluster$Selected_function <- top_BD_cluster[,names(top_BD_cluster) %in% input$clust_names_top]
+      top_BD_cluster$Selected_function <- ifelse(top_BD_cluster$Selected_function=="NA","-",top_BD_cluster$Selected_function)
       top_BD_cluster <- top_BD_cluster[order(top_BD_cluster$Selected_function),]
+
       # top_BD_cluster$Selected_function <- factor(top_BD_cluster$Selected_function,levels = unique(top_BD_cluster$Selected_function))
       num <- as.data.frame(unique(top_BD_cluster$Selected_function))
       num <- as.data.frame(num[complete.cases(num)==T,])
@@ -6189,6 +6162,7 @@ runSTEGO <- function(){
     colors_pie <- reactive({
       top_BD_cluster <-  Add.UMAP.reduction()
       top_BD_cluster$Selected_function <- top_BD_cluster[,names(top_BD_cluster) %in% input$clust_names_top]
+      top_BD_cluster$Selected_function <- ifelse(top_BD_cluster$Selected_function=="NA","unknown",top_BD_cluster$Selected_function)
       top_BD_cluster <- top_BD_cluster[order(top_BD_cluster$Selected_function),]
       num <- as.data.frame(unique(top_BD_cluster$Selected_function))
       num <- as.data.frame(num[complete.cases(num)==T,])
@@ -6201,35 +6175,30 @@ runSTEGO <- function(){
     output$table_pie <- DT::renderDataTable(escape = FALSE, filter = list(position = 'top', clear = FALSE),  options = list(autoWidth = FALSE, lengthMenu = c(2,5,10,20,50,100), pageLength = 10, scrollX = TRUE),{
       top_BD_cluster <-  Add.UMAP.reduction()
       top_BD_cluster$Selected_function <- top_BD_cluster[,names(top_BD_cluster) %in% input$clust_names_top]
+      top_BD_cluster$Selected_function <- ifelse(top_BD_cluster$Selected_function=="NA","unknown",top_BD_cluster$Selected_function)
       top_BD_cluster <- top_BD_cluster[order(top_BD_cluster$Selected_function),]
-      top_BD_cluster$Selected_function <- top_BD_cluster[,names(top_BD_cluster) %in% input$clust_names_top]
       top_BD_cluster$Selected_group <- top_BD_cluster[,names(top_BD_cluster) %in% input$clust_group]
 
       top_BD_cluster$Selected_indiv <- top_BD_cluster[,names(top_BD_cluster) %in% input$Samp_col]
-
-      df.col <- unlist(colors_pie())
-      df.col
+      top_BD_cluster
+      # df.col <- unlist(colors_pie())
+      # df.col
     })
 
     Pie_chart_Class <- reactive({
       top_BD_cluster <-  Add.UMAP.reduction()
       top_BD_cluster$Selected_function <- top_BD_cluster[,names(top_BD_cluster) %in% input$clust_names_top]
+      top_BD_cluster$Selected_function <- ifelse(top_BD_cluster$Selected_function=="NA","unknown",top_BD_cluster$Selected_function)
       top_BD_cluster <- top_BD_cluster[order(top_BD_cluster$Selected_function),]
-      top_BD_cluster$Selected_function <- top_BD_cluster[,names(top_BD_cluster) %in% input$clust_names_top]
       top_BD_cluster$Selected_group <- top_BD_cluster[,names(top_BD_cluster) %in% input$clust_group]
 
       top_BD_cluster$Selected_indiv <- top_BD_cluster[,names(top_BD_cluster) %in% input$Samp_col]
 
       df.col <- unlist(colors_pie())
 
-
       if (input$by_indiv_pie_epi == "yes") {
         top_BD_cluster <- top_BD_cluster[top_BD_cluster$Selected_indiv %in% input$selected_Indiv,]
       }
-
-
-
-
 
       df3.meta3 <-  as.data.frame(table(top_BD_cluster$Selected_group,top_BD_cluster$Selected_function))
       total.condition <- as.data.frame(ddply(df3.meta3,"Var1",numcolwise(sum)))
@@ -6288,11 +6257,12 @@ runSTEGO <- function(){
     # chi-square of expression -----
     chi_squ <- reactive({
       meta.data <-  Add.UMAP.reduction()
+      meta.data
       totals <- meta.data[,names(meta.data) %in% c(input$Samp_col,input$clust_names_top)]
       names(totals) <- c("groups","Function")
       totals <- totals[!totals$Function %in% c("NA"),]
       totals <- totals[!totals$groups %in% c("NA"),]
-      totals$groups <- totals[totals$groups %in% input$ID_Column_factor,]
+      totals <- totals[totals$groups %in% input$ID_Column_factor,]
       totals$groups <- factor(totals$groups,levels = input$ID_Column_factor)
       totals
     })
@@ -6300,6 +6270,7 @@ runSTEGO <- function(){
 
 
     output$Chi_tab_before <-renderPrint({
+      chi_squ()
       totals <- chi_squ()
       tb_totals <- table(totals$Function,totals$groups)
       chisq <- chisq.test(tb_totals)
@@ -6317,11 +6288,6 @@ runSTEGO <- function(){
 
     })
 
-
-
-    # Chi_square <- reactiveValues(plot_chi=NULL)
-
-
     Chi_square_plot2 <- reactive({
       totals <- chi_squ()
       tb_totals <- table(totals$Function,totals$groups)
@@ -6330,8 +6296,6 @@ runSTEGO <- function(){
       if (input$type_res=="Residuals") {
         res <- chisq$residuals
         res <- setNames(melt(res), c('y', 'x', 'residuals'))
-        res$x <- res[res$x %in% input$ID_Column_factor,]
-        res <- res[res$x %in% input$ID_Column_factor,]
 
         plot_chi <- ggplot(res, aes(x = y, y = x,size = residuals, fill = residuals)) +
           geom_point(shape = 21, colour = "black")+
@@ -6363,7 +6327,6 @@ runSTEGO <- function(){
       else {
         contrib <- 100*chisq$residuals^2/chisq$statistic
         contrib <- setNames(melt(contrib), c('y', 'x', 'Percentage'))
-        contrib$x <- contrib[contrib$x %in% input$ID_Column_factor,]
         contrib <- contrib[contrib$x %in% input$ID_Column_factor,]
         plot_chi <- ggplot(contrib, aes(x = y, y = x,size = Percentage, fill = Percentage)) +
           geom_point(shape = 21, colour = "black")+
@@ -7519,9 +7482,6 @@ runSTEGO <- function(){
 
     # Epitope pie chart function -----
     cols_epitope_pie <- reactive({
-
-
-
       df3.meta <-  Add.UMAP.reduction()
       # summarising the clonality
       epi <- input.data_sc_TCRex()
@@ -7805,60 +7765,40 @@ runSTEGO <- function(){
       )
       if (input$chain_TCR=="TCR") {
         md$CDR3_Vgene <- paste(md$cdr3_AG,md$v_gene_AG,sep="_")
-        split <- as.data.frame(do.call(rbind, strsplit(as.character(md$CDR3_Vgene), "-")))[1]
-        md$CDR3_Vgene <- split$V1
+        # split <- as.data.frame(do.call(rbind, strsplit(as.character(md$CDR3_Vgene), "-")))[1]
+        # md$CDR3_Vgene <- split$V1
         df <- merge(md,clust,by = "CDR3_Vgene")
 
         md$CDR3_Vgene <- paste(md$cdr3_BD,md$v_gene_BD,sep="_")
-        split <- as.data.frame(do.call(rbind, strsplit(as.character(md$CDR3_Vgene), "-")))[1]
-        md$CDR3_Vgene <- split$V1
         df2 <- merge(md,clust,by = "CDR3_Vgene")
         cluster <- rbind(df,df2)
       }
       else if (input$chain_TCR=="BCR") {
-
-
         md$CDR3_Vgene <- paste(md$cdr3_IgL,md$v_gene_IgL,sep="_")
-        split <- as.data.frame(do.call(rbind, strsplit(as.character(md$CDR3_Vgene), "-")))[1]
-        md$CDR3_Vgene <- split$V1
         df3 <- merge(md,clust,by = "CDR3_Vgene")
 
         md$CDR3_Vgene <- paste(md$cdr3_IgH,md$v_gene_IgH,sep="_")
-        split <- as.data.frame(do.call(rbind, strsplit(as.character(md$CDR3_Vgene), "-")))[1]
-        md$CDR3_Vgene <- split$V1
         df4 <- merge(md,clust,by = "CDR3_Vgene")
         cluster <- rbind(df3,df4)
       }
       else {
         md$CDR3_Vgene <- paste(md$cdr3_AG,md$v_gene_AG,sep="_")
-        split <- as.data.frame(do.call(rbind, strsplit(as.character(md$CDR3_Vgene), "-")))[1]
-        md$CDR3_Vgene <- split$V1
         df <- merge(md,clust,by = "CDR3_Vgene")
 
         md$CDR3_Vgene <- paste(md$cdr3_BD,md$v_gene_BD,sep="_")
-        split <- as.data.frame(do.call(rbind, strsplit(as.character(md$CDR3_Vgene), "-")))[1]
-        md$CDR3_Vgene <- split$V1
+
         df2 <- merge(md,clust,by = "CDR3_Vgene")
 
         md$CDR3_Vgene <- paste(md$cdr3_IgL,md$v_gene_IgL,sep="_")
-        split <- as.data.frame(do.call(rbind, strsplit(as.character(md$CDR3_Vgene), "-")))[1]
-        md$CDR3_Vgene <- split$V1
         df3 <- merge(md,clust,by = "CDR3_Vgene")
 
         md$CDR3_Vgene <- paste(md$cdr3_IgH,md$v_gene_IgH,sep="_")
-        split <- as.data.frame(do.call(rbind, strsplit(as.character(md$CDR3_Vgene), "-")))[1]
-        md$CDR3_Vgene <- split$V1
         df4 <- merge(md,clust,by = "CDR3_Vgene")
-
         cluster <- rbind(df,df2,df3,df4)
       }
       cluster <- cluster[order(cluster$Clust_size_order),]
       cluster
     })
-
-
-
-
 
     output$Tb_ClusTCR_selected <- DT::renderDataTable(escape = FALSE, options = list(autoWidth = FALSE, lengthMenu = c(2,5,10,20,50,100), pageLength = 5, scrollX = TRUE),{
       clusTCR2_df()
@@ -7891,40 +7831,125 @@ runSTEGO <- function(){
         need(nrow(cluster)>0 & nrow(md)>0,
              "Upload clusTCR table")
       )
-
       cluster <- cluster[order(cluster$Clust_size_order),]
       cluster$Clust_size_order <- factor(cluster$Clust_size_order, levels = unique(cluster$Clust_size_order))
       cluster
-      # cluster <- cluster[cluster$Clust_size_order %in% input$Clusters_to_dis,]
-      # col.df <- as.data.frame(unique(cluster$Clust_size_order))
-      # names(col.df) <- "V1"
-      # col.df$palette_rainbow <- rainbow(length(unique(cluster$Clust_size_order)))
-      # col.df2 <- col.df
-      # col.df2
+      col.df <- as.data.frame(unique(cluster$Clust_size_order))
+      names(col.df) <- "V1"
+      col.df$col <- unlist(colors_cols_cols_clust_UMAP())
+      col.df2 <- col.df
+      col.df2
+    })
+    # colouring the plot clusTCR2 -----
+    cols_clust_UMAP <- reactive({
+      cluster <- clusTCR2_df()
+      md <- Add.UMAP.reduction()
+      validate(
+        need(nrow(cluster)>0 & nrow(md)>0,
+             "Upload clusTCR table")
+      )
+
+      cluster <- cluster[order(cluster$Clust_size_order),]
+      cluster$Clust_size_order <- factor(cluster$Clust_size_order, levels = unique(cluster$Clust_size_order))
+      num <- as.data.frame(unique(cluster$Clust_size_order))
+      num <- as.data.frame(num[complete.cases(num)==T,])
+
+      col.gg <- gg_fill_hue(dim(num)[1])
+      palette_rainbow <- rainbow(dim(num)[1])
+      heat_col <- heat.colors(dim(num)[1])
+      col.terrain <- terrain.colors(dim(num)[1])
+      col.topo <- topo.colors(dim(num)[1])
+      col.hcl <- hcl.colors(dim(num)[1], palette = "viridis")
+
+      if (input$colourtype == "default") {
+        lapply(1:dim(num)[1], function(i) {
+          colourInput(paste("col.cols_clust_UMAP", i, sep="_"), paste(num[i,]), col.gg[i])
+        })
+      }
+      else if (input$colourtype == "hcl.colors") {
+        lapply(1:dim(num)[1], function(i) {
+          colourInput(paste("col.cols_clust_UMAP", i, sep="_"), paste(num[i,]), col.hcl[i])
+        })
+      }
+      else if (input$colourtype == "topo.colors") {
+        lapply(1:dim(num)[1], function(i) {
+          colourInput(paste("col.cols_clust_UMAP", i, sep="_"), paste(num[i,]), col.topo[i])
+        })
+      }
+      else if (input$colourtype == "heat.colors") {
+        lapply(1:dim(num)[1], function(i) {
+          colourInput(paste("col.cols_clust_UMAP", i, sep="_"), paste(num[i,]), heat_col[i])
+        })
+      }
+      else if (input$colourtype == "terrain.colors") {
+        lapply(1:dim(num)[1], function(i) {
+          colourInput(paste("col.cols_clust_UMAP", i, sep="_"), paste(num[i,]), col.terrain[i])
+        })
+      }
+
+      else if (input$colourtype == "rainbow") {
+        lapply(1:dim(num)[1], function(i) {
+          colourInput(paste("col.cols_clust_UMAP", i, sep="_"), paste(num[i,]), palette_rainbow[i])
+        }) }
+      else if (input$colourtype == "random") {
+        palette1 <- distinctColorPalette(dim(num)[1])
+        lapply(1:dim(num)[1], function(i) {
+          colourInput(paste("col.cols_clust_UMAP", i, sep="_"), paste(num[i,]), palette1[i])
+        })
+
+      }
+      else {
+        lapply(1:dim(num)[1], function(i) {
+          colourInput(paste("col.cols_clust_UMAP", i, sep="_"), paste(num[i,]), input$one.colour.default)
+        })
+
+
+      } # one colour
 
     })
+    output$myPanel_cols_clust_UMAP <- renderUI({cols_clust_UMAP()})
+    colors_cols_cols_clust_UMAP <- reactive({
+      cluster <- clusTCR2_df()
+      md <- Add.UMAP.reduction()
+      validate(
+        need(nrow(cluster)>0 & nrow(md)>0,
+             "Upload clusTCR table")
+      )
 
+      cluster <- cluster[order(cluster$Clust_size_order),]
+      cluster$Clust_size_order <- factor(cluster$Clust_size_order, levels = unique(cluster$Clust_size_order))
+      num <- as.data.frame(unique(cluster$Clust_size_order))
+      num <- as.data.frame(num[complete.cases(num)==T,])
+
+      lapply(1:dim(num)[1], function(i) {
+        input[[paste("col.cols_clust_UMAP", i, sep="_")]]
+      })
+    })
 
     UMAP_ClusTCR2 <- reactive({
       cluster <- clusTCR2_df()
       names(cluster)[names(cluster) %in% input$Samp_col] <- "ID_Column"
+
       md <- Add.UMAP.reduction()
 
       if (input$ClusTCR_display == "all" ) {
         cluster <- cluster[order(cluster$Clust_size_order),]
         cluster$Clust_size_order <- factor(cluster$Clust_size_order, levels = unique(cluster$Clust_size_order))
-        # cluster <- cluster[cluster$Clust_size_order %in% input$Clusters_to_dis,]
+
+
         col.df <- as.data.frame(unique(cluster$Clust_size_order))
         names(col.df) <- "V1"
-        col.df$palette_rainbow <- rainbow(length(unique(cluster$Clust_size_order)))
+        col.df$col <- unlist(colors_cols_cols_clust_UMAP())
         col.df2 <- col.df
         md$Clust_size_order <- NA
         md$Clust_size_order <- factor(md$Clust_size_order, levels = unique(cluster$Clust_size_order))
 
+        cluster <- cluster[cluster$Clust_size_order %in% input$lower_cluster:input$upper_cluster,]
+
         figure <- ggplot()+
           # geom_point(data=md,aes(x=UMAP_1,UMAP_2,color = Clust_size_order))+
           geom_point(data=cluster,aes(x=UMAP_1,UMAP_2,colour=Clust_size_order))+
-          scale_color_manual(na.value="grey", values = c(col.df2$palette_rainbow),breaks = c(unique(col.df2$V1)))+
+          scale_color_manual(na.value="grey", values = c(col.df2$col),breaks = c(unique(col.df2$V1)))+
           # scale_size_manual(na.value=0.25,values = rep(3,dim(num)[1]))+
           theme_bw()+
           # labs(color=NULL,size = 12)+
@@ -7943,7 +7968,7 @@ runSTEGO <- function(){
 
         col.df <- as.data.frame(unique(cluster$Clust_size_order))
         names(col.df) <- "V1"
-        col.df$palette_rainbow <- rainbow(length(unique(cluster$Clust_size_order)))
+        col.df$col <- unlist(colors_cols_cols_clust_UMAP())
         col.df2 <- col.df[col.df$V1 %in% input$Clusters_to_dis,]
 
         md$Clust_size_order <- NA
@@ -7953,7 +7978,7 @@ runSTEGO <- function(){
         figure <- ggplot()+
           geom_point(data=md,aes(x=UMAP_1,UMAP_2,color = Clust_size_order))+
           geom_point(data=cluster,aes(x=UMAP_1,UMAP_2,colour=Clust_size_order))+
-          scale_color_manual(na.value="grey", values = c(col.df2$palette_rainbow),breaks = c(unique(col.df2$V1)))+
+          scale_color_manual(na.value="grey", values = c(col.df2$col),breaks = c(unique(col.df2$V1)))+
           # scale_size_manual(na.value=0.25,values = rep(3,dim(num)[1]))+
           theme_bw()+
           # labs(color=NULL,size = 12)+
@@ -8013,9 +8038,26 @@ runSTEGO <- function(){
         session,
         "Clusters_to_dis_motif",
         choices=unique(clust$Clust_size_order),
-        selected = 5
+        selected = 1
       )
     }) # cluster to display
+
+    observe({
+      clust <- input.data_sc_clusTCR()
+      validate(
+        need(nrow(clust)>0,
+             "upload clustering")
+      )
+
+      clust <- clust[order(clust$Clust_size_order),]
+      updateSelectInput(
+        session,
+        "Clusters_to_dis_PIE",
+        choices=unique(clust$Clust_size_order),
+        selected = 1
+      )
+    }) # cluster to display
+
     motif_plot_sc <- reactive({
       Network_df <- input.data_sc_clusTCR()
       validate(
@@ -8025,8 +8067,203 @@ runSTEGO <- function(){
       Motif_from_cluster_file(Network_df,Clust_selected = input$Clusters_to_dis_motif)
     })
 
+
+    output$Tb_motif_cluster <- DT::renderDataTable(escape = FALSE, options = list(autoWidth = FALSE, lengthMenu = c(2,5,10,20,50,100), pageLength = 5, scrollX = TRUE),{
+      cluster <- clusTCR2_df()
+      validate(
+        need(nrow(cluster)>0,
+             "Upload clusTCR table")
+      )
+      cluster <- cluster[order(cluster$Clust_size_order),]
+      cluster$Clust_size_order <- factor(cluster$Clust_size_order, levels = unique(cluster$Clust_size_order))
+      cluster <- cluster[cluster$Clust_size_order == input$Clusters_to_dis_motif,]
+      cluster
+    })
     output$Motif_ClusTCR2_cluster <- renderPlot({
       motif_plot_sc()
+    })
+
+
+    ## downloading motif plot -----
+    output$downloadPlot_Motif_ClusTCR2_cluster <- downloadHandler(
+      filename = function() {
+        x <- gsub(":", ".", Sys.time())
+        paste("Motif_ClusTCR2_cluster_plot_",gsub("/", "-", x), ".pdf", sep = "")
+      },
+      content = function(file) {
+        pdf(file, width=input$width_Motif_ClusTCR2_cluster,height=input$height_Motif_ClusTCR2_cluster, onefile = FALSE) # open the pdf device
+        plot(motif_plot_sc())
+        dev.off()}, contentType = "application/pdf" )
+
+    output$downloadPlotPNG_Motif_ClusTCR2_cluster <- downloadHandler(
+      filename = function() {
+        x <- gsub(":", ".", Sys.time())
+        paste("Motif_ClusTCR2_cluster_plot_", gsub("/", "-", x), ".png", sep = "")
+      },
+      content = function(file) {
+        png(file, width = input$width_png_Motif_ClusTCR2_cluster,
+            height = input$height_png_Motif_ClusTCR2_cluster,
+            res = input$resolution_PNG_Motif_ClusTCR2_cluster)
+        plot(motif_plot_sc())
+        dev.off()},   contentType = "application/png" # MIME type of the image
+    )
+
+    # ClusTCR pie chart function -----
+    cols_clusTCR2_pie <- reactive({
+      df3.meta <-  Add.UMAP.reduction()
+      # summarising the clonality
+      epi <- input.data_sc_TCRex()
+      validate(
+        need(nrow(df3.meta)>0 & nrow(epi)>0,
+             "Upload Files")
+      )
+      if(input$datasource == "BD rhapsody") {
+        df3.meta$CDR3_beta <- paste("C",df3.meta$cdr3_BD,"F",sep="")
+
+      }
+      else {
+        df3.meta$CDR3_beta <- df3.meta$cdr3_BD
+      }
+      epi$beta <- epi$CDR3_beta
+      df3.meta <- merge(df3.meta,epi,by="CDR3_beta")
+      df3.meta$selected <- df3.meta[,names(df3.meta) %in% input$epitope_umap_selected]
+
+
+      df3.meta <- df3.meta[order(df3.meta$selected,decreasing = F),]
+      df3.meta$selected <- factor(df3.meta$selected,levels = unique(df3.meta$selected))
+
+      num <- as.data.frame(unique(df3.meta$selected))
+      num <- as.data.frame(num[complete.cases(num)==T,])
+
+      col.gg <- gg_fill_hue(dim(num)[1])
+      palette_rainbow <- rainbow(dim(num)[1])
+      heat_col <- heat.colors(dim(num)[1])
+      col.terrain <- terrain.colors(dim(num)[1])
+      col.topo <- topo.colors(dim(num)[1])
+      col.hcl <- hcl.colors(dim(num)[1], palette = "viridis")
+
+      if (input$colourtype == "default") {
+        lapply(1:dim(num)[1], function(i) {
+          colourInput(paste("col.cols_clusTCR2_pie", i, sep="_"), paste(num[i,]), col.gg[i])
+        })
+      }
+      else if (input$colourtype == "hcl.colors") {
+        lapply(1:dim(num)[1], function(i) {
+          colourInput(paste("col.cols_clusTCR2_pie", i, sep="_"), paste(num[i,]), col.hcl[i])
+        })
+      }
+      else if (input$colourtype == "topo.colors") {
+        lapply(1:dim(num)[1], function(i) {
+          colourInput(paste("col.cols_clusTCR2_pie", i, sep="_"), paste(num[i,]), col.topo[i])
+        })
+      }
+      else if (input$colourtype == "heat.colors") {
+        lapply(1:dim(num)[1], function(i) {
+          colourInput(paste("col.cols_clusTCR2_pie", i, sep="_"), paste(num[i,]), heat_col[i])
+        })
+      }
+      else if (input$colourtype == "terrain.colors") {
+        lapply(1:dim(num)[1], function(i) {
+          colourInput(paste("col.cols_clusTCR2_pie", i, sep="_"), paste(num[i,]), col.terrain[i])
+        })
+      }
+
+      else if (input$colourtype == "rainbow") {
+        lapply(1:dim(num)[1], function(i) {
+          colourInput(paste("col.cols_clusTCR2_pie", i, sep="_"), paste(num[i,]), palette_rainbow[i])
+        }) }
+      else if (input$colourtype == "random") {
+        palette1 <- distinctColorPalette(dim(num)[1])
+        lapply(1:dim(num)[1], function(i) {
+          colourInput(paste("col.cols_clusTCR2_pie", i, sep="_"), paste(num[i,]), palette1[i])
+        })
+
+      }
+      else {
+        lapply(1:dim(num)[1], function(i) {
+          colourInput(paste("col.cols_clusTCR2_pie", i, sep="_"), paste(num[i,]), input$one.colour.default)
+        })
+
+
+      } # one colour
+
+    })
+
+    output$myPanel_cols_clusTCR2_pie <- renderUI({cols_clusTCR2_pie()})
+    colors_cols_clusTCR2_pie <- reactive({
+      df3.meta <-  Add.UMAP.reduction()
+      # summarising the clonality
+      epi <- input.data_sc_TCRex()
+
+      validate(
+        need(nrow(df3.meta)>0 & nrow(epi)>0,
+             "Upload Files")
+      )
+
+      if(input$datasource == "BD rhapsody") {
+        df3.meta$CDR3_beta <- paste("C",df3.meta$cdr3_BD,"F",sep="")
+
+      }
+      else {
+
+        df3.meta$CDR3_beta <- df3.meta$cdr3_BD
+
+      }
+      epi$beta <- epi$CDR3_beta
+      df3.meta <- merge(df3.meta,epi,by="CDR3_beta")
+      df3.meta$selected <- df3.meta[,names(df3.meta) %in% input$epitope_umap_selected]
+
+      df3.meta <- df3.meta[order(df3.meta$selected,decreasing = F),]
+      df3.meta$selected <- factor(df3.meta$selected,levels = unique(df3.meta$selected))
+
+      num <- as.data.frame(unique(df3.meta$selected))
+      num <- as.data.frame(num[complete.cases(num)==T,])
+
+      lapply(1:dim(num)[1], function(i) {
+        input[[paste("col.cols_epitope_pie", i, sep="_")]]
+      })
+    })
+
+    Pie_chart_ClusTCR2 <- reactive({
+      cluster <- clusTCR2_df()
+      cluster <- cluster[order(cluster$Clust_size_order),]
+      names(cluster)[names(cluster) %in% input$Samp_col] <- "ID_Column"
+      cluster <- cluster[cluster$Clust_size_order == input$Clusters_to_dis_PIE,]
+
+      names(cluster)[names(cluster) %in% input$clust_names_top] <- "Selected"
+
+      df3.meta3 <-  as.data.frame(table(cluster$ID_Column,cluster$Selected))
+      total.condition <- as.data.frame(ddply(df3.meta3,"Var1",numcolwise(sum)))
+      dim(total.condition)[1]
+      dim(df3.meta3)[1]
+      emtpy <- matrix(nrow =dim(df3.meta3)[1],ncol=dim(total.condition)[1])
+
+      for (i in 1:dim(df3.meta3)[1]) {
+
+        emtpy[i,] <- ifelse(df3.meta3$Var1[i]==total.condition$Var1[1:dim(total.condition)[1]],
+                            total.condition[total.condition$Var1==total.condition$Var1[1:dim(total.condition)[1]],2],F)
+      }
+      df3.meta3$n <- df3.meta3$Freq/rowSums(emtpy)
+
+      ggplot(df3.meta3,aes(x="", y=n, fill=Var2, group = Var1)) +
+        geom_bar(stat="identity", width=1)+
+        coord_polar("y", start=0)  +
+        theme_void(20) +
+        facet_wrap(~Var1) +
+        theme(
+          legend.key.size = unit(1, 'cm'),
+          legend.title = element_blank()) +
+        # scale_fill_manual(labels = ~ stringr::str_wrap(.x, width = 20),values = df.col, na.value = input$NA_col_analysis) +
+        theme(strip.text = element_text(size = input$Strip_text_size, family = input$font_type),
+              legend.text = element_text(colour="black", size=input$Bar_legend_size,family=input$font_type),
+              legend.position = input$legend_position,
+              legend.title = element_blank()
+        )
+
+    })
+
+    output$Pie_ClusTCR2_plot <- renderPlot({
+      Pie_chart_ClusTCR2()
     })
 
     # Ridge ClusTCR -----
@@ -8110,7 +8347,7 @@ runSTEGO <- function(){
       df <- as.data.frame(df)
       unique.df <- unique(df[,names(df) %in% c(input$Samp_col,input$V_gene_sc) ])
       names(unique.df) <- c("group","chain")
-      unique.df$group<- unique.df[unique.df$group %in% input$ID_Column_factor,]
+      unique.df <- unique.df[unique.df$group %in% input$ID_Column_factor,]
 
       unique.df <- subset(unique.df,unique.df$chain != "NA")
       unique.df <- subset(unique.df,unique.df$group != "NA")
@@ -8306,4 +8543,6 @@ runSTEGO <- function(){
     ### end -----
   }
   shinyApp(ui, server)
+
+
 }
