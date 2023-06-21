@@ -5600,14 +5600,16 @@ runSTEGO <- function(){
 
         for (i in 1:x) {
           Feture_plots[[i]] <- FeaturePlot(sc,features = feature_name[i],raster=FALSE,label=input$label_is_true_features) +
-            scale_color_gradientn(colours = c(input$lower_col_FP,input$upper_col_FP),limits=c(0,input$max_norm_FP))
+            scale_color_gradientn(colours = c(input$lower_col_FP,input$upper_col_FP),limits=c(0,input$max_norm_FP)) +
+            theme(plot.background = element_rect(fill="white", color = NA))
         }
       }
 
       else {
         for (i in 1:x) {
           Feture_plots[[i]] <- FeaturePlot(sc,features = feature_name[i],raster=FALSE,label=input$label_is_true_features) +
-            scale_color_gradientn(colours = c(input$lower_col_FP,input$upper_col_FP))
+            scale_color_gradientn(colours = c(input$lower_col_FP,input$upper_col_FP)) +
+            theme(plot.background = element_rect(fill="white", color = NA))
         }
       }
 
@@ -5890,11 +5892,11 @@ runSTEGO <- function(){
       meta.data$Chain <- ifelse(grepl("TRBV",meta.data$Motif_gene) |
                                   grepl("TRAV",meta.data$Motif_gene),"abTCR",
                                 ifelse(grepl("TRGV",meta.data$Motif_gene) |
-                                         grepl("TRDV",meta.data$Motif_gene),"gdTCR","unknown"))
+                                         grepl("TRDV",meta.data$Motif_gene),"gdTCR","-"))
 
       meta.data$umap.meta.classification.chain <- paste(meta.data$Chain,meta.data$classify.T.cell)
       #
-      meta.data$umap.meta.classification.chain <- ifelse(grepl("unknown", meta.data$umap.meta.classification.chain),"unknown",meta.data$umap.meta.classification.chain)
+      meta.data$umap.meta.classification.chain <- ifelse(grepl("-", meta.data$umap.meta.classification.chain),"-",meta.data$umap.meta.classification.chain)
       meta.data$umap.meta.classification.chain <- ifelse(grepl(" NA", meta.data$umap.meta.classification.chain),"",meta.data$umap.meta.classification.chain)
 
       meta.data <- meta.data[order(as.numeric(meta.data$Cell_Index),decreasing = F),]
@@ -6162,7 +6164,7 @@ runSTEGO <- function(){
     colors_pie <- reactive({
       top_BD_cluster <-  Add.UMAP.reduction()
       top_BD_cluster$Selected_function <- top_BD_cluster[,names(top_BD_cluster) %in% input$clust_names_top]
-      top_BD_cluster$Selected_function <- ifelse(top_BD_cluster$Selected_function=="NA","unknown",top_BD_cluster$Selected_function)
+      top_BD_cluster$Selected_function <- ifelse(top_BD_cluster$Selected_function=="NA","-",top_BD_cluster$Selected_function)
       top_BD_cluster <- top_BD_cluster[order(top_BD_cluster$Selected_function),]
       num <- as.data.frame(unique(top_BD_cluster$Selected_function))
       num <- as.data.frame(num[complete.cases(num)==T,])
@@ -6175,7 +6177,7 @@ runSTEGO <- function(){
     output$table_pie <- DT::renderDataTable(escape = FALSE, filter = list(position = 'top', clear = FALSE),  options = list(autoWidth = FALSE, lengthMenu = c(2,5,10,20,50,100), pageLength = 10, scrollX = TRUE),{
       top_BD_cluster <-  Add.UMAP.reduction()
       top_BD_cluster$Selected_function <- top_BD_cluster[,names(top_BD_cluster) %in% input$clust_names_top]
-      top_BD_cluster$Selected_function <- ifelse(top_BD_cluster$Selected_function=="NA","unknown",top_BD_cluster$Selected_function)
+      top_BD_cluster$Selected_function <- ifelse(top_BD_cluster$Selected_function=="NA","-",top_BD_cluster$Selected_function)
       top_BD_cluster <- top_BD_cluster[order(top_BD_cluster$Selected_function),]
       top_BD_cluster$Selected_group <- top_BD_cluster[,names(top_BD_cluster) %in% input$clust_group]
 
@@ -6188,7 +6190,7 @@ runSTEGO <- function(){
     Pie_chart_Class <- reactive({
       top_BD_cluster <-  Add.UMAP.reduction()
       top_BD_cluster$Selected_function <- top_BD_cluster[,names(top_BD_cluster) %in% input$clust_names_top]
-      top_BD_cluster$Selected_function <- ifelse(top_BD_cluster$Selected_function=="NA","unknown",top_BD_cluster$Selected_function)
+      top_BD_cluster$Selected_function <- ifelse(top_BD_cluster$Selected_function=="NA","-",top_BD_cluster$Selected_function)
       top_BD_cluster <- top_BD_cluster[order(top_BD_cluster$Selected_function),]
       top_BD_cluster$Selected_group <- top_BD_cluster[,names(top_BD_cluster) %in% input$clust_group]
 
@@ -6992,7 +6994,7 @@ runSTEGO <- function(){
       else(
         df2 <- df
       )
-      df2[is.na(df2)] <- "Unknown"
+      df2[is.na(df2)] <- "-"
       at <- TukeyHSD(aov(get(input$string.data_Exp_top)~ get(input$clust_group),data = df2))
       tab <- as.data.frame(at[1])
       names(tab) <- c("diff" ,"lwr","upr","p.adj")
@@ -7688,7 +7690,7 @@ runSTEGO <- function(){
       df2 <- as.data.frame(ddply(top_BD_cluster2,names(top_BD_cluster2)[-c(1)],numcolwise(sum)))
       df2$fraction <- df2$cloneCount/sum(df2$cloneCount)
       df2$Percent <- round(df2$cloneCount/sum(df2$cloneCount)*100,2)
-      df2$Selected_function <- ifelse(grepl("NA", df2$Selected_function),"unknown",df2$Selected_function)
+      df2$Selected_function <- ifelse(grepl("NA", df2$Selected_function),"-",df2$Selected_function)
       df2[order(df2$Percent,decreasing = T),]
     })
 
@@ -8543,6 +8545,8 @@ runSTEGO <- function(){
     ### end -----
   }
   shinyApp(ui, server)
+
+
 
 
 }
