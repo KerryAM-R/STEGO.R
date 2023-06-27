@@ -15,6 +15,8 @@ runSTEGO <- function(){
   # source(system.file("Global","global.R",package = "STEGO.R"))
   options(shiny.maxRequestSize = 100000*1024^2)
   # UI page -----
+  options(shiny.maxRequestSize = 100000*1024^2)
+  # UI page -----
   ui <- fluidPage(
     theme=bs_theme(version = 5, bootswatch = "default"),
     navbarPage(title = "STEGO_R",
@@ -102,80 +104,112 @@ runSTEGO <- function(){
                                      sidebarPanel(id = "tPanel4",style = "overflow-y:scroll; max-height: 800px; position:relative;", width=3,
                                                   # UPLOAD the three files...
                                                   # selectInput("dataset_BD", "Choose a dataset:", choices = c("test_data_BD", "own_data_BD")),
+                                                  textInput("name.BD","File Name",value = ""),
+                                                  selectInput("Format_bd","Format type",choices = c("cellXgene","Barcode_features_matrix"),selected = "Barcode_features_matrix"),
                                                   fileInput('file_calls_BD', 'Sample Tag Calls (.csv)',
                                                             accept=c('text/csv', 'text/comma-separated-values,text/plain', '.csv')),
-                                                  numericInput("no_lines_skip_Tags","Information present? skip first 7 lines",value = 0,min=0,max=10,step=7),
-                                                  fileInput('file_TCR_BD', 'TCR file (.csv)',
-                                                            accept=c('text/csv', 'text/comma-separated-values,text/plain', '.csv')),
-                                                  numericInput("no_lines_skip_TCR","Information present? skip first 7 lines",value = 0,min=0,max=10,step=7),
-                                                  fileInput('file_counts_BD', 'Counts (.csv)',
-                                                            accept=c('text/csv', 'text/comma-separated-values,text/plain', '.csv')),
-                                                  numericInput("no_lines_skip_counts","Information present? skip first 7 lines",value = 0,min=0,max=10,step=7),
+                                                  numericInput("no_lines_skip_Tags","Information present? skip first 7 lines",value = 7,min=0,max=20,step=7),
+                                                  conditionalPanel(condition="input.Format_bd=='Barcode_features_matrix'",
+                                                                   fileInput('file_barcode_bd', 'Barcode file (.tsv.gz or .tsv)',
+                                                                             accept=c('.tsv','.tsv.gz')),
+                                                                   fileInput('file_features_bd', 'Features file (.tsv.gz or .tsv)',
+                                                                             accept=c('.tsv','.tsv.gz')),
+                                                                   fileInput('file_matrix_bd', 'Matrix file (.mtx.gz or .mtx)',
+                                                                             accept=c('.mtx.gz','.mtx')),
+                                                                   selectInput("filtered_list","Contig Format",choices = c("Dominant","Unfiltered")),
+                                                                   fileInput('file_TCR_bd2', 'Contig AIRR file (.tsv)',
+                                                                             accept=c('.tsv','tsv')),
+                                                  ),
+                                                  conditionalPanel(condition="input.Format_bd=='cellXgene'",
+
+                                                                   fileInput('file_TCR_BD', 'TCR file (.csv)',
+                                                                             accept=c('text/csv', 'text/comma-separated-values,text/plain', '.csv')),
+                                                                   numericInput("no_lines_skip_TCR","Information present? skip first 7 lines",value = 0,min=0,max=10,step=7),
+                                                                   fileInput('file_counts_BD', 'Counts (.csv)',
+                                                                             accept=c('text/csv', 'text/comma-separated-values,text/plain', '.csv')),
+                                                                   numericInput("no_lines_skip_counts","Information present? skip first 7 lines",value = 0,min=0,max=10,step=7)
+                                                  ),
                                                   ### filter out non-function TCR and un-paired TCR
-                                                  checkboxInput("filter_zero_expression", "remove cells with no mRNA expression?", value = FALSE, width = NULL),
                                                   checkboxInput("filtering_TCR", "Keep functional paired chains?", value = FALSE, width = NULL),
-                                                  checkboxInput("filter_non_function", "Remove non-functional TCR/BCR?", value = FALSE, width = NULL),
                                                   checkboxInput("BCR_present", "BCR present?", value = FALSE, width = NULL),
 
-                                                  textInput("name.BD","Name added to files",value = ""),
+
                                      ),
-                                     mainPanel(
-                                       shiny::tabsetPanel(
-                                         tabPanel("Imported data",
-                                                  add_busy_spinner(spin = "fading-circle"),
-                                                  div(DT::dataTableOutput("test.files")),
-                                                  add_busy_spinner(spin = "fading-circle"),
-                                                  div(DT::dataTableOutput("test.files2")),
-                                                  add_busy_spinner(spin = "fading-circle"),
-                                                  div(DT::dataTableOutput("test.files3")),
+                                     mainPanel( #### main panel ------
+                                                shiny::tabsetPanel(
 
-                                         ),
-                                         tabPanel("Filtering",
-                                                  add_busy_spinner(spin = "fading-circle"),
-                                                  div(DT::dataTableOutput("Filtering_BD")),
+                                                  selectInput("locus_column",h5("Chain (e.g. locus)"),""),
+                                                  tabPanel("Imported data",
+                                                           add_busy_spinner(spin = "fading-circle"),
+                                                           div(DT::dataTableOutput("test.files")),
+                                                           conditionalPanel(condition="input.Format_bd=='cellXgene'",
+                                                                            add_busy_spinner(spin = "fading-circle"),
+                                                                            div(DT::dataTableOutput("test.files2")),
+                                                                            add_busy_spinner(spin = "fading-circle"),
+                                                                            div(DT::dataTableOutput("test.files3"))
+                                                           ),
 
-                                         ),
-                                         tabPanel("clusTCR2",
-                                                  tags$head(tags$style("#tb_clusTCR  {white-space: nowrap;  }")),
-                                                  add_busy_spinner(spin = "fading-circle"),
-                                                  div(DT::dataTableOutput("tb_clusTCR")),
-                                                  downloadButton('downloaddf_clusTCR','Download table')
-                                         ),
+                                                           conditionalPanel(condition="input.Format_bd=='Barcode_features_matrix'",
+                                                                            add_busy_spinner(spin = "fading-circle"),
+                                                                            div(DT::dataTableOutput("test.files.bd1")),
+                                                                            add_busy_spinner(spin = "fading-circle"),
+                                                                            div(DT::dataTableOutput("test.files.bd2")),
+                                                                            add_busy_spinner(spin = "fading-circle"),
+                                                                            div(DT::dataTableOutput("test.files.bd3")),
+                                                                            add_busy_spinner(spin = "fading-circle"),
+                                                                            div(DT::dataTableOutput("test.files.bd4")),
+                                                           ),
 
-                                         tabPanel("TCRex",
-                                                  add_busy_spinner(spin = "fading-circle"),
-                                                  div(DT::dataTableOutput("tb_TCRex_BDrap_df")),
-                                                  downloadButton('downloaddf_TCRex_BDrap','Download table')
 
-                                         ),
 
-                                         tabPanel("For Seurat",
-                                                  tags$head(tags$style("#tb_count_matrix  {white-space: nowrap;  }")),
-                                                  add_busy_spinner(spin = "fading-circle"),
-                                                  div(DT::dataTableOutput("tb_count_matrix")),
-                                                  add_busy_spinner(spin = "fading-circle"),
-                                                  div(DT::dataTableOutput("tb_clusTCR_sum")),
-                                                  add_busy_spinner(spin = "fading-circle"),
-                                                  div(DT::dataTableOutput("tb_metadata_sc")),
-                                                  fluidRow(
-                                                    column(3,downloadButton('downloadtb_count_matrix','Download count table')),
-                                                    column(3),
-                                                    column(3,downloadButton('downloadtb_metadata_sc','Download meta.data table')),
+
                                                   ),
-                                         ),
-                                         tabPanel("TCR_Explore",
-                                                  tags$head(tags$style("#tb_TCR_Explore  {white-space: nowrap;  }")),
-                                                  add_busy_spinner(spin = "fading-circle"),
-                                                  div(DT::dataTableOutput("tb_TCR_Explore")),
-                                                  downloadButton('downloadtb_TCR_Explore','Download table')
-                                         ),
-                                         tabPanel("Create Sample Tags file",
-                                                  tags$head(tags$style("#tb_sample_tags_created  {white-space: nowrap;  }")),
-                                                  textInput("sample_tags_name","Name of sample",value = "BD EA splenocyte"),
-                                                  div(DT::dataTableOutput("tb_sample_tags_created")),
-                                                  downloadButton('downloadtb_sample_tags','Download Tags')
-                                         ),
-                                       )
+                                                  # tabPanel("Filtering",
+                                                  #          add_busy_spinner(spin = "fading-circle"),
+                                                  #          div(DT::dataTableOutput("Filtering_BD")),
+                                                  #
+                                                  # ),
+                                                  tabPanel("clusTCR2",
+                                                           tags$head(tags$style("#tb_clusTCR  {white-space: nowrap;  }")),
+                                                           add_busy_spinner(spin = "fading-circle"),
+                                                           div(DT::dataTableOutput("tb_clusTCR")),
+                                                           downloadButton('downloaddf_clusTCR','Download table')
+                                                  ),
+
+                                                  tabPanel("TCRex",
+                                                           add_busy_spinner(spin = "fading-circle"),
+                                                           div(DT::dataTableOutput("tb_TCRex_BDrap_df")),
+                                                           downloadButton('downloaddf_TCRex_BDrap','Download table')
+
+                                                  ),
+
+                                                  tabPanel("For Seurat",
+                                                           tags$head(tags$style("#tb_count_matrix  {white-space: nowrap;  }")),
+                                                           add_busy_spinner(spin = "fading-circle"),
+                                                           div(DT::dataTableOutput("tb_count_matrix")),
+                                                           add_busy_spinner(spin = "fading-circle"),
+                                                           div(DT::dataTableOutput("tb_clusTCR_sum")),
+                                                           add_busy_spinner(spin = "fading-circle"),
+                                                           div(DT::dataTableOutput("tb_metadata_sc")),
+                                                           fluidRow(
+                                                             column(3,downloadButton('downloadtb_count_matrix','Download count table')),
+                                                             column(3),
+                                                             column(3,downloadButton('downloadtb_metadata_sc','Download meta.data table')),
+                                                           ),
+                                                  ),
+                                                  tabPanel("TCR_Explore",
+                                                           tags$head(tags$style("#tb_TCR_Explore  {white-space: nowrap;  }")),
+                                                           add_busy_spinner(spin = "fading-circle"),
+                                                           div(DT::dataTableOutput("tb_TCR_Explore")),
+                                                           downloadButton('downloadtb_TCR_Explore','Download table')
+                                                  ),
+                                                  tabPanel("Create Sample Tags file",
+                                                           tags$head(tags$style("#tb_sample_tags_created  {white-space: nowrap;  }")),
+                                                           textInput("sample_tags_name","Name of sample",value = "BD EA splenocyte"),
+                                                           div(DT::dataTableOutput("tb_sample_tags_created")),
+                                                           downloadButton('downloadtb_sample_tags','Download Tags')
+                                                  ),
+                                                )
                                      )
 
                                    )
@@ -302,12 +336,20 @@ runSTEGO <- function(){
                                         tabPanel("Uploaded file",value = "processing1",
                                                  div(DT::dataTableOutput("clust_dt2")),
                                         ),
+
+
+
                                         tabPanel("Outputs",value = "processing2",
                                                  tabsetPanel(
-                                                   tabPanel('Cluster Labels',
+                                                   tabPanel("Processing",
+                                                            add_busy_spinner(spin = "fading-circle"),
+                                                            verbatimTextOutput('ClusTCR2_Time'),
+                                                            # div(DT::dataTableOutput("")),
                                                             add_busy_spinner(spin = "fading-circle"),
                                                             div(DT::dataTableOutput("ClusTCR2_lab")),
                                                             downloadButton('download_ClusTCR_labels','Download Cluster table'),
+                                                            # verbatimTextOutput('ClusTCR2_lab'),
+                                                            # div(DT::dataTableOutput("")),
                                                    ),
                                                    tabPanel("Figures",
                                                             # cluster number
@@ -346,11 +388,9 @@ runSTEGO <- function(){
                                                               column(2,style = "margin-top: 25px;",downloadButton('downloadPlotPNG_Motif_plot2','Download Motif PNG'))),
 
                                                    ),
-                                                   tabPanel("Time",
-                                                            add_busy_spinner(spin = "fading-circle"),
-                                                            verbatimTextOutput('ClusTCR2_Time'),
-                                                            # div(DT::dataTableOutput("")),
-                                                   )
+                                                   # tabPanel("Time",
+
+                                                   # )
                                                  ))
 
                             )
@@ -584,32 +624,42 @@ runSTEGO <- function(){
                               tabPanel("scGATE",
                                        tabsetPanel(
                                          tabPanel("Annotations to add",
-                                                  selectInput("GenericID_scGATE","Generic To include",choices = c("Bcell","CD4T","CD8T","CD8TIL" ,"Erythrocyte" ,"Megakaryocyte" , "MoMacDC","Myeloid","NK","PanBcell","panDC","PlasmaCell","Tcell","Tcell.alphabeta"), selected = c("Bcell","MoMacDC","NK","CD8T","CD4T","PlasmaCell"), multiple = T),
-                                                  fluidRow(column(3,checkboxInput("generic_scGATE","Generic (Human)", value = F)),
-                                                           column(3,checkboxInput("CD4_scGATE","CD4 T cell (Human)", value = F)),
-                                                           column(3,checkboxInput("CD8_scGATE","CD8 T cell (Human)", value = F)),
-                                                           column(3,checkboxInput("GeneralMarkers_scGATE","ESGA general markers (Human; Lit)", value = F)),
-                                                           column(3,checkboxInput("Function_scGATE","T cell Function types (Human; Lit)", value = F)),
-                                                           column(3,checkboxInput("Ex.Sen_scGATE","Exhausted/Senescence (Human)", value = F)),
-                                                           column(3,checkboxInput("COVID_scGATE","COVID markers (Human)", value = F)),
-                                                           column(3,checkboxInput("Activation_scGATE","Activation markers (Human)", value = F)),
-                                                           column(3,checkboxInput("IFNgTNFa_scGATE","IFNg and TNFa (Human)", value = F)),
-                                                           column(3,checkboxInput("GNLY.PFR1.GZMB_scGATE","GNLY.PFR1.GZMB markers (Human)", value = F)),
-                                                           column(3,checkboxInput("Interlukin_scGATE","Interleukins markers (Human)", value = F)),
-                                                           # column(3,checkboxInput("genericMM_scGATE","Generic (Mouse)", value = F)),
+                                                  selectInput("Data_types","Source",choices = c("10x_HS","BD_Rhapsody_HS","10x_MM","BD_Rhapsody_MM")),
+
+
+                                                  conditionalPanel(condition="input.Data_types == '10x_HS'",
+                                                                   selectInput("GenericID_scGATE","Generic To include",choices = c("Bcell","CD4T","CD8T","CD8TIL" ,"Erythrocyte" ,"Megakaryocyte" , "MoMacDC","Myeloid","NK","PanBcell","panDC","PlasmaCell","Tcell","Tcell.alphabeta"), selected = c("Bcell","MoMacDC","NK","CD8T","CD4T","PlasmaCell"), multiple = T),
+                                                                   fluidRow(
+                                                                     column(3,checkboxInput("generic_scGATE","Generic (Human)", value = F)),
+                                                                     column(3,checkboxInput("CD4_scGATE","CD4 T cell (Human)", value = F)),
+                                                                     column(3,checkboxInput("CD8_scGATE","CD8 T cell (Human)", value = F)),
+                                                                     column(3,checkboxInput("GeneralMarkers_scGATE","ESGA general markers (Human; Lit)", value = F)),
+                                                                     column(3,checkboxInput("Function_scGATE","T cell Function types (Human; Lit)", value = F)),
+                                                                     column(3,checkboxInput("Ex.Sen_scGATE","Exhausted/Senescence (Human)", value = F)),
+                                                                     column(3,checkboxInput("COVID_scGATE","COVID markers (Human)", value = F)),
+                                                                     column(3,checkboxInput("Activation_scGATE","Activation markers (Human)", value = F)),
+                                                                     column(3,checkboxInput("IFNgTNFa_scGATE","IFNg and TNFa (Human)", value = F)),
+                                                                     column(3,checkboxInput("GNLY.PFR1.GZMB_scGATE","GNLY.PFR1.GZMB markers (Human)", value = F)),
+                                                                     column(3,checkboxInput("Interlukin_scGATE","Interleukins markers (Human)", value = F))),
+                                                                   verbatimTextOutput("scGATE_verbatum_Generic"),
+                                                                   verbatimTextOutput("scGATE_verbatum_CD4"),
+                                                                   verbatimTextOutput("scGATE_verbatum_CD8"),
+                                                                   verbatimTextOutput("scGATE_verbatum_GeneralMarkers"),
+                                                                   verbatimTextOutput("scGATE_verbatum_Function"),
+                                                                   verbatimTextOutput("scGATE_verbatum_Ex.Sen"),
+                                                                   verbatimTextOutput("scGATE_verbatum_COVID"),
+                                                                   verbatimTextOutput("scGATE_verbatum_Activation"),
+                                                                   verbatimTextOutput("scGATE_verbatum_IFNgTNFa"),
+                                                                   verbatimTextOutput("scGATE_verbatum_GNLY.PFR1.GZMB"),
+                                                                   verbatimTextOutput("scGATE_verbatum_Interlukin")
                                                   ),
-                                                  add_busy_spinner(spin = "fading-circle"),
-                                                  verbatimTextOutput("scGATE_verbatum_Generic"),
-                                                  verbatimTextOutput("scGATE_verbatum_CD4"),
-                                                  verbatimTextOutput("scGATE_verbatum_CD8"),
-                                                  verbatimTextOutput("scGATE_verbatum_GeneralMarkers"),
-                                                  verbatimTextOutput("scGATE_verbatum_Function"),
-                                                  verbatimTextOutput("scGATE_verbatum_Ex.Sen"),
-                                                  verbatimTextOutput("scGATE_verbatum_COVID"),
-                                                  verbatimTextOutput("scGATE_verbatum_Activation"),
-                                                  verbatimTextOutput("scGATE_verbatum_IFNgTNFa"),
-                                                  verbatimTextOutput("scGATE_verbatum_GNLY.PFR1.GZMB"),
-                                                  verbatimTextOutput("scGATE_verbatum_Interlukin"),
+                                                  conditionalPanel("input.Data_types == 'BD_Rhapsody_HS'",
+                                                                   column(3,checkboxInput("BDrhapsody_scGATE","BD Rhapsody (Human)", value = F)),
+                                                                   verbatimTextOutput("scGATE_verbatum_BDrhapsody_scGATE"),
+
+                                                  ),
+
+
                                          ),
                                          tabPanel("Table",
                                                   add_busy_spinner(spin = "fading-circle"),
@@ -617,52 +667,6 @@ runSTEGO <- function(){
                                          )
                                        )
                               ),
-                              # tabPanel("K-means clustering",
-                              #          tabsetPanel(
-                              #            tabPanel("Checking annotation",
-                              #                     selectInput("V_gene_Class_2","V gene with/without CDR3",choices = ""),
-                              #                     add_busy_spinner(spin = "fading-circle"),
-                              #                     div(DT::dataTableOutput("DEx_table_TcellClass_3")),
-                              #            ),
-                              #            tabPanel("Classification to include",
-                              #                     p("Curated list"),
-                              #                     fluidRow(column(3,checkboxInput("add.classification_T_cell_2","General Adaptive cell markers", value = T)),
-                              #                              column(3,checkboxInput("add.classification_T_cell_Function_2","Function", value = T)),
-                              #                              column(3,checkboxInput("add.classification_T_cell_Function_CD4_2","Function (CD4)", value = T)),
-                              #                              column(3,checkboxInput("add.classification_T_cell_Function_CD8_2","Function (CD8)", value = T)),
-                              #                              column(3,checkboxInput("add.classification_T_cell_Function_CD4_CD8pos_2","Function (CD4+CD8+)", value = T)),
-                              #                              column(3,checkboxInput("add.classification_T_cell_Function_CD4_CD8neg_2","Function (CD4-CD8-)", value = T)),
-                              #                              column(3,checkboxInput("add.classification_B_cell_Function_2","Function B cell", value = T)),
-                              #
-                              #                              column(3,checkboxInput("add.classification_T_cell_Memory_2","Memory", value = T)),
-                              #                              column(3,checkboxInput("add.classification_T_cell_Activation_2","Activation status", value = T)),),
-                              #                     h5("Cell Typist based list"),
-                              #                     fluidRow(
-                              #                       column(3,checkboxInput("add.classification_CellTypist_list_overview_2","CellTypist Overview", value = T)),
-                              #                       column(3,checkboxInput("add.classification_CellTypist_list_2","CellTypist T cell classification", value = T)),
-                              #                       column(3,checkboxInput("add.classification_CellTypist_cycling_2","CellTypist Cell cycle", value = T)),
-                              #                       column(3,checkboxInput("add.classification_CellTypist_list_overview_3","CellTypist & curated list", value = T)),
-                              #                       # column(3,)
-                              #                     ),
-                              #
-                              #            ),
-                              #
-                              #            # tabPanel("Data2Talk",
-                              #            #          p("Upload",tags$a(href="https://talk2data.bioturing.com/predict", "Data2Talk prediction")),
-                              #            #
-                              #            #
-                              #            #
-                              #            #          ),
-                              #
-                              #            tabPanel("Table",
-                              #                     add_busy_spinner(spin = "fading-circle"),
-                              #                     div(DT::dataTableOutput("DEx_table_TcellClass_2")),
-                              #
-                              #            ),
-                              #
-                              #
-                              #          ),
-                              # ),
                               tabPanel("Meta data table",
                                        fluidRow(
                                          # column(3,checkboxInput("add.kmeans","Add K-means classification", value = F)),
@@ -1573,12 +1577,11 @@ runSTEGO <- function(){
     input.data.calls.bd <- reactive({
       inFile12 <- input$file_calls_BD
       if (is.null(inFile12)) return(NULL)
-
       else {
         dataframe <- read.csv(
           inFile12$datapath, skip=input$no_lines_skip_Tags, header = T)}
-
     })
+
     output$test.files <- DT::renderDataTable(escape = FALSE, options = list(autoWidth = FALSE, lengthMenu = c(2,5,10,20,50,100), pageLength = 2, scrollX = TRUE),{
       calls <- input.data.calls.bd()
       validate(
@@ -1587,6 +1590,7 @@ runSTEGO <- function(){
       )
       calls
     })
+
     input.data.TCR.BD <- reactive({
       inFileTCRBD <- input$file_TCR_BD
       if (is.null(inFileTCRBD)) return(NULL)
@@ -1621,8 +1625,83 @@ runSTEGO <- function(){
       calls[1:6,1:6]
     })
 
-    ## combining all data ----
+    # 10x format is now in BD rhapsody ----
+    ## barcode file -----
+    input.data.barcode.bd <- reactive({
+      inFile_bd_barcode <- input$file_barcode_bd
+      if (is.null(inFile_bd_barcode)) return(NULL)
+
+      else {
+        dataframe <- read.table(
+          inFile_bd_barcode$datapath)}
+    })
+
+    output$test.files.bd1 <- DT::renderDataTable(escape = FALSE, options = list(autoWidth = FALSE, lengthMenu = c(2,5,10,20,50,100), pageLength = 2, scrollX = TRUE),{
+      calls <- input.data.barcode.bd()
+      validate(
+        need(nrow(calls)>0,
+             "Upload file")
+      )
+      calls
+    })
+
+    ## features file -----
+    input.data.features.bd2 <- reactive({
+      inFile_bd_features <- input$file_features_bd
+      if (is.null(inFile_bd_features)) return(NULL)
+
+      else {
+        dataframe <- read.table(
+          inFile_bd_features$datapath)}
+    })
+
+    output$test.files.bd2 <- DT::renderDataTable(escape = FALSE, options = list(autoWidth = FALSE, lengthMenu = c(2,5,10,20,50,100), pageLength = 2, scrollX = TRUE),{
+      calls <- input.data.features.bd2()
+      validate(
+        need(nrow(calls)>0,
+             "upload file")
+      )
+      calls
+    })
+
+    # Matrix file ----
+    input.data.matrix.bd <- reactive({
+      inFile_bd_matrix <- input$file_matrix_bd
+      if (is.null(inFile_bd_matrix)) return(NULL)
+
+      else {
+        dataframe <- Matrix::readMM(inFile_bd_matrix$datapath)}
+    })
+    output$test.files.bd3 <- DT::renderDataTable(escape = FALSE, options = list(autoWidth = FALSE, lengthMenu = c(2,5,10,20,50,100), pageLength = 2, scrollX = TRUE),{
+      calls <- as.data.frame(input.data.matrix.bd())
+      validate(
+        need(nrow(calls)>0,
+             "Upload Matrix")
+      )
+      calls[1:10,1:10]
+    })
+
+
+
+    ## contig files ----
+    input.data.TCR.bd2 <- reactive({
+      inFile_bd2_TCR <- input$file_TCR_bd2
+      if (is.null(inFile_bd2_TCR)) return(NULL)
+
+      else {
+        dataframe <- read.table(inFile_bd2_TCR$datapath,sep = "\t", header = T)}
+    })
+    output$test.files.bd4 <- DT::renderDataTable(escape = FALSE, options = list(autoWidth = FALSE, lengthMenu = c(2,5,10,20,50,100), pageLength = 2, scrollX = TRUE),{
+      calls <- input.data.TCR.bd2()
+      validate(
+        need(nrow(calls)>0,
+             "Upload AIRR Contigs (Dominant)")
+      )
+      calls
+    })
+    ## combining Cell x genes ----
     df <- function() {
+
       calls <- input.data.calls.bd();
       TCR <- as.data.frame(input.data.TCR.BD())
       counts <- as.data.frame(input.data.count.BD())
@@ -1631,6 +1710,7 @@ runSTEGO <- function(){
         need(nrow(counts)>0 & nrow(TCR)>0 & nrow(calls)>0,
              error_message_val4)
       )
+
 
       calls_TCR <- merge(calls,TCR, by ="Cell_Index")
       calls_TCR_count <- merge(calls_TCR,counts, by ="Cell_Index")
@@ -1681,17 +1761,11 @@ runSTEGO <- function(){
       }
 
       # filter out non functional TCR
-      if (input$filter_non_function ==T && input$BCR_present ==T) {
+      if (input$BCR_present ==T) {
         productive <- calls_TCR_count[calls_TCR_count$Productive_TCR %in% "productive TCR" | calls_TCR_count$Productive_BCR %in% "productive BCR",] }
-      else if (input$filter_non_function ==T && input$BCR_present ==F) {
 
-        productive <- calls_TCR_count[calls_TCR_count$Productive_TCR %in% "productive TCR",]
-      }
-      else if (input$filter_non_function ==F && input$BCR_present ==T) {
-        productive <- calls_TCR_count
-      }
       else {
-        productive <- calls_TCR_count
+        productive <- calls_TCR_count[calls_TCR_count$Productive_TCR %in% "productive TCR",]
       }
       # filter out un-paired TCR's
       if (input$filtering_TCR ==T) {
@@ -1707,10 +1781,331 @@ runSTEGO <- function(){
         paired <- productive
       }
       paired
+
+    }
+    ## barcode contig and features ----
+    observe({
+      updateSelectInput(
+        session,
+        "locus_column",
+        choices=names(input.data.TCR.bd2()),
+        selected = "locus") }) # junction sequence
+
+    filtering_required <- reactive({
+      contigs <- input.data.TCR.bd2()
+
+      validate(
+        need(nrow(contigs)>0,
+             "Upload files")
+      )
+
+      TCR_unfiltered <- contigs
+      TCR_unfiltered$seq_issue <- ifelse(grepl("[*]",TCR_unfiltered$sequence_alignment_aa),"stop-codon","productive")
+      TCR_unfiltered_prod <- subset(TCR_unfiltered,TCR_unfiltered$seq_issue=="productive")
+      TCR_unfiltered_prod <- subset(TCR_unfiltered_prod,TCR_unfiltered_prod$cdr3_length<30)
+      TCR_unfiltered_prod <- subset(TCR_unfiltered_prod,TCR_unfiltered_prod$cdr3_length>5)
+      df_unique <- TCR_unfiltered_prod[,names(TCR_unfiltered_prod) %in% c("locus","junction_aa")]
+      df_unique$Clonal_expansion <- 1
+      df_unique_sum <- ddply(df_unique,names(df_unique)[-c(3)] ,numcolwise(sum))
+      TCR_unfiltered_prod <- merge(TCR_unfiltered_prod,df_unique_sum,by = c("locus","junction_aa"))
+      TCR_unfiltered_prod$juct_issue <- ifelse(grepl("CTCSAR",TCR_unfiltered_prod$junction_aa),"CTCSAR",
+                                               ifelse(grepl(".TCSAR",TCR_unfiltered_prod$junction_aa),".TCSAR",
+                                                      ifelse(grepl('^C', TCR_unfiltered_prod$junction_aa) & grepl('F$', TCR_unfiltered_prod$junction_aa),"C___F",
+                                                             ifelse(grepl('^C', TCR_unfiltered_prod$junction_aa),"C__",
+                                                                    ifelse(TCR_unfiltered_prod$junction_aa == '',"blank",
+                                                                           "other")))))
+
+      TCR_unfiltered_prod_junc <- subset(TCR_unfiltered_prod,TCR_unfiltered_prod$juct_issue!="blank")
+
+      count.chain <- as.data.frame(table(TCR_unfiltered_prod_junc$cell_id))
+      names(count.chain) <- c("cell_id","seq_identified")
+
+      TCR_unfiltered_prod_junc_seq <- merge(TCR_unfiltered_prod_junc,count.chain, by = "cell_id")
+      sum_tab <- TCR_unfiltered_prod_junc_seq[,names(TCR_unfiltered_prod_junc_seq) %in% c("locus","cell_id")]
+      sum_tab$count <- 1
+      sum_tab_2 <- as.data.frame(ddply(sum_tab,names(sum_tab)[1:2],numcolwise(sum)))
+      count.chain <- as.data.frame(table(TCR_unfiltered_prod_junc_seq$cell_id,TCR_unfiltered_prod_junc_seq$locus))
+      names(count.chain) <- c("cell_id","chain","seq_identified")
+      TRA <- subset(count.chain,count.chain$chain=="TRA")
+      names(TRA)[2:3] <- paste0(names(TRA),"_TRA")[2:3]
+      TRB <- subset(count.chain,count.chain$chain=="TRB")
+      names(TRB)[2:3] <- paste0(names(TRB),"_TRB")[2:3]
+      TRG <- subset(count.chain,count.chain$chain=="TRG")
+      names(TRG)[2:3] <- paste0(names(TRG),"_TRG")[2:3]
+      TRD <- subset(count.chain,count.chain$chain=="TRD")
+      names(TRD)[2:3] <- paste0(names(TRD),"_TRD")[2:3]
+
+      TRAB <-  merge(TRA,TRB,by = "cell_id")
+      TRGD <- merge(TRG,TRD,by = "cell_id")
+      TRAB_TRGD <- merge(TRAB,TRGD,by = "cell_id")
+      names(TRAB_TRGD)
+      head(TRAB_TRGD)
+      TRAB_TRGD_2 <- TRAB_TRGD %>%
+        mutate(Clonality = case_when(
+          seq_identified_TRA>0 & seq_identified_TRB>0 & seq_identified_TRG>0 & seq_identified_TRD >0 ~ "AB GD", # all
+          # three chains called
+          seq_identified_TRA>0 & seq_identified_TRB>0 & seq_identified_TRG>0 & seq_identified_TRD ==0 ~ "AB G",
+          seq_identified_TRA>0 & seq_identified_TRB>0 & seq_identified_TRG==0 & seq_identified_TRD >0 ~ "AB D",
+          seq_identified_TRA>0 & seq_identified_TRB==0 & seq_identified_TRG>0 & seq_identified_TRD >0 ~ "A GD",
+          seq_identified_TRA==0 & seq_identified_TRB>0 & seq_identified_TRG>0 & seq_identified_TRD >0 ~ "B GD",
+          # two chains called
+          seq_identified_TRA>0 & seq_identified_TRB>0 & seq_identified_TRG==0 & seq_identified_TRD ==0 ~ "AB",
+          seq_identified_TRA==0 & seq_identified_TRB==0 & seq_identified_TRG>0 & seq_identified_TRD >0 ~ "GD",
+
+          seq_identified_TRA==0 & seq_identified_TRB>0 & seq_identified_TRG>0 & seq_identified_TRD ==0 ~ "B G",
+          seq_identified_TRA==0 & seq_identified_TRB>0 & seq_identified_TRG==0 & seq_identified_TRD >0 ~ "B D",
+
+          seq_identified_TRA>0 & seq_identified_TRB==0 & seq_identified_TRG==0 & seq_identified_TRD >0 ~ "A D",
+          seq_identified_TRA>0 & seq_identified_TRB==0 & seq_identified_TRG>0  & seq_identified_TRD==0  ~ "A G",
+          # one chains called
+          seq_identified_TRA>0 & seq_identified_TRB==0 & seq_identified_TRG==0 & seq_identified_TRD ==0 ~ "A",
+          seq_identified_TRA==0 & seq_identified_TRB>0 & seq_identified_TRG==0 & seq_identified_TRD ==0 ~ "B",
+          seq_identified_TRA==0 & seq_identified_TRB==0 & seq_identified_TRG>0 & seq_identified_TRD ==0 ~ "G",
+          seq_identified_TRA==0 & seq_identified_TRB==0 & seq_identified_TRG==0 & seq_identified_TRD >0 ~ "D",
+          TRUE ~ "Other"))
+      TRAB_TRGD_paired <- TRAB_TRGD_2
+      TRAB_TRGD_paired <- TRAB_TRGD_paired[,!grepl("chain_",names(TRAB_TRGD_paired))]
+      TRAB_TRGD_paired$sum <- rowSums(TRAB_TRGD_paired[2:5])
+      names(TRAB_TRGD_paired)
+      head(TRAB_TRGD_paired)
+      TRAB_TRGD_paired$pairing_type <- ifelse(TRAB_TRGD_paired$Clonality =="AB" & TRAB_TRGD_paired$sum==2,"standard AB",
+                                              ifelse(TRAB_TRGD_paired$Clonality =="GD" & TRAB_TRGD_paired$sum==2,"standard GD",
+                                                     ifelse(TRAB_TRGD_paired$sum==1,"Unpaired",
+                                                            "non-standard")))
+
+      df <- merge(TCR_unfiltered_prod_junc_seq,TRAB_TRGD_paired,by = "cell_id")
+      df_2 <- df
+      Standard_AB <- subset(df_2,df_2$pairing_type == "standard AB")
+      Standard_GD <- subset(df_2,df_2$pairing_type == "standard GD")
+      non_standard <- subset(df_2,df_2$pairing_type == "non-standard")
+      non_standard <- non_standard[order(non_standard$consensus_count, decreasing = T),]
+      non_standard$filter <- paste(non_standard$cell_id,non_standard$locus)
+      non_standard2 = non_standard[!duplicated(non_standard$filter),]
+      non_standard2 <- non_standard2[order(non_standard2$cell_id, decreasing = F),]
+      unique(non_standard2$Clonality)
+      non_standard2$Standard_to_keep <- ifelse(non_standard2$Clonality=="AB G" & non_standard2$locus == "TRG", "remove_G",
+                                               ifelse(non_standard2$Clonality=="AB D" & non_standard2$locus == "TRD", "remove_D",
+                                                      ifelse(non_standard2$Clonality== "B GD" & non_standard2$locus == "TRB", "remove_B",
+                                                             ifelse(non_standard2$Clonality== "A GD" & non_standard2$locus == "TRA", "remove_A",
+                                                                    ifelse(non_standard2$Clonality== "AB GD" & c(non_standard2$locus == "TRG" | non_standard2$locus == "TRD"), "remove_GD","keep")))))
+
+      non_standard <- subset(non_standard2,non_standard2$Standard_to_keep=="keep")
+      non_standard <- non_standard[,!names(non_standard) %in% c("filter","Standard_to_keep")]
+      dim(non_standard)
+
+
+      Filtered_TCR_list <- rbind(Standard_AB,Standard_GD,non_standard)
+      Filtered_TCR_list <- Filtered_TCR_list[order(Filtered_TCR_list$cell_id, decreasing = F),]
+      contigs <- Filtered_TCR_list
+      contigs
+
+    })
+
+    tb_bd_meta.data_TCR <- function () {
+
+      contigs <- input.data.TCR.bd2()
+      sample_tags <- input.data.calls.bd()
+      validate(
+        need(nrow(contigs)>0 && nrow(sample_tags)>0,
+             "Upload files")
+      )
+
+      if (input$filtered_list == "Unfiltered") {
+
+        contigs <- filtering_required()
+
+      }
+      else {
+        contigs <- contigs
+      }
+
+      contigs_merge <- merge(contigs,sample_tags,by.x="cell_id",by.y="Cell_Index")
+
+      # remove non-functional sequences
+      if (nrow(contigs_merge[-c(grep("[*]",contigs_merge$junction_aa)),]>0)) {
+        contigs_merge <- contigs_merge[-c(grep("[*]",contigs_merge$junction_aa)),]
+      }
+
+      # removed undefined sequences
+
+      contigs_merge <- subset(contigs_merge,contigs_merge$Sample_Name != "Multiplet" )
+      contigs_merge <- subset(contigs_merge,contigs_merge$Sample_Name != "Undetermined")
+
+      if (input$filtered_list == "Unfiltered") {
+        contigs_lim <- contigs_merge[!names(contigs_merge) %in% c("consensus_count","sequence_id","duplicate_count","germline_alignment","reads","length","cdr3","rev_comp","complete_vdj",names(contigs_merge[grep("fwr",names(contigs_merge))]),"cdr1","cdr2","productive",names(contigs_merge[grep("sequence",names(contigs_merge))]),names(contigs_merge[grep("cigar",names(contigs_merge))]),names(contigs_merge[grep("support",names(contigs_merge))]),"Sample_Tag","sum","dominant","putative_cell","juct_issue","seq_issue","c_call"
+                                                                  # "sum","dominant","putative_cell","seq_issue","juct_issue"
+        ) ]
+      }
+      else {
+        contigs_lim <- contigs_merge[!names(contigs_merge) %in% c("consensus_count","sequence_id","duplicate_count","germline_alignment","reads","length","cdr3","rev_comp","complete_vdj",names(contigs_merge[grep("fwr",names(contigs_merge))]),"cdr1","cdr2","productive",names(contigs_merge[grep("sequence",names(contigs_merge))]),names(contigs_merge[grep("cigar",names(contigs_merge))]),names(contigs_merge[grep("support",names(contigs_merge))]),"Sample_Tag"
+                                                                  # "sum","dominant","putative_cell","seq_issue","juct_issue"
+        ) ]
+
+      }
+
+      contigs_lim$v_gene <- gsub("[*]0.","",contigs_lim$v_call)
+      contigs_lim$j_gene <- gsub("[*]0.","",contigs_lim$j_call)
+      contigs_lim$d_gene <- gsub("[*]0.","",contigs_lim$d_call)
+      # contigs_lim$v_gene_BD <- gsub("[*]0.","",calls_TCR_paired.fun$TCR_Beta_Delta_V_gene_Dominant)
+      # names(contigs_lim)   <-  gsub("_call","_gene",names(contigs_lim))
+      contigs_lim
+
+      names(contigs_lim)[names(contigs_lim) %in% input$locus_column] <- "chain"
+
+      contig_AG <- subset(contigs_lim,contigs_lim$chain=="TRA" | contigs_lim$chain=="TRG")
+
+
+      if (input$filtered_list == "Unfiltered") {
+
+        name.list <- names(contig_AG[c(names(contig_AG[grep("gene",names(contig_AG))]),
+                                       names(contig_AG[grep("call",names(contig_AG))]),
+                                       names(contig_AG[grep("cdr3",names(contig_AG))]),
+                                       names(contig_AG[grep("cdr2",names(contig_AG))]),
+                                       names(contig_AG[grep("cdr1",names(contig_AG))]),
+                                       names(contig_AG[grep("junction",names(contig_AG))]),
+                                       "chain",
+                                       "cell_type_experimental",
+
+                                       "Clonal_expansion"
+        )])
+      }
+      else {
+
+
+        name.list <- names(contig_AG[c(names(contig_AG[grep("gene",names(contig_AG))]),
+                                       names(contig_AG[grep("call",names(contig_AG))]),
+                                       names(contig_AG[grep("cdr3",names(contig_AG))]),
+                                       names(contig_AG[grep("cdr2",names(contig_AG))]),
+                                       names(contig_AG[grep("cdr1",names(contig_AG))]),
+                                       names(contig_AG[grep("junction",names(contig_AG))]),
+                                       "chain",
+                                       "cell_type_experimental"
+        )])
+      }
+
+      contig_AG <- contig_AG %>%
+        select(all_of(name.list), everything())
+      names(contig_AG)[1:summary(name.list)[1]] <-paste(names(contig_AG[names(contig_AG) %in% name.list]),"_AG",sep="")
+      # contig_AG
+
+      contig_BD <- subset(contigs_lim,contigs_lim$chain=="TRB" | contigs_lim$chain=="TRD")
+      if (input$filtered_list == "Unfiltered") {
+
+        name.list <- names(contig_BD[c(names(contig_BD[grep("gene",names(contig_BD))]),
+                                       names(contig_BD[grep("cdr3",names(contig_BD))]),
+                                       names(contig_BD[grep("cdr2",names(contig_BD))]),
+                                       names(contig_BD[grep("cdr1",names(contig_BD))]),
+                                       names(contig_BD[grep("junction",names(contig_BD))]),
+                                       "chain",
+                                       "cell_type_experimental",
+
+                                       "Clonal_expansion"
+        )])
+      }
+
+
+      else {
+
+        name.list <- names(contig_BD[c(names(contig_BD[grep("gene",names(contig_BD))]),
+                                       names(contig_BD[grep("cdr3",names(contig_BD))]),
+                                       names(contig_BD[grep("cdr2",names(contig_BD))]),
+                                       names(contig_BD[grep("cdr1",names(contig_BD))]),
+                                       names(contig_BD[grep("junction",names(contig_BD))]),
+                                       "chain",
+                                       "cell_type_experimental"
+        )])
+      }
+
+      contig_BD <- contig_BD %>%
+        select(all_of(name.list), everything())
+      names(contig_BD)[1:summary(name.list)[1]] <-paste(names(contig_BD[names(contig_BD) %in% name.list]),"_BD",sep="")
+      contig_BD
+
+      if (input$filtered_list == "Unfiltered") {
+        contig_paired <- merge(contig_AG,contig_BD, by=c("cell_id","Sample_Name",names(contig_BD[grep("seq_",names(contig_BD))]),"Clonality", "pairing_type"),all = T)
+      }
+      else {
+        contig_paired <- merge(contig_AG,contig_BD, by=c("cell_id","Sample_Name"),all = T)
+      }
+      contig_paired
+
+      contig_paired$pairing <- ifelse(contig_paired$chain_BD=="TRB" & contig_paired$chain_AG=="TRA","abTCR Paired",
+                                      ifelse(contig_paired$chain_BD=="TRD" & contig_paired$chain_AG=="TRG","gdTCR Paired",NA
+                                      ))
+
+      contig_paired$pairing[is.na(contig_paired$pairing)] <- "OTHER"
+
+      name.list2 <- names(contig_paired)[!names(contig_paired)%in% c("d_gene_AG", "c_gene_AG","c_gene_BD")]
+      contig_paired <- contig_paired[,names(contig_paired) %in% name.list2]
+      contig_paired
+
+      contig_paired_only <- contig_paired
+      contig_paired_only[is.na(contig_paired_only)] <- "None"
+      contig_paired_only[contig_paired_only == ''] <- "None"
+      contig_paired_only$d_gene_BD[contig_paired_only$d_gene_BD == 'None'] <- "_"
+      # contig_paired_only$d_gene_AG[contig_paired_only$d_gene_AG == 'None'] <- "_"
+      contig_paired_only
+      if (input$filtering_TCR ==T) {
+        contig_paired_only <- subset(contig_paired_only,contig_paired_only$junction_AG!="None")
+        contig_paired_only <- subset(contig_paired_only,contig_paired_only$junction_BD!="None")
+        contig_paired_only
+      }
+      contig_paired_only
+      contig_paired_only$vj_gene_AG <- paste(contig_paired_only$v_gene_AG,contig_paired_only$j_gene_AG,sep = ".")
+      contig_paired_only$vj_gene_AG <- gsub("None.None","",contig_paired_only$vj_gene_AG)
+      contig_paired_only
+      contig_paired_only$vj_gene_BD <- paste(contig_paired_only$v_gene_BD,contig_paired_only$j_gene_BD,sep = ".")
+      contig_paired_only$vj_gene_BD <- gsub(".NA.",".",contig_paired_only$vj_gene_BD)
+      contig_paired_only$vj_gene_BD <- gsub("[.]None[.]",".",contig_paired_only$vj_gene_BD)
+      contig_paired_only$vj_gene_BD <- gsub("None.None","",contig_paired_only$vj_gene_BD)
+
+      contig_paired_only$vdj_gene_BD <- paste(contig_paired_only$v_gene_BD,contig_paired_only$d_gene_BD,contig_paired_only$j_gene_BD,sep = ".")
+      contig_paired_only$vdj_gene_BD <- gsub(".NA.",".",contig_paired_only$vdj_gene_BD)
+      contig_paired_only$vdj_gene_BD <- gsub("[.]_[.]","",contig_paired_only$vdj_gene_BD)
+      contig_paired_only$vdj_gene_BD <- gsub("NoneNone","",contig_paired_only$vdj_gene_BD)
+      #
+      contig_paired_only$vj_gene_cdr3_AG <- paste(contig_paired_only$vj_gene_AG,contig_paired_only$junction_aa_AG,sep = "_")
+      contig_paired_only$vj_gene_cdr3_AG <- gsub("_None","",contig_paired_only$vj_gene_cdr3_AG)
+      #
+      contig_paired_only$vj_gene_cdr3_BD <- paste(contig_paired_only$vj_gene_BD,contig_paired_only$junction_aa_BD,sep = "_")
+      contig_paired_only$vj_gene_cdr3_BD <- gsub("_None","",contig_paired_only$vj_gene_cdr3_BD)
+      #
+      contig_paired_only$vdj_gene_cdr3_BD <- paste(contig_paired_only$vdj_gene_BD,contig_paired_only$junction_aa_BD,sep = "_")
+      contig_paired_only$vdj_gene_cdr3_BD <- gsub("_None","",contig_paired_only$vdj_gene_cdr3_BD)
+      #
+      contig_paired_only$vj_gene_AG_BD <- paste(contig_paired_only$vj_gene_AG,contig_paired_only$vj_gene_BD,sep = " & ")
+      contig_paired_only$vdj_gene_AG_BD <- paste(contig_paired_only$vj_gene_AG,contig_paired_only$vdj_gene_BD,sep = " & ")
+      contig_paired_only$vdj_gene_AG_BD <- gsub("^ & ","",contig_paired_only$vdj_gene_AG_BD)
+      contig_paired_only$vdj_gene_AG_BD <- gsub(" & $","",contig_paired_only$vdj_gene_AG_BD)
+      #
+      # #updating names to be consistant....
+      contig_paired_only$vj_gene_cdr3_AG_BD <- paste(contig_paired_only$vj_gene_cdr3_AG,contig_paired_only$vj_gene_cdr3_BD,sep = " & ")
+      contig_paired_only$vj_gene_cdr3_AG_BD <- gsub("^ & ","",contig_paired_only$vj_gene_cdr3_AG_BD)
+      contig_paired_only$vj_gene_cdr3_AG_BD <- gsub(" & $","",contig_paired_only$vj_gene_cdr3_AG_BD)
+
+      contig_paired_only$vdj_gene_cdr3_AG_BD <- paste(contig_paired_only$vj_gene_cdr3_AG,contig_paired_only$vdj_gene_cdr3_BD,sep = " & ")
+      contig_paired_only$vdj_gene_cdr3_AG_BD <- gsub("^ & ","",contig_paired_only$vdj_gene_cdr3_AG_BD)
+      contig_paired_only$vdj_gene_cdr3_AG_BD <- gsub(" & $","",contig_paired_only$vdj_gene_cdr3_AG_BD)
+      # contig_paired_only$vdj_gene_cdr3_AG_BD <- paste(contig_paired_only$vj_gene_cdr3_AG,contig_paired_only$vdj_gene_cdr3_BD,sep = " & ")
+      names(contig_paired_only)[names(contig_paired_only) %in% "cell_id"] <- "Cell_Index"
+      contig_paired_only <- contig_paired_only[!duplicated(contig_paired_only$Cell_Index),] # remove duplicates
+
+      contig_paired_only <- contig_paired_only %>%
+        select(all_of(c("Cell_Index","Sample_Name","pairing","cell_type_experimental_AG","cell_type_experimental_BD","chain_AG","chain_BD",
+                        names(contig_paired_only[grep("call",names(contig_paired_only))]))),
+               everything())
+      merge(contig_paired_only,sample_tags,by=c("Cell_Index","Sample_Name"),all = T)
+      # merge(sample_tags,contig_paired_only,by.x="cell_id",by.y="Cell_Index",all=T)
     }
     output$Filtering_BD <- DT::renderDataTable(escape = FALSE, filter = list(position = 'top', clear = FALSE),  options = list(autoWidth = FALSE, lengthMenu = c(2,5,10,20,50,100), pageLength = 5, scrollX = TRUE),{
-      df()
+      if (input$Format_bd=='cellXgene'){
 
+        df()
+      }
+
+      else {
+        tb_bd_meta.data_TCR()
+      }
 
     })
 
@@ -1780,16 +2175,69 @@ runSTEGO <- function(){
       df_nocouts3
 
     }
+
+    tb_bd_contigues_contig <- reactive({
+      contigs <- input.data.TCR.bd2()
+      sample_tags <- input.data.calls.bd()
+      validate(
+        need(nrow(contigs)>0 && nrow(sample_tags)>0,
+             "Upload files")
+      )
+
+      if (input$filtered_list == "Unfiltered") {
+
+        df <- filtering_required()
+        contigs <- contigs[contigs$cell_id %in% unique(df$cell_id),]
+
+      }
+      else {
+        contigs <- contigs
+      }
+
+      contigs_merge <- merge(contigs,sample_tags,by.x="cell_id",by.y="Cell_Index")
+
+      contigs_merge <- subset(contigs_merge,contigs_merge$Sample_Name != "Multiplet" )
+      contigs_merge <- subset(contigs_merge,contigs_merge$Sample_Name != "Undetermined")
+
+      contigs2 <- contigs[names(contigs) %in% c("v_call","junction_aa")]
+      contigs2$v_call <- gsub("[*]0.","",contigs2$v_call)
+
+      # contigs2$Sample_Name <- sample_tags$Sample_Name
+      contigs2[is.na(contigs2)] <- "None"
+      contigs2[contigs2 == ''] <- "None"
+
+      if (nrow(contigs2[-c(grep("[*]",contigs2$junction_aa)),]>0)) {
+        contigs2 <- contigs2[-c(grep("[*]",contigs2$junction_aa)),]
+      }
+
+      contigs2 <- subset(contigs2,contigs2$junction_aa!= "None")
+      contigs2[!duplicated(contigs2[,c('v_call','junction_aa')]),]
+    })
+
     output$tb_clusTCR <- DT::renderDataTable(escape = FALSE, options = list(autoWidth = FALSE, lengthMenu = c(2,5,10,20,50,100), pageLength = 10, scrollX = TRUE),{
-      df_clusTCR()
+      if (input$Format_bd=='cellXgene'){
+        df_clusTCR()
+      }
+      else {
+        tb_bd_contigues_contig()
+      }
     })
     output$downloaddf_clusTCR <- downloadHandler(
       filename = function(){
-        paste(input$name.BD," ClusTCR ",gsub("-", ".", Sys.Date()),".csv", sep = "")
+        paste(input$name.BD,"_ClusTCR_",gsub("-", ".", Sys.Date()),".csv", sep = "")
       },
       content = function(file){
-        df <- as.data.frame(df_clusTCR())
-        write.csv(df,file, row.names = T)
+        if (input$Format_bd=='cellXgene'){
+          df <- as.data.frame(df_clusTCR())
+          write.csv(df,file, row.names = T)
+        }
+
+        else {
+          df <- as.data.frame(tb_bd_contigues_contig())
+          write.csv(df,file, row.names = T)
+        }
+
+
       } )
 
     ### summary of missing TCR -----
@@ -1877,7 +2325,27 @@ runSTEGO <- function(){
     })
 
 
-    ## Differential expression files ----
+    ## count table for Seurat----
+    tb_bd_matrix <- function () {
+      barcode <- input.data.barcode.bd()
+      features <- input.data.features.bd2()
+
+      mmMat <- as.data.frame(input.data.matrix.bd())
+
+      validate(
+        need(nrow(barcode)>0 & nrow(features)>0 & nrow(mmMat)>0,
+             "Upload files")
+      )
+
+      rownames(mmMat) <- make.unique(features$V2) # select which feature to label genes...
+      names(mmMat) <- barcode$V1
+      mmMat$Gene_Name <- rownames(mmMat)
+      mmMat <- mmMat %>%
+        select(all_of("Gene_Name"), everything())
+      mmMat
+
+    }
+
     df_count.matrix <- function () {
       calls_TCR_paired.fun <- df()
       counts <- as.data.frame(input.data.count.BD())
@@ -1895,76 +2363,102 @@ runSTEGO <- function(){
     }
 
     output$tb_count_matrix <- DT::renderDataTable(escape = FALSE, options = list(autoWidth = FALSE, lengthMenu = c(2,5,10,20,50,100), pageLength = 2, scrollX = TRUE),{
-      as.data.frame(t(df_count.matrix()))[1:6,1:6]
+      if (input$Format_bd=='cellXgene'){
+        as.data.frame(t(df_count.matrix()))[1:6,1:6]
+      }
+      else {
+        tb_bd_matrix()[1:6,1:6]
+
+      }
+
+
     })
     output$downloadtb_count_matrix <- downloadHandler(
       filename = function(){
-        paste(input$name.BD," BD_Count_Matrix_",gsub("-", ".", Sys.Date()),".csv", sep = "")
+
+        if (input$Format_bd=='cellXgene'){
+          paste(input$name.BD,"_BD_Count_Matrix_",gsub("-", ".", Sys.Date()),".csv", sep = "")
+        }
+        else {
+          paste(input$name.BD,"_count-matrix_bd_",gsub("-", ".", Sys.Date()),".csv.gz", sep = "")
+
+        }
       },
       content = function(file){
-        df <- as.data.frame(t(df_count.matrix()))
-        # write.table(,file, row.names = T)
-        write.csv(df, file, row.names = T)
+        if (input$Format_bd=='cellXgene'){
+
+          df <- as.data.frame(t(df_count.matrix()))
+          # write.table(,file, row.names = T)
+          write.csv(df, file, row.names = T)
+        }
+        else {
+          df <- as.data.frame(tb_bd_matrix())
+          # write.table(,file, row.names = T)
+          write_csv(df,gzfile(file))
+
+        }
 
       })
 
     ### meta.data for seruat ----
-
     meta.data_for_Seuratobj <- function () {
+      if (input$Format_bd=='cellXgene'){
 
-      calls_TCR_paired.fun <- df()
-      counts <- input.data.count.BD()
+        counts <- input.data.count.BD()
 
-      calls_TCR_paired.fun$v_gene_AG <- gsub("[*]0.","",calls_TCR_paired.fun$TCR_Alpha_Gamma_V_gene_Dominant)
-      calls_TCR_paired.fun$j_gene_AG <- gsub("[*]0.","",calls_TCR_paired.fun$TCR_Alpha_Gamma_J_gene_Dominant)
-      calls_TCR_paired.fun$v_gene_BD <- gsub("[*]0.","",calls_TCR_paired.fun$TCR_Beta_Delta_V_gene_Dominant)
-      calls_TCR_paired.fun$v_gene_AG_BD <- paste(calls_TCR_paired.fun$v_gene_AG,calls_TCR_paired.fun$v_gene_BD,sep = " & ")
-      calls_TCR_paired.fun$v_gene_cdr3_AG <- paste(calls_TCR_paired.fun$v_gene_AG,calls_TCR_paired.fun$TCR_Alpha_Gamma_CDR3_Translation_Dominant,sep = "_")
-      calls_TCR_paired.fun$v_gene_cdr3_BD <- paste(calls_TCR_paired.fun$v_gene_BD,calls_TCR_paired.fun$TCR_Beta_Delta_CDR3_Translation_Dominant,sep = "_")
-      calls_TCR_paired.fun$v_gene_cdr3_AB_GD <- paste(calls_TCR_paired.fun$v_gene_cdr3_AG,calls_TCR_paired.fun$v_gene_cdr3_BD,sep = ".")
+        calls_TCR_paired.fun$v_gene_AG <- gsub("[*]0.","",calls_TCR_paired.fun$TCR_Alpha_Gamma_V_gene_Dominant)
+        calls_TCR_paired.fun$j_gene_AG <- gsub("[*]0.","",calls_TCR_paired.fun$TCR_Alpha_Gamma_J_gene_Dominant)
+        calls_TCR_paired.fun$v_gene_BD <- gsub("[*]0.","",calls_TCR_paired.fun$TCR_Beta_Delta_V_gene_Dominant)
+        calls_TCR_paired.fun$v_gene_AG_BD <- paste(calls_TCR_paired.fun$v_gene_AG,calls_TCR_paired.fun$v_gene_BD,sep = " & ")
+        calls_TCR_paired.fun$v_gene_cdr3_AG <- paste(calls_TCR_paired.fun$v_gene_AG,calls_TCR_paired.fun$TCR_Alpha_Gamma_CDR3_Translation_Dominant,sep = "_")
+        calls_TCR_paired.fun$v_gene_cdr3_BD <- paste(calls_TCR_paired.fun$v_gene_BD,calls_TCR_paired.fun$TCR_Beta_Delta_CDR3_Translation_Dominant,sep = "_")
+        calls_TCR_paired.fun$v_gene_cdr3_AB_GD <- paste(calls_TCR_paired.fun$v_gene_cdr3_AG,calls_TCR_paired.fun$v_gene_cdr3_BD,sep = ".")
 
-      calls_TCR_paired.fun <- calls_TCR_paired.fun[!names(calls_TCR_paired.fun) %in% c(names(counts[-c(1)]),"Total_VDJ_Read_Count","Total_VDJ_Molecule_Count","TCR_Alpha_Gamma_Read_Count","TCR_Alpha_Gamma_Molecule_Count","TCR_Beta_Delta_Read_Count","TCR_Beta_Delta_Molecule_Count","Sample_Tag","TCR_Alpha_Gamma_C_gene_Dominant","TCR_Beta_Delta_C_gene_Dominant","TCR_Alpha_Gamma_CDR3_Nucleotide_Dominant","TCR_Beta_Delta_CDR3_Nucleotide_Dominant") ]
+        calls_TCR_paired.fun <- calls_TCR_paired.fun[!names(calls_TCR_paired.fun) %in% c(names(counts[-c(1)]),"Total_VDJ_Read_Count","Total_VDJ_Molecule_Count","TCR_Alpha_Gamma_Read_Count","TCR_Alpha_Gamma_Molecule_Count","TCR_Beta_Delta_Read_Count","TCR_Beta_Delta_Molecule_Count","Sample_Tag","TCR_Alpha_Gamma_C_gene_Dominant","TCR_Beta_Delta_C_gene_Dominant","TCR_Alpha_Gamma_CDR3_Nucleotide_Dominant","TCR_Beta_Delta_CDR3_Nucleotide_Dominant") ]
 
-      if (input$BCR_present ==T) {
+        if (input$BCR_present ==T) {
 
-        calls_TCR_paired.fun$v_gene_IgL <- gsub("[*]0.","",calls_TCR_paired.fun$BCR_Light_V_gene_Dominant)
-        calls_TCR_paired.fun$j_gene_IgL <- gsub("[*]0.","",calls_TCR_paired.fun$BCR_Light_J_gene_Dominant)
-        calls_TCR_paired.fun$v_gene_IgH <- gsub("[*]0.","",calls_TCR_paired.fun$BCR_Heavy_V_gene_Dominant)
-        calls_TCR_paired.fun$d_gene_IgH <- gsub("[*]0.","",calls_TCR_paired.fun$BCR_Heavy_D_gene_Dominant)
-        calls_TCR_paired.fun$j_gene_IgH <- gsub("[*]0.","",calls_TCR_paired.fun$BCR_Heavy_J_gene_Dominant)
+          calls_TCR_paired.fun$v_gene_IgL <- gsub("[*]0.","",calls_TCR_paired.fun$BCR_Light_V_gene_Dominant)
+          calls_TCR_paired.fun$j_gene_IgL <- gsub("[*]0.","",calls_TCR_paired.fun$BCR_Light_J_gene_Dominant)
+          calls_TCR_paired.fun$v_gene_IgH <- gsub("[*]0.","",calls_TCR_paired.fun$BCR_Heavy_V_gene_Dominant)
+          calls_TCR_paired.fun$d_gene_IgH <- gsub("[*]0.","",calls_TCR_paired.fun$BCR_Heavy_D_gene_Dominant)
+          calls_TCR_paired.fun$j_gene_IgH <- gsub("[*]0.","",calls_TCR_paired.fun$BCR_Heavy_J_gene_Dominant)
 
-        calls_TCR_paired.fun$v_gene_IgH_L <- paste(calls_TCR_paired.fun$v_gene_IgH,calls_TCR_paired.fun$v_gene_IgL,sep = " & ")
+          calls_TCR_paired.fun$v_gene_IgH_L <- paste(calls_TCR_paired.fun$v_gene_IgH,calls_TCR_paired.fun$v_gene_IgL,sep = " & ")
 
-        calls_TCR_paired.fun$v_gene_cdr3_IgH <- paste(calls_TCR_paired.fun$v_gene_IgH,calls_TCR_paired.fun$BCR_Heavy_CDR3_Translation_Dominant,sep = "_")
-        calls_TCR_paired.fun$v_gene_cdr3_IgL <- paste(calls_TCR_paired.fun$v_gene_IgL,calls_TCR_paired.fun$BCR_Light_CDR3_Translation_Dominant,sep = "_")
-        calls_TCR_paired.fun$v_gene_cdr3_IgH_L <- paste(calls_TCR_paired.fun$v_gene_cdr3_IgH,calls_TCR_paired.fun$v_gene_cdr3_IgL,sep = ".")
+          calls_TCR_paired.fun$v_gene_cdr3_IgH <- paste(calls_TCR_paired.fun$v_gene_IgH,calls_TCR_paired.fun$BCR_Heavy_CDR3_Translation_Dominant,sep = "_")
+          calls_TCR_paired.fun$v_gene_cdr3_IgL <- paste(calls_TCR_paired.fun$v_gene_IgL,calls_TCR_paired.fun$BCR_Light_CDR3_Translation_Dominant,sep = "_")
+          calls_TCR_paired.fun$v_gene_cdr3_IgH_L <- paste(calls_TCR_paired.fun$v_gene_cdr3_IgH,calls_TCR_paired.fun$v_gene_cdr3_IgL,sep = ".")
 
-        names(calls_TCR_paired.fun)[names(calls_TCR_paired.fun) %in% c("BCR_Light_CDR3_Translation_Dominant")] <- "cdr3_IgL"
-        names(calls_TCR_paired.fun)[names(calls_TCR_paired.fun) %in% c("BCR_Light_V_gene_Dominant")] <- "v_allele_IgL"
-        names(calls_TCR_paired.fun)[names(calls_TCR_paired.fun) %in% c("BCR_Light_J_gene_Dominant")] <- "j_allele_IgL"
-        names(calls_TCR_paired.fun)[names(calls_TCR_paired.fun) %in% c("BCR_Heavy_CDR3_Translation_Dominant")] <- "cdr3_IgH"
-        names(calls_TCR_paired.fun)[names(calls_TCR_paired.fun) %in% c("BCR_Heavy_V_gene_Dominant")] <- "v_allele_IgH"
-        names(calls_TCR_paired.fun)[names(calls_TCR_paired.fun) %in% c("BCR_Heavy_J_gene_Dominant")] <- "j_allele_IgH"
-        names(calls_TCR_paired.fun)[names(calls_TCR_paired.fun) %in% c("BCR_Heavy_D_gene_Dominant")] <- "d_allele_IgH"
+          names(calls_TCR_paired.fun)[names(calls_TCR_paired.fun) %in% c("BCR_Light_CDR3_Translation_Dominant")] <- "cdr3_IgL"
+          names(calls_TCR_paired.fun)[names(calls_TCR_paired.fun) %in% c("BCR_Light_V_gene_Dominant")] <- "v_allele_IgL"
+          names(calls_TCR_paired.fun)[names(calls_TCR_paired.fun) %in% c("BCR_Light_J_gene_Dominant")] <- "j_allele_IgL"
+          names(calls_TCR_paired.fun)[names(calls_TCR_paired.fun) %in% c("BCR_Heavy_CDR3_Translation_Dominant")] <- "cdr3_IgH"
+          names(calls_TCR_paired.fun)[names(calls_TCR_paired.fun) %in% c("BCR_Heavy_V_gene_Dominant")] <- "v_allele_IgH"
+          names(calls_TCR_paired.fun)[names(calls_TCR_paired.fun) %in% c("BCR_Heavy_J_gene_Dominant")] <- "j_allele_IgH"
+          names(calls_TCR_paired.fun)[names(calls_TCR_paired.fun) %in% c("BCR_Heavy_D_gene_Dominant")] <- "d_allele_IgH"
+          calls_TCR_paired.fun
+
+        }
+
+        else {
+          calls_TCR_paired.fun
+        }
+
+        names(calls_TCR_paired.fun)[names(calls_TCR_paired.fun) %in% c("TCR_Alpha_Gamma_CDR3_Translation_Dominant")] <- "cdr3_AG"
+        names(calls_TCR_paired.fun)[names(calls_TCR_paired.fun) %in% c("TCR_Alpha_Gamma_J_gene_Dominant")] <- "j_gene_AG"
+        names(calls_TCR_paired.fun)[names(calls_TCR_paired.fun) %in% c("TCR_Alpha_Gamma_V_gene_Dominant")] <- "v_allele_AG"
+        names(calls_TCR_paired.fun)[names(calls_TCR_paired.fun) %in% c("TCR_Beta_Delta_CDR3_Translation_Dominant")] <- "cdr3_BD"
+        names(calls_TCR_paired.fun)[names(calls_TCR_paired.fun) %in% c("TCR_Beta_Delta_V_gene_Dominant")] <- "v_allele_BD"
+        names(calls_TCR_paired.fun)[names(calls_TCR_paired.fun) %in% c("TCR_Beta_Delta_J_gene_Dominant")] <- "j_gene_BD"
+        names(calls_TCR_paired.fun)[names(calls_TCR_paired.fun) %in% c("TCR_Beta_Delta_D_gene_Dominant")] <- "d_gene_BD"
         calls_TCR_paired.fun
-
       }
 
       else {
-        calls_TCR_paired.fun
+        tb_bd_meta.data_TCR()
       }
 
-      names(calls_TCR_paired.fun)[names(calls_TCR_paired.fun) %in% c("TCR_Alpha_Gamma_CDR3_Translation_Dominant")] <- "cdr3_AG"
-      names(calls_TCR_paired.fun)[names(calls_TCR_paired.fun) %in% c("TCR_Alpha_Gamma_J_gene_Dominant")] <- "j_gene_AG"
-      names(calls_TCR_paired.fun)[names(calls_TCR_paired.fun) %in% c("TCR_Alpha_Gamma_V_gene_Dominant")] <- "v_allele_AG"
-      names(calls_TCR_paired.fun)[names(calls_TCR_paired.fun) %in% c("TCR_Beta_Delta_CDR3_Translation_Dominant")] <- "cdr3_BD"
-      names(calls_TCR_paired.fun)[names(calls_TCR_paired.fun) %in% c("TCR_Beta_Delta_V_gene_Dominant")] <- "v_allele_BD"
-      names(calls_TCR_paired.fun)[names(calls_TCR_paired.fun) %in% c("TCR_Beta_Delta_J_gene_Dominant")] <- "j_gene_BD"
-      names(calls_TCR_paired.fun)[names(calls_TCR_paired.fun) %in% c("TCR_Beta_Delta_D_gene_Dominant")] <- "d_gene_BD"
-      calls_TCR_paired.fun
-
-      # calls_TCR_paired.fun %>%
-      #   select(Cell_Type_Experimental, everything())
     }
 
     output$tb_metadata_sc <- DT::renderDataTable(escape = FALSE, options = list(autoWidth = FALSE, lengthMenu = c(2,5,10,20,50,100), pageLength = 2, scrollX = TRUE),{
@@ -2004,9 +2498,58 @@ runSTEGO <- function(){
 
 
     }
+    TCRex_Bd_df <- function () {
+      contigs <- input.data.TCR.bd2()
+      sample_tags <- input.data.calls.bd()
+      validate(
+        need(nrow(contigs)>0 && nrow(sample_tags)>0,
+             "Upload files")
+      )
 
+      if (input$filtered_list == "Unfiltered") {
+        df <- filtering_required()
+        contigs <- contigs[contigs$cell_id %in% unique(df$cell_id),]
+
+      }
+      else {
+        contigs <- contigs
+      }
+      contigs_merge <- merge(contigs,sample_tags,by.x="cell_id",by.y="Cell_Index")
+
+      contigs_merge <- subset(contigs_merge,contigs_merge$Sample_Name != "Multiplet" )
+      contigs_merge <- subset(contigs_merge,contigs_merge$Sample_Name != "Undetermined")
+
+      contigs2 <- contigs_merge[,names(contigs_merge) %in% c("v_call","j_call","junction_aa")]
+      contigs2[is.na(contigs2)] <- "None"
+      contigs2[contigs2 == ''] <- "None"
+      contigs2
+      names(contigs2)[names(contigs2) %in% c("junction_aa")] <- "CDR3_beta"
+      if (nrow(contigs2[-c(grep("[*]",contigs2$CDR3_beta)),]>0)) {
+        contigs2 <- contigs2[-c(grep("[*]",contigs2$CDR3_beta)),]
+      }
+      names(contigs2)[names(contigs2) %in% c("v_call")] <- "TRBV_gene"
+      names(contigs2)[names(contigs2) %in% c("j_call")] <- "TRBJ_gene"
+      contigs2 <- contigs2 %>%
+        select(TRBV_gene,CDR3_beta,everything())
+      contigs2 <- subset(contigs2,contigs2$CDR3_beta!= "None")
+      contigs2 <- contigs2
+      contigs2$TRBV_gene <- gsub("[*]0.","",contigs2$TRBV_gene)
+      contigs2$TRBJ_gene <- gsub("[*]0.","",contigs2$TRBJ_gene)
+      contigs2$cloneCount <- 1
+      calls_TCR_paired.fun3 <- ddply(contigs2,names(contigs2)[-c(4)] ,numcolwise(sum))
+      calls_TCR_paired.fun3 <- calls_TCR_paired.fun3[grepl("TRB", calls_TCR_paired.fun3$TRBV_gene),]
+      calls_TCR_paired.fun3
+    }
     output$tb_TCRex_BDrap_df <- DT::renderDataTable(escape = FALSE, options = list(autoWidth = FALSE, lengthMenu = c(2,5,10,20,50,100), pageLength = 10, scrollX = TRUE),{
-      TCRex_BDrap_df()
+      if (input$Format_bd=='cellXgene'){
+        TCRex_BDrap_df()
+      }
+      else {
+        TCRex_Bd_df()
+      }
+
+
+
     })
 
     output$downloaddf_TCRex_BDrap <- downloadHandler(
@@ -2014,22 +2557,19 @@ runSTEGO <- function(){
         paste(input$name.BD,"_TCRex_",gsub("-", ".", Sys.Date()),".tsv", sep = "")
       },
       content = function(file){
-        df <- as.data.frame(TCRex_BDrap_df())
-        df <- df[,names(df) %in% c("TRBV_gene","CDR3_beta","TRBJ_gene")]
-        write.table(df,file, row.names = F,sep="\t", quote = F)
+        if (input$Format_bd=='cellXgene'){
+          df <- as.data.frame(TCRex_BDrap_df())
+          df <- df[,names(df) %in% c("TRBV_gene","CDR3_beta","TRBJ_gene")]
+          write.table(df,file, row.names = F,sep="\t", quote = F)
+        }
+        else {
+          df <- as.data.frame(TCRex_Bd_df())
+          df <- df[,names(df) %in% c("TRBV_gene","CDR3_beta","TRBJ_gene")]
+          write.table(df,file, row.names = F,sep="\t", quote = F)
+
+        }
       } )
 
-    # count matrix download ----
-    output$downloadtb_count_matrix <- downloadHandler(
-      filename = function(){
-        paste(input$name.BD,"_BD_Count_Matrix_",gsub("-", ".", Sys.Date()),".csv", sep = "")
-      },
-      content = function(file){
-        df <- as.data.frame(t(df_count.matrix()))
-        # write.table(,file, row.names = T)
-        write.csv(df, file, row.names = T)
-
-      })
     ## TCR_Explore compatible -----
     df_TCR_Explore <- function () {
       calls_TCR_paired.fun <- df()
@@ -2226,7 +2766,7 @@ runSTEGO <- function(){
       #
       contig_paired_only$vdj_gene_BD <- paste(contig_paired_only$v_gene_BD,contig_paired_only$d_gene_BD,contig_paired_only$j_gene_BD,sep = ".")
       contig_paired_only$vdj_gene_BD <- gsub(".NA.",".",contig_paired_only$vdj_gene_BD)
-      contig_paired_only$vdj_gene_BD <- gsub(".None.",".",contig_paired_only$vdj_gene_BD)
+      contig_paired_only$vdj_gene_BD <- gsub("[.]NA[.]",".",contig_paired_only$vdj_gene_BD)
       contig_paired_only$vdj_gene_BD <- gsub("NA.NA","",contig_paired_only$vdj_gene_BD)
       #
       contig_paired_only$vj_gene_cdr3_AG <- paste(contig_paired_only$vj_gene_AG,contig_paired_only$cdr3_AG,sep = "_")
@@ -2931,7 +3471,7 @@ runSTEGO <- function(){
         write.csv(df,file, row.names = F)
       })
 
-    # rendering the table
+    ## clustering images ------
 
     observe({
       updateSelectInput(
@@ -2945,6 +3485,9 @@ runSTEGO <- function(){
         "clusTCR2_Vgene",
         choices=names(input.data_ClusTCR2()),
         selected = "v_call")}) # V_gene
+
+
+
     # observe({
     #   updateSelectInput(
     #     session,
@@ -3003,6 +3546,7 @@ runSTEGO <- function(){
       output_dt[[1]]
 
     })
+
 
     output$ClusTCR2_lab <- DT::renderDataTable(escape = FALSE, filter = list(position = 'top', clear = FALSE),  options = list(autoWidth = FALSE, lengthMenu = c(2,5,10,20,50,100), pageLength = 10, scrollX = TRUE),{
       ClusTCR2_lab_df()
@@ -3103,6 +3647,7 @@ runSTEGO <- function(){
         plot(motif_plot_clusTCR2())
         dev.off()},   contentType = "application/png" # MIME type of the image
     )
+
 
     # Seurat -----
     ## uploading the raw files ----
@@ -3758,7 +4303,7 @@ runSTEGO <- function(){
       if (input$generic_scGATE==T) {
         scGate_models_DB <- custom_db_scGATE(system.file("scGATE","human/generic",package = "STEGO.R"))
         models.list <- scGate_models_DB[c(input$GenericID_scGATE)]
-        obj <- scGate(sc, model = models.list)
+        obj <- scGate(sc, model = models.list,ncores = 4)
         df$generic <- obj@meta.data$scGate_multi
       }
       else {
@@ -3777,7 +4322,7 @@ runSTEGO <- function(){
       if (input$CD4_scGATE==T) {
         scGate_models_DB <- suppressWarnings(custom_db_scGATE(system.file("scGATE","human/CD4_TIL",package = "STEGO.R")))
         models.list <- scGate_models_DB
-        obj <- scGate(sc, model = models.list)
+        obj <- scGate(sc, model = models.list,ncores = 4)
         df$CD4_TIL <- obj@meta.data$scGate_multi
       }
       else {
@@ -3796,7 +4341,9 @@ runSTEGO <- function(){
       if (input$CD8_scGATE==T) {
         scGate_models_DB <- suppressWarnings(custom_db_scGATE(system.file("scGATE","human/CD8_TIL",package = "STEGO.R")))
         models.list <- scGate_models_DB
-        obj <- scGate(sc, model = models.list)
+        models.list
+
+        obj <- scGate(sc, model = models.list,ncores = 4)
         df$CD8_TIL <- obj@meta.data$scGate_multi
       }
       else {
@@ -3815,7 +4362,7 @@ runSTEGO <- function(){
       if (input$cellTypist_higher_scGATE==T) {
         scGate_models_DB <- suppressWarnings(custom_db_scGATE(system.file("scGATE","human/CellTypist_higher",package = "STEGO.R")))
         models.list <- scGate_models_DB[c("Bcell","CD4Tcell","CD8Tcell","DC","DNTcell", "MonoMac","NK","Plasma")]
-        obj <- scGate(sc, model = models.list)
+        obj <- scGate(sc, model = models.list,ncores = 4)
         df$CellTypist_higher <- obj@meta.data$scGate_multi
       }
       else {
@@ -3835,7 +4382,7 @@ runSTEGO <- function(){
         scGate_models_DB <- suppressWarnings(custom_db_scGATE(system.file("scGATE","human/ECSA",package = "STEGO.R")))
         models.list <- scGate_models_DB
         models.list
-        obj <- scGate(sc, model = models.list)
+        obj <- scGate(sc, model = models.list,ncores = 4)
         df$GeneralMarkers <- obj@meta.data$scGate_multi
       }
       else {
@@ -3856,7 +4403,7 @@ runSTEGO <- function(){
         scGate_models_DB <- suppressWarnings(custom_db_scGATE(system.file("scGATE","human/Function",package = "STEGO.R")))
         models.list <- scGate_models_DB
         models.list
-        obj <- scGate(sc, model = models.list)
+        obj <- scGate(sc, model = models.list,ncores = 4)
         df$Function <- obj@meta.data$scGate_multi
       }
       else {
@@ -3876,7 +4423,7 @@ runSTEGO <- function(){
       if (input$Ex.Sen_scGATE==T) {
         scGate_models_DB <- suppressWarnings(custom_db_scGATE(system.file("scGATE","human/Exhausted_Senescence",package = "STEGO.R")))
         models.list <- scGate_models_DB
-        obj <- scGate(sc, model = models.list)
+        obj <- scGate(sc, model = models.list,ncores = 4)
         df$Exhausted_Senescence <- obj@meta.data$scGate_multi
       }
       else {
@@ -3895,7 +4442,7 @@ runSTEGO <- function(){
       if (input$COVID_scGATE==T) {
         scGate_models_DB <- suppressWarnings(custom_db_scGATE(system.file("scGATE","human/COVID",package = "STEGO.R")))
         models.list <- scGate_models_DB
-        obj <- scGate(sc, model = models.list)
+        obj <- scGate(sc, model = models.list,ncores = 4)
         df$COVID <- obj@meta.data$scGate_multi
       }
       else {
@@ -3914,7 +4461,7 @@ runSTEGO <- function(){
       if (input$Activation_scGATE==T) {
         scGate_models_DB <- suppressWarnings(custom_db_scGATE(system.file("scGATE","human/Activation",package = "STEGO.R")))
         models.list <- scGate_models_DB
-        obj <- scGate(sc, model = models.list)
+        obj <- scGate(sc, model = models.list,ncores = 4)
         df$Activation <- obj@meta.data$scGate_multi
       }
       else {
@@ -3933,7 +4480,7 @@ runSTEGO <- function(){
       if (input$IFNgTNFa_scGATE==T) {
         scGate_models_DB <- suppressWarnings(custom_db_scGATE(system.file("scGATE","human/IFNgTNFa",package = "STEGO.R")))
         models.list <- scGate_models_DB
-        obj <- scGate(sc, model = models.list)
+        obj <- scGate(sc, model = models.list,ncores = 4)
         df$IFNgTNFa <- obj@meta.data$scGate_multi
       }
       else {
@@ -3952,7 +4499,7 @@ runSTEGO <- function(){
       if (input$GNLY.PFR1.GZMB_scGATE==T) {
         scGate_models_DB <- suppressWarnings(custom_db_scGATE(system.file("scGATE","human/GNLY.PFR1.GZMB",package = "STEGO.R")))
         models.list <- scGate_models_DB
-        obj <- scGate(sc, model = models.list)
+        obj <- scGate(sc, model = models.list,ncores = 4)
         df$GNLY.PFR1.GZMB <- obj@meta.data$scGate_multi
       }
       else {
@@ -3973,13 +4520,212 @@ runSTEGO <- function(){
 
         models.list <- scGate_models_DB
         models.list
-        obj <- scGate(sc, model = models.list)
+        obj <- scGate(sc, model = models.list,ncores = 4)
         df$Interleukins <- obj@meta.data$scGate_multi
       }
       else {
         df
       }
       df
+    })
+    scGATE_anno_BD_rhapsody <- reactive({
+      sc <- getData_2()
+      validate(
+        need(nrow(sc)>0,
+             "Upload file for annotation")
+      )
+
+      if (input$BDrhapsody_scGATE==T && input$Data_types=="BD_Rhapsody_HS") {
+        len <- length(rownames(sc@assays$RNA@meta.features))
+        # obtained the list of markers from the following article based on Mouse gut: # https://www.frontiersin.org/articles/10.3389/fimmu.2020.563414/full
+
+        # Main T cell markers ------
+        models.list <- list()
+        my_scGate_model <- gating_model(name = "CD8B",level = 1, signature = c("CD8B"), positive = T)
+        my_scGate_model <- gating_model(my_scGate_model,name = "CD8A",level = 2, signature = c("CD8A"), positive = T)
+        my_scGate_model <- gating_model(my_scGate_model,name = "CD4neg",level = 3, signature = c("CD4"), positive = F)
+        models.list$CD8ab <- my_scGate_model
+        my_scGate_model <- gating_model(name = "CD4",level = 1, signature = c("CD4"), positive = T)
+        my_scGate_model <- gating_model(my_scGate_model,name = "CD8B",level = 2, signature = c("CD8B"), positive = F) # positive for
+        my_scGate_model <- gating_model(my_scGate_model,name = "CD8A",level = 3, signature = c("CD8A"), positive = F) # positive for
+        models.list$CD4 <- my_scGate_model
+
+        my_scGate_model <- gating_model(name = "CD8A",level = 1, signature = c("CD8A"), positive = T)
+        my_scGate_model <- gating_model(my_scGate_model,name = "CD8Bneg",level = 2, signature = c("CD8B"), positive = F)
+        my_scGate_model <- gating_model(my_scGate_model,name = "CD4neg",level = 3, signature = c("CD4"), positive = F)
+        models.list$CD8aa <- my_scGate_model
+
+        my_scGate_model <- gating_model(name = "CD8ANeg",level = 1, signature = c("CD8A"), positive = F)
+        my_scGate_model <- gating_model(my_scGate_model,name = "CD8Bneg",level = 2, signature = c("CD8B"), positive = F)
+        my_scGate_model <- gating_model(my_scGate_model,name = "CD4neg",level = 3, signature = c("CD4"), positive = F)
+        models.list$DN <- my_scGate_model
+
+        obj <- scGate(sc, model = models.list,
+                      pos.thr = 0.75,
+                      neg.thr = 0.75,
+                      nfeatures = len,
+                      ncores = 8
+        )
+
+        sc@meta.data$T_cells <- obj@meta.data$scGate_multi
+
+        # GNLY.PRF1.GZMB -----
+        models.list <- list()
+        models.list
+        FeaturePlot(sc,features = "GZMB") | FeaturePlot(sc,features = "PRF1") | FeaturePlot(sc,features = "GNLY")
+        my_scGate_model <- gating_model(name = "GZMB",level = 1, signature = c("GZMB"), positive = T)
+        my_scGate_model <- gating_model(my_scGate_model,name = "PRF1",level = 2, signature = c("PRF1"), positive = T)
+        my_scGate_model <- gating_model(my_scGate_model,name = "GNLY",level = 3, signature = c("GNLY"), positive = T)
+
+        models.list$GNLY.PRF1.GZMB <- my_scGate_model
+        my_scGate_model <- gating_model(name = "GZMB",level = 1, signature = c("GZMB"), positive = T)
+        my_scGate_model <- gating_model(my_scGate_model,name = "PRF1",level = 2, signature = c("PRF1"), positive = T)
+        my_scGate_model <- gating_model(my_scGate_model,name = "GNLY",level = 3, signature = c("GNLY"), positive = F)
+        models.list$PRF1.GZMB <- my_scGate_model
+
+        my_scGate_model <- gating_model(name = "GZMB",level = 1, signature = c("GZMB"), positive = F)
+        my_scGate_model <- gating_model(my_scGate_model,name = "PRF1",level = 2, signature = c("PRF1"), positive = T)
+        my_scGate_model <- gating_model(my_scGate_model,name = "GNLY",level = 3, signature = c("GNLY"), positive = T)
+        models.list$PRF1.GNLY <- my_scGate_model
+
+        my_scGate_model <- gating_model(name = "GZMB",level = 1, signature = c("GZMB"), positive = T)
+        my_scGate_model <- gating_model(my_scGate_model,name = "PRF1",level = 2, signature = c("PRF1"), positive = F)
+        my_scGate_model <- gating_model(my_scGate_model,name = "GNLY",level = 3, signature = c("GNLY"), positive = T)
+        models.list$GZMB.GNLY <- my_scGate_model
+
+        my_scGate_model <- gating_model(name = "GNLY",level = 1, signature = c("GNLY"), positive = T)
+        my_scGate_model <- gating_model(my_scGate_model,name = "PRF1",level = 2, signature = c("PRF1"), positive = F)
+        my_scGate_model <- gating_model(my_scGate_model,name = "GZMB",level = 3, signature = c("GZMB"), positive = F)
+        models.list$GNLY <- my_scGate_model
+
+        my_scGate_model <- gating_model(name = "GZMB",level = 1, signature = c("GZMB"), positive = T)
+        my_scGate_model <- gating_model(my_scGate_model,name = "PRF1",level = 2, signature = c("PRF1"), positive = F)
+        my_scGate_model <- gating_model(my_scGate_model,name = "GNLY",level = 3, signature = c("GNLY"), positive = F)
+        models.list$GZMB <- my_scGate_model
+
+        my_scGate_model <- gating_model(name = "GZMB",level = 1, signature = c("GZMB"), positive = F)
+        my_scGate_model <- gating_model(my_scGate_model,name = "PRF1",level = 2, signature = c("PRF1"), positive = T)
+        my_scGate_model <- gating_model(my_scGate_model,name = "GNLY",level = 3, signature = c("GNLY"), positive = F)
+        models.list$PRF1 <- my_scGate_model
+
+        obj <- scGate(sc, model = models.list,
+                      pos.thr = 0.65,
+                      neg.thr = 0.65,
+                      nfeatures = len,
+                      ncores = 8
+        )
+
+        sc@meta.data$GNLY.PRF1.GZMB <- obj@meta.data$scGate_multi
+
+        # TNF and IFNg----
+        models.list <- list()
+        models.list
+        FeaturePlot(sc,features = "IFNG") | FeaturePlot(sc,features = "TNF")
+        my_scGate_model <- gating_model(name = "IFNG",level = 1, signature = c("IFNG"), positive = T)
+        my_scGate_model <- gating_model(my_scGate_model,name = "TNF",level = 2, signature = c("TNF"), positive = T)
+        models.list$IFNG.TNF <- my_scGate_model
+
+        my_scGate_model <- gating_model(name = "IFNG",level = 1, signature = c("IFNG"), positive = T)
+        my_scGate_model <- gating_model(my_scGate_model,name = "TNF",level = 2, signature = c("TNF"), positive = F)
+        models.list$IFNG <- my_scGate_model
+
+        my_scGate_model <- gating_model(name = "IFNG",level = 1, signature = c("IFNG"), positive = F)
+        my_scGate_model <- gating_model(my_scGate_model,name = "TNF",level = 2, signature = c("TNF"), positive = T)
+        models.list$TNF <- my_scGate_model
+
+        obj <- scGate(sc, model = models.list,
+                      pos.thr = 0.5,
+                      neg.thr = 0.5,
+                      nfeatures = len,
+                      ncores = 8
+        )
+
+        # T cell types (CD4_based)-----
+        models.list <- list()
+        my_scGate_model <- gating_model(name = "CCR4",level = 1, signature = c("CCR4"), positive = T)
+        my_scGate_model <- gating_model(my_scGate_model,name = "CD4",level = 2, signature = c("CD4"), positive = T)
+        my_scGate_model <- gating_model(my_scGate_model,name = "CD8A",level = 3, signature = c("CD8A"), positive = F)
+        my_scGate_model <- gating_model(my_scGate_model,name = "CD8B",level = 4, signature = c("CD8B"), positive = F)
+        models.list$Th2 <- my_scGate_model
+
+        my_scGate_model <- gating_model(name = "CXCR3",level = 1, signature = c("CXCR3"), positive = T)
+        my_scGate_model <- gating_model(my_scGate_model,name = "TBX21",level = 2, signature = c("TBX21"), positive = T)
+        my_scGate_model <- gating_model(my_scGate_model,name = "CD4",level = 3, signature = c("CD4"), positive = T)
+        my_scGate_model <- gating_model(my_scGate_model,name = "CD8A",level = 4, signature = c("CD8A"), positive = F)
+        my_scGate_model <- gating_model(my_scGate_model,name = "CD8B",level = 5, signature = c("CD8B"), positive = F)
+        models.list$Th1 <- my_scGate_model
+
+        my_scGate_model <- gating_model(name = "RORC",level = 1, signature = c("RORC"), positive = T)
+        my_scGate_model <- gating_model(my_scGate_model,name = "CD4",level = 2, signature = c("CD4"), positive = T)
+        my_scGate_model <- gating_model(my_scGate_model,name = "CD8A",level = 3, signature = c("CD8A"), positive = F)
+        my_scGate_model <- gating_model(my_scGate_model,name = "CD8B",level = 4, signature = c("CD8B"), positive = F)
+        models.list$Th17 <- my_scGate_model
+
+        my_scGate_model <- gating_model(name = "CXCR5",level = 1, signature = c("CXCR5"), positive = T)
+        my_scGate_model <- gating_model(my_scGate_model,name = "CD4",level = 2, signature = c("CD4"), positive = T)
+        my_scGate_model <- gating_model(my_scGate_model,name = "CD8A",level = 3, signature = c("CD8A"), positive = F)
+        my_scGate_model <- gating_model(my_scGate_model,name = "CD8B",level = 4, signature = c("CD8B"), positive = F)
+        models.list$Tfh <- my_scGate_model
+
+        my_scGate_model <- gating_model(name = "FOXP3",level = 1, signature = c("FOXP3"), positive = T)
+        my_scGate_model <- gating_model(my_scGate_model,name = "CD4",level = 2, signature = c("CD4"), positive = T)
+        my_scGate_model <- gating_model(my_scGate_model,name = "CD8A",level = 3, signature = c("CD8A"), positive = F)
+        my_scGate_model <- gating_model(my_scGate_model,name = "CD8B",level = 4, signature = c("CD8B"), positive = F)
+        models.list$Treg <- my_scGate_model
+
+        my_scGate_model <- gating_model(name = "KLRK1",level = 1, signature = c("KLRK1"), positive = T) # https://pubmed.ncbi.nlm.nih.gov/36705564/
+        my_scGate_model <- gating_model(my_scGate_model,name = "IL7R",level = 2, signature = c("IL7R"), positive = T)
+        my_scGate_model <- gating_model(my_scGate_model,name = "CD4",level = 3, signature = c("CD4"), positive = F)
+        my_scGate_model <- gating_model(my_scGate_model,name = "CD8A",level =4, signature = c("CD8A"), positive = T)
+        my_scGate_model <- gating_model(my_scGate_model,name = "CD8B",level = 5, signature = c("CD8B"), positive = T)
+        models.list$KILR_CD8 <- my_scGate_model
+        models.list
+
+        my_scGate_model <- gating_model(name = "CD3E",level = 1, signature = c("CD3E"), positive = T)
+        my_scGate_model <- gating_model(my_scGate_model,name = "CD14",level = 2, signature = c("CD14"), positive = T)
+        models.list$Mono.Tcell.Complex <- my_scGate_model
+
+        obj <- scGate(sc, model = models.list,
+                      pos.thr = 0.5,
+                      neg.thr = 0.5,
+                      nfeatures = len,
+                      ncores = 8
+        )
+
+        sc@meta.data$T_cell_types <- obj@meta.data$scGate_multi
+
+        # other -----
+        models.list <- list()
+        my_scGate_model <- gating_model(name = "PDCD1",level = 1, signature = c("PDCD1"), positive = T)
+        my_scGate_model <- gating_model(my_scGate_model,name = "TIGIT",level = 2, signature = c("TIGIT"), positive = T)
+        models.list$exhausted <- my_scGate_model
+
+        my_scGate_model <- gating_model(name = "B3GAT1",level = 1, signature = c("B3GAT1"), positive = T)
+        my_scGate_model <- gating_model(my_scGate_model,name = "KLRG1",level = 2, signature = c("KLRG1"), positive = T)
+        models.list$senescent <- my_scGate_model
+
+
+        my_scGate_model <- gating_model(name = "MKI67",level = 1, signature = c("MKI67"), positive = T)
+        my_scGate_model <- gating_model(my_scGate_model,name = "TOP2A",level = 2, signature = c("TOP2A"), positive = T)
+        models.list$CellCycling <- my_scGate_model
+
+        my_scGate_model <- gating_model(name = "CD3E",level = 1, signature = c("CD3E"), positive = T)
+        my_scGate_model <- gating_model(my_scGate_model,name = "CD14",level = 2, signature = c("CD14"), positive = T)
+        models.list$Mono.Tcell.Complex <- my_scGate_model
+
+        obj <- scGate(sc, model = models.list,
+                      pos.thr = 0.5,
+                      neg.thr = 0.5,
+                      nfeatures = len,
+                      ncores = 8
+        )
+        sc@meta.data$Other <- obj@meta.data$scGate_multi
+        sc
+      }
+      else
+      {
+        sc
+      }
     })
 
     output$scGATE_verbatum_Generic <- renderPrint({
@@ -4027,77 +4773,6 @@ runSTEGO <- function(){
       sink(type = "output")
       cat(readLines(FN), sep="\n")
     })
-    output$scGATE_verbatum_cellTypist_higher <- renderPrint({
-      FN <- tempfile()
-      zz <- file(FN, open = "wt")
-      sink(zz ,type = "output")
-      sink(zz, type = "message")
-      if (input$cellTypist_higher_scGATE==T) {
-        scGATE_anno_cellTypist_higher()}
-      else{
-        print("cellTypist_higher not run")
-      }
-      sink(type = "message")
-      sink(type = "output")
-      cat(readLines(FN), sep="\n")
-    })
-    output$scGATE_verbatum_cellTypist_lower_Bcells <- renderPrint({
-      FN <- tempfile()
-      zz <- file(FN, open = "wt")
-      sink(zz ,type = "output")
-      sink(zz, type = "message")
-      if (input$cellTypist_lowerBcells_scGATE==T) {
-        scGATE_anno_cellTypist_lowerBcells()}
-      else{
-        print("cellTypist lower Bcells not run")
-      }
-      sink(type = "message")
-      sink(type = "output")
-      cat(readLines(FN), sep="\n")
-    })
-    output$scGATE_verbatum_cellTypist_lower_CD4T <- renderPrint({
-      FN <- tempfile()
-      zz <- file(FN, open = "wt")
-      sink(zz ,type = "output")
-      sink(zz, type = "message")
-      if (input$cellTypist_lowerCD4T_scGATE==T) {
-        scGATE_anno_cellTypist_lowerCD4T()}
-      else{
-        print("cellTypist lower CD4 T cells not run")
-      }
-      sink(type = "message")
-      sink(type = "output")
-      cat(readLines(FN), sep="\n")
-    })
-    output$scGATE_verbatum_cellTypist_lower_CD8T <- renderPrint({
-      FN <- tempfile()
-      zz <- file(FN, open = "wt")
-      sink(zz ,type = "output")
-      sink(zz, type = "message")
-      if (input$cellTypist_lowerCD8T_scGATE==T) {
-        scGATE_anno_cellTypist_lowerCD8T()}
-      else{
-        print("cellTypist lower CD8 T cells not run")
-      }
-      sink(type = "message")
-      sink(type = "output")
-      cat(readLines(FN), sep="\n")
-    })
-    output$scGATE_verbatum_cellTypist_lower_OtherT <- renderPrint({
-      FN <- tempfile()
-      zz <- file(FN, open = "wt")
-      sink(zz ,type = "output")
-      sink(zz, type = "message")
-      if (input$cellTypist_lowerOtherT_scGATE==T) {
-        scGATE_anno_cellTypist_lowerOtherT()}
-      else{
-        print("cellTypist lower Other T cells not run")
-      }
-      sink(type = "message")
-      sink(type = "output")
-      cat(readLines(FN), sep="\n")
-    })
-
     output$scGATE_verbatum_GeneralMarkers <- renderPrint({
       FN <- tempfile()
       zz <- file(FN, open = "wt")
@@ -4133,7 +4808,7 @@ runSTEGO <- function(){
       zz <- file(FN, open = "wt")
       sink(zz ,type = "output")
       sink(zz, type = "message")
-      if (input$Ex.Sen_scGATE==T) {
+      if (input$Ex.Sen_scGATE==T ) {
         scGATE_anno_Ex.Sen()
       }
       else{
@@ -4218,7 +4893,21 @@ runSTEGO <- function(){
       sink(type = "output")
       cat(readLines(FN), sep="\n")
     })
-
+    output$scGATE_verbatum_BDrhapsody_scGATE <- renderPrint({
+      FN <- tempfile()
+      zz <- file(FN, open = "wt")
+      sink(zz ,type = "output")
+      sink(zz, type = "message")
+      if (input$BDrhapsody_scGATE==T) {
+        scGATE_anno_BD_rhapsody()
+      }
+      else{
+        print("BD Rhapsody (homo Sapian) not run")
+      }
+      sink(type = "message")
+      sink(type = "output")
+      cat(readLines(FN), sep="\n")
+    })
 
     scGATE_anno <- reactive({
       sc <- getData_2()
@@ -4226,23 +4915,36 @@ runSTEGO <- function(){
         need(nrow(sc)>0,
              "Upload file for annotation")
       )
-      df <- cbind(scGATE_anno_generic(),
-                  scGATE_anno_CD4(),
-                  scGATE_anno_CD8(),
-                  scGATE_anno_GeneralMarkers(),
-                  scGATE_anno_Function(),
-                  scGATE_anno_Ex.Sen(),
-                  scGATE_anno_COVID(),
-                  scGATE_anno_Activation(),
-                  scGATE_anno_IFNgTNFa(),
-                  scGATE_anno_GNLY.PFR1.GZMB(),
-                  scGATE_anno_Interlukin()
-      )
+      if (input$Data_types=="10x_HS") {
+        df <- cbind(scGATE_anno_generic(),
+                    scGATE_anno_CD4(),
+                    scGATE_anno_CD8(),
+                    scGATE_anno_GeneralMarkers(),
+                    scGATE_anno_Function(),
+                    scGATE_anno_Ex.Sen(),
+                    scGATE_anno_COVID(),
+                    scGATE_anno_Activation(),
+                    scGATE_anno_IFNgTNFa(),
+                    scGATE_anno_GNLY.PFR1.GZMB(),
+                    scGATE_anno_Interlukin()
+        )
 
-      rownames(df) <- df$Cell_Index
-      df <- df[,!grepl("Cell_Index",names(df))]
-      df$Cell_Index <- rownames(df)
-      as.data.frame(df)
+        rownames(df) <- df$Cell_Index
+        df <- df[,!grepl("Cell_Index",names(df))]
+        df$Cell_Index <- rownames(df)
+        as.data.frame(df)
+      }
+
+      else if (input$Data_types=="BD_Rhapsody_HS") {
+        sc <- scGATE_anno_BD_rhapsody()
+        df <- sc@meta.data
+        as.data.frame(df)
+      }
+
+      else {
+        as.data.frame("Need to add Mouse annotations")
+      }
+
     })
 
     output$DEx_table_TcellClass_scGATE <-  DT::renderDataTable(escape = FALSE, filter = list(position = 'top', clear = FALSE), options = list(autoWidth = FALSE, lengthMenu = c(2,5,10,20,50,100), pageLength = 5, scrollX = TRUE),{
@@ -4269,21 +4971,36 @@ runSTEGO <- function(){
       md <- sc@meta.data
       md.anno <- merge(md,annotation,by = "Cell_Index", sort=F,all=T)
       sc@meta.data <- md.anno
-      sc
+
     })
 
     output$DEx_table_TcellClass_scGATE.kmeans <-  DT::renderDataTable(escape = FALSE, filter = list(position = 'top', clear = FALSE),
                                                                       options = list(autoWidth = FALSE, lengthMenu = c(2,5,10,20,50,100),
                                                                                      pageLength = 5, scrollX = TRUE),{
+
                                                                                        sc <- getData_2()
                                                                                        validate(
                                                                                          need(nrow(sc)>0,
-                                                                                              "Add in Annotation to meta-data table")
+                                                                                              "Upload file for annotation")
                                                                                        )
-                                                                                       # sc <- final_anno()
-                                                                                       # sc@meta.data
-                                                                                       sc <- final_anno()
-                                                                                       sc@meta.data
+                                                                                       if (input$Data_types=="10x_HS") {
+
+                                                                                         sc <- final_anno()
+                                                                                         sc@meta.data
+                                                                                       }
+
+                                                                                       else if (input$Data_types=="BD_Rhapsody_HS") {
+                                                                                         sc <- scGATE_anno_BD_rhapsody()
+                                                                                         df <- sc@meta.data
+                                                                                         as.data.frame(df)
+                                                                                       }
+
+                                                                                       else {
+                                                                                         as.data.frame("Need to add Mouse annotations")
+                                                                                       }
+
+
+
                                                                                      })
 
     output$downloaddf_SeruatObj_annotated <- downloadHandler(
@@ -4291,7 +5008,22 @@ runSTEGO <- function(){
         paste(input$project_name3,"_annotated_",gsub("-", ".", Sys.Date()),".h5Seurat", sep = "")
       },
       content = function(file){
-        as.h5Seurat(final_anno(),file)
+        if (input$Data_types=="10x_HS") {
+          as.h5Seurat(final_anno(),file)
+        }
+
+        else if (input$Data_types=="BD_Rhapsody_HS") {
+          as.h5Seurat(scGATE_anno_BD_rhapsody(),file)
+
+
+        }
+
+        else {
+          as.data.frame("Need to add Mouse annotations")
+        }
+
+
+
       } )
 
     #
@@ -6205,9 +6937,11 @@ runSTEGO <- function(){
       df3.meta3 <-  as.data.frame(table(top_BD_cluster$Selected_group,top_BD_cluster$Selected_function))
       total.condition <- as.data.frame(ddply(df3.meta3,"Var1",numcolwise(sum)))
       emtpy <- matrix(nrow =dim(df3.meta3)[1],ncol=dim(total.condition)[1])
-      for (i in 1:dim(df3.meta3)[1]) {
-        emtpy[i,] <- ifelse(df3.meta3$Var1[i]==total.condition$Var1[1:dim(total.condition)[1]],
-                            total.condition[total.condition$Var1==total.condition$Var1[1:dim(total.condition)[1]],2],F)
+
+      for (j in 1:dim(total.condition)[1]){
+        for (i in 1:dim(df3.meta3)[1]){
+          emtpy[i,j] <- ifelse(df3.meta3$Var1[i]==total.condition$Var1[j],total.condition$Freq[j],F)
+        }
       }
 
       df3.meta3$n <- df3.meta3$Freq/rowSums(emtpy)
@@ -8545,8 +9279,4 @@ runSTEGO <- function(){
     ### end -----
   }
   shinyApp(ui, server)
-
-
-
-
 }
