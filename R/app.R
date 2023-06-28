@@ -15,8 +15,6 @@ runSTEGO <- function(){
   # source(system.file("Global","global.R",package = "STEGO.R"))
   options(shiny.maxRequestSize = 100000*1024^2)
   # UI page -----
-  options(shiny.maxRequestSize = 100000*1024^2)
-  # UI page -----
   ui <- fluidPage(
     theme=bs_theme(version = 5, bootswatch = "default"),
     navbarPage(title = "STEGO_R",
@@ -690,7 +688,7 @@ runSTEGO <- function(){
                         sidebarLayout(
                           sidebarPanel(id = "tPanel4",style = "overflow-y:scroll; max-height: 1000px; position:relative;", width=3,
 
-                                       selectInput("STEGO_R_pro","QC processed",choices = c("STEGO_R (.h5Seurat)")), #,"Seurat (.rds)"
+                                       # selectInput("STEGO_R_pro","QC processed",choices = c("STEGO_R (.h5Seurat)")), #,"Seurat (.rds)"
                                        textInput("name.file_clust","Name added to files",value = ""),
                                        conditionalPanel(condition="input.check_up_files== 'up'",
 
@@ -705,9 +703,9 @@ runSTEGO <- function(){
                                                                   accept=c('tsv','.tsv')),
 
                                        ),
-                                       conditionalPanel(condition="input.STEGO_R_pro == 'STEGO_R (.h5Seurat)'",
-                                                        selectInput("datasource", "Data source",choices=c("10x Genomics","BD Rhapsody")),
-                                       ),
+                                       # conditionalPanel(condition="input.STEGO_R_pro == 'STEGO_R (.h5Seurat)'",
+                                       selectInput("datasource", "Data source",choices=c("10x Genomics","BD Rhapsody")),
+                                       # ),
 
 
 
@@ -734,9 +732,10 @@ runSTEGO <- function(){
                                        ),
                                        fluidRow(column(6,selectInput("Samp_col","Sample column name",choices = "")),
                                                 column(6,selectInput("Split_by_group","Include group comparison",choices=c("no","yes"))),
-                                                column(6,conditionalPanel(condition="input.STEGO_R_pro == 'STEGO_R (.h5Seurat)'",
-                                                                          selectInput("V_gene_sc","V gene with/without CDR3",choices = "")))
+                                                # column(6,conditionalPanel(condition="input.STEGO_R_pro == 'STEGO_R (.h5Seurat)'",
+                                                selectInput("V_gene_sc","V gene with/without CDR3",choices = "")
                                        ),
+                                       # ),
 
 
 
@@ -791,6 +790,12 @@ runSTEGO <- function(){
 
                                                                       ),
                                                              ),
+                                                             tabPanel("Table",
+                                                                      div(DT::dataTableOutput("Tb_TCR_clonotypes.table"))
+
+
+                                                             ),
+
                                                              tabPanel("Clonal expansion plots",value = 2,
                                                                       add_busy_spinner(spin = "fading-circle"),
 
@@ -849,14 +854,6 @@ runSTEGO <- function(){
                                                                                        ),
 
                                                                       ),
-
-                                                                      # if (input$filter_umap_expand = T) {
-                                                                      #   UMAP.wt.clonality <- subset(UMAP.wt.clonality$UMAP_1 < input$UMAP_1x & UMAP.wt.clonality$UMAP_1 > input$UMAP_1y)
-                                                                      #   UMAP.wt.clonality <- subset(UMAP.wt.clonality$UMAP_2 < input$UMAP_2x & UMAP.wt.clonality$UMAP_2 > input$UMAP_2y)
-                                                                      #
-                                                                      # }
-
-                                                                      # column(4,selectInput("Split_by_group","Include group comparison",choices=c("no","yes"))),
                                                                       conditionalPanel(condition="input.Graph_type_bar=='Number_expanded' || input.Graph_type_bar=='Clonality'",
                                                                                        fluidRow(
                                                                                          column(3,
@@ -4129,7 +4126,7 @@ runSTEGO <- function(){
       sc <- Vals_norm2$Norm1
       validate(
         need(nrow(sc)>0,
-             "Run Harmony")
+             "Run PCA")
       )
       sc
     })
@@ -5034,13 +5031,13 @@ runSTEGO <- function(){
       if (is.null(inFile_sc_pro)) return(NULL)
       else {
 
-        if (input$STEGO_R_pro=="STEGO_R (.h5Seurat)") {
-          dataframe = LoadH5Seurat(inFile_sc_pro$datapath)
-        }
-
-        else {
-          sc <- readRDS(inFile_sc_pro$datapath)
-        }
+        # if (input$STEGO_R_pro=="STEGO_R (.h5Seurat)") {
+        dataframe = LoadH5Seurat(inFile_sc_pro$datapath)
+        # }
+        #
+        # else {
+        #   sc <- readRDS(inFile_sc_pro$datapath)
+        # }
 
       }
 
@@ -5114,7 +5111,7 @@ runSTEGO <- function(){
       df3.meta <- sc@meta.data
 
 
-      if (input$datasource == "BD rhapsody" & input$STEGO_R_pro== "STEGO_R (.h5Seurat)") {
+      if (input$datasource == "BD rhapsody") {
         updateSelectInput(
           session,
           "V_gene_sc",
@@ -5122,28 +5119,28 @@ runSTEGO <- function(){
           selected = "v_gene_cdr3_AB_GD")
       }
 
-      else if (input$datasource == "10x Genomics" & input$STEGO_R_pro== "STEGO_R (.h5Seurat)") {
-        updateSelectInput(
-          session,
-          "V_gene_sc",
-          choices=names(df3.meta),
-          selected = "vdj_gene_cdr3_AG_BD")
-      }
+      # else if (input$datasource == "10x Genomics") {
+      #   updateSelectInput(
+      #     session,
+      #     "V_gene_sc",
+      #     choices=names(df3.meta),
+      #     selected = "vdj_gene_cdr3_AG_BD")
+      # }
 
-      else if (input$STEGO_R_pro== "Seurat (.rds)") {
-        updateSelectInput(
-          session,
-          "V_gene_sc",
-          choices=names(df3.meta),
-          selected = "Av_gene")
-      }
+      # else if (input$STEGO_R_pro== "Seurat (.rds)") {
+      #   updateSelectInput(
+      #     session,
+      #     "V_gene_sc",
+      #     choices=names(df3.meta),
+      #     selected = "Av_gene")
+      # }
 
       else {
         updateSelectInput(
           session,
           "V_gene_sc",
           choices=names(df3.meta),
-          selected = "vdj_gene_cdr3_AB_GD")
+          selected = "vdj_gene_cdr3_AG_BD")
       }
 
 
@@ -5190,26 +5187,26 @@ runSTEGO <- function(){
 
       df3.meta <- as.data.frame(sc@meta.data)
 
-      if (input$STEGO_R_pro== "Seurat (.rds)") {
-        df3.meta$Cell_Index <- rownames(df3.meta)
-        df3.meta$v_gene_AG <- df3.meta[,names(df3.meta) %in% input$RDS_V_gene_A]
-        df3.meta$v_gene_BD <- df3.meta[,names(df3.meta) %in% input$RDS_V_gene_B]
-        df3.meta$cdr3_AG <- df3.meta[,names(df3.meta) %in% input$RDS_cdr3_A]
-        df3.meta$cdr3_BD <- df3.meta[,names(df3.meta) %in% input$RDS_cdr3_B]
-        df3.meta$v_gene_cdr3_BD <- paste(df3.meta$v_gene_BD,df3.meta$cdr3_BD,sep="_")
-        df3.meta$v_gene_cdr3_AG<- paste(df3.meta$v_gene_AG,df3.meta$cdr3_AG,sep="_")
-        df3.meta$v_gene_cdr3_AG_BD <- paste(df3.meta$v_gene_cdr3_AG,df3.meta$v_gene_cdr3_BD,sep=" & ")
-
-        df3.meta2 <- df3.meta[names(df3.meta) %in% c(input$Samp_col,"v_gene_cdr3_AG_BD")]
-        names(df3.meta2)[names(df3.meta2) %in% input$Samp_col] <- "ID_Column"
-        names(df3.meta2)[names(df3.meta2) %in% "v_gene_cdr3_AG_BD"] <- "v_gene_selected"
-        df3.meta2
-      }
-      else {
-        df3.meta2 <- df3.meta[names(df3.meta) %in% c(input$Samp_col,input$V_gene_sc)]
-        names(df3.meta2)[names(df3.meta2) %in% input$Samp_col] <- "ID_Column"
-        names(df3.meta2)[names(df3.meta2) %in% input$V_gene_sc] <- "v_gene_selected"
-      }
+      # if (input$STEGO_R_pro== "Seurat (.rds)") {
+      #   df3.meta$Cell_Index <- rownames(df3.meta)
+      #   df3.meta$v_gene_AG <- df3.meta[,names(df3.meta) %in% input$RDS_V_gene_A]
+      #   df3.meta$v_gene_BD <- df3.meta[,names(df3.meta) %in% input$RDS_V_gene_B]
+      #   df3.meta$cdr3_AG <- df3.meta[,names(df3.meta) %in% input$RDS_cdr3_A]
+      #   df3.meta$cdr3_BD <- df3.meta[,names(df3.meta) %in% input$RDS_cdr3_B]
+      #   df3.meta$v_gene_cdr3_BD <- paste(df3.meta$v_gene_BD,df3.meta$cdr3_BD,sep="_")
+      #   df3.meta$v_gene_cdr3_AG<- paste(df3.meta$v_gene_AG,df3.meta$cdr3_AG,sep="_")
+      #   df3.meta$v_gene_cdr3_AG_BD <- paste(df3.meta$v_gene_cdr3_AG,df3.meta$v_gene_cdr3_BD,sep=" & ")
+      #
+      #   df3.meta2 <- df3.meta[names(df3.meta) %in% c(input$Samp_col,"v_gene_cdr3_AG_BD")]
+      #   names(df3.meta2)[names(df3.meta2) %in% input$Samp_col] <- "ID_Column"
+      #   names(df3.meta2)[names(df3.meta2) %in% "v_gene_cdr3_AG_BD"] <- "v_gene_selected"
+      #   df3.meta2
+      # }
+      # else {
+      df3.meta2 <- df3.meta[names(df3.meta) %in% c(input$Samp_col,input$V_gene_sc)]
+      names(df3.meta2)[names(df3.meta2) %in% input$Samp_col] <- "ID_Column"
+      names(df3.meta2)[names(df3.meta2) %in% input$V_gene_sc] <- "v_gene_selected"
+      # }
       df3.meta2
       df3.meta3 <- subset(df3.meta2,df3.meta2$v_gene_selected!="_._")
       df3.meta3 <- subset(df3.meta3,df3.meta3$v_gene_selected!="NA_NA & NA_NA")
@@ -5255,6 +5252,40 @@ runSTEGO <- function(){
           TRUE ~ "6. Hyperexpanded (>500)"))
       df4
     })
+    output$Tb_TCR_clonotypes.table <- DT::renderDataTable(escape = FALSE, options = list(autoWidth = FALSE, lengthMenu = c(2,5,10,20,50,100), pageLength = 10, scrollX = TRUE),{
+      sc <- input.data_sc_pro()
+      validate(
+        need(nrow(sc)>0,
+             error_message_val_UMAP)
+      )
+      reduction <- (sc@reductions$umap)
+      UMAP <- as.data.frame(reduction@cell.embeddings)
+      UMAP$Cell_Index <- rownames(UMAP)
+      meta.data <- as.data.frame(sc@meta.data)
+      # if(input$STEGO_R_pro == "STEGO_R (.h5Seurat)") {
+      meta.data <- meta.data
+      umap.meta <- merge(UMAP,meta.data,by="Cell_Index")
+      names(umap.meta)[names(umap.meta) %in% input$Samp_col] <- "ID_Column"
+      names(umap.meta)[names(umap.meta) %in% input$V_gene_sc] <- "v_gene_selected"
+      # }
+      # else {
+      #   meta.data$Cell_Index <- rownames(meta.data)
+      #   meta.data$v_gene_AG <- meta.data[,names(meta.data) %in% input$RDS_V_gene_A]
+      #   meta.data$v_gene_BD <- meta.data[,names(meta.data) %in% input$RDS_V_gene_B]
+      #   meta.data$cdr3_AG <- meta.data[,names(meta.data) %in% input$RDS_cdr3_A]
+      #   meta.data$cdr3_BD <- meta.data[,names(meta.data) %in% input$RDS_cdr3_B]
+      #   meta.data$v_gene_cdr3_BD <- paste(meta.data$v_gene_BD,meta.data$cdr3_BD,sep="_")
+      #   meta.data$v_gene_cdr3_AG<- paste(meta.data$v_gene_AG,meta.data$cdr3_AG,sep="_")
+      #   meta.data$v_gene_cdr3_AG_BD <- paste(meta.data$v_gene_cdr3_AG,meta.data$v_gene_cdr3_BD,sep=" & ")
+      #   umap.meta <- merge(UMAP,meta.data,by="Cell_Index")
+      #   names(umap.meta)[names(umap.meta) %in% input$Samp_col] <- "ID_Column"
+      #   names(umap.meta)[names(umap.meta) %in% "v_gene_cdr3_AG_BD"] <- "v_gene_selected"
+      # }
+
+      FILE_MERGED <- merge(umap.meta,TCR_Expansion(),by=c("v_gene_selected","ID_Column"),all.x=T)
+      FILE_MERGED$ID_Column[FILE_MERGED$v_gene_selected == "NA"] <- "unknown"
+      subset(FILE_MERGED,FILE_MERGED$v_gene_selected != "unknown")
+    })
 
     ## Umap -----
     create_UMAP2 <- reactive({
@@ -5267,25 +5298,11 @@ runSTEGO <- function(){
       UMAP <- as.data.frame(reduction@cell.embeddings)
       UMAP$Cell_Index <- rownames(UMAP)
       meta.data <- as.data.frame(sc@meta.data)
-      if(input$STEGO_R_pro == "STEGO_R (.h5Seurat)") {
-        meta.data <- meta.data
-        umap.meta <- merge(UMAP,meta.data,by="Cell_Index")
-        names(umap.meta)[names(umap.meta) %in% input$Samp_col] <- "ID_Column"
-        names(umap.meta)[names(umap.meta) %in% input$V_gene_sc] <- "v_gene_selected"
-      }
-      else {
-        meta.data$Cell_Index <- rownames(meta.data)
-        meta.data$v_gene_AG <- meta.data[,names(meta.data) %in% input$RDS_V_gene_A]
-        meta.data$v_gene_BD <- meta.data[,names(meta.data) %in% input$RDS_V_gene_B]
-        meta.data$cdr3_AG <- meta.data[,names(meta.data) %in% input$RDS_cdr3_A]
-        meta.data$cdr3_BD <- meta.data[,names(meta.data) %in% input$RDS_cdr3_B]
-        meta.data$v_gene_cdr3_BD <- paste(meta.data$v_gene_BD,meta.data$cdr3_BD,sep="_")
-        meta.data$v_gene_cdr3_AG<- paste(meta.data$v_gene_AG,meta.data$cdr3_AG,sep="_")
-        meta.data$v_gene_cdr3_AG_BD <- paste(meta.data$v_gene_cdr3_AG,meta.data$v_gene_cdr3_BD,sep=" & ")
-        umap.meta <- merge(UMAP,meta.data,by="Cell_Index")
-        names(umap.meta)[names(umap.meta) %in% input$Samp_col] <- "ID_Column"
-        names(umap.meta)[names(umap.meta) %in% "v_gene_cdr3_AG_BD"] <- "v_gene_selected"
-      }
+      meta.data <- meta.data
+      umap.meta <- merge(UMAP,meta.data,by="Cell_Index")
+      names(umap.meta)[names(umap.meta) %in% input$Samp_col] <- "ID_Column"
+      names(umap.meta)[names(umap.meta) %in% input$V_gene_sc] <- "v_gene_selected"
+
 
       sc <- merge(umap.meta,TCR_Expansion(),by=c("v_gene_selected","ID_Column"),all.x=T)
       ggplot(sc,aes(x=UMAP_1,UMAP_2,colour=seurat_clusters))+
@@ -5331,14 +5348,7 @@ runSTEGO <- function(){
         dev.off()},   contentType = "application/png" # MIME type of the image
     )
 
-    output$Tb_TCR_clonotypes.table <- DT::renderDataTable(escape = FALSE, options = list(autoWidth = FALSE, lengthMenu = c(2,5,10,20,50,100), pageLength = 10, scrollX = TRUE),{
-      UMAP.wt.clonality <- UMAP.TCRclonalit()
 
-      UMAP.wt.clonality <- subset(UMAP.wt.clonality)
-      num <- as.data.frame(unique(UMAP.wt.clonality$TYPE.clonality))
-      num <- as.data.frame(num[complete.cases(num)==T,])
-      num
-    })
 
     # clonotypes Plot -----
 
@@ -5612,7 +5622,7 @@ runSTEGO <- function(){
     output$downloadPlot_clonaity.bar.graph <- downloadHandler(
       filename = function() {
         x <- gsub(":", ".", Sys.time())
-        paste("TCR_Explore_motif_",gsub("/", "-", x), ".pdf", sep = "")
+        paste("Clonal_expansion_",gsub("/", "-", x), ".pdf", sep = "")
       },
       content = function(file) {
         pdf(file, width=input$width_clonality.bar.graph,height=input$height_clonality.bar.graph, onefile = FALSE) # open the pdf device
@@ -5630,7 +5640,7 @@ runSTEGO <- function(){
     output$downloadPlotPNG_clonaity.bar.graph <- downloadHandler(
       filename = function() {
         x <- gsub(":", ".", Sys.time())
-        paste("TCR_Explore_motif_", gsub("/", "-", x), ".png", sep = "")
+        paste("Clonal_expansion_", gsub("/", "-", x), ".png", sep = "")
       },
       content = function(file) {
         png(file, width = input$width_png_clonality.bar.graph,
@@ -5774,50 +5784,50 @@ runSTEGO <- function(){
       UMAP <- as.data.frame(reduction@cell.embeddings)
       UMAP$Cell_Index <- rownames(UMAP)
       meta.data <- as.data.frame(sc@meta.data)
-      if(input$STEGO_R_pro == "STEGO_R (.h5Seurat)") {
-        meta.data <- meta.data
-        umap.meta <- merge(UMAP,meta.data,by="Cell_Index")
-        head(umap.meta)
+      # if(input$STEGO_R_pro == "STEGO_R (.h5Seurat)") {
+      meta.data <- meta.data
+      umap.meta <- merge(UMAP,meta.data,by="Cell_Index")
+      head(umap.meta)
 
-        names(umap.meta)[names(umap.meta) %in% input$Samp_col] <- "ID_Column"
-        names(umap.meta)[names(umap.meta) %in% input$V_gene_sc] <- "v_gene_selected"
-        UMAP.wt.clonality <- merge(umap.meta,TCR_Expansion(),by=c("v_gene_selected","ID_Column"),all.x=T)
-        UMAP.wt.clonality$Chain <- ifelse(grepl("_._", UMAP.wt.clonality$v_gene_selected),NA,
-                                          ifelse(UMAP.wt.clonality$v_gene_selected=="_",NA,
-                                                 ifelse(UMAP.wt.clonality$v_gene_selected=="",NA,
-                                                        ifelse(UMAP.wt.clonality$v_gene_selected==" & ",NA,
-                                                               ifelse(grepl("TRBV",UMAP.wt.clonality$v_gene_selected) |
-                                                                        grepl("TRAV",UMAP.wt.clonality$v_gene_selected),"abTCR",
-                                                                      ifelse(grepl("TRGV",UMAP.wt.clonality$v_gene_selected) |
-                                                                               grepl("TRDV",UMAP.wt.clonality$v_gene_selected),"gdTCR","Other"))))))
+      names(umap.meta)[names(umap.meta) %in% input$Samp_col] <- "ID_Column"
+      names(umap.meta)[names(umap.meta) %in% input$V_gene_sc] <- "v_gene_selected"
+      UMAP.wt.clonality <- merge(umap.meta,TCR_Expansion(),by=c("v_gene_selected","ID_Column"),all.x=T)
+      UMAP.wt.clonality$Chain <- ifelse(grepl("_._", UMAP.wt.clonality$v_gene_selected),NA,
+                                        ifelse(UMAP.wt.clonality$v_gene_selected=="_",NA,
+                                               ifelse(UMAP.wt.clonality$v_gene_selected=="",NA,
+                                                      ifelse(UMAP.wt.clonality$v_gene_selected==" & ",NA,
+                                                             ifelse(grepl("TRBV",UMAP.wt.clonality$v_gene_selected) |
+                                                                      grepl("TRAV",UMAP.wt.clonality$v_gene_selected),"abTCR",
+                                                                    ifelse(grepl("TRGV",UMAP.wt.clonality$v_gene_selected) |
+                                                                             grepl("TRDV",UMAP.wt.clonality$v_gene_selected),"gdTCR","Other"))))))
 
-      }
-      else {
-        meta.data$Cell_Index <- rownames(meta.data)
-        meta.data$v_gene_AG <- meta.data[,names(meta.data) %in% input$RDS_V_gene_A]
-        meta.data$v_gene_BD <- meta.data[,names(meta.data) %in% input$RDS_V_gene_B]
-        meta.data$cdr3_AG <- meta.data[,names(meta.data) %in% input$RDS_cdr3_A]
-        meta.data$cdr3_BD <- meta.data[,names(meta.data) %in% input$RDS_cdr3_B]
-        meta.data$v_gene_cdr3_BD <- paste(meta.data$v_gene_BD,meta.data$cdr3_BD,sep="_")
-        meta.data$v_gene_cdr3_AG<- paste(meta.data$v_gene_AG,meta.data$cdr3_AG,sep="_")
-        meta.data$v_gene_cdr3_AG_BD <- paste(meta.data$v_gene_cdr3_AG,meta.data$v_gene_cdr3_BD,sep=" & ")
-        umap.meta <- merge(UMAP,meta.data,by="Cell_Index")
-        head(umap.meta)
-
-        names(umap.meta)[names(umap.meta) %in% input$Samp_col] <- "ID_Column"
-        names(umap.meta)[names(umap.meta) %in% "v_gene_cdr3_AG_BD"] <- "v_gene_selected"
-
-        UMAP.wt.clonality <- merge(umap.meta,TCR_Expansion(),by=c("v_gene_selected","ID_Column"),all.x=T)
-        UMAP.wt.clonality$Chain <- ifelse(grepl("_._", UMAP.wt.clonality$v_gene_selected),NA,
-                                          ifelse(UMAP.wt.clonality$v_gene_selected=="_",NA,
-                                                 ifelse(UMAP.wt.clonality$v_gene_selected=="",NA,
-                                                        ifelse(UMAP.wt.clonality$v_gene_selected==" & ",NA,
-                                                               ifelse(grepl("TRBV",UMAP.wt.clonality$v_gene_selected) |
-                                                                        grepl("TRAV",UMAP.wt.clonality$v_gene_selected),"abTCR",
-                                                                      ifelse(grepl("TRGV",UMAP.wt.clonality$v_gene_selected) |
-                                                                               grepl("TRDV",UMAP.wt.clonality$v_gene_selected),"gdTCR","Other"))))))
-
-      }
+      # }
+      # else {
+      #   meta.data$Cell_Index <- rownames(meta.data)
+      #   meta.data$v_gene_AG <- meta.data[,names(meta.data) %in% input$RDS_V_gene_A]
+      #   meta.data$v_gene_BD <- meta.data[,names(meta.data) %in% input$RDS_V_gene_B]
+      #   meta.data$cdr3_AG <- meta.data[,names(meta.data) %in% input$RDS_cdr3_A]
+      #   meta.data$cdr3_BD <- meta.data[,names(meta.data) %in% input$RDS_cdr3_B]
+      #   meta.data$v_gene_cdr3_BD <- paste(meta.data$v_gene_BD,meta.data$cdr3_BD,sep="_")
+      #   meta.data$v_gene_cdr3_AG<- paste(meta.data$v_gene_AG,meta.data$cdr3_AG,sep="_")
+      #   meta.data$v_gene_cdr3_AG_BD <- paste(meta.data$v_gene_cdr3_AG,meta.data$v_gene_cdr3_BD,sep=" & ")
+      #   umap.meta <- merge(UMAP,meta.data,by="Cell_Index")
+      #   head(umap.meta)
+      #
+      #   names(umap.meta)[names(umap.meta) %in% input$Samp_col] <- "ID_Column"
+      #   names(umap.meta)[names(umap.meta) %in% "v_gene_cdr3_AG_BD"] <- "v_gene_selected"
+      #
+      #   UMAP.wt.clonality <- merge(umap.meta,TCR_Expansion(),by=c("v_gene_selected","ID_Column"),all.x=T)
+      #   UMAP.wt.clonality$Chain <- ifelse(grepl("_._", UMAP.wt.clonality$v_gene_selected),NA,
+      #                                     ifelse(UMAP.wt.clonality$v_gene_selected=="_",NA,
+      #                                            ifelse(UMAP.wt.clonality$v_gene_selected=="",NA,
+      #                                                   ifelse(UMAP.wt.clonality$v_gene_selected==" & ",NA,
+      #                                                          ifelse(grepl("TRBV",UMAP.wt.clonality$v_gene_selected) |
+      #                                                                   grepl("TRAV",UMAP.wt.clonality$v_gene_selected),"abTCR",
+      #                                                                 ifelse(grepl("TRGV",UMAP.wt.clonality$v_gene_selected) |
+      #                                                                          grepl("TRDV",UMAP.wt.clonality$v_gene_selected),"gdTCR","Other"))))))
+      #
+      # }
       # umap.meta <- merge(UMAP,meta.data,by="Cell_Index")
       # head(umap.meta)
       # names(umap.meta)[names(umap.meta) %in% input$Samp_col] <- "ID_Column"
@@ -6612,12 +6622,12 @@ runSTEGO <- function(){
       UMAP <- as.data.frame(reduction@cell.embeddings)
       UMAP$Cell_Index <- rownames(UMAP)
       meta.data <- as.data.frame(sc@meta.data)
-      if(input$STEGO_R_pro == "STEGO_R (.h5Seurat)") {
-        meta.data <- meta.data
-      }
-      else {
-        meta.data$Cell_Index <- rownames(meta.data)
-      }
+      # if(input$STEGO_R_pro == "STEGO_R (.h5Seurat)") {
+      meta.data <- meta.data
+      # }
+      # else {
+      #   meta.data$Cell_Index <- rownames(meta.data)
+      # }
 
       meta.data$Motif_gene <- meta.data[,names(meta.data) %in% input$V_gene_sc]
 
@@ -7197,7 +7207,9 @@ runSTEGO <- function(){
         choices=names(BD_sum),
         selected = "Motif_gene")
     })
-    output$Top_clonotype_df<- DT::renderDataTable({
+
+    output$Top_clonotype_df <- DT::renderDataTable(escape = FALSE, options = list(autoWidth = FALSE, lengthMenu = c(2,5,10,20,50,100), pageLength =10, scrollX = TRUE),{
+
       Top_clonotype_df2()
 
       df3.meta <- Add.UMAP.reduction()
@@ -7205,15 +7217,8 @@ runSTEGO <- function(){
       df3.meta$cluster_name <- df3.meta[,names(df3.meta) %in% input$Gene_V_top]
       top_BD_clonotype <- df3.meta[df3.meta$cluster_name %in% input$Selected_clonotype,]
       top_BD_clonotype
-      datatable(top_BD_clonotype, extensions = "Buttons", options = list(searching = TRUE,
-                                                                         ordering = TRUE,
-                                                                         buttons = c('copy','csv', 'excel'),
-                                                                         dom = 'Bfrtip',
-                                                                         pageLength=10,
-                                                                         lengthMenu=c(2,5,10,20,50,100),
-                                                                         scrollX = TRUE
-      ))
-    }, server = FALSE)
+
+    })
 
     # top clonptype bar graph -----
     cols_Top_bar_clonotype <- reactive({
@@ -9279,4 +9284,6 @@ runSTEGO <- function(){
     ### end -----
   }
   shinyApp(ui, server)
+
+
 }
