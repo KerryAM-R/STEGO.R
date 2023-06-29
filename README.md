@@ -8,6 +8,18 @@
 
 The goal of STEGO.R is to …
 
+## requirements
+#### MAC:
+Install R: https://cran.r-project.org/bin/macosx/ 
+Install RStudio: [https://posit.co/download/rstudio-desktop/](https://s3.amazonaws.com/rstudio-ide-build/desktop/macos/RStudio-2022.07.2-576.dmg)
+install XQuatz: https://www.xquartz.org
+
+#### Windows:
+Install R: https://cran.r-project.org
+Install RStudio: https://posit.co/download/rstudio-desktop/
+Install Rtools https://cran.r-project.org/bin/windows/Rtools/
+
+
 ## Installation
 
 You can install the development version of STEGO.R from
