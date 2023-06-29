@@ -6,7 +6,7 @@
 <!-- badges: start -->
 <!-- badges: end -->
 
-For a complete Tutorial of Using STEGO please go to: [The goal of STEGO.R is to …](https://stego.readthedocs.io/en/latest/)
+For a complete Tutorial of Using STEGO please go to [Tutorial](https://stego.readthedocs.io/en/latest/)
 
 ## requirements
 #### MAC:
