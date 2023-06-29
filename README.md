@@ -28,8 +28,7 @@ Recommended to use a 64 bit OS with 16GB of RAM, but ideally 32GB of RAM.
 
 ## Installation
 
-You can install the development version of STEGO.R from
-[GitHub](https://github.com/KerryAM-R/STEGO.R) with:
+You can install the current version of STEGO.R with:
 
 ``` r
 install.packages("devtools")
