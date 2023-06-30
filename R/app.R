@@ -2140,7 +2140,7 @@ runSTEGO <- function(){
 
       contig_paired_only <- merge(contig_paired_only,sample_tags,by=c("Cell_Index","Sample_Name"),all = T)
       contig_paired_only <- contig_paired_only %>%
-        select(all_of(c("Cell_Index","Sample_Name","Sample_Tag","pairing","cell_type_experimental_AG","cell_type_experimental_BD","chain_AG","chain_BD",
+        select(all_of(c("Cell_Index","Sample_Name","Sample_Tag","pairing","pairing_type","Clonality","seq_identified","seq_identified_TRA","seq_identified_TRB","seq_identified_TRG","seq_identified_TRD","cell_type_experimental_AG","cell_type_experimental_BD","chain_AG","chain_BD",
                         names(contig_paired_only[grep("call",names(contig_paired_only))]))),
                everything())
       contig_paired_only
