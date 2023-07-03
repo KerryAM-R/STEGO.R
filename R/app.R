@@ -125,7 +125,7 @@ runSTEGO <- function(){
                                                   ),
                                                   conditionalPanel(condition="input.Format_bd=='cellXgene'",
                                                                    fluidRow(
-                                                                     column(6, numericInput("no_lines_skip_counts","If needed, skip first 7 lines of Count Matrix",value = 0,min=0,max=10,step=7),),
+                                                                     column(6, numericInput("no_lines_skip_counts","If needed, skip first 7 lines of Count Matrix",value = 7,min=0,max=10,step=7),),
                                                                      column(6,  fileInput('file_counts_BD', 'Counts (.csv)',
                                                                                           accept=c('text/csv', 'text/comma-separated-values,text/plain', '.csv')),),
                                                                    ),
@@ -134,7 +134,7 @@ runSTEGO <- function(){
                                                   selectInput("filtered_list","Contig Format",choices = c("Paired","Dominant","Unfiltered")),
                                                   conditionalPanel(condition="input.filtered_list=='Paired'",
                                                                    fluidRow(
-                                                                     column(6, numericInput("no_lines_skip_TCR","If needed, skip first 7 lines of VDJ Contig file",value = 0,min=0,max=10,step=7),),
+                                                                     column(6, numericInput("no_lines_skip_TCR","If needed, skip first 7 lines of VDJ Contig file",value = 7,min=0,max=10,step=7),),
                                                                      column(6,fileInput('file_TCR_BD', 'TCR file (.csv)',
                                                                                         accept=c('text/csv', 'text/comma-separated-values,text/plain', '.csv'))),),
                                                   ),
@@ -150,8 +150,22 @@ runSTEGO <- function(){
                                      ),
                                      mainPanel( #### main panel ------
                                                 shiny::tabsetPanel(
+                                                  conditionalPanel(condition="input.filtered_list=='Dominant' || input.filtered_list=='Unfiltered'",
+                                                                   column(3,selectInput("locus_column",h5("Chain (e.g. locus)"),"")),
+                                                  ),
+                                                  conditionalPanel(condition="input.filtered_list=='Paired'",
 
-                                                  selectInput("locus_column",h5("Chain (e.g. locus)"),""),
+                                                                   fluidRow(
+                                                                     column(3, selectInput("V_gene_AG_BDrhap",h6("Alpha/Gamma V gene"),""),),
+                                                                     column(3, selectInput("Junction_AG_BDrhap",h6("Alpha/Gamma junction"),""),),
+                                                                     column(3, selectInput("V_gene_BD_BDrhap",h6("Beta/Delta V gene"),"")),
+                                                                     column(3, selectInput("Junction_BD_BDrhap",h6("Beta/Delta junction"),"") )
+
+                                                                   ),
+                                                  ),
+
+
+
                                                   tabPanel("Imported data",
                                                            add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "250px",width = "250px", color = "blue"),
                                                            div(DT::dataTableOutput("test.files")),
@@ -180,6 +194,12 @@ runSTEGO <- function(){
 
                                                   ),
 
+                                                  # tabPanel("Checking Merge",
+                                                  #
+                                                  #          div(DT::dataTableOutput("Check_table")),
+                                                  #
+                                                  #          ),
+
                                                   tabPanel("clusTCR2",
                                                            tags$head(tags$style("#tb_clusTCR  {white-space: nowrap;  }")),
                                                            add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "250px",width = "250px", color = "blue"),
@@ -198,8 +218,8 @@ runSTEGO <- function(){
                                                            tags$head(tags$style("#tb_count_matrix  {white-space: nowrap;  }")),
                                                            add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "250px",width = "250px", color = "blue"),
                                                            div(DT::dataTableOutput("tb_count_matrix")),
-                                                           add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "250px",width = "250px", color = "blue"),
-                                                           div(DT::dataTableOutput("tb_clusTCR_sum")),
+                                                           # add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "250px",width = "250px", color = "blue"),
+                                                           # div(DT::dataTableOutput("tb_clusTCR_sum")),
                                                            add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "250px",width = "250px", color = "blue"),
                                                            div(DT::dataTableOutput("tb_metadata_sc")),
                                                            fluidRow(
@@ -341,13 +361,14 @@ runSTEGO <- function(){
                           mainPanel(
                             tabsetPanel(id = "clusTCR2_tabs",
                                         tabPanel("Merge Multiple Files",value = "merge",
+                                                 add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "250px",width = "250px", color = "blue"),
                                                  div(DT::dataTableOutput("DEx_multiple_ClusTCR2")),
                                                  downloadButton('downloaddf_multiple_ClusTCR2','Download table')
                                         ),
                                         tabPanel("Uploaded file",value = "processing1",
-                                                 div(DT::dataTableOutput("clust_dt2")),
+                                                 add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "250px",width = "250px", color = "blue"),
+                                                 div(DT::dataTableOutput("clust_dt2_table")),
                                         ),
-
 
 
                                         tabPanel("Outputs",value = "processing2",
@@ -1748,20 +1769,19 @@ runSTEGO <- function(){
       calls
     })
     ## combining Cell x genes ----
-    df <- function() {
+    TCR_Filtering_Paired <- function() {
 
-      calls <- input.data.calls.bd();
       TCR <- as.data.frame(input.data.TCR.BD())
-      counts <- as.data.frame(input.data.count.BD())
+      sample_tags <- input.data.calls.bd()
 
       validate(
-        need(nrow(counts)>0 & nrow(TCR)>0 & nrow(calls)>0,
-             error_message_val4)
+        need(nrow(TCR)>0 && nrow(sample_tags)>0,
+             "Upload files")
       )
 
+      calls_TCR <- merge(sample_tags,TCR, by ="Cell_Index")
+      calls_TCR_count <- calls_TCR
 
-      calls_TCR <- merge(calls,TCR, by ="Cell_Index")
-      calls_TCR_count <- merge(calls_TCR,counts, by ="Cell_Index")
       #filtering to paired TCR
       calls_TCR_count$TRAG <-ifelse(grepl("TR",calls_TCR_count$TCR_Alpha_Gamma_V_gene_Dominant),"TRAG","Missing TRAG gene")
       calls_TCR_count$TRBD <-ifelse(grepl("TR",calls_TCR_count$TCR_Beta_Delta_V_gene_Dominant),"TRBD","Missing TRBD gene")
@@ -1833,11 +1853,21 @@ runSTEGO <- function(){
     }
     ## barcode contig and features ----
     observe({
-      updateSelectInput(
-        session,
-        "locus_column",
-        choices=names(input.data.TCR.bd2()),
-        selected = "locus") }) # junction sequence
+      if (input$filtered_list == "Paired") {
+        updateSelectInput(
+          session,
+          "locus_column",
+          choices=names(input.data.TCR.BD()),
+          selected = "chain") }
+
+      else {
+        updateSelectInput(
+          session,
+          "locus_column",
+          choices=names(input.data.TCR.bd2()),
+          selected = "locus") }
+    })
+
 
     filtering_required <- reactive({
       contigs <- input.data.TCR.bd2()
@@ -2139,10 +2169,23 @@ runSTEGO <- function(){
 
 
       contig_paired_only <- merge(contig_paired_only,sample_tags,by=c("Cell_Index","Sample_Name"),all = T)
-      contig_paired_only <- contig_paired_only %>%
-        select(all_of(c("Cell_Index","Sample_Name","Sample_Tag","pairing","pairing_type","Clonality","seq_identified","seq_identified_TRA","seq_identified_TRB","seq_identified_TRG","seq_identified_TRD","cell_type_experimental_AG","cell_type_experimental_BD","chain_AG","chain_BD",
-                        names(contig_paired_only[grep("call",names(contig_paired_only))]))),
-               everything())
+
+      if (input$filtered_list == "Unfiltered") {
+        contig_paired_only <- contig_paired_only %>%
+          select(all_of(c("Cell_Index","Sample_Name","Sample_Tag","pairing","pairing_type","Clonality","seq_identified","seq_identified_TRA","seq_identified_TRB","seq_identified_TRG","seq_identified_TRD","cell_type_experimental_AG","cell_type_experimental_BD","chain_AG","chain_BD",
+                          names(contig_paired_only[grep("call",names(contig_paired_only))]))),
+                 everything())
+      }
+
+      else {
+        contig_paired_only <- contig_paired_only %>%
+          select(all_of(c("Cell_Index","Sample_Name","Sample_Tag","pairing","cell_type_experimental_AG","cell_type_experimental_BD","chain_AG","chain_BD",
+                          names(contig_paired_only[grep("call",names(contig_paired_only))]))),
+                 everything())
+
+      }
+
+
       contig_paired_only
       # merge(sample_tags,contig_paired_only,by.x="cell_id",by.y="Cell_Index",all=T)
     }
@@ -2151,12 +2194,28 @@ runSTEGO <- function(){
     ## create Sample_tags file =====
 
     samp.tags <- reactive({
-      TCR <- as.data.frame(input.data.TCR.BD())
+      if (input$filtered_list == "Paired") {
+        TCR <- as.data.frame(TCR_Filtering_Paired())
+      }
+
+      else {
+        TCR <- input.data.TCR.bd2()
+      }
+
+
       validate(
         need(nrow(TCR)>0,
              error_message_val2)
       )
-      Sample_Tags <- as.data.frame(TCR$Cell_Index)
+      if (input$filtered_list == "Paired") {
+        Sample_Tags <- as.data.frame(TCR$Cell_Index)
+
+      }
+
+      else {
+        Sample_Tags <- as.data.frame(unique(TCR$cell_id))
+      }
+
       names(Sample_Tags) <- "Cell_Index"
       Sample_Tags$Sample_Tag <- "SampleTag01"
       #
@@ -2181,15 +2240,78 @@ runSTEGO <- function(){
         write.csv(df,file, row.names = F)
       } )
 
+    ### testing table merge ------
+    observe({
+      updateSelectInput(
+        session,
+        "V_gene_AG_BDrhap",
+        choices=names(input.data.TCR.BD()),
+        selected = "TCR_Alpha_Gamma_V_gene_Dominant") }) # junction sequence
+    observe({
+      updateSelectInput(
+        session,
+        "Junction_AG_BDrhap",
+        choices=names(input.data.TCR.BD()),
+        selected = "TCR_Alpha_Gamma_CDR3_Translation_Dominant") }) # junction sequence
+    observe({
+      updateSelectInput(
+        session,
+        "V_gene_BD_BDrhap",
+        choices=names(input.data.TCR.BD()),
+        selected = "TCR_Beta_Delta_V_gene_Dominant") }) # junction sequence
+    observe({
+      updateSelectInput(
+        session,
+        "Junction_BD_BDrhap",
+        choices=names(input.data.TCR.BD()),
+        selected = "TCR_Beta_Delta_CDR3_Translation_Dominant") }) # junction sequence
+
+    output$Check_table <- DT::renderDataTable(escape = FALSE, options = list(autoWidth = FALSE, lengthMenu = c(2,5,10,20,50,100), pageLength = 10, scrollX = TRUE),{
+      df_nocouts <- TCR_Filtering_Paired()
+
+      if (nrow( df_nocouts[df_nocouts$Total_VDJ_Read_Count != 0, ]>0)) {
+        df_nocouts2 <- df_nocouts[df_nocouts$Total_VDJ_Read_Count != 0, ]
+      }
+      df_nocouts2
+
+      df_nocouts2_AG <- df_nocouts2[,names(df_nocouts2) %in% c("Sample_Name",input$V_gene_AG_BDrhap,input$Junction_AG_BDrhap)]
+      names(df_nocouts2_AG) <- c("Sample_Name","v_call","junction_aa")
+      df_nocouts2_AG
+
+      df_nocouts2_BD <- df_nocouts2[,names(df_nocouts2) %in% c("Sample_Name",input$V_gene_BD_BDrhap,input$Junction_BD_BDrhap ,"","")]
+      names(df_nocouts2_BD) <- c("Sample_Name","v_call","junction_aa")
+
+      df_nocouts3 <-as.data.frame(rbind(df_nocouts2_AG,df_nocouts2_BD))
+      df_nocouts3$v_call <- gsub("^$",NA, df_nocouts3$v_call)
+      df_nocouts3 <- df_nocouts3[complete.cases(df_nocouts3$v_call), ]
+
+      df_nocouts3$junction_aa <- gsub("^$",NA, df_nocouts3$junction_aa)
+      df_nocouts3 <- df_nocouts3[complete.cases(df_nocouts3$junction_aa), ]
+
+      if (nrow(df_nocouts3[-c(grep("[*]",df_nocouts3$junction_aa)),]>0)) {
+        df_nocouts3 <- df_nocouts3[-c(grep("[*]",df_nocouts3$junction_aa)),]
+      }
+
+
+      df_nocouts3 <- df_nocouts3[!duplicated(df_nocouts3$junction_aa), ]
+      df_nocouts3
+
+    })
+
     ## for the clusTCR ----
     df_clusTCR <- function () {
-      calls_TCR_paired.fun <- df()
-      counts <- as.data.frame(input.data.count.BD())
-      df_nocouts <- calls_TCR_paired.fun[!names(calls_TCR_paired.fun) %in% c(names(counts),"cloneCount") ]
-      df_nocouts2 <- df_nocouts[df_nocouts$Total_VDJ_Read_Count != 0, ]
-      df_nocouts2_AG <- df_nocouts2[,names(df_nocouts2) %in% c("Sample_Name","TCR_Alpha_Gamma_CDR3_Translation_Dominant","TCR_Alpha_Gamma_V_gene_Dominant")]
-      df_nocouts2_BD <- df_nocouts2[,names(df_nocouts2) %in% c("Sample_Name","TCR_Beta_Delta_CDR3_Translation_Dominant","TCR_Beta_Delta_V_gene_Dominant")]
+      df_nocouts <- TCR_Filtering_Paired()
+
+      if (nrow( df_nocouts[df_nocouts$Total_VDJ_Read_Count != 0, ]>0)) {
+        df_nocouts2 <- df_nocouts[df_nocouts$Total_VDJ_Read_Count != 0, ]
+      }
+
+      #
+      df_nocouts2_AG <- df_nocouts2[,names(df_nocouts2) %in% c("Sample_Name",input$V_gene_AG_BDrhap,input$Junction_AG_BDrhap)]
       names(df_nocouts2_AG) <- c("Sample_Name","v_call","junction_aa")
+      df_nocouts2_AG
+
+      df_nocouts2_BD <- df_nocouts2[,names(df_nocouts2) %in% c("Sample_Name",input$V_gene_BD_BDrhap,input$Junction_BD_BDrhap)]
       names(df_nocouts2_BD) <- c("Sample_Name","v_call","junction_aa")
 
       if (input$BCR_present ==T) {
@@ -2204,13 +2326,17 @@ runSTEGO <- function(){
         df_nocouts3 <-as.data.frame(rbind(df_nocouts2_AG,df_nocouts2_BD))
       }
 
-      df_nocouts3 <- df_nocouts3[-c(grep("^$",df_nocouts3$junction_aa)),] # remove blank columns
+      df_nocouts3$v_call <- gsub("^$",NA, df_nocouts3$v_call)
+      df_nocouts3 <- df_nocouts3[complete.cases(df_nocouts3$v_call), ]
+
+      df_nocouts3$junction_aa <- gsub("^$",NA, df_nocouts3$junction_aa)
+      df_nocouts3 <- df_nocouts3[complete.cases(df_nocouts3$junction_aa), ]
 
       if (nrow(df_nocouts3[-c(grep("[*]",df_nocouts3$junction_aa)),]>0)) {
         df_nocouts3 <- df_nocouts3[-c(grep("[*]",df_nocouts3$junction_aa)),]
       }
-      df_nocouts3 <- df_nocouts3[-c(grep("[*]",df_nocouts3$junction_aa)),] # remove st
 
+      df_nocouts3 <- df_nocouts3[!duplicated(df_nocouts3$junction_aa), ]
       df_nocouts3
 
     }
@@ -2254,7 +2380,7 @@ runSTEGO <- function(){
     })
 
     output$tb_clusTCR <- DT::renderDataTable(escape = FALSE, options = list(autoWidth = FALSE, lengthMenu = c(2,5,10,20,50,100), pageLength = 10, scrollX = TRUE),{
-      if (input$Format_bd=='cellXgene'){
+      if (input$filtered_list == "Paired") {
         df_clusTCR()
       }
       else {
@@ -2266,103 +2392,18 @@ runSTEGO <- function(){
         paste(input$name.BD,"_ClusTCR_",gsub("-", ".", Sys.Date()),".csv", sep = "")
       },
       content = function(file){
-        if (input$Format_bd=='cellXgene'){
+        if (input$filtered_list == "Paired") {
           df <- as.data.frame(df_clusTCR())
-          write.csv(df,file, row.names = T)
+          write.csv(df,file, row.names = F)
         }
 
         else {
           df <- as.data.frame(tb_bd_contigues_contig())
-          write.csv(df,file, row.names = T)
+          write.csv(df,file, row.names = F)
         }
 
 
       } )
-
-    ### summary of missing TCR -----
-    sum_tb_BD <- function () {
-      calls_TCR_paired.fun <- df()
-      counts <- as.data.frame(input.data.count.BD())
-      df_nocouts <- calls_TCR_paired.fun[!names(calls_TCR_paired.fun) %in% c(names(counts),"cloneCount") ]
-      contig_paired <- df_nocouts[df_nocouts$Total_VDJ_Read_Count != 0, ]
-      contig_paired$TRAG <-ifelse(grepl("TR",contig_paired$TCR_Alpha_Gamma_V_gene_Dominant),"TRAG","Missing TRAG gene")
-      contig_paired$TRBD <-ifelse(grepl("TR",contig_paired$TCR_Beta_Delta_V_gene_Dominant),"TRBD","Missing TRBD gene")
-
-      contig_paired$TRAG_fun <-ifelse(grepl("[*]",contig_paired$TCR_Alpha_Gamma_CDR3_Translation_Dominant),"Non-functional",
-                                      ifelse(grepl("Missing",contig_paired$TRAG),"Missing TCR",
-
-                                             ifelse(grepl("TRGV10",contig_paired$TCR_Alpha_Gamma_V_gene_Dominant),"pseudogene","productive")))
-
-      contig_paired$TRBD_fun <- ifelse(grepl("[*]",contig_paired$TCR_Beta_Delta_CDR3_Translation_Dominant),"Non-functional",
-                                       ifelse(grepl("Missing",contig_paired$TRBD),"Missing TCR","productive"))
-
-      if (input$BCR_present ==T) {
-
-        contig_paired$v_gene_IgL <- ifelse(grepl("IG",contig_paired$BCR_Light_V_gene_Dominant),"v_gene_IgL","Missing IgL gene")
-
-        contig_paired$v_gene_IgH <- ifelse(grepl("IG",contig_paired$BCR_Heavy_V_gene_Dominant),"v_gene_IgL","Missing IgL gene")
-
-        contig_paired$v_gene_IgL_fun <- ifelse(grepl("[*]",contig_paired$BCR_Light_CDR3_Translation_Dominant),"Non-functional",
-                                               ifelse(grepl("Missing",contig_paired$v_gene_IgL),"Missing BCR","productive"))
-        contig_paired$v_gene_IgH_fun <- ifelse(grepl("[*]",contig_paired$BCR_Heavy_CDR3_Translation_Dominant),"Non-functional",
-                                               ifelse(grepl("Missing",contig_paired$v_gene_IgH),"Missing BCR","productive"))
-
-        df.names.test <- c('TRAG',"TRAG_fun","TRBD","TRBD_fun","v_gene_IgL","v_gene_IgL_fun","v_gene_IgH","v_gene_IgH_fun")
-        df3 <- contig_paired[names(contig_paired) %in% df.names.test]
-        df3$cloneCount <- 1
-        df1 <- ddply(df3,names(df3)[-c(9)] ,numcolwise(sum))
-        df1
-
-
-      }
-      else {
-        df.names.test <- c('TRAG',"TRAG_fun","TRBD","TRBD_fun","cloneCount")
-        df3 <- contig_paired[names(contig_paired) %in% df.names.test]
-        df3$cloneCount <- 1
-        df1 <- ddply(df3,names(df3)[-c(5)] ,numcolwise(sum))
-        df1
-      }
-    }
-
-    sum_tb_BD_2 <- function () {
-      calls_TCR_paired.fun <- df()
-      counts <- as.data.frame(input.data.count.BD())
-      df_nocouts <- calls_TCR_paired.fun[!names(calls_TCR_paired.fun) %in% c(names(counts),"cloneCount") ]
-      contig_paired <- df_nocouts[df_nocouts$Total_VDJ_Read_Count != 0, ]
-      contig_paired$TRAG <-ifelse(grepl("TR",contig_paired$TCR_Alpha_Gamma_V_gene_Dominant),"TRAG","Missing TRAG gene")
-      contig_paired$TRBD <-ifelse(grepl("TR",contig_paired$TCR_Beta_Delta_V_gene_Dominant),"TRBD","Missing TRBD gene")
-
-      contig_paired$TRAG_fun <-ifelse(grepl("[*]",contig_paired$TCR_Alpha_Gamma_CDR3_Translation_Dominant),"Non-functional",
-                                      ifelse(grepl("Missing",contig_paired$TRAG),"Missing TCR",
-
-                                             ifelse(grepl("TRGV10",contig_paired$TCR_Alpha_Gamma_V_gene_Dominant),"pseudogene","productive")))
-
-      contig_paired$TRBD_fun <- ifelse(grepl("[*]",contig_paired$TCR_Beta_Delta_CDR3_Translation_Dominant),"Non-functional",
-                                       ifelse(grepl("Missing",contig_paired$TRBD),"Missing TCR","productive"))
-
-      if (input$BCR_present ==T) {
-
-        contig_paired$v_gene_IgL <- ifelse(grepl("IG",contig_paired$BCR_Light_V_gene_Dominant),"v_gene_IgL","Missing IgL gene")
-
-        contig_paired$v_gene_IgH <- ifelse(grepl("IG",contig_paired$BCR_Heavy_V_gene_Dominant),"v_gene_IgL","Missing IgL gene")
-
-        contig_paired$v_gene_IgL_fun <- ifelse(grepl("[*]",contig_paired$BCR_Light_CDR3_Translation_Dominant),"Non-functional",
-                                               ifelse(grepl("Missing",contig_paired$v_gene_IgL),"Missing BCR","productive"))
-        contig_paired$v_gene_IgH_fun <- ifelse(grepl("[*]",contig_paired$BCR_Heavy_CDR3_Translation_Dominant),"Non-functional",
-                                               ifelse(grepl("Missing",contig_paired$v_gene_IgH),"Missing BCR","productive"))
-
-        contig_paired
-      }
-      else {
-        contig_paired
-      }
-
-    }
-
-    output$tb_clusTCR_sum <- DT::renderDataTable(escape = FALSE, filter = list(position = 'top', clear = FALSE),  options = list(autoWidth = FALSE, lengthMenu = c(2,5,10,20,50,100), pageLength = 5, scrollX = TRUE),{
-      sum_tb_BD()
-    })
-
 
     ## count table for Seurat----
     tb_bd_matrix <- function () {
@@ -2385,25 +2426,19 @@ runSTEGO <- function(){
 
     }
 
-    df_count.matrix <- function () {
-      calls_TCR_paired.fun <- df()
+    df_count.matrix_bd <- reactive( {
       counts <- as.data.frame(input.data.count.BD())
 
-      calls_TCR_paired.fun$v_gene_AG <- gsub("[*]0.","",calls_TCR_paired.fun$TCR_Alpha_Gamma_V_gene_Dominant)
-      calls_TCR_paired.fun$v_gene_BD <- gsub("[*]0.","",calls_TCR_paired.fun$TCR_Beta_Delta_V_gene_Dominant)
-      calls_TCR_paired.fun$cdr3_AG <- paste(calls_TCR_paired.fun$v_gene_AG,calls_TCR_paired.fun$TCR_Alpha_Gamma_CDR3_Translation_Dominant,sep = "_")
-      calls_TCR_paired.fun$cdr3_BD <- paste(calls_TCR_paired.fun$v_gene_BD,calls_TCR_paired.fun$TCR_Beta_Delta_CDR3_Translation_Dominant,sep = "_")
-      calls_TCR_paired.fun$v_gene_cdr3_AB_GD <- paste(calls_TCR_paired.fun$cdr3_AG,calls_TCR_paired.fun$cdr3_BD,sep = ".")
-
-      rownames(calls_TCR_paired.fun) <- paste(calls_TCR_paired.fun$Sample_Name,"*",calls_TCR_paired.fun$cdr3_AG.cdr3_BD," ",calls_TCR_paired.fun$Cell_Index,sep="")
-      df_nocouts <- calls_TCR_paired.fun[names(calls_TCR_paired.fun) %in% c(names(counts))]
-      rownames(df_nocouts) <- df_nocouts$Cell_Index
-      df_nocouts
-    }
+      validate(
+        need(nrow(counts)>0,
+             "Upload file")
+      )
+      counts
+    })
 
     output$tb_count_matrix <- DT::renderDataTable(escape = FALSE, options = list(autoWidth = FALSE, lengthMenu = c(2,5,10,20,50,100), pageLength = 2, scrollX = TRUE),{
       if (input$Format_bd=='cellXgene'){
-        as.data.frame(t(df_count.matrix()))[1:6,1:6]
+        t(df_count.matrix_bd())[1:6,1:6]
       }
       else {
         tb_bd_matrix()[1:6,1:6]
@@ -2441,57 +2476,89 @@ runSTEGO <- function(){
 
     ### meta.data for seruat ----
     meta.data_for_Seuratobj <- function () {
-      if (input$Format_bd=='cellXgene'){
 
-        counts <- input.data.count.BD()
+      if (input$filtered_list == "Paired") {
+        contig_paired_only <- TCR_Filtering_Paired()
+        contig_paired_only
+        contig_paired_only$v_gene_AG <- gsub("[*]0.","",contig_paired_only$TCR_Alpha_Gamma_V_gene_Dominant)
+        contig_paired_only$j_gene_AG <- gsub("[*]0.","",contig_paired_only$TCR_Alpha_Gamma_J_gene_Dominant)
+        contig_paired_only$cdr3_AG <- gsub("[*]0.","",contig_paired_only[,names(contig_paired_only) %in% input$Junction_AG_BDrhap])
+        contig_paired_only$v_gene_BD <- gsub("[*]0.","",contig_paired_only$TCR_Beta_Delta_V_gene_Dominant)
+        contig_paired_only$j_gene_BD <- gsub("[*]0.","",contig_paired_only$TCR_Beta_Delta_J_gene_Dominant)
+        contig_paired_only$d_gene_BD <- gsub("[*]0.","",contig_paired_only$TCR_Beta_Delta_D_gene_Dominant)
+        contig_paired_only$cdr3_BD <- gsub("[*]0.","",contig_paired_only[,names(contig_paired_only) %in% input$Junction_BD_BDrhap])
 
-        calls_TCR_paired.fun$v_gene_AG <- gsub("[*]0.","",calls_TCR_paired.fun$TCR_Alpha_Gamma_V_gene_Dominant)
-        calls_TCR_paired.fun$j_gene_AG <- gsub("[*]0.","",calls_TCR_paired.fun$TCR_Alpha_Gamma_J_gene_Dominant)
-        calls_TCR_paired.fun$v_gene_BD <- gsub("[*]0.","",calls_TCR_paired.fun$TCR_Beta_Delta_V_gene_Dominant)
-        calls_TCR_paired.fun$v_gene_AG_BD <- paste(calls_TCR_paired.fun$v_gene_AG,calls_TCR_paired.fun$v_gene_BD,sep = " & ")
-        calls_TCR_paired.fun$v_gene_cdr3_AG <- paste(calls_TCR_paired.fun$v_gene_AG,calls_TCR_paired.fun$TCR_Alpha_Gamma_CDR3_Translation_Dominant,sep = "_")
-        calls_TCR_paired.fun$v_gene_cdr3_BD <- paste(calls_TCR_paired.fun$v_gene_BD,calls_TCR_paired.fun$TCR_Beta_Delta_CDR3_Translation_Dominant,sep = "_")
-        calls_TCR_paired.fun$v_gene_cdr3_AB_GD <- paste(calls_TCR_paired.fun$v_gene_cdr3_AG,calls_TCR_paired.fun$v_gene_cdr3_BD,sep = ".")
+        contig_paired_only$d_gene_BD <- gsub("^$","NA", contig_paired_only$d_gene_BD)
+        #
+        contig_paired_only$vj_gene_AG <- paste(contig_paired_only$v_gene_AG,contig_paired_only$j_gene_AG,sep = ".")
+        contig_paired_only$vj_gene_AG <- gsub("NA.NA","",contig_paired_only$vj_gene_AG)
+        #
+        contig_paired_only$vj_gene_BD <- paste(contig_paired_only$v_gene_BD,contig_paired_only$j_gene_BD,sep = ".")
+        contig_paired_only$vj_gene_BD <- gsub(".NA.",".",contig_paired_only$vj_gene_BD)
+        contig_paired_only$vj_gene_BD <- gsub(".None.",".",contig_paired_only$vj_gene_BD)
+        contig_paired_only$vj_gene_BD <- gsub("NA.NA","",contig_paired_only$vj_gene_BD)
+        #
+        contig_paired_only$vdj_gene_BD <- paste(contig_paired_only$v_gene_BD,contig_paired_only$d_gene_BD,contig_paired_only$j_gene_BD,sep = ".")
+        contig_paired_only$vdj_gene_BD <- gsub(".NA.",".",contig_paired_only$vdj_gene_BD)
+        contig_paired_only$vdj_gene_BD <- gsub("[.]NA[.]",".",contig_paired_only$vdj_gene_BD)
+        contig_paired_only$vdj_gene_BD <- gsub("NA.NA","",contig_paired_only$vdj_gene_BD)
+        #
+        contig_paired_only$vj_gene_cdr3_AG <- paste(contig_paired_only$vj_gene_AG,contig_paired_only$cdr3_AG,sep = "_")
+        contig_paired_only$vj_gene_cdr3_AG <- gsub("_NA","",contig_paired_only$vj_gene_cdr3_AG)
+        #
+        contig_paired_only$vj_gene_cdr3_BD <- paste(contig_paired_only$vj_gene_BD,contig_paired_only$cdr3_BD,sep = "_")
+        contig_paired_only$vj_gene_cdr3_BD <- gsub("_NA","",contig_paired_only$vj_gene_cdr3_BD)
+        #
+        contig_paired_only$vdj_gene_cdr3_BD <- paste(contig_paired_only$vdj_gene_BD,contig_paired_only$cdr3_BD,sep = "_")
+        contig_paired_only$vdj_gene_cdr3_BD <- gsub("_NA","",contig_paired_only$vdj_gene_cdr3_BD)
+        #
+        contig_paired_only$vj_gene_AG_BD <- paste(contig_paired_only$vj_gene_AG,contig_paired_only$vj_gene_BD,sep = " & ")
+        contig_paired_only$vdj_gene_AG_BD <- paste(contig_paired_only$vj_gene_AG,contig_paired_only$vdj_gene_BD,sep = " & ")
+        contig_paired_only$vdj_gene_AG_BD <- gsub("^ & ","",contig_paired_only$vdj_gene_AG_BD)
+        contig_paired_only$vdj_gene_AG_BD <- gsub(" & $","",contig_paired_only$vdj_gene_AG_BD)
+        #
+        # #updating names to be consistant....
+        contig_paired_only$vj_gene_cdr3_AG_BD <- paste(contig_paired_only$vj_gene_cdr3_AG,contig_paired_only$vj_gene_cdr3_BD,sep = " & ")
+        contig_paired_only$vj_gene_cdr3_AG_BD <- gsub("^ & ","",contig_paired_only$vj_gene_cdr3_AG_BD)
+        contig_paired_only$vj_gene_cdr3_AG_BD <- gsub(" & $","",contig_paired_only$vj_gene_cdr3_AG_BD)
 
-        calls_TCR_paired.fun <- calls_TCR_paired.fun[!names(calls_TCR_paired.fun) %in% c(names(counts[-c(1)]),"Total_VDJ_Read_Count","Total_VDJ_Molecule_Count","TCR_Alpha_Gamma_Read_Count","TCR_Alpha_Gamma_Molecule_Count","TCR_Beta_Delta_Read_Count","TCR_Beta_Delta_Molecule_Count","Sample_Tag","TCR_Alpha_Gamma_C_gene_Dominant","TCR_Beta_Delta_C_gene_Dominant","TCR_Alpha_Gamma_CDR3_Nucleotide_Dominant","TCR_Beta_Delta_CDR3_Nucleotide_Dominant") ]
+        contig_paired_only$vdj_gene_cdr3_AG_BD <- paste(contig_paired_only$vj_gene_cdr3_AG,contig_paired_only$vdj_gene_cdr3_BD,sep = " & ")
+        contig_paired_only$vdj_gene_cdr3_AG_BD <- gsub("^ & ","",contig_paired_only$vdj_gene_cdr3_AG_BD)
+        contig_paired_only$vdj_gene_cdr3_AG_BD <- gsub(" & $","",contig_paired_only$vdj_gene_cdr3_AG_BD)
 
+
+        contig_paired_only <- contig_paired_only[!names(contig_paired_only) %in% c("Total_VDJ_Read_Count","Total_VDJ_Molecule_Count","TCR_Alpha_Gamma_Read_Count","TCR_Alpha_Gamma_Molecule_Count","TCR_Beta_Delta_Read_Count","TCR_Beta_Delta_Molecule_Count","Sample_Tag","TCR_Alpha_Gamma_C_gene_Dominant","TCR_Beta_Delta_C_gene_Dominant","TCR_Alpha_Gamma_CDR3_Nucleotide_Dominant","TCR_Beta_Delta_CDR3_Nucleotide_Dominant") ]
+        contig_paired_only
         if (input$BCR_present ==T) {
 
-          calls_TCR_paired.fun$v_gene_IgL <- gsub("[*]0.","",calls_TCR_paired.fun$BCR_Light_V_gene_Dominant)
-          calls_TCR_paired.fun$j_gene_IgL <- gsub("[*]0.","",calls_TCR_paired.fun$BCR_Light_J_gene_Dominant)
-          calls_TCR_paired.fun$v_gene_IgH <- gsub("[*]0.","",calls_TCR_paired.fun$BCR_Heavy_V_gene_Dominant)
-          calls_TCR_paired.fun$d_gene_IgH <- gsub("[*]0.","",calls_TCR_paired.fun$BCR_Heavy_D_gene_Dominant)
-          calls_TCR_paired.fun$j_gene_IgH <- gsub("[*]0.","",calls_TCR_paired.fun$BCR_Heavy_J_gene_Dominant)
+          contig_paired_only$v_gene_IgL <- gsub("[*]0.","",contig_paired_only$BCR_Light_V_gene_Dominant)
+          contig_paired_only$j_gene_IgL <- gsub("[*]0.","",contig_paired_only$BCR_Light_J_gene_Dominant)
+          contig_paired_only$v_gene_IgH <- gsub("[*]0.","",contig_paired_only$BCR_Heavy_V_gene_Dominant)
+          contig_paired_only$d_gene_IgH <- gsub("[*]0.","",contig_paired_only$BCR_Heavy_D_gene_Dominant)
+          contig_paired_only$j_gene_IgH <- gsub("[*]0.","",contig_paired_only$BCR_Heavy_J_gene_Dominant)
 
-          calls_TCR_paired.fun$v_gene_IgH_L <- paste(calls_TCR_paired.fun$v_gene_IgH,calls_TCR_paired.fun$v_gene_IgL,sep = " & ")
+          contig_paired_only$v_gene_IgH_L <- paste(contig_paired_only$v_gene_IgH,contig_paired_only$v_gene_IgL,sep = " & ")
 
-          calls_TCR_paired.fun$v_gene_cdr3_IgH <- paste(calls_TCR_paired.fun$v_gene_IgH,calls_TCR_paired.fun$BCR_Heavy_CDR3_Translation_Dominant,sep = "_")
-          calls_TCR_paired.fun$v_gene_cdr3_IgL <- paste(calls_TCR_paired.fun$v_gene_IgL,calls_TCR_paired.fun$BCR_Light_CDR3_Translation_Dominant,sep = "_")
-          calls_TCR_paired.fun$v_gene_cdr3_IgH_L <- paste(calls_TCR_paired.fun$v_gene_cdr3_IgH,calls_TCR_paired.fun$v_gene_cdr3_IgL,sep = ".")
+          contig_paired_only$v_gene_cdr3_IgH <- paste(contig_paired_only$v_gene_IgH,contig_paired_only$BCR_Heavy_CDR3_Translation_Dominant,sep = "_")
+          contig_paired_only$v_gene_cdr3_IgL <- paste(contig_paired_only$v_gene_IgL,contig_paired_only$BCR_Light_CDR3_Translation_Dominant,sep = "_")
+          contig_paired_only$v_gene_cdr3_IgH_L <- paste(contig_paired_only$v_gene_cdr3_IgH,contig_paired_only$v_gene_cdr3_IgL,sep = ".")
 
-          names(calls_TCR_paired.fun)[names(calls_TCR_paired.fun) %in% c("BCR_Light_CDR3_Translation_Dominant")] <- "cdr3_IgL"
-          names(calls_TCR_paired.fun)[names(calls_TCR_paired.fun) %in% c("BCR_Light_V_gene_Dominant")] <- "v_allele_IgL"
-          names(calls_TCR_paired.fun)[names(calls_TCR_paired.fun) %in% c("BCR_Light_J_gene_Dominant")] <- "j_allele_IgL"
-          names(calls_TCR_paired.fun)[names(calls_TCR_paired.fun) %in% c("BCR_Heavy_CDR3_Translation_Dominant")] <- "cdr3_IgH"
-          names(calls_TCR_paired.fun)[names(calls_TCR_paired.fun) %in% c("BCR_Heavy_V_gene_Dominant")] <- "v_allele_IgH"
-          names(calls_TCR_paired.fun)[names(calls_TCR_paired.fun) %in% c("BCR_Heavy_J_gene_Dominant")] <- "j_allele_IgH"
-          names(calls_TCR_paired.fun)[names(calls_TCR_paired.fun) %in% c("BCR_Heavy_D_gene_Dominant")] <- "d_allele_IgH"
-          calls_TCR_paired.fun
+          names(contig_paired_only)[names(contig_paired_only) %in% c("BCR_Light_CDR3_Translation_Dominant")] <- "cdr3_IgL"
+          names(contig_paired_only)[names(contig_paired_only) %in% c("BCR_Light_V_gene_Dominant")] <- "v_allele_IgL"
+          names(contig_paired_only)[names(contig_paired_only) %in% c("BCR_Light_J_gene_Dominant")] <- "j_allele_IgL"
+          names(contig_paired_only)[names(contig_paired_only) %in% c("BCR_Heavy_CDR3_Translation_Dominant")] <- "cdr3_IgH"
+          names(contig_paired_only)[names(contig_paired_only) %in% c("BCR_Heavy_V_gene_Dominant")] <- "v_allele_IgH"
+          names(contig_paired_only)[names(contig_paired_only) %in% c("BCR_Heavy_J_gene_Dominant")] <- "j_allele_IgH"
+          names(contig_paired_only)[names(contig_paired_only) %in% c("BCR_Heavy_D_gene_Dominant")] <- "d_allele_IgH"
+          contig_paired_only
 
         }
 
         else {
-          calls_TCR_paired.fun
+          contig_paired_only
         }
 
-        names(calls_TCR_paired.fun)[names(calls_TCR_paired.fun) %in% c("TCR_Alpha_Gamma_CDR3_Translation_Dominant")] <- "cdr3_AG"
-        names(calls_TCR_paired.fun)[names(calls_TCR_paired.fun) %in% c("TCR_Alpha_Gamma_J_gene_Dominant")] <- "j_gene_AG"
-        names(calls_TCR_paired.fun)[names(calls_TCR_paired.fun) %in% c("TCR_Alpha_Gamma_V_gene_Dominant")] <- "v_allele_AG"
-        names(calls_TCR_paired.fun)[names(calls_TCR_paired.fun) %in% c("TCR_Beta_Delta_CDR3_Translation_Dominant")] <- "cdr3_BD"
-        names(calls_TCR_paired.fun)[names(calls_TCR_paired.fun) %in% c("TCR_Beta_Delta_V_gene_Dominant")] <- "v_allele_BD"
-        names(calls_TCR_paired.fun)[names(calls_TCR_paired.fun) %in% c("TCR_Beta_Delta_J_gene_Dominant")] <- "j_gene_BD"
-        names(calls_TCR_paired.fun)[names(calls_TCR_paired.fun) %in% c("TCR_Beta_Delta_D_gene_Dominant")] <- "d_gene_BD"
-        calls_TCR_paired.fun
+
       }
 
       else {
@@ -2517,7 +2584,8 @@ runSTEGO <- function(){
     # for TCRex output -----
     TCRex_BDrap_df <- function () {
 
-      calls_TCR_paired.fun <- df()
+      calls_TCR_paired.fun <- TCR_Filtering_Paired()
+
 
       if (nrow(calls_TCR_paired.fun[-c(grep("[*]",calls_TCR_paired.fun$TCR_Beta_Delta_CDR3_Translation_Dominant)),]>0)) {
         calls_TCR_paired.fun <- calls_TCR_paired.fun[-c(grep("[*]",calls_TCR_paired.fun$TCR_Beta_Delta_CDR3_Translation_Dominant)),] # remove st
@@ -2535,8 +2603,8 @@ runSTEGO <- function(){
       calls_TCR_paired.fun3 <- calls_TCR_paired.fun3[!grepl("TRD", calls_TCR_paired.fun3$TRBV_gene),]
       calls_TCR_paired.fun3
 
-
     }
+
     TCRex_Bd_df <- function () {
       contigs <- input.data.TCR.bd2()
       sample_tags <- input.data.calls.bd()
@@ -2544,7 +2612,6 @@ runSTEGO <- function(){
         need(nrow(contigs)>0 && nrow(sample_tags)>0,
              "Upload files")
       )
-
       if (input$filtered_list == "Unfiltered") {
         df <- filtering_required()
         contigs <- contigs[contigs$cell_id %in% unique(df$cell_id),]
@@ -2580,15 +2647,12 @@ runSTEGO <- function(){
       calls_TCR_paired.fun3
     }
     output$tb_TCRex_BDrap_df <- DT::renderDataTable(escape = FALSE, options = list(autoWidth = FALSE, lengthMenu = c(2,5,10,20,50,100), pageLength = 10, scrollX = TRUE),{
-      if (input$Format_bd=='cellXgene'){
+      if (input$filtered_list == "Paired") {
         TCRex_BDrap_df()
       }
       else {
         TCRex_Bd_df()
       }
-
-
-
     })
 
     output$downloaddf_TCRex_BDrap <- downloadHandler(
@@ -2596,7 +2660,7 @@ runSTEGO <- function(){
         paste(input$name.BD,"_TCRex_",gsub("-", ".", Sys.Date()),".tsv", sep = "")
       },
       content = function(file){
-        if (input$Format_bd=='cellXgene'){
+        if (input$Format_bd=='Paired'){
           df <- as.data.frame(TCRex_BDrap_df())
           df <- df[,names(df) %in% c("TRBV_gene","CDR3_beta","TRBJ_gene")]
           write.table(df,file, row.names = F,sep="\t", quote = F)
@@ -2611,59 +2675,21 @@ runSTEGO <- function(){
 
     ## TCR_Explore compatible -----
     df_TCR_Explore <- function () {
-      calls_TCR_paired.fun <- df()
-      counts <- input.data.count.BD()
-      calls_TCR_paired.fun$v_gene_AG <- gsub("[*]0.","",calls_TCR_paired.fun$TCR_Alpha_Gamma_V_gene_Dominant)
-      calls_TCR_paired.fun$v_gene_BD <- gsub("[*]0.","",calls_TCR_paired.fun$TCR_Beta_Delta_V_gene_Dominant)
-      calls_TCR_paired.fun$v_gene_AG_BD <- paste(calls_TCR_paired.fun$v_gene_AG,calls_TCR_paired.fun$v_gene_BD,sep = " & ")
-
-      calls_TCR_paired.fun$v_gene_cdr3_AG <- paste(calls_TCR_paired.fun$v_gene_AG,calls_TCR_paired.fun$TCR_Alpha_Gamma_CDR3_Translation_Dominant,sep = "_")
-      calls_TCR_paired.fun$v_gene_cdr3_BD <- paste(calls_TCR_paired.fun$v_gene_BD,calls_TCR_paired.fun$TCR_Beta_Delta_CDR3_Translation_Dominant,sep = "_")
-      calls_TCR_paired.fun$v_gene_cdr3_AG.cdr3_BD <- paste(calls_TCR_paired.fun$v_gene_cdr3_AG,calls_TCR_paired.fun$v_gene_cdr3_BD,sep = ".")
+      calls_TCR_paired.fun <- meta.data_for_Seuratobj()
       calls_TCR_paired.fun$cloneCount <- 1 # added for TCR_Explore (total number of cells with that gene and sequence)
 
-      calls_TCR_paired.fun <- calls_TCR_paired.fun[!names(calls_TCR_paired.fun) %in% c(names(counts[-c(1)]),"Total_VDJ_Read_Count","Total_VDJ_Molecule_Count","TCR_Alpha_Gamma_Read_Count","TCR_Alpha_Gamma_Molecule_Count","TCR_Beta_Delta_Read_Count","TCR_Beta_Delta_Molecule_Count","Cell_Type_Experimental") ]
-
-      if (input$BCR_present ==T) {
-        calls_TCR_paired.fun$v_gene_IgL <- gsub("[*]0.","",calls_TCR_paired.fun$BCR_Light_V_gene_Dominant)
-        calls_TCR_paired.fun$j_gene_IgL <- gsub("[*]0.","",calls_TCR_paired.fun$BCR_Light_J_gene_Dominant)
-        calls_TCR_paired.fun$v_gene_IgH <- gsub("[*]0.","",calls_TCR_paired.fun$BCR_Heavy_V_gene_Dominant)
-        calls_TCR_paired.fun$d_gene_IgH <- gsub("[*]0.","",calls_TCR_paired.fun$BCR_Heavy_D_gene_Dominant)
-        calls_TCR_paired.fun$j_gene_IgH <- gsub("[*]0.","",calls_TCR_paired.fun$BCR_Heavy_J_gene_Dominant)
-
-        calls_TCR_paired.fun$v_gene_IgH_L <- paste(calls_TCR_paired.fun$v_gene_IgH,calls_TCR_paired.fun$v_gene_IgL,sep = " & ")
-
-        calls_TCR_paired.fun$v_gene_cdr3_IgH <- paste(calls_TCR_paired.fun$v_gene_IgH,calls_TCR_paired.fun$BCR_Heavy_CDR3_Translation_Dominant,sep = "_")
-        calls_TCR_paired.fun$v_gene_cdr3_IgL <- paste(calls_TCR_paired.fun$v_gene_IgL,calls_TCR_paired.fun$BCR_Light_CDR3_Translation_Dominant,sep = "_")
-        calls_TCR_paired.fun$v_gene_cdr3_IgH_L <- paste(calls_TCR_paired.fun$v_gene_cdr3_IgH,calls_TCR_paired.fun$v_gene_cdr3_IgL,sep = ".")
-
-        names(calls_TCR_paired.fun)[names(calls_TCR_paired.fun) %in% c("BCR_Light_CDR3_Translation_Dominant")] <- "cdr3_IgL"
-        names(calls_TCR_paired.fun)[names(calls_TCR_paired.fun) %in% c("BCR_Light_V_gene_Dominant")] <- "v_allele_IgL"
-        names(calls_TCR_paired.fun)[names(calls_TCR_paired.fun) %in% c("BCR_Light_J_gene_Dominant")] <- "j_allele_IgL"
-        names(calls_TCR_paired.fun)[names(calls_TCR_paired.fun) %in% c("BCR_Heavy_CDR3_Translation_Dominant")] <- "cdr3_IgH"
-        names(calls_TCR_paired.fun)[names(calls_TCR_paired.fun) %in% c("BCR_Heavy_V_gene_Dominant")] <- "v_allele_IgH"
-        names(calls_TCR_paired.fun)[names(calls_TCR_paired.fun) %in% c("BCR_Heavy_J_gene_Dominant")] <- "j_allele_IgH"
-        names(calls_TCR_paired.fun)[names(calls_TCR_paired.fun) %in% c("BCR_Heavy_D_gene_Dominant")] <- "d_allele_IgH"
-        calls_TCR_paired.fun
-      }
-
-      else {
-        calls_TCR_paired.fun
-      }
-
-      names(calls_TCR_paired.fun)[names(calls_TCR_paired.fun) %in% c("TCR_Alpha_Gamma_CDR3_Translation_Dominant")] <- "cdr3_AG"
-      names(calls_TCR_paired.fun)[names(calls_TCR_paired.fun) %in% c("TCR_Alpha_Gamma_J_gene_Dominant")] <- "j_gene_AG"
-      names(calls_TCR_paired.fun)[names(calls_TCR_paired.fun) %in% c("TCR_Alpha_Gamma_V_gene_Dominant")] <- "v_allele_AG"
-      names(calls_TCR_paired.fun)[names(calls_TCR_paired.fun) %in% c("TCR_Beta_Delta_CDR3_Translation_Dominant")] <- "cdr3_BD"
-      names(calls_TCR_paired.fun)[names(calls_TCR_paired.fun) %in% c("TCR_Beta_Delta_V_gene_Dominant")] <- "v_allele_BD"
-      names(calls_TCR_paired.fun)[names(calls_TCR_paired.fun) %in% c("TCR_Beta_Delta_J_gene_Dominant")] <- "j_gene_BD"
-      names(calls_TCR_paired.fun)[names(calls_TCR_paired.fun) %in% c("TCR_Beta_Delta_D_gene_Dominant")] <- "d_gene_BD"
-      calls_TCR_paired.fun
+      calls_TCR_paired.fun <- calls_TCR_paired.fun[!names(calls_TCR_paired.fun) %in% c("Total_VDJ_Read_Count","Total_VDJ_Molecule_Count","TCR_Alpha_Gamma_Read_Count","TCR_Alpha_Gamma_Molecule_Count","TCR_Beta_Delta_Read_Count","TCR_Beta_Delta_Molecule_Count","Cell_Type_Experimental") ]
 
 
-      calls_TCR_paired.fun[order(calls_TCR_paired.fun$v_allele_AG),]
-      calls_TCR_paired.fun %>%
+      calls_TCR_paired.fun[order(calls_TCR_paired.fun$vdj_gene_AG_BD),]
+
+      calls_TCR_paired.fun$vdj_gene_AG_BD <- gsub("^$",NA, calls_TCR_paired.fun$vdj_gene_AG_BD)
+      calls_TCR_paired.fun <- calls_TCR_paired.fun[complete.cases(calls_TCR_paired.fun$vdj_gene_AG_BD), ]
+
+      calls_TCR_paired.fun <- calls_TCR_paired.fun %>%
         select(cloneCount, everything())
+
+      calls_TCR_paired.fun
     }
 
     output$tb_TCR_Explore <- DT::renderDataTable(escape = FALSE, options = list(autoWidth = FALSE, lengthMenu = c(2,5,10,20,50,100), pageLength = 10, scrollX = TRUE),{
@@ -2793,7 +2819,7 @@ runSTEGO <- function(){
       contig_paired_only <- contig_paired
       contig_paired_only <- subset(contig_paired_only,contig_paired_only$cdr3_BD!="None")
       contig_paired_only <- subset(contig_paired_only,contig_paired_only$cdr3_AG!="None")
-      contig_paired_only$d_gene_BD <- sub("^$","NA", contig_paired_only$d_gene_BD)
+      contig_paired_only$d_gene_BD <- gsub("^$","NA", contig_paired_only$d_gene_BD)
       #
       contig_paired_only$vj_gene_AG <- paste(contig_paired_only$v_gene_AG,contig_paired_only$j_gene_AG,sep = ".")
       contig_paired_only$vj_gene_AG <- gsub("NA.NA","",contig_paired_only$vj_gene_AG)
@@ -3465,8 +3491,6 @@ runSTEGO <- function(){
 
     input.data_ClusTCR2_multiple <- reactive({
       inFile.seq <- input$file1_ClusTCR2_multiple
-
-
       num <- dim(inFile.seq)[1]
       samples_list <- vector("list", length = num)
       samples_list
@@ -3530,69 +3554,65 @@ runSTEGO <- function(){
         choices=names(input.data_ClusTCR2()),
         selected = "v_call")}) # V_gene
 
-
-
-    # observe({
-    #   updateSelectInput(
-    #     session,
-    #     "clusTCR2_Group_column",
-    #     choices=names(input.data()),
-    #     selected = "group")
-    #
-    # }) # group
-
+    vals_ClusTCR2_old <- reactiveValues(output_dt_old=NULL)
     clust_dt2 <- reactive({
       df1 <- input.data_ClusTCR2()
       validate(
         need(nrow(df1)>0,
              "Upload ClusTCR file")
       )
-
       df1
-      df1 <- df1 %>%
-        select(input$clusTCR2_names,input$clusTCR2_Vgene,everything())
-
-      df2 <- df1
-      names(df2)[1:2] <- c("V1","V2")
-      df2$V1 <- ifelse(grepl("^$",df2$V1),"Missing TCR",df2$V1)
-      df2$V2 <- ifelse(grepl("^$",df2$V2),"Missing TCR",df2$V2)
-      head(df2)
-      df3 <- subset(df2, df2$V1 != "Missing TCR" | df2$V2 != "Missing TCR")
-      head(df3)
-      names(df3)[1:2] <- c(input$clusTCR2_names,input$clusTCR2_Vgene)
-      df3
     })
-    output$clust_dt2 <- DT::renderDataTable({
-      clust_dt2()
-    })
-
-    ## run clustering
-    vals_ClusTCR2 <- reactiveValues(output_dt2=NULL)
-    observeEvent(input$run_ClusTCR2,{
-      clust_dt2 <- clust_dt2()
+    output$clust_dt2_table <- DT::renderDataTable({
+      df1 <- input.data_ClusTCR2()
       validate(
-        need(nrow(clust_dt2)>0,
-             "Run ClusTCR2")
+        need(nrow(df1)>0,
+             "Upload ClusTCR file")
       )
+      df1
+    })
+
+    # ## run clustering
+
+    vals_ClusTCR2 <- reactiveValues(output_dt2=NULL)
+
+    observeEvent(input$run_ClusTCR2,{
+
+      df1 <- input.data_ClusTCR2()
+      validate(
+        need(nrow(df1)>0,
+             "Upload ClusTCR file")
+      )
+      clust_dt_DATA_5 <- df1[,names(df1) %in% c(input$clusTCR2_names,input$clusTCR2_Vgene)]
       ptm <- proc.time()
 
-      # clust_dt2 <- clust_dt2()
-
-      df_cluster <- ClusTCR(clust_dt2, allele =input$allele_ClusTCR2, v_gene = input$clusTCR2_Vgene, cores_selected = input$cores_ClusTCR2)
+      df_cluster <- ClusTCR(clust_dt_DATA_5, allele =input$allele_ClusTCR2, v_gene = input$clusTCR2_Vgene, cores_selected = input$cores_ClusTCR2)
       cluster_lab <- mcl_cluster(df_cluster,expansion = 1,inflation = 1)
       end <- proc.time() - ptm
       cluster_lab[[3]] <- end
       vals_ClusTCR2$output_dt2 <- cluster_lab
+      vals_ClusTCR2$output_dt2
+
     })
 
     ClusTCR2_lab_df <- reactive({
+      df1 <- input.data_ClusTCR2()
+      validate(
+        need(nrow(df1)>0,
+             "Upload ClusTCR file")
+      )
       output_dt <- vals_ClusTCR2$output_dt2
       output_dt[[1]]
-
     })
 
 
     output$ClusTCR2_lab <- DT::renderDataTable(escape = FALSE, filter = list(position = 'top', clear = FALSE),  options = list(autoWidth = FALSE, lengthMenu = c(2,5,10,20,50,100), pageLength = 10, scrollX = TRUE),{
+      df1 <- input.data_ClusTCR2()
+      validate(
+        need(nrow(df1)>0,
+             "Upload ClusTCR file")
+      )
+
       ClusTCR2_lab_df()
     })
 
@@ -3615,6 +3635,11 @@ runSTEGO <- function(){
 
     # create plots
     Network_plot_clusTCR2 <- reactive({
+      df1 <- input.data_ClusTCR2()
+      validate(
+        need(nrow(df1)>0,
+             "Upload ClusTCR file")
+      )
       Network_df <- vals_ClusTCR2$output_dt2
       set.seed(123)
       # ?netplot
@@ -3643,6 +3668,11 @@ runSTEGO <- function(){
     })
 
     output$MP_ClusTCR <- renderPlot({
+      df1 <- input.data_ClusTCR2()
+      validate(
+        need(nrow(df1)>0,
+             "Upload ClusTCR file")
+      )
       motif_plot_clusTCR2()
     })
 
