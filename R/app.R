@@ -218,8 +218,6 @@ runSTEGO <- function(){
                                                            tags$head(tags$style("#tb_count_matrix  {white-space: nowrap;  }")),
                                                            add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "250px",width = "250px", color = "blue"),
                                                            div(DT::dataTableOutput("tb_count_matrix")),
-                                                           # add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "250px",width = "250px", color = "blue"),
-                                                           # div(DT::dataTableOutput("tb_clusTCR_sum")),
                                                            add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "250px",width = "250px", color = "blue"),
                                                            div(DT::dataTableOutput("tb_metadata_sc")),
                                                            fluidRow(
@@ -430,6 +428,7 @@ runSTEGO <- function(){
                         )
                ),
                ### end TCR clustering ------
+               # Quality control side bar panel -----
                tabPanel("Seurat QC",
                         sidebarLayout(
                           sidebarPanel(id = "tPanel2",style = "overflow-y:scroll; max-height: 800px; position:relative;", width=3,
@@ -441,7 +440,7 @@ runSTEGO <- function(){
 
                                        textInput("project_name","Name of sample",value = ""),
                                        # selectInput("species","Species",choices = c("human","mouse","other")),
-                                       selectInput("df_seruatobj_type","Data type", choices = c("10x_Genomics (raw)","10x_Genomics (.h5)","BD Rhapsody","Array")),
+                                       selectInput("df_seruatobj_type","Data type", choices = c("10x_Genomics (raw)","10x_Genomics (.h5)","BD Rhapsody (Human Immune panel)","BD Rhapsody (Mouse)","Array")),
                                        selectInput("stored_in_expression","Does the .h5 object has multiple part?",choices = c("no","yes")),
                                        uiOutput("feature_input"),
                                        actionButton("run","Update Violin plot"),
@@ -465,9 +464,10 @@ runSTEGO <- function(){
                                        downloadButton('downloaddf_SeruatObj','Download Seurat')
                                        # column(4,numericInput("percent.mt","Mictochondrial DNA cut-off", value = 20)),
                           ),
+                          ### QC main panel -----
                           mainPanel(
                             tabsetPanel(
-                              # QC panel -----
+
                               tabPanel("QC plots",
                                        tabsetPanel(
                                          tabPanel("Header check",
@@ -507,8 +507,6 @@ runSTEGO <- function(){
                                                                column(2,style = "margin-top: 25px;",downloadButton('downloadPlotPNG_after_plot_sc','Download Network PNG')),
 
                                                              ),
-
-
                                                              fluidRow(
                                                                column(3,numericInput("width_Before.after_plot_sc", "Width of PDF", value=10)),
                                                                column(3,numericInput("height_Before.after_plot_sc", "Height of PDF", value=8)),
@@ -537,7 +535,7 @@ runSTEGO <- function(){
                                                   fluidRow(
                                                     column(1,numericInput("width_create_elbowPlot_sc", "Width of PDF", value=10)),
                                                     column(1,numericInput("height_create_elbowPlot_sc", "Height of PDF", value=8)),
-                                                    column(2,style = "margin-top: 25px;",downloadButton('downloadPlot_create_elbowPlot_scc','Download PDF')),
+                                                    column(2,style = "margin-top: 25px;",downloadButton('downloadPlot_create_elbowPlot_sc','Download PDF')),
                                                     column(2,numericInput("width_png_create_elbowPlot_sc","Width of PNG", value = 1200)),
                                                     column(2,numericInput("height_png_create_elbowPlot_sc","Height of PNG", value = 1000)),
                                                     column(2,numericInput("resolution_PNG_create_elbowPlot_sc","Resolution of PNG", value = 144)),
@@ -1620,12 +1618,19 @@ runSTEGO <- function(){
         )
       }
 
-      else if (input$df_seruatobj_type=="BD Rhapsody") {
+      else if (input$df_seruatobj_type=="BD Rhapsody (Mouse)") {
+        fluidRow(
+          column(6,numericInput("features.min","minimum features (<)", value = 200)),
+          column(6,numericInput("features.max","Maximum features (<)", value = 6000)),
+          column(6,numericInput("percent.mt","Mictochondrial DNA cut-off (<)", value = 20)),
+          column(6,numericInput("percent.rb","Ribosomal RNA cut-off (>)", value = 0)),
+        )
+      }
+
+      else if (input$df_seruatobj_type=="BD Rhapsody (Human Immune panel)") {
         fluidRow(
           column(6,numericInput("features.min","minimum features (<)", value = 45)),
           column(6,numericInput("features.max","Maximum features (<)", value = 160)),
-          column(6,numericInput("percent.mt","Mictochondrial DNA cut-off (<)", value = 20)),
-          column(6,numericInput("percent.rb","Ribosomal RNA cut-off (>)", value = 0)),
         )
       }
 
@@ -2427,18 +2432,31 @@ runSTEGO <- function(){
     }
 
     df_count.matrix_bd <- reactive( {
-      counts <- as.data.frame(input.data.count.BD())
+      mat <- as.data.frame(input.data.count.BD())
 
       validate(
-        need(nrow(counts)>0,
+        need(nrow(mat)>0,
              "Upload file")
       )
-      counts
+      mat <- as.data.frame(mat)
+      head(mat)[1:6]
+      rownames(mat) <- mat$Cell_Index
+
+      mat <- subset(mat, select = -Cell_Index)
+      head(mat)[1:6]
+
+      mat <- as.data.frame(t(mat))
+      head(mat)[1:6]
+
+      rownames(mat) <- gsub("^X","",rownames(mat))
+      head(mat)[1:6]
+      names(mat) <- gsub("^X","",names(mat))
+      mat
     })
 
     output$tb_count_matrix <- DT::renderDataTable(escape = FALSE, options = list(autoWidth = FALSE, lengthMenu = c(2,5,10,20,50,100), pageLength = 2, scrollX = TRUE),{
       if (input$Format_bd=='cellXgene'){
-        t(df_count.matrix_bd())[1:6,1:6]
+        (df_count.matrix_bd())[1:6,1:6]
       }
       else {
         tb_bd_matrix()[1:6,1:6]
@@ -2461,7 +2479,7 @@ runSTEGO <- function(){
       content = function(file){
         if (input$Format_bd=='cellXgene'){
 
-          df <- as.data.frame(t(df_count.matrix()))
+          df <- as.data.frame(df_count.matrix_bd())
           # write.table(,file, row.names = T)
           write.csv(df, file, row.names = T)
         }
@@ -3746,9 +3764,14 @@ runSTEGO <- function(){
           dataframe <- suppressMessages(Read10X_h5(inFile_sc$datapath, use.names = TRUE, unique.features = TRUE))
         }
 
-        else if (input$df_seruatobj_type =="BD Rhapsody") {
+        else if (input$df_seruatobj_type =="BD Rhapsody (Mouse)") {
           dataframe = read.csv(inFile_sc$datapath,row.names = 1)
         }
+
+        else if (input$df_seruatobj_type =="BD Rhapsody (Human Immune panel)") {
+          dataframe = read.csv(inFile_sc$datapath,row.names = 1)
+        }
+
         else {
           dataframe = read.csv(inFile_sc$datapath,row.names = 1)
         }
@@ -3770,8 +3793,12 @@ runSTEGO <- function(){
       else if (input$df_seruatobj_type =="10x_Genomics (.h5)") {
         df.test2 <- as.data.frame("file possibly too big and will not be rendered")
       }
+      else if (input$df_seruatobj_type =="BD Rhapsody (Mouse)") {
+        names(df.test) <- gsub("X","",names(df.test))
+        df.test2 <- df.test[!rownames(df.test) %in% c("Cell_Index"),]
+      }
 
-      else if (input$df_seruatobj_type=="BD Rhapsody") {
+      else if (input$df_seruatobj_type =="BD Rhapsody (Human Immune panel)") {
         names(df.test) <- gsub("X","",names(df.test))
         df.test2 <- df.test[!rownames(df.test) %in% c("Cell_Index"),]
       }
@@ -3798,25 +3825,33 @@ runSTEGO <- function(){
         rownames(df.test) <- make.unique(df.test$Gene_Name)
         df.test2 <- df.test[,!names(df.test) %in% c("Gene_Name")]
         sc <- CreateSeuratObject(counts = df.test2, project = input$project_name)
-        sc[["percent.mt"]] <- PercentageFeatureSet(sc, pattern = "^MT-")
-        sc[["percent.rb"]] <- PercentageFeatureSet(sc, pattern = "^RP[SL]")
+        sc <- PercentageFeatureSet2(sc, pattern = "^MT-",col.name = "mtDNA")
+        sc <- PercentageFeatureSet2(sc, pattern = "^RP[SL]",col.name = "rRNA")
         sc
       }
 
       else if (input$df_seruatobj_type=="10x_Genomics (.h5)") {
         # rownames(df.test$`Gene Expression`) <- gsub("GRCh38___","",rownames(df.test$`Gene Expression`))
         sc <- CreateSeuratObject(counts = df.test[[1]], project = input$project_name)
-        sc[["percent.mt"]] <- PercentageFeatureSet(sc, pattern = "MT-")
-        sc[["percent.rb"]] <- PercentageFeatureSet(sc, pattern = "RP[SL]")
+        sc <- PercentageFeatureSet2(sc, pattern = "^MT-",col.name = "mtDNA")
+        sc <- PercentageFeatureSet2(sc, pattern = "^RP[SL]",col.name = "rRNA")
         sc
       }
-
-      else if (input$df_seruatobj_type=="BD Rhapsody") {
+      else if (input$df_seruatobj_type =="BD Rhapsody (Mouse)") {
         names(df.test) <- gsub("X","",names(df.test))
         df.test2 <- df.test[!rownames(df.test) %in% c("Cell_Index"),]
         sc <- CreateSeuratObject(counts = df.test2, project = input$project_name)
-        sc[["percent.mt"]] <- PercentageFeatureSet(sc, pattern = "^MT-")
-        sc[["percent.rb"]] <- PercentageFeatureSet(sc, pattern = "^RP[SL]")
+        sc <- PercentageFeatureSet2(sc, pattern = "^Mt",col.name = "mtDNA")
+        sc <- PercentageFeatureSet2(sc, pattern = "Rp[sl]",col.name = "rRNA")
+        sc
+      }
+
+      else if (input$df_seruatobj_type =="BD Rhapsody (Human Immune panel)") {
+        names(df.test) <- gsub("X","",names(df.test))
+        df.test2 <- df.test[!rownames(df.test) %in% c("Cell_Index"),]
+        sc <- CreateSeuratObject(counts = df.test2, project = input$project_name)
+        sc <- PercentageFeatureSet2(sc, pattern = "^MT-",col.name = "mtDNA")
+        sc <- PercentageFeatureSet2(sc, pattern = "^RP[SL]",col.name = "rRNA")
         sc
       }
 
@@ -3824,8 +3859,8 @@ runSTEGO <- function(){
         names(df.test) <- gsub("[.]","-",names(df.test))
         rownames(df.test) <- gsub("[.]","-",rownames(df.test))
         sc <- CreateSeuratObject(counts = df.test, project = input$project_name)
-        sc[["percent.mt"]] <- PercentageFeatureSet(sc, pattern = "^MT-")
-        sc[["percent.rb"]] <- PercentageFeatureSet(sc, pattern = "^RP[SL]")
+        sc <- PercentageFeatureSet2(sc, pattern = "^MT-",col.name = "mtDNA")
+        sc <- PercentageFeatureSet2(sc, pattern = "^RP[SL]",col.name = "rRNA")
         sc
       }
     })
@@ -3835,7 +3870,7 @@ runSTEGO <- function(){
         need(nrow(sc)>0,
              "Upload files")
       )
-      VlnPlot(sc, features = c("nFeature_RNA", "nCount_RNA", "percent.mt","percent.rb"), ncol = 2)
+      VlnPlot(sc, features = c("nFeature_RNA", "nCount_RNA", "mtDNA_percent","rRNA_percent"), ncol = 2)
     })
 
     output$before_plot_sc <- renderPlot({
@@ -3879,7 +3914,7 @@ runSTEGO <- function(){
         need(nrow(sc)>0,
              error_message_val_sc)
       )
-      vals2$after_violin_plot <- subset(sc, subset = nFeature_RNA >= input$features.min & nFeature_RNA <= input$features.max & percent.mt <= input$percent.mt & percent.rb >= input$percent.rb)
+      vals2$after_violin_plot <- subset(sc, subset = nFeature_RNA >= input$features.min & nFeature_RNA <= input$features.max & mtDNA_percent <= input$percent.mt & rRNA_percent >= input$percent.rb)
     })
 
     output$after_plot_sc <- renderPlot({
@@ -3888,7 +3923,7 @@ runSTEGO <- function(){
         need(nrow(sc)>0,
              "Run Filtering")
       )
-      VlnPlot(vals2$after_violin_plot, features = c("nFeature_RNA", "nCount_RNA", "percent.mt","percent.rb"), ncol = 2)
+      VlnPlot(vals2$after_violin_plot, features = c("nFeature_RNA", "nCount_RNA", "mtDNA_percent","rRNA_percent"), ncol = 2)
     })
 
     output$downloadPlot_after_plot_sc <- downloadHandler(
@@ -3898,7 +3933,7 @@ runSTEGO <- function(){
       },
       content = function(file) {
         pdf(file, width=input$width_after_plot_sc,height=input$height_after_plot_sc, onefile = FALSE) # open the pdf device
-        plot_after <- VlnPlot(vals2$after_violin_plot, features = c("nFeature_RNA", "nCount_RNA", "percent.mt","percent.rb"), ncol = 2)
+        plot_after <- VlnPlot(vals2$after_violin_plot, features = c("nFeature_RNA", "nCount_RNA", "mtDNA_percent","rRNA_percent"), ncol = 2)
         plot(plot_after)
         dev.off()}, contentType = "application/pdf")
 
@@ -3910,7 +3945,7 @@ runSTEGO <- function(){
       },
       content = function(file) {
         png(file, width = input$width_png_after_plot_sc, height = input$height_png_after_plot_sc, res = input$resolution_PNG_after_plot_sc)
-        plot_after <- VlnPlot(vals2$after_violin_plot, features = c("nFeature_RNA", "nCount_RNA", "percent.mt","percent.rb"), ncol = 2)
+        plot_after <- VlnPlot(vals2$after_violin_plot, features = c("nFeature_RNA", "nCount_RNA", "mtDNA_percent","rRNA_percent"), ncol = 2)
         plot(plot_after)
         dev.off()},   contentType = "application/png" # MIME type of the image
     )
@@ -4050,9 +4085,13 @@ runSTEGO <- function(){
     })
 
     ## Differential expression with two conditions -----
+
     input.data_sc_meta <- reactive({
       inFile_sc_meta <- input$file_SC_meta
-      dataframe = read.csv(inFile_sc_meta$datapath)
+      if (is.null(inFile_sc_meta)) return(NULL)
+      else {
+        dataframe = read.csv(inFile_sc_meta$datapath)
+      }
     })
 
     output$DEx_view.meta.dt <- DT::renderDataTable(escape = FALSE, filter = list(position = 'top', clear = FALSE),  options = list(autoWidth = FALSE, lengthMenu = c(2,5,10,20,50,100), pageLength = 5, scrollX = TRUE),{
@@ -4075,7 +4114,7 @@ runSTEGO <- function(){
       meta.data.import <- input.data_sc_meta()
       validate(
         need(nrow(meta.data.import)>0,
-             "Add Metadata")
+             "Impute Metadata")
       )
       sc@meta.data$Cell_Index <- rownames(sc@meta.data)
 
