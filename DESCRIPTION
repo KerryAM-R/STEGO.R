@@ -56,6 +56,7 @@ Imports:
     shiny,
     shinyBS,
     shinybusy,
+    sf,
     shinyWidgets,
     showtext,
     showtextdb,
