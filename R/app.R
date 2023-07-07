@@ -3616,6 +3616,9 @@ runSTEGO <- function(){
         need(nrow(df1)>0,
              "Upload ClusTCR file")
       )
+
+      req(input$clusTCR2_names,input$clusTCR2_Vgene,input$cores_ClusTCR2)
+
       clust_dt_DATA_5 <- df1[,names(df1) %in% c(input$clusTCR2_names,input$clusTCR2_Vgene)]
       ptm <- proc.time()
 
@@ -3634,6 +3637,7 @@ runSTEGO <- function(){
         need(nrow(df1)>0,
              "Upload ClusTCR file")
       )
+      req(vals_ClusTCR2$output_dt2)
       output_dt <- vals_ClusTCR2$output_dt2
       output_dt[[1]]
     })
@@ -3659,6 +3663,14 @@ runSTEGO <- function(){
       } )
 
     output$ClusTCR2_Time <- renderPrint({
+
+      df1 <- input.data_ClusTCR2()
+      validate(
+        need(nrow(df1)>0,
+             "Upload ClusTCR file")
+      )
+      req(vals_ClusTCR2$output_dt2)
+
       output_dt <- vals_ClusTCR2$output_dt2
 
       if (is.null(output_dt)){return(NULL)}
@@ -3673,6 +3685,7 @@ runSTEGO <- function(){
         need(nrow(df1)>0,
              "Upload ClusTCR file")
       )
+      req(vals_ClusTCR2$output_dt2,input$filter_connections,input$selected_Cluster,input$lab_clust_by,input$Clust_size_order, input$text_size1,input$text_size2)
       Network_df <- vals_ClusTCR2$output_dt2
       set.seed(123)
       # ?netplot
@@ -3690,14 +3703,22 @@ runSTEGO <- function(){
 
     })
     output$NP_ClusTCR <- renderPlot({
+      df1 <- input.data_ClusTCR2()
+      validate(
+        need(nrow(df1)>0,
+             "Upload ClusTCR file")
+      )
       Network_plot_clusTCR2()
     })
 
     motif_plot_clusTCR2 <- reactive({
+      df1 <- input.data_ClusTCR2()
+      validate(
+        need(nrow(df1)>0,
+             "Upload ClusTCR file")
+      )
+      req(vals_ClusTCR2$output_dt2)
       Network_df <- vals_ClusTCR2$output_dt2
-
-      Network_df
-
       set.seed(123)
       motif_plot(Network_df,Clust_selected = input$selected_Cluster,Clust_column_name = input$Clust_size_order)
 
@@ -3709,6 +3730,7 @@ runSTEGO <- function(){
         need(nrow(df1)>0,
              "Upload ClusTCR file")
       )
+
       motif_plot_clusTCR2()
     })
 
@@ -4684,38 +4706,32 @@ runSTEGO <- function(){
 
         # Main T cell markers ------
         models.list <- list()
-        my_scGate_model <- gating_model(name = "CD8B",level = 1, signature = c("CD8B"), positive = T)
-        my_scGate_model <- gating_model(my_scGate_model,name = "CD8A",level = 2, signature = c("CD8A"), positive = T)
+        my_scGate_model <- gating_model(name = "CD8B",level = 1, signature = c("CD8B","CD8A"), positive = T)
         my_scGate_model <- gating_model(my_scGate_model,name = "CD4neg",level = 3, signature = c("CD4"), positive = F)
-        models.list$CD8ab <- my_scGate_model
+        models.list$CD8 <- my_scGate_model
+
         my_scGate_model <- gating_model(name = "CD4",level = 1, signature = c("CD4"), positive = T)
-        my_scGate_model <- gating_model(my_scGate_model,name = "CD8B",level = 2, signature = c("CD8B"), positive = F) # positive for
-        my_scGate_model <- gating_model(my_scGate_model,name = "CD8A",level = 3, signature = c("CD8A"), positive = F) # positive for
+        my_scGate_model <- gating_model(my_scGate_model,name = "CD8",level = 2, signature = c("CD8B","CD8A"), positive = F) # positive for
         models.list$CD4 <- my_scGate_model
 
-        my_scGate_model <- gating_model(name = "CD8A",level = 1, signature = c("CD8A"), positive = T)
-        my_scGate_model <- gating_model(my_scGate_model,name = "CD8Bneg",level = 2, signature = c("CD8B"), positive = F)
+        my_scGate_model <- gating_model(name = "CD8ANeg",level = 1, signature = c("CD8A","CD8B"), positive = F)
         my_scGate_model <- gating_model(my_scGate_model,name = "CD4neg",level = 3, signature = c("CD4"), positive = F)
-        models.list$CD8aa <- my_scGate_model
-
-        my_scGate_model <- gating_model(name = "CD8ANeg",level = 1, signature = c("CD8A"), positive = F)
-        my_scGate_model <- gating_model(my_scGate_model,name = "CD8Bneg",level = 2, signature = c("CD8B"), positive = F)
-        my_scGate_model <- gating_model(my_scGate_model,name = "CD4neg",level = 3, signature = c("CD4"), positive = F)
+        my_scGate_model <- gating_model(my_scGate_model,name = "CD3E",level = 4, signature = c("CD3E"), positive =T)
         models.list$DN <- my_scGate_model
 
         obj <- scGate(sc, model = models.list,
-                      pos.thr = 0.75,
-                      neg.thr = 0.75,
+                      pos.thr = 0.5,
+                      neg.thr = 0.5,
                       nfeatures = len,
                       ncores = 8
         )
 
         sc@meta.data$T_cells <- obj@meta.data$scGate_multi
 
+        DimPlot(sc, group.by = "T_cells")
+
         # GNLY.PRF1.GZMB -----
         models.list <- list()
-        models.list
-        FeaturePlot(sc,features = "GZMB") | FeaturePlot(sc,features = "PRF1") | FeaturePlot(sc,features = "GNLY")
         my_scGate_model <- gating_model(name = "GZMB",level = 1, signature = c("GZMB"), positive = T)
         my_scGate_model <- gating_model(my_scGate_model,name = "PRF1",level = 2, signature = c("PRF1"), positive = T)
         my_scGate_model <- gating_model(my_scGate_model,name = "GNLY",level = 3, signature = c("GNLY"), positive = T)
@@ -4746,24 +4762,29 @@ runSTEGO <- function(){
         my_scGate_model <- gating_model(my_scGate_model,name = "GNLY",level = 3, signature = c("GNLY"), positive = F)
         models.list$GZMB <- my_scGate_model
 
-        my_scGate_model <- gating_model(name = "GZMB",level = 1, signature = c("GZMB"), positive = F)
-        my_scGate_model <- gating_model(my_scGate_model,name = "PRF1",level = 2, signature = c("PRF1"), positive = T)
+        my_scGate_model <- gating_model(name = "PRF1",level = 1, signature = c("PRF1"), positive = T)
+        my_scGate_model <- gating_model(my_scGate_model,name = "GZMB",level = 2, signature = c("GZMB"), positive = F)
         my_scGate_model <- gating_model(my_scGate_model,name = "GNLY",level = 3, signature = c("GNLY"), positive = F)
         models.list$PRF1 <- my_scGate_model
 
         obj <- scGate(sc, model = models.list,
-                      pos.thr = 0.65,
-                      neg.thr = 0.65,
+                      pos.thr = 0.5,
+                      neg.thr = 0.5,
                       nfeatures = len,
                       ncores = 8
         )
-
         sc@meta.data$GNLY.PRF1.GZMB <- obj@meta.data$scGate_multi
+        sc@meta.data$GNLY.PRF1.GZMB <- ifelse( sc@meta.data$GNLY.PRF1.GZMB=="NA",NA, sc@meta.data$GNLY.PRF1.GZMB)
+
+        FeaturePlot(sc,features = "GZMB") | FeaturePlot(sc,features = "PRF1")|FeaturePlot(sc,features = "GNLY")|DimPlot(sc, group.by = "GNLY.PRF1.GZMB")
+
+        DimPlot(sc, group.by = "GNLY.PRF1.GZMB") +
+          scale_colour_manual(values = rainbow(8),na.value = "grey90")
 
         # TNF and IFNg----
         models.list <- list()
         models.list
-        FeaturePlot(sc,features = "IFNG") | FeaturePlot(sc,features = "TNF")
+
         my_scGate_model <- gating_model(name = "IFNG",level = 1, signature = c("IFNG"), positive = T)
         my_scGate_model <- gating_model(my_scGate_model,name = "TNF",level = 2, signature = c("TNF"), positive = T)
         models.list$IFNG.TNF <- my_scGate_model
@@ -4784,52 +4805,38 @@ runSTEGO <- function(){
         )
 
         sc@meta.data$TNF.IFNG <- obj@meta.data$scGate_multi
+        # FeaturePlot(sc,features = "IFNG") | FeaturePlot(sc,features = "TNF")|DimPlot(sc, group.by = "TNF.IFNG") + scale_colour_manual(values = rainbow(3), na.value = "grey90")
 
         # T cell types (CD4_based)-----
         models.list <- list()
         my_scGate_model <- gating_model(name = "CCR4",level = 1, signature = c("CCR4"), positive = T)
-        my_scGate_model <- gating_model(my_scGate_model,name = "CD4",level = 2, signature = c("CD4"), positive = T)
-        my_scGate_model <- gating_model(my_scGate_model,name = "CD8A",level = 3, signature = c("CD8A"), positive = F)
-        my_scGate_model <- gating_model(my_scGate_model,name = "CD8B",level = 4, signature = c("CD8B"), positive = F)
-        models.list$Th2 <- my_scGate_model
-
+        my_scGate_model <- gating_model(my_scGate_model,name = "FOXP3",level = 2, signature = c("FOXP3"), positive = F)
+        models.list$Th2_like <- my_scGate_model
         my_scGate_model <- gating_model(name = "CXCR3",level = 1, signature = c("CXCR3"), positive = T)
         my_scGate_model <- gating_model(my_scGate_model,name = "TBX21",level = 2, signature = c("TBX21"), positive = T)
-        my_scGate_model <- gating_model(my_scGate_model,name = "CD4",level = 3, signature = c("CD4"), positive = T)
-        my_scGate_model <- gating_model(my_scGate_model,name = "CD8A",level = 4, signature = c("CD8A"), positive = F)
-        my_scGate_model <- gating_model(my_scGate_model,name = "CD8B",level = 5, signature = c("CD8B"), positive = F)
-        models.list$Th1 <- my_scGate_model
-
+        my_scGate_model <- gating_model(my_scGate_model,name = "CD8",level = 3, signature = c("CD8A","CD8B"), positive = F)
+        models.list$Th1_like <- my_scGate_model
         my_scGate_model <- gating_model(name = "RORC",level = 1, signature = c("RORC"), positive = T)
-        my_scGate_model <- gating_model(my_scGate_model,name = "CD4",level = 2, signature = c("CD4"), positive = T)
-        my_scGate_model <- gating_model(my_scGate_model,name = "CD8A",level = 3, signature = c("CD8A"), positive = F)
-        my_scGate_model <- gating_model(my_scGate_model,name = "CD8B",level = 4, signature = c("CD8B"), positive = F)
-        models.list$Th17 <- my_scGate_model
-
+        my_scGate_model <- gating_model(my_scGate_model,name = "FOXP3",level = 2, signature = c("FOXP3"), positive = F)
+        models.list$Th17_like <- my_scGate_model
         my_scGate_model <- gating_model(name = "CXCR5",level = 1, signature = c("CXCR5"), positive = T)
-        my_scGate_model <- gating_model(my_scGate_model,name = "CD4",level = 2, signature = c("CD4"), positive = T)
-        my_scGate_model <- gating_model(my_scGate_model,name = "CD8A",level = 3, signature = c("CD8A"), positive = F)
-        my_scGate_model <- gating_model(my_scGate_model,name = "CD8B",level = 4, signature = c("CD8B"), positive = F)
-        models.list$Tfh <- my_scGate_model
-
+        my_scGate_model <- gating_model(my_scGate_model,name = "FOXP3",level = 2, signature = c("FOXP3"), positive = F)
+        models.list$Tfh_like <- my_scGate_model
         my_scGate_model <- gating_model(name = "FOXP3",level = 1, signature = c("FOXP3"), positive = T)
-        my_scGate_model <- gating_model(my_scGate_model,name = "CD4",level = 2, signature = c("CD4"), positive = T)
-        my_scGate_model <- gating_model(my_scGate_model,name = "CD8A",level = 3, signature = c("CD8A"), positive = F)
-        my_scGate_model <- gating_model(my_scGate_model,name = "CD8B",level = 4, signature = c("CD8B"), positive = F)
-        models.list$Treg <- my_scGate_model
-
+        models.list$Treg_like <- my_scGate_model
         my_scGate_model <- gating_model(name = "KLRK1",level = 1, signature = c("KLRK1"), positive = T) # https://pubmed.ncbi.nlm.nih.gov/36705564/
         my_scGate_model <- gating_model(my_scGate_model,name = "IL7R",level = 2, signature = c("IL7R"), positive = T)
-        my_scGate_model <- gating_model(my_scGate_model,name = "CD4",level = 3, signature = c("CD4"), positive = F)
+        my_scGate_model <- gating_model(my_scGate_model,name = "CXCR3",level = 3, signature = c("CXCR3"), positive = F)
+        my_scGate_model <- gating_model(my_scGate_model,name = "TBX21",level = 3, signature = c("TBX21"), positive = F)
         my_scGate_model <- gating_model(my_scGate_model,name = "CD8A",level =4, signature = c("CD8A"), positive = T)
-        my_scGate_model <- gating_model(my_scGate_model,name = "CD8B",level = 5, signature = c("CD8B"), positive = T)
-        models.list$KILR_CD8 <- my_scGate_model
-        models.list
-
+        models.list$KILR_CD8_effector <- my_scGate_model
+        my_scGate_model <- gating_model(name = "GZMA",level = 1, signature = c("GZMA"), positive = T) # https://pubmed.ncbi.nlm.nih.gov/36705564/
+        my_scGate_model <- gating_model(my_scGate_model,name = "GZMK",level = 2, signature = c("GZMK"), positive = T)
+        models.list$Effector_CD8 <- my_scGate_model
         my_scGate_model <- gating_model(name = "CD3E",level = 1, signature = c("CD3E"), positive = T)
         my_scGate_model <- gating_model(my_scGate_model,name = "CD14",level = 2, signature = c("CD14"), positive = T)
         models.list$Mono.Tcell.Complex <- my_scGate_model
-
+        models.list
         obj <- scGate(sc, model = models.list,
                       pos.thr = 0.5,
                       neg.thr = 0.5,
@@ -4838,25 +4845,157 @@ runSTEGO <- function(){
         )
 
         sc@meta.data$T_cell_types <- obj@meta.data$scGate_multi
+        # DimPlot(sc, group.by = "T_cell_types") + scale_colour_manual(values = rainbow(10), na.value = "grey90")
+        # NK-Like phenotypes ------
+        # len
+        FeaturePlot(sc,features = "KLRF1")| FeaturePlot(sc,features = "KLRK1")|FeaturePlot(sc,features = "KLRF1")|FeaturePlot(sc,features = "KLRC3")|FeaturePlot(sc,features = "KLRC4")|FeaturePlot(sc,features = "KLRC1")|FeaturePlot(sc,features = "KLRB1")
+
+        models.list <- list()
+
+        my_scGate_model <- gating_model(name = "KLRK1",level = 1, signature = c("KLRK1"), positive = T)
+        my_scGate_model <- gating_model(my_scGate_model,name = "KLRB1",level = 2, signature = c("KLRB1"), positive = T)
+        my_scGate_model <- gating_model(my_scGate_model,name = "NKp80",level = 3, signature = c("KLRF1"), positive = T)
+        my_scGate_model <- gating_model(my_scGate_model,name = "KLRC3",level = 4, signature = c("KLRC3"), positive = T)
+        my_scGate_model <- gating_model(my_scGate_model,name = "KLRC4",level = 5, signature = c("KLRC4"), positive = T)
+        my_scGate_model <- gating_model(my_scGate_model,name = "KLRC1",level = 6, signature = c("KLRC1"), positive = T)
+        # my_scGate_model <- gating_model(my_scGate_model,name = "KLRG1",level = 6, signature = c("KLRG1"), positive = F)
+        models.list$CD161.NKG2A.NKG2D.NKG2E.NKG2F.NKp80 <- my_scGate_model
+
+
+        my_scGate_model <- gating_model(name = "KLRK1",level = 1, signature = c("KLRK1"), positive = T)
+        my_scGate_model <- gating_model(my_scGate_model,name = "KLRB1",level = 2, signature = c("KLRB1"), positive = T)
+        my_scGate_model <- gating_model(my_scGate_model,name = "NKp80",level = 3, signature = c("KLRF1"), positive = T)
+        my_scGate_model <- gating_model(my_scGate_model,name = "KLRC3",level = 4, signature = c("KLRC3"), positive = T)# NKG2E
+        my_scGate_model <- gating_model(my_scGate_model,name = "KLRC4",level = 5, signature = c("KLRC4"), positive = F) #NKG2F
+        my_scGate_model <- gating_model(my_scGate_model,name = "KLRC1",level = 6, signature = c("KLRC1"), positive = T)
+        # my_scGate_model <- gating_model(my_scGate_model,name = "KLRG1",level = 6, signature = c("KLRG1"), positive = F)
+        models.list$CD161.NKG2A.NKG2D.NKG2E.NKp80 <- my_scGate_model
+
+        my_scGate_model <- gating_model(name = "KLRK1",level = 1, signature = c("KLRK1"), positive = F)
+        my_scGate_model <- gating_model(my_scGate_model,name = "KLRB1",level = 2, signature = c("KLRB1"), positive = T)
+        my_scGate_model <- gating_model(my_scGate_model,name = "NKp80",level = 3, signature = c("KLRF1"), positive = F)
+        my_scGate_model <- gating_model(my_scGate_model,name = "KLRC3",level = 4, signature = c("KLRC3"), positive = F)
+        my_scGate_model <- gating_model(my_scGate_model,name = "KLRC4",level = 5, signature = c("KLRC4"), positive = F)
+        my_scGate_model <- gating_model(my_scGate_model,name = "KLRC1",level = 6, signature = c("KLRC1"), positive = F)
+        models.list$CD161 <- my_scGate_model
+
+        my_scGate_model <- gating_model(name = "KLRK1",level = 1, signature = c("KLRK1"), positive = T)
+        my_scGate_model <- gating_model(my_scGate_model,name = "KLRB1",level = 2, signature = c("KLRB1"), positive = T)
+        my_scGate_model <- gating_model(my_scGate_model,name = "NKp80",level = 3, signature = c("KLRF1"), positive = F)
+        my_scGate_model <- gating_model(my_scGate_model,name = "KLRC3",level = 4, signature = c("KLRC3"), positive = F)
+        my_scGate_model <- gating_model(my_scGate_model,name = "KLRC4",level = 5, signature = c("KLRC4"), positive = F)
+        my_scGate_model <- gating_model(my_scGate_model,name = "KLRC1",level = 6, signature = c("KLRC1"), positive = F)
+        models.list$CD161.NKG2D <- my_scGate_model
+
+        #  my_scGate_model <- gating_model(name = "KLRK1",level = 1, signature = c("KLRK1"), positive = T)
+        # my_scGate_model <- gating_model(my_scGate_model,name = "KLRB1",level = 1, signature = c("KLRB1"), positive = F)
+        # my_scGate_model <- gating_model(my_scGate_model,name = "NKp80",level = 2, signature = c("KLRF1"), positive = F)
+        # my_scGate_model <- gating_model(my_scGate_model,name = "KLRC3",level = 4, signature = c("KLRC3"), positive = T)
+        # my_scGate_model <- gating_model(my_scGate_model,name = "KLRC4",level = 3, signature = c("KLRC4"), positive = F)
+        # my_scGate_model <- gating_model(my_scGate_model,name = "KLRC1",level = 5, signature = c("KLRC1"), positive = F)
+        # # my_scGate_model <- gating_model(my_scGate_model,name = "KLRG1",level = 6, signature = c("KLRG1"), positive = F)
+        # models.list$NKG2E_act_NKG2D <- my_scGate_model
+        #
+        # my_scGate_model <- gating_model(name = "KLRK1",level = 1, signature = c("KLRK1"), positive = T)
+        # my_scGate_model <- gating_model(my_scGate_model,name = "KLRB1",level = 1, signature = c("KLRB1"), positive = F)
+        # my_scGate_model <- gating_model(my_scGate_model,name = "NKp80",level = 2, signature = c("KLRF1"), positive = F)
+        # my_scGate_model <- gating_model(my_scGate_model,name = "KLRC3",level = 4, signature = c("KLRC3"), positive = F)
+        # my_scGate_model <- gating_model(my_scGate_model,name = "KLRC4",level = 3, signature = c("KLRC4"), positive = T)
+        # my_scGate_model <- gating_model(my_scGate_model,name = "KLRC1",level = 5, signature = c("KLRC1"), positive = F)
+        # # my_scGate_model <- gating_model(my_scGate_model,name = "KLRG1",level = 6, signature = c("KLRG1"), positive = F)
+        # models.list$NKG2F_act_NKG2D <- my_scGate_model
+        #
+        # my_scGate_model <- gating_model(name = "KLRK1",level = 1, signature = c("KLRK1"), positive = T)
+        # my_scGate_model <- gating_model(my_scGate_model,name = "KLRB1",level = 1, signature = c("KLRB1"), positive = F)
+        # my_scGate_model <- gating_model(my_scGate_model,name = "NKp80",level = 2, signature = c("KLRF1"), positive = T)
+        # my_scGate_model <- gating_model(my_scGate_model,name = "KLRC3",level = 4, signature = c("KLRC3"), positive = F)
+        # my_scGate_model <- gating_model(my_scGate_model,name = "KLRC4",level = 3, signature = c("KLRC4"), positive = F)
+        # my_scGate_model <- gating_model(my_scGate_model,name = "KLRC1",level = 6, signature = c("KLRC1"), positive = F)
+        # models.list$NKp80_NKG2D <- my_scGate_model
+
+
+        # my_scGate_model <- gating_model(name = "KLRK1",level = 1, signature = c("KLRK1"), positive = F)
+        # my_scGate_model <- gating_model(my_scGate_model,name = "KLRB1",level = 1, signature = c("KLRB1"), positive = F)
+        # my_scGate_model <- gating_model(my_scGate_model,name = "NKp80",level = 2, signature = c("KLRF1"), positive = F)
+        # my_scGate_model <- gating_model(my_scGate_model,name = "KLRC3",level = 4, signature = c("KLRC3"), positive = F)
+        # my_scGate_model <- gating_model(my_scGate_model,name = "KLRC4",level = 3, signature = c("KLRC4"), positive = F)
+        # my_scGate_model <- gating_model(my_scGate_model,name = "KLRC1",level = 5, signature = c("KLRC1"), positive = F)
+        # my_scGate_model <- gating_model(my_scGate_model,name = "KLRG1",level = 6, signature = c("KLRG1"), positive = T)
+        # models.list$KLRG1 <- my_scGate_model
+
+        my_scGate_model <- gating_model(name = "KLRK1",level = 1, signature = c("KLRK1"), positive = T)
+        my_scGate_model <- gating_model(my_scGate_model,name = "KLRB1",level = 2, signature = c("KLRB1"), positive = F)
+        my_scGate_model <- gating_model(my_scGate_model,name = "KLRF1",level = 2, signature = c("KLRF1"), positive = F)
+        my_scGate_model <- gating_model(my_scGate_model,name = "KLRC3",level = 4, signature = c("KLRC3"), positive = F)
+        my_scGate_model <- gating_model(my_scGate_model,name = "KLRC4",level = 3, signature = c("KLRC4"), positive = F)
+        my_scGate_model <- gating_model(my_scGate_model,name = "KLRC1",level = 5, signature = c("KLRC1"), positive = F)
+        # my_scGate_model <- gating_model(my_scGate_model,name = "KLRG1",level = 6, signature = c("KLRG1"), positive = F)
+        models.list$NKG2D <- my_scGate_model
+        models.list
+
+        obj <- scGate(sc, model = models.list,
+                      pos.thr = 0.5,
+                      neg.thr = 0.5,
+                      nfeatures = len,
+                      ncores = 8
+        )
+
+
+        sc@meta.data$NK_pheno <- obj@meta.data$scGate_multi
+
+        # DimPlot(sc, group.by = "NK_like_cells") + scale_colour_manual(values = rainbow(5), na.value = "grey90")
+
+        # Activated -----
+        models.list <- list()
+        my_scGate_model <- gating_model(name = "HLA",level = 1, signature = c("HLA-DRA"), positive = F)
+        my_scGate_model <- gating_model(my_scGate_model,name = "IL2RA",level = 2, signature = c("IL2RA"), positive = F)
+        my_scGate_model <- gating_model(my_scGate_model,name = "CD38",level = 3, signature = c("CD38"), positive = F)
+        my_scGate_model <- gating_model(my_scGate_model,name = "CD69",level = 4, signature = c("CD69"), positive = T)
+        models.list$CD69 <- my_scGate_model
+        my_scGate_model <- gating_model(name = "HLA",level = 1, signature = c("HLA-DRA"), positive = T)
+        my_scGate_model <- gating_model(my_scGate_model,name = "IL2RA",level = 2, signature = c("IL2RA"), positive = T)
+        models.list$CD25_HLA.DRA <- my_scGate_model
+        my_scGate_model <- gating_model(name = "HLA",level = 1, signature = c("HLA-DRA"), positive = T)
+        my_scGate_model <- gating_model(my_scGate_model,name = "IL2RA",level = 2, signature = c("IL2RA"), positive = F)
+        models.list$HLA.DRA <- my_scGate_model
+        my_scGate_model <- gating_model(name = "HLA",level = 1, signature = c("HLA-DRA"), positive = F)
+        my_scGate_model <- gating_model(my_scGate_model,name = "IL2RA",level = 2, signature = c("IL2RA"), positive = T)
+        models.list$CD25 <- my_scGate_model
+        my_scGate_model <- gating_model(name = "HLA",level = 1, signature = c("HLA-DRA"), positive = F)
+        my_scGate_model <- gating_model(my_scGate_model,name = "IL2RA",level = 2, signature = c("IL2RA"), positive = F)
+        my_scGate_model <- gating_model(my_scGate_model,name = "CD38",level = 3, signature = c("CD38"), positive = T)
+        # my_scGate_model <- gating_model(my_scGate_model,name = "CD69",level = 4, signature = c("CD69"), positive = F)
+        models.list$CD38 <- my_scGate_model
+        models.list
+
+        obj <- scGate(sc, model = models.list,
+                      pos.thr = 0.5,
+                      neg.thr = 0.5,
+                      nfeatures = len,
+                      ncores = 8
+        )
+
+
+        sc@meta.data$Activation <- obj@meta.data$scGate_multi
+        # DimPlot(sc, group.by = "Activation") + scale_colour_manual(values = rainbow(4), na.value = "grey90")
+        # FeaturePlot(sc,features = "CD69") | FeaturePlot(sc,features = "CD38")
 
         # other -----
         models.list <- list()
-        my_scGate_model <- gating_model(name = "PDCD1",level = 1, signature = c("PDCD1"), positive = T)
-        my_scGate_model <- gating_model(my_scGate_model,name = "TIGIT",level = 2, signature = c("TIGIT"), positive = T)
+        my_scGate_model <- gating_model(name = "PDCD1",level = 1, signature = c("PDCD1","TIGIT"), positive = T)
+        my_scGate_model <- gating_model(my_scGate_model,name = "B3GAT1",level = 2, signature = c("B3GAT1","KLRG1"), positive = T)
+        models.list$exhausted_and_senescent <- my_scGate_model
+
+        my_scGate_model <- gating_model(name = "PDCD1",level = 1, signature = c("PDCD1","TIGIT"), positive = T)
+        my_scGate_model <- gating_model(my_scGate_model,name = "B3GAT1",level = 2, signature = c("B3GAT1","KLRG1"), positive = F)
         models.list$exhausted <- my_scGate_model
 
-        my_scGate_model <- gating_model(name = "B3GAT1",level = 1, signature = c("B3GAT1"), positive = T)
-        my_scGate_model <- gating_model(my_scGate_model,name = "KLRG1",level = 2, signature = c("KLRG1"), positive = T)
+        my_scGate_model <- gating_model(name = "PDCD1",level = 1, signature = c("PDCD1","TIGIT"), positive = F)
+        my_scGate_model <- gating_model(my_scGate_model,name = "B3GAT1",level = 2, signature = c("B3GAT1","KLRG1"), positive = T)
         models.list$senescent <- my_scGate_model
-
-
-        my_scGate_model <- gating_model(name = "MKI67",level = 1, signature = c("MKI67"), positive = T)
-        my_scGate_model <- gating_model(my_scGate_model,name = "TOP2A",level = 2, signature = c("TOP2A"), positive = T)
+        my_scGate_model <- gating_model(name = "MKI67",level = 1, signature = c("MKI67","TOP2A"), positive = T)
+        # my_scGate_model <- gating_model(my_scGate_model,name = "TOP2A",level = 2, signature = c("TOP2A"), positive = T)
         models.list$CellCycling <- my_scGate_model
-
-        my_scGate_model <- gating_model(name = "CD3E",level = 1, signature = c("CD3E"), positive = T)
-        my_scGate_model <- gating_model(my_scGate_model,name = "CD14",level = 2, signature = c("CD14"), positive = T)
-        models.list$Mono.Tcell.Complex <- my_scGate_model
 
         obj <- scGate(sc, model = models.list,
                       pos.thr = 0.5,
@@ -4865,12 +5004,13 @@ runSTEGO <- function(){
                       ncores = 8
         )
         sc@meta.data$Other <- obj@meta.data$scGate_multi
-        sc
+        # DimPlot(sc, group.by = "Other") + scale_colour_manual(values = rainbow(6), na.value = "grey90") | FeaturePlot(sc,features = "IL2RA")
+
       }
-      else
-      {
-        sc
+      else {
       }
+
+      sc
     })
 
     output$scGATE_verbatum_Generic <- renderPrint({
@@ -9725,10 +9865,8 @@ runSTEGO <- function(){
     output$Classification_Overlap_pie <- renderPlot({
       Overlap_Pie_chart_Class()
     })
-
-
-
     ### end -----
   }
   shinyApp(ui, server)
+
 }
