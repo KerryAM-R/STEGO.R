@@ -665,63 +665,61 @@ runSTEGO <- function(){
                                        verbatimTextOutput("testing_mult_anno")
                               ),
                               tabPanel("scGATE",
-                                       tabsetPanel(
-                                         tabPanel("Annotations to add",
-                                                  selectInput("Data_types","Source",choices = c("10x_HS","BD_Rhapsody_HS","10x_MM","BD_Rhapsody_MM")),
+                                       selectInput("Data_types","Source",choices = c("10x_HS","BD_Rhapsody_HS","10x_MM","BD_Rhapsody_MM")),
 
 
-                                                  conditionalPanel(condition="input.Data_types == '10x_HS'",
-                                                                   selectInput("GenericID_scGATE","Generic To include",choices = c("Bcell","CD4T","CD8T","CD8TIL" ,"Erythrocyte" ,"Megakaryocyte" , "MoMacDC","Myeloid","NK","PanBcell","panDC","PlasmaCell","Tcell","Tcell.alphabeta"), selected = c("Bcell","MoMacDC","NK","CD8T","CD4T","PlasmaCell"), multiple = T),
-                                                                   fluidRow(
-                                                                     column(3,checkboxInput("generic_scGATE","Generic (Human)", value = F)),
-                                                                     column(3,checkboxInput("CD4_scGATE","CD4 T cell (Human)", value = F)),
-                                                                     column(3,checkboxInput("CD8_scGATE","CD8 T cell (Human)", value = F)),
-                                                                     column(3,checkboxInput("GeneralMarkers_scGATE","ESGA general markers (Human; Lit)", value = F)),
-                                                                     column(3,checkboxInput("Function_scGATE","T cell Function types (Human; Lit)", value = F)),
-                                                                     column(3,checkboxInput("Ex.Sen_scGATE","Exhausted/Senescence (Human)", value = F)),
-                                                                     column(3,checkboxInput("COVID_scGATE","COVID markers (Human)", value = F)),
-                                                                     column(3,checkboxInput("Activation_scGATE","Activation markers (Human)", value = F)),
-                                                                     column(3,checkboxInput("IFNgTNFa_scGATE","IFNg and TNFa (Human)", value = F)),
-                                                                     column(3,checkboxInput("GNLY.PFR1.GZMB_scGATE","GNLY.PFR1.GZMB markers (Human)", value = F)),
-                                                                     column(3,checkboxInput("Interlukin_scGATE","Interleukins markers (Human)", value = F))),
-                                                                   add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
-                                                                   verbatimTextOutput("scGATE_verbatum_Generic"),
-                                                                   add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
-                                                                   verbatimTextOutput("scGATE_verbatum_CD4"),
-                                                                   add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
-                                                                   verbatimTextOutput("scGATE_verbatum_CD8"),
-                                                                   add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
-                                                                   verbatimTextOutput("scGATE_verbatum_GeneralMarkers"),
-                                                                   add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
-                                                                   verbatimTextOutput("scGATE_verbatum_Function"),
-                                                                   add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
-                                                                   verbatimTextOutput("scGATE_verbatum_Ex.Sen"),
-                                                                   add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
-                                                                   verbatimTextOutput("scGATE_verbatum_COVID"),
-                                                                   add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
-                                                                   verbatimTextOutput("scGATE_verbatum_Activation"),
-                                                                   add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
-                                                                   verbatimTextOutput("scGATE_verbatum_IFNgTNFa"),
-                                                                   add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
-                                                                   verbatimTextOutput("scGATE_verbatum_GNLY.PFR1.GZMB"),
-                                                                   add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
-                                                                   verbatimTextOutput("scGATE_verbatum_Interlukin")
-                                                  ),
-                                                  conditionalPanel("input.Data_types == 'BD_Rhapsody_HS'",
-                                                                   add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
-                                                                   column(3,checkboxInput("BDrhapsody_scGATE","BD Rhapsody (Human)", value = F)),
-                                                                   add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
-                                                                   verbatimTextOutput("scGATE_verbatum_BDrhapsody_scGATE"),
+                                       conditionalPanel(condition="input.Data_types == '10x_HS'",
+                                                        selectInput("GenericID_scGATE","Generic To include",choices = c("Bcell","CD4T","CD8T","CD8TIL" ,"Erythrocyte" ,"Megakaryocyte" , "MoMacDC","Myeloid","NK","PanBcell","panDC","PlasmaCell","Tcell","Tcell.alphabeta"), selected = c("Bcell","MoMacDC","NK","CD8T","CD4T","PlasmaCell"), multiple = T),
+                                                        fluidRow(
+                                                          column(3,checkboxInput("generic_scGATE","Generic (Human)", value = F)),
+                                                          column(3,checkboxInput("CD4_scGATE","CD4 T cell (Human)", value = F)),
+                                                          column(3,checkboxInput("CD8_scGATE","CD8 T cell (Human)", value = F)),
+                                                          column(3,checkboxInput("GeneralMarkers_scGATE","ESGA general markers (Human; Lit)", value = F)),
+                                                          column(3,checkboxInput("Function_scGATE","T cell Function types (Human; Lit)", value = F)),
+                                                          column(3,checkboxInput("Ex.Sen_scGATE","Exhausted/Senescence (Human)", value = F)),
+                                                          column(3,checkboxInput("COVID_scGATE","COVID markers (Human)", value = F)),
+                                                          column(3,checkboxInput("Activation_scGATE","Activation markers (Human)", value = F)),
+                                                          column(3,checkboxInput("IFNgTNFa_scGATE","IFNg and TNFa (Human)", value = F)),
+                                                          column(3,checkboxInput("GNLY.PFR1.GZMB_scGATE","GNLY.PFR1.GZMB markers (Human)", value = F)),
+                                                          column(3,checkboxInput("Interlukin_scGATE","Interleukins markers (Human)", value = F))),
+                                                        add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
+                                                        verbatimTextOutput("scGATE_verbatum_Generic"),
+                                                        add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
+                                                        verbatimTextOutput("scGATE_verbatum_CD4"),
+                                                        add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
+                                                        verbatimTextOutput("scGATE_verbatum_CD8"),
+                                                        add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
+                                                        verbatimTextOutput("scGATE_verbatum_GeneralMarkers"),
+                                                        add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
+                                                        verbatimTextOutput("scGATE_verbatum_Function"),
+                                                        add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
+                                                        verbatimTextOutput("scGATE_verbatum_Ex.Sen"),
+                                                        add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
+                                                        verbatimTextOutput("scGATE_verbatum_COVID"),
+                                                        add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
+                                                        verbatimTextOutput("scGATE_verbatum_Activation"),
+                                                        add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
+                                                        verbatimTextOutput("scGATE_verbatum_IFNgTNFa"),
+                                                        add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
+                                                        verbatimTextOutput("scGATE_verbatum_GNLY.PFR1.GZMB"),
+                                                        add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
+                                                        verbatimTextOutput("scGATE_verbatum_Interlukin")
+                                       ),
+                                       conditionalPanel("input.Data_types == 'BD_Rhapsody_HS'",
+                                                        add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
+                                                        column(3,checkboxInput("BDrhapsody_scGATE","BD Rhapsody (Human)", value = F)),
+                                                        add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
+                                                        verbatimTextOutput("scGATE_verbatum_BDrhapsody_scGATE"),
 
-                                                  ),
+                                       ),
 
 
-                                         ),
-                                         tabPanel("Table",
-                                                  add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
-                                                  div(DT::dataTableOutput("DEx_table_TcellClass_scGATE")),
-                                         )
-                                       )
+
+                                       # tabPanel("Table",
+                                       #          add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
+                                       #          div(DT::dataTableOutput("DEx_table_TcellClass_scGATE")),
+                                       # )
+
                               ),
                               tabPanel("Meta data table",
                                        fluidRow(
@@ -729,7 +727,7 @@ runSTEGO <- function(){
                                          # column(3,checkboxInput("add.scGATE","Add scGATE classifications", value = T))
                                        ),
                                        add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
-                                       div(DT::dataTableOutput("DEx_table_TcellClass_scGATE.kmeans")),
+                                       div(DT::dataTableOutput("DEx_table_TcellClass_scGATE")),
                               )
                             )
 
@@ -4465,19 +4463,17 @@ runSTEGO <- function(){
         need(nrow(sc)>0,
              "Upload file for annotation")
       )
-
-      df <- as.data.frame(sc@meta.data[,names(sc@meta.data) %in% c("Cell_Index")])
-      names(df) <- "Cell_Index"
       if (input$generic_scGATE==T) {
         scGate_models_DB <- custom_db_scGATE(system.file("scGATE","human/generic",package = "STEGO.R"))
         models.list <- scGate_models_DB[c(input$GenericID_scGATE)]
-        obj <- scGate(sc, model = models.list,ncores = 4)
-        df$generic <- obj@meta.data$scGate_multi
+        obj <- scGate(sc, model = models.list,ncores = 8)
+        sc@meta.data$generic <- obj@meta.data$scGate_multi
+        sc
       }
       else {
-        df
+        sc
       }
-      df
+      sc
     })
     scGATE_anno_CD4 <- reactive({
       sc <- getData_2()
@@ -4485,18 +4481,19 @@ runSTEGO <- function(){
         need(nrow(sc)>0,
              "Upload file for annotation")
       )
-      df <- as.data.frame(sc@meta.data[,names(sc@meta.data) %in% c("Cell_Index")])
-      names(df) <- "Cell_Index"
+
       if (input$CD4_scGATE==T) {
         scGate_models_DB <- suppressWarnings(custom_db_scGATE(system.file("scGATE","human/CD4_TIL",package = "STEGO.R")))
         models.list <- scGate_models_DB
-        obj <- scGate(sc, model = models.list,ncores = 4)
-        df$CD4_TIL <- obj@meta.data$scGate_multi
+        obj <- scGate(sc, model = models.list,ncores = 8)
+        sc@meta.data$CD4_TIL <- obj@meta.data$scGate_multi
       }
       else {
-        df
+        sc
       }
-      df
+
+      sc
+
     })
     scGATE_anno_CD8 <- reactive({
       sc <- getData_2()
@@ -4504,40 +4501,40 @@ runSTEGO <- function(){
         need(nrow(sc)>0,
              "Upload file for annotation")
       )
-      df <- as.data.frame(sc@meta.data[,names(sc@meta.data) %in% c("Cell_Index")])
-      names(df) <- "Cell_Index"
       if (input$CD8_scGATE==T) {
         scGate_models_DB <- suppressWarnings(custom_db_scGATE(system.file("scGATE","human/CD8_TIL",package = "STEGO.R")))
         models.list <- scGate_models_DB
         models.list
 
-        obj <- scGate(sc, model = models.list,ncores = 4)
-        df$CD8_TIL <- obj@meta.data$scGate_multi
+        obj <- scGate(sc, model = models.list,ncores = 8)
+        sc@meta.data$CD8_TIL <- obj@meta.data$scGate_multi
       }
       else {
-        df
+        sc
       }
-      df
+      sc
     })
-    scGATE_anno_cellTypist_higher <- reactive({
-      sc <- getData_2()
-      validate(
-        need(nrow(sc)>0,
-             "Upload file for annotation")
-      )
-      df <- as.data.frame(sc@meta.data[,names(sc@meta.data) %in% c("Cell_Index")])
-      names(df) <- "Cell_Index"
-      if (input$cellTypist_higher_scGATE==T) {
-        scGate_models_DB <- suppressWarnings(custom_db_scGATE(system.file("scGATE","human/CellTypist_higher",package = "STEGO.R")))
-        models.list <- scGate_models_DB[c("Bcell","CD4Tcell","CD8Tcell","DC","DNTcell", "MonoMac","NK","Plasma")]
-        obj <- scGate(sc, model = models.list,ncores = 4)
-        df$CellTypist_higher <- obj@meta.data$scGate_multi
-      }
-      else {
-        df
-      }
-      df
-    })
+    #####
+    # scGATE_anno_cellTypist_higher <- reactive({
+    #   sc <- getData_2()
+    #   validate(
+    #     need(nrow(sc)>0,
+    #          "Upload file for annotation")
+    #   )
+    #   df <- as.data.frame(sc@meta.data[,names(sc@meta.data) %in% c("Cell_Index")])
+    #   names(df) <- "Cell_Index"
+    #   if (input$cellTypist_higher_scGATE==T) {
+    #     scGate_models_DB <- suppressWarnings(custom_db_scGATE(system.file("scGATE","human/CellTypist_higher",package = "STEGO.R")))
+    #     models.list <- scGate_models_DB[c("Bcell","CD4Tcell","CD8Tcell","DC","DNTcell", "MonoMac","NK","Plasma")]
+    #      obj <- scGate(sc, model = models.list,ncores = 4)
+    #     df$CellTypist_higher <- obj@meta.data$scGate_multi
+    #   }
+    #   else {
+    #     df
+    #   }
+    #   df
+    # })
+    #####
     scGATE_anno_GeneralMarkers <- reactive({
       sc <- getData_2()
       validate(
@@ -4550,15 +4547,14 @@ runSTEGO <- function(){
         scGate_models_DB <- suppressWarnings(custom_db_scGATE(system.file("scGATE","human/ECSA",package = "STEGO.R")))
         models.list <- scGate_models_DB
         models.list
-        obj <- scGate(sc, model = models.list,ncores = 4)
-        df$GeneralMarkers <- obj@meta.data$scGate_multi
+        obj <- scGate(sc, model = models.list,ncores =8)
+        sc@meta.data$GeneralMarkers <- obj@meta.data$scGate_multi
       }
       else {
-        df
+        sc
       }
-      df
+      sc
     })
-
     scGATE_anno_Function <- reactive({
       sc <- getData_2()
       validate(
@@ -4571,15 +4567,14 @@ runSTEGO <- function(){
         scGate_models_DB <- suppressWarnings(custom_db_scGATE(system.file("scGATE","human/Function",package = "STEGO.R")))
         models.list <- scGate_models_DB
         models.list
-        obj <- scGate(sc, model = models.list,ncores = 4)
-        df$Function <- obj@meta.data$scGate_multi
+        obj <- scGate(sc, model = models.list,ncores = 8)
+        sc@meta.data$Function <- obj@meta.data$scGate_multi
       }
       else {
-        df
+        sc
       }
-      df
+      sc
     })
-
     scGATE_anno_Ex.Sen <- reactive({
       sc <- getData_2()
       validate(
@@ -4591,13 +4586,13 @@ runSTEGO <- function(){
       if (input$Ex.Sen_scGATE==T) {
         scGate_models_DB <- suppressWarnings(custom_db_scGATE(system.file("scGATE","human/Exhausted_Senescence",package = "STEGO.R")))
         models.list <- scGate_models_DB
-        obj <- scGate(sc, model = models.list,ncores = 4)
-        df$Exhausted_Senescence <- obj@meta.data$scGate_multi
+        obj <- scGate(sc, model = models.list,ncores = 8)
+        sc@meta.data$Exhausted_Senescence <- obj@meta.data$scGate_multi
       }
       else {
-        df
+        sc
       }
-      df
+      sc
     })
     scGATE_anno_COVID <- reactive({
       sc <- getData_2()
@@ -4610,13 +4605,13 @@ runSTEGO <- function(){
       if (input$COVID_scGATE==T) {
         scGate_models_DB <- suppressWarnings(custom_db_scGATE(system.file("scGATE","human/COVID",package = "STEGO.R")))
         models.list <- scGate_models_DB
-        obj <- scGate(sc, model = models.list,ncores = 4)
-        df$COVID <- obj@meta.data$scGate_multi
+        obj <- scGate(sc, model = models.list,ncores = 8)
+        sc@meta.data$COVID <- obj@meta.data$scGate_multi
       }
       else {
-        df
+        sc
       }
-      df
+      sc
     })
     scGATE_anno_Activation <- reactive({
       sc <- getData_2()
@@ -4629,13 +4624,13 @@ runSTEGO <- function(){
       if (input$Activation_scGATE==T) {
         scGate_models_DB <- suppressWarnings(custom_db_scGATE(system.file("scGATE","human/Activation",package = "STEGO.R")))
         models.list <- scGate_models_DB
-        obj <- scGate(sc, model = models.list,ncores = 4)
-        df$Activation <- obj@meta.data$scGate_multi
+        obj <- scGate(sc, model = models.list,ncores = 8)
+        sc@meta.data$Activation <- obj@meta.data$scGate_multi
       }
       else {
-        df
+        sc
       }
-      df
+      sc
     })
     scGATE_anno_IFNgTNFa <- reactive({
       sc <- getData_2()
@@ -4649,12 +4644,12 @@ runSTEGO <- function(){
         scGate_models_DB <- suppressWarnings(custom_db_scGATE(system.file("scGATE","human/IFNgTNFa",package = "STEGO.R")))
         models.list <- scGate_models_DB
         obj <- scGate(sc, model = models.list,ncores = 4)
-        df$IFNgTNFa <- obj@meta.data$scGate_multi
+        sc@meta.data$IFNgTNFa <- obj@meta.data$scGate_multi
       }
       else {
-        df
+        sc
       }
-      df
+      sc
     })
     scGATE_anno_GNLY.PFR1.GZMB <- reactive({
       sc <- getData_2()
@@ -4662,18 +4657,16 @@ runSTEGO <- function(){
         need(nrow(sc)>0,
              "Upload file for annotation")
       )
-      df <- as.data.frame(sc@meta.data[,names(sc@meta.data) %in% c("Cell_Index")])
-      names(df) <- "Cell_Index"
       if (input$GNLY.PFR1.GZMB_scGATE==T) {
         scGate_models_DB <- suppressWarnings(custom_db_scGATE(system.file("scGATE","human/GNLY.PFR1.GZMB",package = "STEGO.R")))
         models.list <- scGate_models_DB
-        obj <- scGate(sc, model = models.list,ncores = 4)
-        df$GNLY.PFR1.GZMB <- obj@meta.data$scGate_multi
+        obj <- scGate(sc, model = models.list,ncores = 8)
+        sc@meta.data$GNLY.PFR1.GZMB <- obj@meta.data$scGate_multi
       }
       else {
-        df
+        sc
       }
-      df
+      sc
     })
     scGATE_anno_Interlukin <- reactive({
       sc <- getData_2()
@@ -4681,21 +4674,20 @@ runSTEGO <- function(){
         need(nrow(sc)>0,
              "Upload file for annotation")
       )
-      df <- as.data.frame(sc@meta.data[,names(sc@meta.data) %in% c("Cell_Index")])
-      names(df) <- "Cell_Index"
+
       if (input$Interlukin_scGATE==T) {
         scGate_models_DB <- suppressWarnings(custom_db_scGATE(system.file("scGATE","human/IL",package = "STEGO.R")))
-
         models.list <- scGate_models_DB
         models.list
-        obj <- scGate(sc, model = models.list,ncores = 4)
-        df$Interleukins <- obj@meta.data$scGate_multi
+        obj <- scGate(sc, model = models.list,ncores = 8)
+        sc@meta.data$Interleukins <- obj@meta.data$scGate_multi
       }
       else {
-        df
+        sc
       }
-      df
+      sc
     })
+    # BD rhapsody gates
     scGATE_anno_BD_rhapsody <- reactive({
       sc <- getData_2()
       validate(
@@ -4985,6 +4977,7 @@ runSTEGO <- function(){
       sc
     })
 
+    # verbatium outputs -----
     output$scGATE_verbatum_Generic <- renderPrint({
       FN <- tempfile()
       zz <- file(FN, open = "wt")
@@ -5166,6 +5159,7 @@ runSTEGO <- function(){
       cat(readLines(FN), sep="\n")
     })
 
+    # creating the final object
     scGATE_anno <- reactive({
       sc <- getData_2()
       validate(
@@ -5173,29 +5167,61 @@ runSTEGO <- function(){
              "Upload file for annotation")
       )
       if (input$Data_types=="10x_HS") {
-        df <- cbind(scGATE_anno_generic(),
-                    scGATE_anno_CD4(),
-                    scGATE_anno_CD8(),
-                    scGATE_anno_GeneralMarkers(),
-                    scGATE_anno_Function(),
-                    scGATE_anno_Ex.Sen(),
-                    scGATE_anno_COVID(),
-                    scGATE_anno_Activation(),
-                    scGATE_anno_IFNgTNFa(),
-                    scGATE_anno_GNLY.PFR1.GZMB(),
-                    scGATE_anno_Interlukin()
-        )
+        if (input$generic_scGATE==T) {
+          obj <- scGATE_anno_generic()
+          sc@meta.data$generic <- obj@meta.data$generic
+        }
+        if (input$CD4_scGATE==T) {
+          obj <- scGATE_anno_CD4()
+          sc@meta.data$CD4_TIL <- obj@meta.data$CD4_TIL
+        }
+        if (input$CD8_scGATE==T) {
+          obj <- scGATE_anno_CD8()
+          sc@meta.data$CD8_TIL <- obj@meta.data$CD8_TIL
+        }
+        if (input$GeneralMarkers_scGATE==T) {
+          obj <- scGATE_anno_GeneralMarkers()
+          sc@meta.data$GeneralMarkers <- obj@meta.data$GeneralMarkers
+        }
+        if (input$Function_scGATE==T) {
+          obj <- scGATE_anno_Function()
+          sc@meta.data$Function <- obj@meta.data$Function
+        }
+        if (input$Ex.Sen_scGATE==T) {
+          obj <- scGATE_anno_Ex.Sen()
+          sc@meta.data$Exhausted_Senescence <- obj@meta.data$Exhausted_Senescence
+        }
+        if (input$COVID_scGATE==T) {
+          obj <- scGATE_anno_COVID()
+          sc@meta.data$COVID <- obj@meta.data$COVID
+        }
+        if (input$Activation_scGATE==T) {
+          obj <- scGATE_anno_Activation()
+          sc@meta.data$Activation <- obj@meta.data$Activation
+        }
+        if (input$IFNgTNFa_scGATE==T) {
+          obj <- scGATE_anno_IFNgTNFa()
+          sc@meta.data$IFNgTNFa <- obj@meta.data$IFNgTNFa
+        }
+        if (input$GNLY.PFR1.GZMB_scGATE==T) {
+          obj <- scGATE_anno_GNLY.PFR1.GZMB()
+          sc@meta.data$GNLY.PFR1.GZMB <- obj@meta.data$GNLY.PFR1.GZMB
+        }
+        if (input$Interlukin_scGATE==T) {
+          obj <- scGATE_anno_Interlukin()
+          sc@meta.data$Interleukins <- obj@meta.data$Interleukins
+        }
+        else {
+          sc
+        }
 
-        rownames(df) <- df$Cell_Index
-        df <- df[,!grepl("Cell_Index",names(df))]
-        df$Cell_Index <- rownames(df)
-        as.data.frame(df)
+        sc
+
       }
 
       else if (input$Data_types=="BD_Rhapsody_HS") {
         sc <- scGATE_anno_BD_rhapsody()
-        df <- sc@meta.data
-        as.data.frame(df)
+        sc
       }
 
       else {
@@ -5204,61 +5230,31 @@ runSTEGO <- function(){
 
     })
 
-    output$DEx_table_TcellClass_scGATE <-  DT::renderDataTable(escape = FALSE, filter = list(position = 'top', clear = FALSE), options = list(autoWidth = FALSE, lengthMenu = c(2,5,10,20,50,100), pageLength = 5, scrollX = TRUE),{
-      sc <- getData_2()
-      validate(
-        need(nrow(sc)>0,
-             "Upload file for annotation")
-      )
-      scGATE_anno()
-    })
     # all.annotations added -----
-    final_anno <- reactive({
-      sc <- getData_2()
-      validate(
-        need(nrow(sc)>0,
-             "Upload file for annotation")
-      )
+    output$DEx_table_TcellClass_scGATE <-  DT::renderDataTable(escape = FALSE, filter = list(position = 'top', clear = FALSE),
+                                                               options = list(autoWidth = FALSE, lengthMenu = c(2,5,10,20,50,100),
+                                                                              pageLength = 5, scrollX = TRUE),{
 
-      annotation <- cbind(scGATE_anno())
-      annotation
+                                                                                sc <- getData_2()
+                                                                                validate(
+                                                                                  need(nrow(sc)>0,
+                                                                                       "Upload file for annotation")
+                                                                                )
+                                                                                if (input$Data_types=="10x_HS") {
+                                                                                  sc <- scGATE_anno()
+                                                                                  as.data.frame(sc@meta.data)
+                                                                                }
 
-      rownames(annotation) <- annotation$Cell_Index
-      as.data.frame(annotation)
-      md <- sc@meta.data
-      md.anno <- merge(md,annotation,by = "Cell_Index", sort=F,all=T)
-      sc@meta.data <- md.anno
+                                                                                else if (input$Data_types=="BD_Rhapsody_HS") {
+                                                                                  sc <- scGATE_anno()
+                                                                                  as.data.frame(sc@meta.data)
+                                                                                }
 
-    })
+                                                                                else {
+                                                                                  as.data.frame("Need to add Mouse annotations")
+                                                                                }
 
-    output$DEx_table_TcellClass_scGATE.kmeans <-  DT::renderDataTable(escape = FALSE, filter = list(position = 'top', clear = FALSE),
-                                                                      options = list(autoWidth = FALSE, lengthMenu = c(2,5,10,20,50,100),
-                                                                                     pageLength = 5, scrollX = TRUE),{
-
-                                                                                       sc <- getData_2()
-                                                                                       validate(
-                                                                                         need(nrow(sc)>0,
-                                                                                              "Upload file for annotation")
-                                                                                       )
-                                                                                       if (input$Data_types=="10x_HS") {
-
-                                                                                         sc <- final_anno()
-                                                                                         sc@meta.data
-                                                                                       }
-
-                                                                                       else if (input$Data_types=="BD_Rhapsody_HS") {
-                                                                                         sc <- scGATE_anno_BD_rhapsody()
-                                                                                         df <- sc@meta.data
-                                                                                         as.data.frame(df)
-                                                                                       }
-
-                                                                                       else {
-                                                                                         as.data.frame("Need to add Mouse annotations")
-                                                                                       }
-
-
-
-                                                                                     })
+                                                                              })
 
     output$downloaddf_SeruatObj_annotated <- downloadHandler(
       filename = function(){
@@ -5266,21 +5262,15 @@ runSTEGO <- function(){
       },
       content = function(file){
         if (input$Data_types=="10x_HS") {
-          as.h5Seurat(final_anno(),file)
+          as.h5Seurat(scGATE_anno(),file)
         }
-
         else if (input$Data_types=="BD_Rhapsody_HS") {
-          as.h5Seurat(scGATE_anno_BD_rhapsody(),file)
-
-
+          as.h5Seurat(scGATE_anno(),file)
         }
 
         else {
           as.data.frame("Need to add Mouse annotations")
         }
-
-
-
       } )
 
     #
