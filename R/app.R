@@ -63,14 +63,14 @@ runSTEGO <- function(){
                                                             div(DT::dataTableOutput("test.files.10x4")),
                                                    ),
                                                    tabPanel("TCRex",
-                                                            add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "250px",width = "250px", color = "blue"),
+                                                            add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
                                                             div(DT::dataTableOutput("tb_TCRex_10x_df")),
                                                             downloadButton('downloaddf_TCRex_10x','Download table')
 
                                                    ),
                                                    tabPanel("For Seurat QC",value = 2,
                                                             tags$head(tags$style("#tb_10x_matrix2  {white-space: nowrap;  }")),
-                                                            add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "250px",width = "250px", color = "blue"),
+                                                            add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
                                                             div(DT::dataTableOutput("tb_10x_matrix2")),
                                                             tags$head(tags$style("#sum_tb_10x1  {white-space: nowrap;  }")),
                                                             div(DT::dataTableOutput("sum_tb_10x1")),
@@ -167,28 +167,28 @@ runSTEGO <- function(){
 
 
                                                   tabPanel("Imported data",
-                                                           add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "250px",width = "250px", color = "blue"),
+                                                           add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
                                                            div(DT::dataTableOutput("test.files")),
                                                            conditionalPanel(condition="input.Format_bd=='cellXgene'",
-                                                                            add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "250px",width = "250px", color = "blue"),
+                                                                            add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
                                                                             div(DT::dataTableOutput("test.files3"))
                                                            ),
 
                                                            conditionalPanel(condition="input.Format_bd=='Barcode_features_matrix'",
-                                                                            add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "250px",width = "250px", color = "blue"),
+                                                                            add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
                                                                             div(DT::dataTableOutput("test.files.bd1")),
-                                                                            add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "250px",width = "250px", color = "blue"),
+                                                                            add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
                                                                             div(DT::dataTableOutput("test.files.bd2")),
-                                                                            add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "250px",width = "250px", color = "blue"),
+                                                                            add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
                                                                             div(DT::dataTableOutput("test.files.bd3")),
 
                                                            ),
                                                            conditionalPanel(condition="input.filtered_list=='Paired'",
-                                                                            add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "250px",width = "250px", color = "blue"),
+                                                                            add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
                                                                             div(DT::dataTableOutput("test.files2"))
                                                            ),
                                                            conditionalPanel(condition="input.filtered_list=='Dominant' || input.filtered_list=='Unfiltered'",
-                                                                            add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "250px",width = "250px", color = "blue"),
+                                                                            add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
                                                                             div(DT::dataTableOutput("test.files.bd4")),
                                                            ),
 
@@ -202,13 +202,13 @@ runSTEGO <- function(){
 
                                                   tabPanel("clusTCR2",
                                                            tags$head(tags$style("#tb_clusTCR  {white-space: nowrap;  }")),
-                                                           add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "250px",width = "250px", color = "blue"),
+                                                           add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
                                                            div(DT::dataTableOutput("tb_clusTCR")),
                                                            downloadButton('downloaddf_clusTCR','Download table')
                                                   ),
 
                                                   tabPanel("TCRex",
-                                                           add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "250px",width = "250px", color = "blue"),
+                                                           add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
                                                            div(DT::dataTableOutput("tb_TCRex_BDrap_df")),
                                                            downloadButton('downloaddf_TCRex_BDrap','Download table')
 
@@ -216,9 +216,9 @@ runSTEGO <- function(){
 
                                                   tabPanel("For Seurat",
                                                            tags$head(tags$style("#tb_count_matrix  {white-space: nowrap;  }")),
-                                                           add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "250px",width = "250px", color = "blue"),
+                                                           add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
                                                            div(DT::dataTableOutput("tb_count_matrix")),
-                                                           add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "250px",width = "250px", color = "blue"),
+                                                           add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
                                                            div(DT::dataTableOutput("tb_metadata_sc")),
                                                            fluidRow(
                                                              column(3,downloadButton('downloadtb_count_matrix','Download count table')),
@@ -228,7 +228,7 @@ runSTEGO <- function(){
                                                   ),
                                                   tabPanel("TCR_Explore",
                                                            tags$head(tags$style("#tb_TCR_Explore  {white-space: nowrap;  }")),
-                                                           add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "250px",width = "250px", color = "blue"),
+                                                           add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
                                                            div(DT::dataTableOutput("tb_TCR_Explore")),
                                                            downloadButton('downloadtb_TCR_Explore','Download table')
                                                   ),
@@ -259,24 +259,24 @@ runSTEGO <- function(){
                                      mainPanel(
                                        tabsetPanel(
                                          tabPanel("Check files",
-                                                  add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "250px",width = "250px", color = "blue"),
+                                                  add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
                                                   div(DT::dataTableOutput("test.files_array_Matrix")),
-                                                  add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "250px",width = "250px", color = "blue"),
+                                                  add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
                                                   div(DT::dataTableOutput("test.files_array_contig")),
 
                                          ),
                                          tabPanel("Filtering",
-                                                  add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "250px",width = "250px", color = "blue"),
+                                                  add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
                                                   div(DT::dataTableOutput("test.files_array_contig_Filtered")),
                                          ),
                                          tabPanel("clusTCR",
-                                                  add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "250px",width = "250px", color = "blue"),
+                                                  add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
                                                   div(DT::dataTableOutput("test.files_ClusTCR2_array")),
                                                   downloadButton("download_ClusTCR2_labs_array"),
                                          ),
                                          tabPanel("TCRex"),
                                          tabPanel("Seurat",
-                                                  add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "250px",width = "250px", color = "blue"),
+                                                  add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
                                                   div(DT::dataTableOutput("tb_array_matrix2")),
                                                   div(DT::dataTableOutput("tb_Array_meta1")),
                                                   fluidRow(column(3,downloadButton('downloadtb_array_matrix2','Download matrix')),
@@ -359,12 +359,12 @@ runSTEGO <- function(){
                           mainPanel(
                             tabsetPanel(id = "clusTCR2_tabs",
                                         tabPanel("Merge Multiple Files",value = "merge",
-                                                 add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "250px",width = "250px", color = "blue"),
+                                                 add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
                                                  div(DT::dataTableOutput("DEx_multiple_ClusTCR2")),
                                                  downloadButton('downloaddf_multiple_ClusTCR2','Download table')
                                         ),
                                         tabPanel("Uploaded file",value = "processing1",
-                                                 add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "250px",width = "250px", color = "blue"),
+                                                 add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
                                                  div(DT::dataTableOutput("clust_dt2_table")),
                                         ),
 
@@ -372,10 +372,10 @@ runSTEGO <- function(){
                                         tabPanel("Outputs",value = "processing2",
                                                  tabsetPanel(
                                                    tabPanel("Processing",
-                                                            add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "250px",width = "250px", color = "blue"),
+                                                            add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
                                                             verbatimTextOutput('ClusTCR2_Time'),
                                                             # div(DT::dataTableOutput("")),
-                                                            add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "250px",width = "250px", color = "blue"),
+                                                            add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
                                                             div(DT::dataTableOutput("ClusTCR2_lab")),
                                                             downloadButton('download_ClusTCR_labels','Download Cluster table'),
                                                             # verbatimTextOutput('ClusTCR2_lab'),
@@ -460,7 +460,7 @@ runSTEGO <- function(){
                                                  accept=c('.csv','.csv.gz')),
                                        actionButton("run_metadata","Impute metadata after clustering"),
                                        # selectInput("save_type","Type of output",choices = c(".h5Seurat",".rds")),
-                                       add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "250px",width = "250px", color = "blue"),
+                                       add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
                                        downloadButton('downloaddf_SeruatObj','Download Seurat')
                                        # column(4,numericInput("percent.mt","Mictochondrial DNA cut-off", value = 20)),
                           ),
@@ -476,7 +476,7 @@ runSTEGO <- function(){
                                          tabPanel("Violin and correlation",
                                                   tabsetPanel(
                                                     tabPanel("Before",
-                                                             add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "250px",width = "250px", color = "blue"),
+                                                             add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
                                                              plotOutput("before_plot_sc", height = "600px"),
 
                                                              fluidRow(
@@ -494,7 +494,7 @@ runSTEGO <- function(){
                                                     ),
                                                     tabPanel("After",
                                                              p("hit 'update Violin plot' to check cut-offs"),
-                                                             add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "250px",width = "250px", color = "blue"),
+                                                             add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
                                                              plotOutput("after_plot_sc", height = "600px"),
 
                                                              fluidRow(
@@ -517,7 +517,7 @@ runSTEGO <- function(){
                                          ),
                                          #### Variable features -----
                                          tabPanel("Top variable features",
-                                                  add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "250px",width = "250px", color = "blue"),
+                                                  add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
                                                   plotOutput("plot_10_features_sc", height = "600px"),
                                                   fluidRow(
                                                     column(1,numericInput("width_plot_10_features_sc", "Width of PDF", value=10)),
@@ -544,14 +544,14 @@ runSTEGO <- function(){
 
                                          ),
                                          tabPanel("DimHeatmap",
-                                                  add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "250px",width = "250px", color = "blue"),
+                                                  add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
 
                                                   plotOutput("create_PCA_heatmap_sc", height = "1000px")
                                          ),
                                          # tabPanel("Resolution plot"),
                                          #### UMAP  -----
                                          tabPanel("UMAP",
-                                                  add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "250px",width = "250px", color = "blue"),
+                                                  add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
                                                   plotOutput("create_UMAP_sc", height = "600px")
                                          ), # Export a table with meta.data and expression.
                                          tabPanel("Add metadata",
@@ -587,32 +587,32 @@ runSTEGO <- function(){
                           mainPanel(
                             tabsetPanel(
                               tabPanel("Upload files",
-                                       add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "250px",width = "250px", color = "blue"),
+                                       add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
                                        verbatimTextOutput("testing_mult"),
                                        # verbatimTextOutput("testing_mult2")
                               ),
                               tabPanel("Variable data",
-                                       add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "250px",width = "250px", color = "blue"),
+                                       add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
                                        actionButton("run_var","Run VariableFeatures"),
-                                       add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "250px",width = "250px", color = "blue"),
+                                       add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
                                        verbatimTextOutput("var_harmony_verbrose")
                               ),
                               tabPanel("Scale data",
-                                       add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "250px",width = "250px", color = "blue"),
+                                       add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
                                        actionButton("run_scale","Run Scale"),
-                                       add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "250px",width = "250px", color = "blue"),
+                                       add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
                                        verbatimTextOutput("scale_harmony_verbrose")
                               ),
                               tabPanel("PCA",
-                                       add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "250px",width = "250px", color = "blue"),
+                                       add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
                                        actionButton("run_PCA","Run PCA"),
-                                       add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "250px",width = "250px", color = "blue"),
+                                       add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
                                        verbatimTextOutput("PCA_harmony_verbrose")
                               ),
                               tabPanel("harmony",
-                                       add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "250px",width = "250px", color = "blue"),
+                                       add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
                                        actionButton("run_harmony","Run Harmony"),
-                                       add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "250px",width = "250px", color = "blue"),
+                                       add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
                                        verbatimTextOutput("harmony_verbrose"),
                               ),
                               tabPanel("Dimentional reduction",
@@ -621,12 +621,12 @@ runSTEGO <- function(){
                                          column(6,numericInput("res_merged","Resolution of clusters", value = 0.5)),
                                        ),
                                        actionButton("run_reduction_harmony","Run Dimentional reduction"),
-                                       add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "250px",width = "250px", color = "blue"),
+                                       add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
                                        verbatimTextOutput("testing_mult3")
 
                               ),
                               tabPanel("UMAP",
-                                       add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "250px",width = "250px", color = "blue"),
+                                       add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
                                        plotOutput("create_UMAP_merged",height="600px"),
 
                                        fluidRow(
@@ -661,7 +661,7 @@ runSTEGO <- function(){
                           mainPanel(
                             tabsetPanel(
                               tabPanel("Upload",
-                                       add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "250px",width = "250px", color = "blue"),
+                                       add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
                                        verbatimTextOutput("testing_mult_anno")
                               ),
                               tabPanel("scGATE",
@@ -684,33 +684,33 @@ runSTEGO <- function(){
                                                                      column(3,checkboxInput("IFNgTNFa_scGATE","IFNg and TNFa (Human)", value = F)),
                                                                      column(3,checkboxInput("GNLY.PFR1.GZMB_scGATE","GNLY.PFR1.GZMB markers (Human)", value = F)),
                                                                      column(3,checkboxInput("Interlukin_scGATE","Interleukins markers (Human)", value = F))),
-                                                                   add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "250px",width = "250px", color = "blue"),
+                                                                   add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
                                                                    verbatimTextOutput("scGATE_verbatum_Generic"),
-                                                                   add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "250px",width = "250px", color = "blue"),
+                                                                   add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
                                                                    verbatimTextOutput("scGATE_verbatum_CD4"),
-                                                                   add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "250px",width = "250px", color = "blue"),
+                                                                   add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
                                                                    verbatimTextOutput("scGATE_verbatum_CD8"),
-                                                                   add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "250px",width = "250px", color = "blue"),
+                                                                   add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
                                                                    verbatimTextOutput("scGATE_verbatum_GeneralMarkers"),
-                                                                   add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "250px",width = "250px", color = "blue"),
+                                                                   add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
                                                                    verbatimTextOutput("scGATE_verbatum_Function"),
-                                                                   add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "250px",width = "250px", color = "blue"),
+                                                                   add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
                                                                    verbatimTextOutput("scGATE_verbatum_Ex.Sen"),
-                                                                   add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "250px",width = "250px", color = "blue"),
+                                                                   add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
                                                                    verbatimTextOutput("scGATE_verbatum_COVID"),
-                                                                   add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "250px",width = "250px", color = "blue"),
+                                                                   add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
                                                                    verbatimTextOutput("scGATE_verbatum_Activation"),
-                                                                   add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "250px",width = "250px", color = "blue"),
+                                                                   add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
                                                                    verbatimTextOutput("scGATE_verbatum_IFNgTNFa"),
-                                                                   add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "250px",width = "250px", color = "blue"),
+                                                                   add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
                                                                    verbatimTextOutput("scGATE_verbatum_GNLY.PFR1.GZMB"),
-                                                                   add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "250px",width = "250px", color = "blue"),
+                                                                   add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
                                                                    verbatimTextOutput("scGATE_verbatum_Interlukin")
                                                   ),
                                                   conditionalPanel("input.Data_types == 'BD_Rhapsody_HS'",
-                                                                   add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "250px",width = "250px", color = "blue"),
+                                                                   add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
                                                                    column(3,checkboxInput("BDrhapsody_scGATE","BD Rhapsody (Human)", value = F)),
-                                                                   add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "250px",width = "250px", color = "blue"),
+                                                                   add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
                                                                    verbatimTextOutput("scGATE_verbatum_BDrhapsody_scGATE"),
 
                                                   ),
@@ -718,7 +718,7 @@ runSTEGO <- function(){
 
                                          ),
                                          tabPanel("Table",
-                                                  add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "250px",width = "250px", color = "blue"),
+                                                  add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
                                                   div(DT::dataTableOutput("DEx_table_TcellClass_scGATE")),
                                          )
                                        )
@@ -728,7 +728,7 @@ runSTEGO <- function(){
                                          # column(3,checkboxInput("add.kmeans","Add K-means classification", value = F)),
                                          # column(3,checkboxInput("add.scGATE","Add scGATE classifications", value = T))
                                        ),
-                                       add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "250px",width = "250px", color = "blue"),
+                                       add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
                                        div(DT::dataTableOutput("DEx_table_TcellClass_scGATE.kmeans")),
                               )
                             )
@@ -829,7 +829,7 @@ runSTEGO <- function(){
                             tabsetPanel(id = "check_up_files",
 
                                         tabPanel("Check files uploaded",value = 'up',
-                                                 add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "250px",width = "250px", color = "blue"),
+                                                 add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
 
 
                                                  fluidRow(
@@ -846,7 +846,7 @@ runSTEGO <- function(){
                                         tabPanel("Overview of TCR",
                                                  tabsetPanel(id = "QC_panel",
                                                              tabPanel("Check UMAP", value = 1,
-                                                                      add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "250px",width = "250px", color = "blue"),
+                                                                      add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
                                                                       plotOutput("create_UMAP_sc2", height = "600px"),
 
                                                                       fluidRow(
@@ -869,7 +869,7 @@ runSTEGO <- function(){
                                                              ),
 
                                                              tabPanel("Clonal expansion plots",value = 2,
-                                                                      add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "250px",width = "250px", color = "blue"),
+                                                                      add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
 
 
                                                                       fluidRow(
@@ -911,7 +911,7 @@ runSTEGO <- function(){
                                                              ),
                                                              #### UMAP clonality -> TCR -----
                                                              tabPanel("UMAP with clonality (counts)", value = 3,
-                                                                      add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "250px",width = "250px", color = "blue"),
+                                                                      add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
                                                                       fluidRow(
                                                                         column(3,selectInput("filter_umap_expand","Filter plot",choices = c("no","yes"))),
 
@@ -963,7 +963,7 @@ runSTEGO <- function(){
 
                                                                                        column(12,selectInput("ID_Column_metadata","Select to display",choices = "", multiple = T, width = "1200px")),
 
-                                                                                       add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "250px",width = "250px", color = "blue"),
+                                                                                       add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
                                                                                        fluidRow(
                                                                                          column(3,
                                                                                                 wellPanel(id = "tPanel23",style = "overflow-y:scroll; max-height: 600px",
@@ -1065,7 +1065,7 @@ runSTEGO <- function(){
                                                                       ),
                                                              ),
                                                              tabPanel("Cluster differences (All markers)", value = 5,
-                                                                      add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "250px",width = "250px", color = "blue"),
+                                                                      add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
                                                                       div(DT::dataTableOutput("DEx_table_clusters")),
                                                                       downloadButton('downloaddf_DEx_table_clusters','Download Table (.csv)')
                                                              ),
@@ -1087,15 +1087,18 @@ runSTEGO <- function(){
                                         tabPanel("TCR and GEX",
                                                  fluidRow(
                                                    column(4,uiOutput("classification_to_add")),
-                                                   column(4, selectInput("clust_group","Select cluster:",choices ="")),
+                                                   column(4, selectInput("clust_group","Split graph by:",choices ="")),
                                                    column(4, selectInput("Gene_V_top","Select V with/without CDR3",choices =""))),
 
-                                                 conditionalPanel(condition="input.Panel_TCRUMAP=='top_clone'",
-                                                                  fluidRow(
-                                                                    column(4,actionButton("run_top","Update selected clonotype")),
-                                                                    column(4, selectInput("Selected_clonotype","Select clonotype:",choices ="")),
-                                                                    # column(4, selectInput("Selected_chain","Select chain:",choices ="")),
-                                                                  )),
+                                                 conditionalPanel(
+                                                   condition="input.Panel_TCRUMAP=='top_clone'",
+                                                   fluidRow(
+                                                     column(4,actionButton("run_top","Update selected clonotype")),
+                                                     column(4, selectInput("Selected_clonotype","Select clonotype:",choices ="")),
+                                                     # column(4, selectInput("Selected_chain","Select chain:",choices ="")),
+                                                   ),
+                                                   column(12,selectInput("Graph_split_order","Order of split by:",choices = "", multiple = T, width = "1200px")),
+                                                 ),
                                                  conditionalPanel(condition="input.Panel_TCRUMAP=='ClusTCR2'",
                                                                   fluidRow(
                                                                     column(3,selectInput("chain_TCR","Chains included",choices = c("TRAG","TRBD","Ig"))
@@ -1130,7 +1133,7 @@ runSTEGO <- function(){
                                                              tabPanel("GEX",
                                                                       tabsetPanel(id = "Panel_class",
                                                                                   tabPanel("Percentage",value = 16,
-                                                                                           add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "250px",width = "250px", color = "blue"),
+                                                                                           add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
                                                                                            # div(DT::dataTableOutput("Percent_tab")),
                                                                                            verbatimTextOutput("Percent_tab"),
                                                                                            downloadButton('downloaddf_Percent_tab','Download table')
@@ -1139,7 +1142,7 @@ runSTEGO <- function(){
                                                                                            fluidRow(column(3,selectInput("show_selected","Show all labels?",choices=c("All","Selected_list"))),
                                                                                                     column(9,uiOutput("SiteNumInput",width = "900px")),
                                                                                            ),
-                                                                                           add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "250px",width = "250px", color = "blue"),
+                                                                                           add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
                                                                                            fluidRow(
                                                                                              column(3,
                                                                                                     wellPanel(id = "tPanel23",style = "overflow-y:scroll; max-height: 600px",
@@ -1157,7 +1160,7 @@ runSTEGO <- function(){
                                                                                   ),
 
                                                                                   tabPanel("Pie chart",value = 15,
-                                                                                           add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "250px",width = "250px", color = "blue"),
+                                                                                           add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
                                                                                            fluidRow(
                                                                                              # column(3,numericInput("strip_size","Size of header",value = 10)),
                                                                                              column(9,p("Fill = Select function type; Group = Select cluster"))
@@ -1229,12 +1232,12 @@ runSTEGO <- function(){
                                                                       #          ),
                                                                       tabsetPanel(
                                                                         tabPanel("Table",
-                                                                                 add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "250px",width = "250px", color = "blue"),
+                                                                                 add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
                                                                                  div(DT::dataTableOutput("Top_clonotype_df")),
 
                                                                         ),
                                                                         tabPanel("Bar graph",
-                                                                                 add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "250px",width = "250px", color = "blue"),
+                                                                                 add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
 
                                                                                  fluidRow(
                                                                                    column(3,
@@ -1254,7 +1257,7 @@ runSTEGO <- function(){
                                                                         ),
                                                                         tabPanel("Pie/UMAP chart",
 
-                                                                                 add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "250px",width = "250px", color = "blue"),
+                                                                                 add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
                                                                                  fluidRow(
                                                                                    column(3,selectInput("Plot_type_selected","Plot",choices = c("pie","UMAP"))),
                                                                                    # column(3,numericInput("strip_size_pie","Size of header",value = 10)),
@@ -1290,7 +1293,7 @@ runSTEGO <- function(){
                                                                                               column(3, selectInput("plot_type_ridgvi","Plot type", choices = c("Ridge (selected clonotype)","Ridge (compare)","Violin (selected clonotype)", "Violin (compare)"))),
                                                                                             ),
 
-                                                                                            add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "250px",width = "250px", color = "blue"),
+                                                                                            add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
                                                                                             plotOutput("Ridge_chart_alpha_gamma_plot_out",height="600px"),
                                                                                             fluidRow(
                                                                                               column(1,numericInput("width_Ridge_chart_alpha_gamma_plot_out", "Width of PDF", value=10)),
@@ -1303,7 +1306,7 @@ runSTEGO <- function(){
 
                                                                                    ),
                                                                                    tabPanel("Stats",
-                                                                                            add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "250px",width = "250px", color = "blue"),
+                                                                                            add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
                                                                                             h5("Left = relative to all; Right based on function"),
                                                                                             fluidRow(
                                                                                               column(6, div(DT::dataTableOutput("Ridge_chart_alpha_gamma_stat"))),
@@ -1326,12 +1329,12 @@ runSTEGO <- function(){
                                                                       tabsetPanel(
 
                                                                         tabPanel("Uploaded Epitope file",
-                                                                                 add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "250px",width = "250px", color = "blue"),
+                                                                                 add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
                                                                                  div(DT::dataTableOutput("MainTcell_Check")),
                                                                         ),
 
                                                                         tabPanel("Summary Table",
-                                                                                 add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "250px",width = "250px", color = "blue"),
+                                                                                 add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
                                                                                  div(DT::dataTableOutput("Pie_Epitope_dt")),
                                                                                  downloadButton('downloaddf_Pie_Epitope_dt','Download table')
 
@@ -1399,7 +1402,7 @@ runSTEGO <- function(){
                                                              tabPanel("ClusTCR2",value = "ClusTCR2",
                                                                       tabsetPanel(
                                                                         tabPanel("Table",
-                                                                                 add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "250px",width = "250px", color = "blue"),
+                                                                                 add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
                                                                                  div(DT::dataTableOutput("Tb_ClusTCR_selected")),
                                                                         ),
                                                                         tabPanel("table 2",
@@ -4701,7 +4704,12 @@ runSTEGO <- function(){
       )
 
       if (input$BDrhapsody_scGATE==T && input$Data_types=="BD_Rhapsody_HS") {
+
         len <- length(rownames(sc@assays$RNA@meta.features))
+        len
+        if (len>2000){
+          len = 2000
+        }
         # obtained the list of markers from the following article based on Mouse gut: # https://www.frontiersin.org/articles/10.3389/fimmu.2020.563414/full
 
         # Main T cell markers ------
@@ -4886,42 +4894,6 @@ runSTEGO <- function(){
         my_scGate_model <- gating_model(my_scGate_model,name = "KLRC4",level = 5, signature = c("KLRC4"), positive = F)
         my_scGate_model <- gating_model(my_scGate_model,name = "KLRC1",level = 6, signature = c("KLRC1"), positive = F)
         models.list$CD161.NKG2D <- my_scGate_model
-
-        #  my_scGate_model <- gating_model(name = "KLRK1",level = 1, signature = c("KLRK1"), positive = T)
-        # my_scGate_model <- gating_model(my_scGate_model,name = "KLRB1",level = 1, signature = c("KLRB1"), positive = F)
-        # my_scGate_model <- gating_model(my_scGate_model,name = "NKp80",level = 2, signature = c("KLRF1"), positive = F)
-        # my_scGate_model <- gating_model(my_scGate_model,name = "KLRC3",level = 4, signature = c("KLRC3"), positive = T)
-        # my_scGate_model <- gating_model(my_scGate_model,name = "KLRC4",level = 3, signature = c("KLRC4"), positive = F)
-        # my_scGate_model <- gating_model(my_scGate_model,name = "KLRC1",level = 5, signature = c("KLRC1"), positive = F)
-        # # my_scGate_model <- gating_model(my_scGate_model,name = "KLRG1",level = 6, signature = c("KLRG1"), positive = F)
-        # models.list$NKG2E_act_NKG2D <- my_scGate_model
-        #
-        # my_scGate_model <- gating_model(name = "KLRK1",level = 1, signature = c("KLRK1"), positive = T)
-        # my_scGate_model <- gating_model(my_scGate_model,name = "KLRB1",level = 1, signature = c("KLRB1"), positive = F)
-        # my_scGate_model <- gating_model(my_scGate_model,name = "NKp80",level = 2, signature = c("KLRF1"), positive = F)
-        # my_scGate_model <- gating_model(my_scGate_model,name = "KLRC3",level = 4, signature = c("KLRC3"), positive = F)
-        # my_scGate_model <- gating_model(my_scGate_model,name = "KLRC4",level = 3, signature = c("KLRC4"), positive = T)
-        # my_scGate_model <- gating_model(my_scGate_model,name = "KLRC1",level = 5, signature = c("KLRC1"), positive = F)
-        # # my_scGate_model <- gating_model(my_scGate_model,name = "KLRG1",level = 6, signature = c("KLRG1"), positive = F)
-        # models.list$NKG2F_act_NKG2D <- my_scGate_model
-        #
-        # my_scGate_model <- gating_model(name = "KLRK1",level = 1, signature = c("KLRK1"), positive = T)
-        # my_scGate_model <- gating_model(my_scGate_model,name = "KLRB1",level = 1, signature = c("KLRB1"), positive = F)
-        # my_scGate_model <- gating_model(my_scGate_model,name = "NKp80",level = 2, signature = c("KLRF1"), positive = T)
-        # my_scGate_model <- gating_model(my_scGate_model,name = "KLRC3",level = 4, signature = c("KLRC3"), positive = F)
-        # my_scGate_model <- gating_model(my_scGate_model,name = "KLRC4",level = 3, signature = c("KLRC4"), positive = F)
-        # my_scGate_model <- gating_model(my_scGate_model,name = "KLRC1",level = 6, signature = c("KLRC1"), positive = F)
-        # models.list$NKp80_NKG2D <- my_scGate_model
-
-
-        # my_scGate_model <- gating_model(name = "KLRK1",level = 1, signature = c("KLRK1"), positive = F)
-        # my_scGate_model <- gating_model(my_scGate_model,name = "KLRB1",level = 1, signature = c("KLRB1"), positive = F)
-        # my_scGate_model <- gating_model(my_scGate_model,name = "NKp80",level = 2, signature = c("KLRF1"), positive = F)
-        # my_scGate_model <- gating_model(my_scGate_model,name = "KLRC3",level = 4, signature = c("KLRC3"), positive = F)
-        # my_scGate_model <- gating_model(my_scGate_model,name = "KLRC4",level = 3, signature = c("KLRC4"), positive = F)
-        # my_scGate_model <- gating_model(my_scGate_model,name = "KLRC1",level = 5, signature = c("KLRC1"), positive = F)
-        # my_scGate_model <- gating_model(my_scGate_model,name = "KLRG1",level = 6, signature = c("KLRG1"), positive = T)
-        # models.list$KLRG1 <- my_scGate_model
 
         my_scGate_model <- gating_model(name = "KLRK1",level = 1, signature = c("KLRK1"), positive = T)
         my_scGate_model <- gating_model(my_scGate_model,name = "KLRB1",level = 2, signature = c("KLRB1"), positive = F)
@@ -6388,8 +6360,11 @@ runSTEGO <- function(){
 
     })
 
-    observe({
 
+
+
+
+    observe({
       df2 <- select_group_metadata()
 
       validate(
@@ -6413,8 +6388,6 @@ runSTEGO <- function(){
 
 
     })
-
-
 
     Topclonotypes <- reactive({
       UMAP.wt.clonality2 <- For_col_top()
@@ -6454,6 +6427,8 @@ runSTEGO <- function(){
       names(UMAP.wt.clonality2)[names(UMAP.wt.clonality2) %in% input$Samp_col] <- "ID_Column"
       UMAP.wt.clonality2 <- UMAP.wt.clonality2[UMAP.wt.clonality2$ID_Column %in% input$ID_Column_factor,]
       UMAP.wt.clonality2$ID_Column <- factor(UMAP.wt.clonality2$ID_Column,levels = input$ID_Column_factor)
+
+
 
       plot <- ggplot(data=UMAP.wt.clonality2,aes(x=UMAP_1,UMAP_2,colour=topclones2,label =topclones2 ))+
         geom_point()+
@@ -7549,18 +7524,79 @@ runSTEGO <- function(){
              error_message_val1)
       )
 
+      top_BD_cluster <-  top_clonotype_bar_code()
+      top_BD_cluster
+      req(input$clust_names_top,input$clust_group,input$Graph_split_order)
+
+      top_BD_cluster$Selected_function <- top_BD_cluster[,names(top_BD_cluster) %in% input$clust_names_top]
+      top_BD_cluster
+      top_BD_cluster <- top_BD_cluster[order(top_BD_cluster$Selected_function),]
+
+      top_BD_cluster$Selected_function <-  as.character(top_BD_cluster[,names(top_BD_cluster) %in% input$clust_names_top])
+
+      top_BD_cluster$Selected_group <-  as.character(top_BD_cluster[,names(top_BD_cluster) %in% input$clust_group])
+      #
+      top_BD_cluster <- top_BD_cluster[top_BD_cluster$Selected_group %in% input$Graph_split_order,]
+      top_BD_cluster$Selected_group <- factor(top_BD_cluster$Selected_group,levels = input$Graph_split_order)
+      top_BD_cluster$Selected_function <- ifelse(top_BD_cluster$Selected_function=="NA",NA,top_BD_cluster$Selected_function )
+
+      top_BD_cluster
+    })
+
+    # top clonptype bar graph -----
+    top_clonotype_bar_code <- reactive({
       df3.meta <- UMAP_metadata_with_labs()
       # summarising the clonality
       df3.meta$cluster_name <- df3.meta[,names(df3.meta) %in% input$Gene_V_top]
+
       top_BD_clonotype <- df3.meta[df3.meta$cluster_name %in% input$Selected_clonotype,]
       top_BD_clonotype
 
     })
 
-    # top clonptype bar graph -----
+    select_split_by <- reactive ({
+      df <- top_clonotype_bar_code()
+      validate(
+        need(nrow(df)>0,
+             "upload file")
+      )
+      req(input$clust_group)
+      df2 <- as.data.frame(unique(df[names(df) %in% input$clust_group]))
+      df2 <- as.data.frame(df2)
+      df2
+
+    })
+
+    observe({
+
+      df2 <- select_split_by()
+
+      validate(
+        need(nrow(df2)>0,
+             error_message_val1)
+      )
+
+      df2 <- as.data.frame(df2)
+      names(df2) <- "V1"
+      df2 <- as.data.frame(df2[order(df2$V1),])
+      names(df2) <- "V1"
+      df2
+      # df2 <- subset(df2,df2$V1 != "NA")
+
+      updateSelectInput(
+        session,
+        "Graph_split_order",
+        choices=df2
+      )
+
+
+    })
+
+    ##### bar graph of top clonotypes -----
     cols_Top_bar_clonotype <- reactive({
       dtop_clonotype_bar_code <- top_clonotype_bar_code()
       dtop_clonotype_bar_code$Selected_chain <- dtop_clonotype_bar_code[,names(dtop_clonotype_bar_code) %in% input$Gene_V_top]
+
       # top_BD_cluster$Selected_function <- factor(top_BD_cluster$Selected_function,levels = unique(top_BD_cluster$Selected_function))
       num <- as.data.frame(unique(dtop_clonotype_bar_code$Selected_chain))
       num <- as.data.frame(num[complete.cases(num)==T,])
@@ -7636,17 +7672,12 @@ runSTEGO <- function(){
         input[[paste("col.Top_bar_clonotype", i, sep="_")]]
       })
     })
-    top_clonotype_bar_code <- reactive({
-      df3.meta <- UMAP_metadata_with_labs()
-      # summarising the clonality
-      df3.meta$cluster_name <- df3.meta[,names(df3.meta) %in% input$Gene_V_top]
 
-      top_BD_clonotype <- df3.meta[df3.meta$cluster_name %in% input$Selected_clonotype,]
-      top_BD_clonotype
-
-    })
     ggplot_top_BD_clonotype_vs_SC <- reactive({
       dtop_clonotype_bar_code <- top_clonotype_bar_code()
+
+      req(input$Graph_split_order)
+
       dtop_clonotype_bar_code$Selected_group <- dtop_clonotype_bar_code[,names(dtop_clonotype_bar_code) %in% input$clust_group]
       colorblind_vector <- unlist(colors_cols_Top_bar_clonotype())
 
@@ -7654,6 +7685,8 @@ runSTEGO <- function(){
 
       dtop_clonotype_bar_code$Selected_chain3 <- gsub("_"," ",dtop_clonotype_bar_code$Selected_chain2)
       dtop_clonotype_bar_code$Selected_chain3 <- gsub("[.]"," ",dtop_clonotype_bar_code$Selected_chain3)
+      dtop_clonotype_bar_code <- dtop_clonotype_bar_code[dtop_clonotype_bar_code$Selected_group %in% input$Graph_split_order,]
+      dtop_clonotype_bar_code$Selected_group <- factor(dtop_clonotype_bar_code$Selected_group,levels = input$Graph_split_order)
 
       ggplot(dtop_clonotype_bar_code, aes(x=Selected_group, fill=Selected_chain3,colour = Selected_chain3, label = Selected_chain3)) +
         geom_bar() +
@@ -7665,8 +7698,8 @@ runSTEGO <- function(){
         theme(
           axis.title.y = element_text(colour="black",family=input$font_type,size = input$title.text.sizer2),
           axis.text.y = element_text(colour="black",family=input$font_type,size = input$text_size),
-          axis.text.x = element_text(colour="black",family=input$font_type,size = input$text_size,angle=0),
-          axis.title.x = element_text(colour="black",angle=0,vjust=.5,face="plain",family=input$font_type,size = input$title.text.sizer2),
+          axis.text.x = element_text(colour="black",family=input$font_type,size = input$text_size,angle=90),
+          axis.title.x = element_blank(),
           legend.text = element_text(colour="black", size=input$Bar_legend_size,family=input$font_type),
           legend.position = input$legend_position,
           legend.title = element_blank()
@@ -7701,9 +7734,6 @@ runSTEGO <- function(){
         plot(ggplot_top_BD_clonotype_vs_SC())
         dev.off()},   contentType = "application/png" # MIME type of the image
     )
-
-
-
     #### top clonotype pie -----
     cols_Top_pie_clonotype <- reactive({
       top_BD_cluster <-  top_clonotype_bar_code()
@@ -7712,8 +7742,8 @@ runSTEGO <- function(){
       top_BD_cluster$Selected_function <- top_BD_cluster[,names(top_BD_cluster) %in% input$clust_names_top]
       top_BD_cluster$Selected_group <- top_BD_cluster[,names(top_BD_cluster) %in% input$clust_group]
       # top_BD_cluster$Selected_function <- factor(top_BD_cluster$Selected_function,levels = unique(top_BD_cluster$Selected_function))
-      num <- as.data.frame(unique(top_BD_cluster$Selected_function))
-      num <- as.data.frame(num[complete.cases(num)==T,])
+      num <- (unique(top_BD_cluster$Selected_function))
+      num <- as.data.frame(num[!num == "NA"])
 
       col.gg <- gg_fill_hue(dim(num)[1])
       palette_rainbow <- rainbow(dim(num)[1])
@@ -7774,9 +7804,8 @@ runSTEGO <- function(){
       top_BD_cluster <- top_BD_cluster[order(top_BD_cluster$Selected_function),]
       top_BD_cluster$Selected_function <- top_BD_cluster[,names(top_BD_cluster) %in% input$clust_names_top]
       top_BD_cluster$Selected_group <- top_BD_cluster[,names(top_BD_cluster) %in% input$clust_group]
-      # top_BD_cluster$Selected_function <- factor(top_BD_cluster$Selected_function,levels = unique(top_BD_cluster$Selected_function))
       num <- as.data.frame(unique(top_BD_cluster$Selected_function))
-      num <- as.data.frame(num[complete.cases(num)==T,])
+      num <- as.data.frame(num[!num == "NA"])
 
       col.gg <- gg_fill_hue(dim(num)[1])
       palette_rainbow <- rainbow(dim(num)[1])
@@ -7789,12 +7818,21 @@ runSTEGO <- function(){
         input[[paste("col.Top_pie_clonotype", i, sep="_")]]
       })
     })
+
     Pie_chart_alpha_gamma <- reactive({
       top_BD_cluster <-  top_clonotype_bar_code()
+
+      req(input$clust_names_top,input$clust_group,input$Graph_split_order)
+
       top_BD_cluster$Selected_function <- top_BD_cluster[,names(top_BD_cluster) %in% input$clust_names_top]
       top_BD_cluster <- top_BD_cluster[order(top_BD_cluster$Selected_function),]
-      top_BD_cluster$Selected_function <- top_BD_cluster[,names(top_BD_cluster) %in% input$clust_names_top]
-      top_BD_cluster$Selected_group <- top_BD_cluster[,names(top_BD_cluster) %in% input$clust_group]
+      top_BD_cluster$Selected_function <-  as.character((top_BD_cluster[,names(top_BD_cluster) %in% input$clust_names_top]))
+      top_BD_cluster$Selected_group <-  as.character((top_BD_cluster[,names(top_BD_cluster) %in% input$clust_group]))
+
+      top_BD_cluster <- top_BD_cluster[top_BD_cluster$Selected_group %in% input$Graph_split_order,]
+      top_BD_cluster$Selected_group <- factor(top_BD_cluster$Selected_group,levels = input$Graph_split_order)
+
+
       df.col <- unlist(colors_cols_Top_pie_clonotype())
 
       df3.meta3 <-  as.data.frame(table(top_BD_cluster$Selected_group,top_BD_cluster$Selected_function))
@@ -7812,8 +7850,9 @@ runSTEGO <- function(){
       as.data.frame(emtpy)
 
       df3.meta3$n <- df3.meta3$Freq/rowSums(emtpy)
+      # df3.meta3$Var2 <- ifelse(df3.meta3$Var2=="NA",NA,df3.meta3$Var2)
 
-      ggplot(df3.meta3,aes(x="", y=n, fill=Var2, group = Var1)) +
+      ggplot(df3.meta3,aes(x="", y=n, fill=as.character(Var2), group =as.character(Var1))) +
         geom_bar(stat="identity", width=1)+
         coord_polar("y", start=0)  +
         theme_void(20) +
@@ -7883,15 +7922,25 @@ runSTEGO <- function(){
     #### top  UMAP -----
     UMAP_chart_alpha_gamma <- reactive({
       top_BD_cluster <-  top_clonotype_bar_code()
+      req(input$clust_names_top,input$clust_group,input$Graph_split_order)
       top_BD_cluster$Selected_function <- top_BD_cluster[,names(top_BD_cluster) %in% input$clust_names_top]
       top_BD_cluster <- top_BD_cluster[order(top_BD_cluster$Selected_function),]
-      top_BD_cluster$Selected_function <- top_BD_cluster[,names(top_BD_cluster) %in% input$clust_names_top]
-      top_BD_cluster$Selected_group <- top_BD_cluster[,names(top_BD_cluster) %in% input$clust_group]
+
+      top_BD_cluster$Selected_function <-  as.character(top_BD_cluster[,names(top_BD_cluster) %in% input$clust_names_top])
+
+      top_BD_cluster$Selected_group <-  as.character(top_BD_cluster[,names(top_BD_cluster) %in% input$clust_group])
+      #
+      top_BD_cluster <- top_BD_cluster[top_BD_cluster$Selected_group %in% input$Graph_split_order,]
+      top_BD_cluster$Selected_group <- factor(top_BD_cluster$Selected_group,levels = input$Graph_split_order)
+      top_BD_cluster$Selected_function <- ifelse(top_BD_cluster$Selected_function=="NA",NA,top_BD_cluster$Selected_function )
+
       df.col <- unlist(colors_cols_Top_pie_clonotype())
 
-      names(top_BD_cluster)[names(top_BD_cluster) %in% input$Samp_col] <- "ID_Column"
-      top_BD_cluster$ID_Column<- top_BD_cluster[top_BD_cluster$ID_Column %in% input$ID_Column_factor,]
-      top_BD_cluster$ID_Column <- factor(top_BD_cluster$ID_Column,levels = input$ID_Column_factor)
+
+      #
+      #       names(top_BD_cluster)[names(top_BD_cluster) %in% input$Samp_col] <- "ID_Column"
+      #       top_BD_cluster$ID_Column<- top_BD_cluster[top_BD_cluster$ID_Column %in% input$ID_Column_factor,]
+      #       top_BD_cluster$ID_Column <- factor(top_BD_cluster$ID_Column,levels = input$ID_Column_factor)
 
       plot_pie <- ggplot(data = top_BD_cluster,aes(x=UMAP_1,UMAP_2,colour=Selected_function))+
         geom_point()+
@@ -8030,7 +8079,10 @@ runSTEGO <- function(){
 
       top_BD_cluster <-  top_clonotype_bar_code()
       top_BD_cluster$Selected_function <- top_BD_cluster[,names(top_BD_cluster) %in% input$clust_group]
-      top_BD_cluster$Selected_function <- factor(top_BD_cluster$Selected_function,levels = unique(top_BD_cluster$Selected_function))
+      top_BD_cluster <- top_BD_cluster[top_BD_cluster$Selected_function %in% input$Graph_split_order,]
+      top_BD_cluster$Selected_function <-  as.character(top_BD_cluster[,names(top_BD_cluster) %in% input$clust_group])
+      top_BD_cluster$Selected_function <- factor(top_BD_cluster$Selected_function,levels = input$Graph_split_order)
+
       merge(top_BD_cluster,gene_df,by = "Cell_Index")
     })
 
@@ -8052,7 +8104,7 @@ runSTEGO <- function(){
               # legend.title = element_blank(),
               axis.title.x = element_blank(),
               axis.title.y = element_blank(),
-              legend.position = input$legend_position)+
+              legend.position = "none")+
         ggtitle(input$string.data_Exp_top)
 
     })
@@ -8098,6 +8150,8 @@ runSTEGO <- function(){
 
     Violin_chart_alpha_gamma_plot <- reactive({
       df <- Ridge_chart_alpha_gamma_df()
+      # df <- df[df$Selected_group %in% input$Graph_split_order,]
+      # top_BD_cluster$Selected_group <- factor(top_BD_cluster$Selected_group,levels = input$Graph_split_order)
       df$expressed <- ifelse(df[,names(df) %in% input$string.data_Exp_top] >input$Gre_ex,"expressed","Not expressed")
 
       if(input$restric_ex == T) {
@@ -8117,7 +8171,7 @@ runSTEGO <- function(){
         theme(
           axis.title.y = element_blank(),
           axis.text.y = element_text(colour="black",family=input$font_type,size = input$text_size),
-          axis.text.x = element_text(colour="black",family=input$font_type,size = input$text_size,angle=0),
+          axis.text.x = element_text(colour="black",family=input$font_type,size = input$text_size,angle=90),
           axis.title.x = element_blank(),
           legend.text = element_text(colour="black", size=input$Bar_legend_size,family=input$font_type),
           legend.title = element_text(colour="black",size=20,family=input$font_type),
@@ -8167,7 +8221,7 @@ runSTEGO <- function(){
               # axis.text.y = element_blank(),
               axis.title.x = element_blank(),
               axis.title.y = element_blank(),
-              legend.position = input$legend_position)
+              legend.position = "none")
 
     })
 
@@ -8192,7 +8246,7 @@ runSTEGO <- function(){
         theme(
           axis.title.y = element_blank(),
           axis.text.y = element_text(colour="black",family=input$font_type,size = input$text_size),
-          axis.text.x = element_text(colour="black",family=input$font_type,size = input$text_size,angle=0),
+          axis.text.x = element_text(colour="black",family=input$font_type,size = input$text_size,angle=90),
           axis.title.x = element_blank(),
           legend.text = element_text(colour="black", size=input$Bar_legend_size,family=input$font_type),
           legend.title = element_blank(),
@@ -9868,5 +9922,4 @@ runSTEGO <- function(){
     ### end -----
   }
   shinyApp(ui, server)
-
 }
