@@ -22,6 +22,10 @@ runSTEGO <- function(){
     navbarPage(title = "STEGO_R",
                theme=bs_theme(version = 5, bootswatch = "default"),
                navbarMenu("Quality control",
+                          # tabPanel("Convert_to_AIRR_format",
+                          #
+                          #
+                          #          ),
                           ## 10x_Genomics ----
                           tabPanel("10x_Genomics",
                                    sidebarLayout(
@@ -39,7 +43,7 @@ runSTEGO <- function(){
                                                   ),
 
                                                   fileInput('file_TCR_10x', 'filtered contig annotations (.csv)',
-                                                            accept=c('.csv')),
+                                                            accept=c('.csv',".csv.gz")),
                                                   textInput("sample_name_10x","Add file and sample name","Treatment_group"),
                                                   h6("TCR_explore name"),
                                                   fluidRow(
@@ -1087,7 +1091,7 @@ runSTEGO <- function(){
                                                    column(4,uiOutput("classification_to_add")),
                                                    column(4, selectInput("clust_group","Split graph by:",choices ="")),
                                                    column(4, selectInput("Gene_V_top","Select V with/without CDR3",choices =""))),
-
+                                                 column(12,selectInput("Graph_split_order","Order of split by:",choices = "", multiple = T, width = "1200px")),
                                                  conditionalPanel(
                                                    condition="input.Panel_TCRUMAP=='top_clone'",
                                                    fluidRow(
@@ -1095,7 +1099,7 @@ runSTEGO <- function(){
                                                      column(4, selectInput("Selected_clonotype","Select clonotype:",choices ="")),
                                                      # column(4, selectInput("Selected_chain","Select chain:",choices ="")),
                                                    ),
-                                                   column(12,selectInput("Graph_split_order","Order of split by:",choices = "", multiple = T, width = "1200px")),
+
                                                  ),
                                                  conditionalPanel(condition="input.Panel_TCRUMAP=='ClusTCR2'",
                                                                   fluidRow(
@@ -1277,7 +1281,7 @@ runSTEGO <- function(){
                                                                                    column(2,style = "margin-top: 25px;",downloadButton('downloadPlotPNG_top_clonotype_pie','Download PNG'))),
                                                                         ),
                                                                         # add in find marker for comparing population to other for top clonotype
-                                                                        tabPanel("FindMarker"),
+                                                                        # tabPanel("FindMarker"),
 
                                                                         tabPanel("Expression",
                                                                                  actionButton("run_string.data_Exp_top","View Ridge plot"),
@@ -1647,6 +1651,8 @@ runSTEGO <- function(){
         fluidRow(
           column(6,numericInput("features.min","minimum features (<)", value = 45)),
           column(6,numericInput("features.max","Maximum features (<)", value = 160)),
+          column(6,numericInput("percent.mt","Mictochondrial DNA cut-off (<)", value = 0)),
+          column(6,numericInput("percent.rb","Ribosomal RNA cut-off (>)", value = 0)),
         )
       }
 
@@ -1830,7 +1836,6 @@ runSTEGO <- function(){
                                                  ifelse(grepl("Missing",calls_TCR_count$v_gene_IgL),"Missing BCR","productive"))
         calls_TCR_count$v_gene_IgH_fun <- ifelse(grepl("[*]",calls_TCR_count$BCR_Heavy_CDR3_Translation_Dominant),"Non-functional",
                                                  ifelse(grepl("Missing",calls_TCR_count$v_gene_IgH),"Missing BCR","productive"))
-        #
         #
         calls_TCR_count$paired_BCR <- ifelse(calls_TCR_count$v_gene_IgL=="v_gene_IgL" & calls_TCR_count$v_gene_IgH=="v_gene_IgH","paired BCR",
                                              ifelse(calls_TCR_count$v_gene_IgL=="v_gene_IgL" | calls_TCR_count$v_gene_IgH=="v_gene_IgH", "Unpaired BCR","No BCR"
@@ -2969,7 +2974,7 @@ runSTEGO <- function(){
       contig_paired_only$vj_gene_cdr3_H <- paste(contig_paired_only$vj_gene_H,contig_paired_only$cdr3_IgH,sep = "_")
       contig_paired_only$vj_gene_cdr3_H <- gsub("_NA","",contig_paired_only$vj_gene_cdr3_H)
       #
-      contig_paired_only$vdj_gene_cdr3_H <- paste(contig_paired_only$vdj_gene_H,contig_paired_only$cdr3_H,sep = "_")
+      contig_paired_only$vdj_gene_cdr3_H <- paste(contig_paired_only$vdj_gene_H,contig_paired_only$cdr3_IgH,sep = "_")
       contig_paired_only$vdj_gene_cdr3_H <- gsub("_NA","",contig_paired_only$vdj_gene_cdr3_H)
       #
       contig_paired_only$vj_gene_LK_H <- paste(contig_paired_only$vj_gene_LK,contig_paired_only$vj_gene_H,sep = " & ")
@@ -3650,7 +3655,6 @@ runSTEGO <- function(){
         need(nrow(df1)>0,
              "Upload ClusTCR file")
       )
-
       ClusTCR2_lab_df()
     })
 
@@ -3793,16 +3797,17 @@ runSTEGO <- function(){
         }
 
         else if (input$df_seruatobj_type =="10x_Genomics (.h5)") {
-          if (input$stored_in_expression=="yes") {
-            rownames(df.test$`Gene Expression`) <- gsub("GRCh38___","",rownames(df.test$`Gene Expression`))
-            sc <- CreateSeuratObject(counts = df.test$`Gene Expression`, project = input$project_name)
-
-          }
-
-          else {
-            sc <- CreateSeuratObject(counts = df.test, project = input$project_name)
-          }
           dataframe <- suppressMessages(Read10X_h5(inFile_sc$datapath, use.names = TRUE, unique.features = TRUE))
+          # if (input$stored_in_expression=="yes") {
+          #   rownames(df.test$`Gene Expression`) <- gsub("GRCh38___","",rownames(df.test$`Gene Expression`))
+          #   sc <- CreateSeuratObject(counts = df.test$`Gene Expression`, project = input$project_name)
+          #
+          # }
+          #
+          # else {
+          #   sc <- CreateSeuratObject(counts = df.test, project = input$project_name)
+          # }
+
         }
 
         else if (input$df_seruatobj_type =="BD Rhapsody (Mouse)") {
@@ -3873,7 +3878,8 @@ runSTEGO <- function(){
 
       else if (input$df_seruatobj_type=="10x_Genomics (.h5)") {
         # rownames(df.test$`Gene Expression`) <- gsub("GRCh38___","",rownames(df.test$`Gene Expression`))
-        sc <- CreateSeuratObject(counts = df.test[[1]], project = input$project_name)
+        # sc <- CreateSeuratObject(counts = df.test[[1]], project = input$project_name)
+        sc <- CreateSeuratObject(counts = df.test, project = input$project_name)
         sc <- PercentageFeatureSet2(sc, pattern = "^MT-",col.name = "mtDNA")
         sc <- PercentageFeatureSet2(sc, pattern = "^RP[SL]",col.name = "rRNA")
         sc
@@ -4728,7 +4734,7 @@ runSTEGO <- function(){
 
         sc@meta.data$T_cells <- obj@meta.data$scGate_multi
 
-        DimPlot(sc, group.by = "T_cells")
+
 
         # GNLY.PRF1.GZMB -----
         models.list <- list()
@@ -4846,56 +4852,142 @@ runSTEGO <- function(){
 
         sc@meta.data$T_cell_types <- obj@meta.data$scGate_multi
         # DimPlot(sc, group.by = "T_cell_types") + scale_colour_manual(values = rainbow(10), na.value = "grey90")
-        # NK-Like phenotypes ------
-        # len
-        FeaturePlot(sc,features = "KLRF1")| FeaturePlot(sc,features = "KLRK1")|FeaturePlot(sc,features = "KLRF1")|FeaturePlot(sc,features = "KLRC3")|FeaturePlot(sc,features = "KLRC4")|FeaturePlot(sc,features = "KLRC1")|FeaturePlot(sc,features = "KLRB1")
 
+        #### lung resident T cells ------
+        models.list <- list()
+        my_scGate_model <- gating_model(name = "CD69",level = 1, signature = c("CD69"), positive = T)
+        my_scGate_model <- gating_model(my_scGate_model,name = "ITGAE",level = 2, signature = c("ITGAE"), positive = T)
+        my_scGate_model <- gating_model(my_scGate_model,name = "ITGA4",level = 3, signature = c("ITGA4"), positive = T)
+        my_scGate_model <- gating_model(my_scGate_model,name = "KLRK1",level = 4, signature = c("KLRK1"), positive = T)
+        models.list$CD69.CD103.CD49d.NKG2D <- my_scGate_model
+
+        my_scGate_model <- gating_model(name = "CD69",level = 1, signature = c("CD69"), positive = T)
+        my_scGate_model <- gating_model(my_scGate_model,name = "ITGAE",level = 2, signature = c("ITGAE"), positive = T)
+        my_scGate_model <- gating_model(my_scGate_model,name = "ITGA4",level = 3, signature = c("ITGA4"), positive = F)
+        my_scGate_model <- gating_model(my_scGate_model,name = "KLRK1",level = 4, signature = c("KLRK1"), positive = T)
+        models.list$CD69.CD103.NKG2D <- my_scGate_model
+
+        my_scGate_model <- gating_model(name = "CD69",level = 1, signature = c("CD69"), positive = F)
+        my_scGate_model <- gating_model(my_scGate_model,name = "ITGAE",level = 2, signature = c("ITGAE"), positive = T)
+        my_scGate_model <- gating_model(my_scGate_model,name = "ITGA4",level = 3, signature = c("ITGA4"), positive = T)
+        my_scGate_model <- gating_model(my_scGate_model,name = "KLRK1",level = 4, signature = c("KLRK1"), positive = T)
+        models.list$CD103.CD49d.NKG2D <- my_scGate_model
+
+        my_scGate_model <- gating_model(name = "CD69",level = 1, signature = c("CD69"), positive = T)
+        my_scGate_model <- gating_model(my_scGate_model,name = "ITGAE",level = 2, signature = c("ITGAE"), positive = F)
+        my_scGate_model <- gating_model(my_scGate_model,name = "ITGA4",level = 3, signature = c("ITGA4"), positive = T)
+        my_scGate_model <- gating_model(my_scGate_model,name = "KLRK1",level = 4, signature = c("KLRK1"), positive = T)
+        models.list$CD69.CD49d.NKG2D <- my_scGate_model
+
+        my_scGate_model <- gating_model(name = "CD69",level = 1, signature = c("CD69"), positive = T)
+        my_scGate_model <- gating_model(my_scGate_model,name = "ITGAE",level = 2, signature = c("ITGAE"), positive = T)
+        my_scGate_model <- gating_model(my_scGate_model,name = "ITGA4",level = 3, signature = c("ITGA4"), positive = F)
+        my_scGate_model <- gating_model(my_scGate_model,name = "KLRK1",level = 4, signature = c("KLRK1"), positive = F)
+        models.list$CD69.CD103 <- my_scGate_model
+
+        my_scGate_model <- gating_model(name = "CD69",level = 1, signature = c("CD69"), positive = F)
+        my_scGate_model <- gating_model(my_scGate_model,name = "ITGAE",level = 2, signature = c("ITGAE"), positive = T)
+        my_scGate_model <- gating_model(my_scGate_model,name = "ITGA4",level = 3, signature = c("ITGA4"), positive = T)
+        my_scGate_model <- gating_model(my_scGate_model,name = "KLRK1",level = 4, signature = c("KLRK1"), positive = F)
+        models.list$CD103.CD49d <- my_scGate_model
+
+        my_scGate_model <- gating_model(name = "CD69",level = 1, signature = c("CD69"), positive = T)
+        my_scGate_model <- gating_model(my_scGate_model,name = "ITGAE",level = 2, signature = c("ITGAE"), positive = F)
+        my_scGate_model <- gating_model(my_scGate_model,name = "ITGA4",level = 3, signature = c("ITGA4"), positive = T)
+        my_scGate_model <- gating_model(my_scGate_model,name = "KLRK1",level = 4, signature = c("KLRK1"), positive = F)
+        models.list$CD69.CD49d <- my_scGate_model
+
+
+        # models.list <- list()
+        # my_scGate_model <- gating_model(name = "ITGAE",level = 1, signature = c("ITGAE"), positive = T)
+        # models.list$CD103 <- my_scGate_model
+        obj <- scGate(sc, model = models.list,
+                      pos.thr = 0.5,
+                      neg.thr = 0.5,
+                      nfeatures = len,
+                      ncores = 8
+        )
+        sc@meta.data$Lung.Residence.markers <- obj@meta.data$scGate_multi
+        sc@meta.data$Lung.Residence.markers <- ifelse( sc@meta.data$Lung.Residence.markers=="NA",NA, sc@meta.data$Lung.Residence.markers)
+
+        # NK-Like phenotypes ------
         models.list <- list()
 
-        my_scGate_model <- gating_model(name = "KLRK1",level = 1, signature = c("KLRK1"), positive = T)
-        my_scGate_model <- gating_model(my_scGate_model,name = "KLRB1",level = 2, signature = c("KLRB1"), positive = T)
-        my_scGate_model <- gating_model(my_scGate_model,name = "NKp80",level = 3, signature = c("KLRF1"), positive = T)
-        my_scGate_model <- gating_model(my_scGate_model,name = "KLRC3",level = 4, signature = c("KLRC3"), positive = T)
-        my_scGate_model <- gating_model(my_scGate_model,name = "KLRC4",level = 5, signature = c("KLRC4"), positive = T)
-        my_scGate_model <- gating_model(my_scGate_model,name = "KLRC1",level = 6, signature = c("KLRC1"), positive = T)
-        # my_scGate_model <- gating_model(my_scGate_model,name = "KLRG1",level = 6, signature = c("KLRG1"), positive = F)
-        models.list$CD161.NKG2A.NKG2D.NKG2E.NKG2F.NKp80 <- my_scGate_model
+        # my_scGate_model <- gating_model(name = "KLRK1",level = 1, signature = c("KLRK1"), positive = T)
+        # my_scGate_model <- gating_model(my_scGate_model,name = "KLRB1",level = 2, signature = c("KLRB1"), positive = T)
+
+        # my_scGate_model <- gating_model(my_scGate_model,name = "KLRC3",level = 4, signature = c("KLRC3"), positive = T)
+        # my_scGate_model <- gating_model(my_scGate_model,name = "KLRC4",level = 5, signature = c("KLRC4"), positive = T)
+        # my_scGate_model <- gating_model(my_scGate_model,name = "KLRC1",level = 6, signature = c("KLRC1"), positive = T)
+        # # my_scGate_model <- gating_model(my_scGate_model,name = "KLRG1",level = 6, signature = c("KLRG1"), positive = F) # CLEC15A
+        # models.list$CD161.NKG2A.NKG2D.NKG2E.NKG2F.NKp80 <- my_scGate_model
+
+        my_scGate_model <- gating_model(name = "CD161",level = 1, signature = c("KLRB1"), positive = T)
+        my_scGate_model <- gating_model(my_scGate_model,name = "KLRC1",level = 2, signature = c("KLRC1"), positive = T)
+        my_scGate_model <- gating_model(my_scGate_model,name = "NKG2E",level = 3, signature = c("KLRC3"), positive = T)
+        my_scGate_model <- gating_model(my_scGate_model,name = "NKG2F",level = 4, signature = c("KLRC4"), positive = T) #NKG2F
+        models.list$NKG2A.NKG2E.NKG2F.CD161_NK1.1 <- my_scGate_model
+
+        my_scGate_model <- gating_model(name = "CD161",level = 1, signature = c("KLRB1"), positive = T)
+        my_scGate_model <- gating_model(my_scGate_model,name = "KLRC1",level = 2, signature = c("KLRC1"), positive = T)
+        my_scGate_model <- gating_model(my_scGate_model,name = "NKG2E",level = 3, signature = c("KLRC3"), positive = T)
+        my_scGate_model <- gating_model(my_scGate_model,name = "NKG2F",level = 4, signature = c("KLRC4"), positive = F) #NKG2F
+        models.list$NKG2A.NKG2E.CD161_NK1.1 <- my_scGate_model
+
+        my_scGate_model <- gating_model(name = "CD161",level = 1, signature = c("KLRB1"), positive = T)
+        my_scGate_model <- gating_model(my_scGate_model,name = "KLRC1",level = 2, signature = c("KLRC1"), positive = F) # and HLA-E
+        my_scGate_model <- gating_model(my_scGate_model,name = "NKG2E",level = 3, signature = c("KLRC3"), positive = T) #NKG2E and HLA-E
+        my_scGate_model <- gating_model(my_scGate_model,name = "NKG2F",level = 4, signature = c("KLRC4"), positive = F) #NKG2F and HLA-E
+        models.list$NKG2E.CD161_NK1.1 <- my_scGate_model
+
+        my_scGate_model <- gating_model(name = "CD161",level = 1, signature = c("KLRB1"), positive = T)
+        my_scGate_model <- gating_model(my_scGate_model,name = "KLRC1",level = 2, signature = c("KLRC1"), positive = F)
+        my_scGate_model <- gating_model(my_scGate_model,name = "NKG2E",level = 3, signature = c("KLRC3"), positive = F)
+        my_scGate_model <- gating_model(my_scGate_model,name = "NKG2F",level = 4, signature = c("KLRC4"), positive = F) #NKG2F
+        models.list$CD161_NK1.1 <- my_scGate_model
+
+        my_scGate_model <- gating_model(name = "CD161",level = 1, signature = c("KLRB1"), positive = F)
+        my_scGate_model <- gating_model(my_scGate_model,name = "KLRC1",level = 2, signature = c("KLRC1"), positive = T)
+        my_scGate_model <- gating_model(my_scGate_model,name = "NKG2E",level = 3, signature = c("KLRC3"), positive = T)
+        my_scGate_model <- gating_model(my_scGate_model,name = "NKG2F",level = 4, signature = c("KLRC4"), positive = T) #NKG2F
+        models.list$NKG2A.NKG2E.NKG2F <- my_scGate_model
 
 
-        my_scGate_model <- gating_model(name = "KLRK1",level = 1, signature = c("KLRK1"), positive = T)
-        my_scGate_model <- gating_model(my_scGate_model,name = "KLRB1",level = 2, signature = c("KLRB1"), positive = T)
-        my_scGate_model <- gating_model(my_scGate_model,name = "NKp80",level = 3, signature = c("KLRF1"), positive = T)
-        my_scGate_model <- gating_model(my_scGate_model,name = "KLRC3",level = 4, signature = c("KLRC3"), positive = T)# NKG2E
-        my_scGate_model <- gating_model(my_scGate_model,name = "KLRC4",level = 5, signature = c("KLRC4"), positive = F) #NKG2F
-        my_scGate_model <- gating_model(my_scGate_model,name = "KLRC1",level = 6, signature = c("KLRC1"), positive = T)
-        # my_scGate_model <- gating_model(my_scGate_model,name = "KLRG1",level = 6, signature = c("KLRG1"), positive = F)
-        models.list$CD161.NKG2A.NKG2D.NKG2E.NKp80 <- my_scGate_model
+        my_scGate_model <- gating_model(name = "CD161",level = 1, signature = c("KLRB1"), positive = F)
+        my_scGate_model <- gating_model(my_scGate_model,name = "KLRC1",level = 2, signature = c("KLRC1"), positive = F)
+        my_scGate_model <- gating_model(my_scGate_model,name = "NKG2E",level = 3, signature = c("KLRC3"), positive = T)
+        my_scGate_model <- gating_model(my_scGate_model,name = "NKG2F",level = 4, signature = c("KLRC4"), positive = T) #NKG2F
+        models.list$NKG2E.NKG2F <- my_scGate_model
 
-        my_scGate_model <- gating_model(name = "KLRK1",level = 1, signature = c("KLRK1"), positive = F)
-        my_scGate_model <- gating_model(my_scGate_model,name = "KLRB1",level = 2, signature = c("KLRB1"), positive = T)
-        my_scGate_model <- gating_model(my_scGate_model,name = "NKp80",level = 3, signature = c("KLRF1"), positive = F)
-        my_scGate_model <- gating_model(my_scGate_model,name = "KLRC3",level = 4, signature = c("KLRC3"), positive = F)
-        my_scGate_model <- gating_model(my_scGate_model,name = "KLRC4",level = 5, signature = c("KLRC4"), positive = F)
-        my_scGate_model <- gating_model(my_scGate_model,name = "KLRC1",level = 6, signature = c("KLRC1"), positive = F)
-        models.list$CD161 <- my_scGate_model
+        my_scGate_model <- gating_model(name = "CD161",level = 1, signature = c("KLRB1"), positive = F)
+        my_scGate_model <- gating_model(my_scGate_model,name = "KLRC1",level = 2, signature = c("KLRC1"), positive = T)
+        my_scGate_model <- gating_model(my_scGate_model,name = "NKG2E",level = 3, signature = c("KLRC3"), positive = F)
+        my_scGate_model <- gating_model(my_scGate_model,name = "NKG2F",level = 4, signature = c("KLRC4"), positive = T) #NKG2F
+        models.list$NKG2A.NKG2F <- my_scGate_model
 
-        my_scGate_model <- gating_model(name = "KLRK1",level = 1, signature = c("KLRK1"), positive = T)
-        my_scGate_model <- gating_model(my_scGate_model,name = "KLRB1",level = 2, signature = c("KLRB1"), positive = T)
-        my_scGate_model <- gating_model(my_scGate_model,name = "NKp80",level = 3, signature = c("KLRF1"), positive = F)
-        my_scGate_model <- gating_model(my_scGate_model,name = "KLRC3",level = 4, signature = c("KLRC3"), positive = F)
-        my_scGate_model <- gating_model(my_scGate_model,name = "KLRC4",level = 5, signature = c("KLRC4"), positive = F)
-        my_scGate_model <- gating_model(my_scGate_model,name = "KLRC1",level = 6, signature = c("KLRC1"), positive = F)
-        models.list$CD161.NKG2D <- my_scGate_model
+        my_scGate_model <- gating_model(name = "CD161",level = 1, signature = c("KLRB1"), positive = F)
+        my_scGate_model <- gating_model(my_scGate_model,name = "KLRC1",level = 2, signature = c("KLRC1"), positive = T)
+        my_scGate_model <- gating_model(my_scGate_model,name = "NKG2E",level = 3, signature = c("KLRC3"), positive = T)
+        my_scGate_model <- gating_model(my_scGate_model,name = "NKG2F",level = 4, signature = c("KLRC4"), positive = F) #NKG2F
+        models.list$NKG2A.NKG2E <- my_scGate_model
 
-        my_scGate_model <- gating_model(name = "KLRK1",level = 1, signature = c("KLRK1"), positive = T)
-        my_scGate_model <- gating_model(my_scGate_model,name = "KLRB1",level = 2, signature = c("KLRB1"), positive = F)
-        my_scGate_model <- gating_model(my_scGate_model,name = "KLRF1",level = 2, signature = c("KLRF1"), positive = F)
-        my_scGate_model <- gating_model(my_scGate_model,name = "KLRC3",level = 4, signature = c("KLRC3"), positive = F)
-        my_scGate_model <- gating_model(my_scGate_model,name = "KLRC4",level = 3, signature = c("KLRC4"), positive = F)
-        my_scGate_model <- gating_model(my_scGate_model,name = "KLRC1",level = 5, signature = c("KLRC1"), positive = F)
-        # my_scGate_model <- gating_model(my_scGate_model,name = "KLRG1",level = 6, signature = c("KLRG1"), positive = F)
-        models.list$NKG2D <- my_scGate_model
-        models.list
+        my_scGate_model <- gating_model(name = "CD161",level = 1, signature = c("KLRB1"), positive = F)
+        my_scGate_model <- gating_model(my_scGate_model,name = "KLRC1",level = 2, signature = c("KLRC1"), positive = T)
+        my_scGate_model <- gating_model(my_scGate_model,name = "NKG2E",level = 3, signature = c("KLRC3"), positive = F)
+        my_scGate_model <- gating_model(my_scGate_model,name = "NKG2F",level = 4, signature = c("KLRC4"), positive = F) #NKG2F
+        models.list$NKG2A <- my_scGate_model
+
+        my_scGate_model <- gating_model(name = "CD161",level = 1, signature = c("KLRB1"), positive = F)
+        my_scGate_model <- gating_model(my_scGate_model,name = "KLRC1",level = 2, signature = c("KLRC1"), positive = F)
+        my_scGate_model <- gating_model(my_scGate_model,name = "NKG2E",level = 3, signature = c("KLRC3"), positive = T)
+        my_scGate_model <- gating_model(my_scGate_model,name = "NKG2F",level = 4, signature = c("KLRC4"), positive = F) #NKG2F
+        models.list$NKG2E <- my_scGate_model
+
+        my_scGate_model <- gating_model(name = "CD161",level = 1, signature = c("KLRB1"), positive = F)
+        my_scGate_model <- gating_model(my_scGate_model,name = "KLRC1",level = 2, signature = c("KLRC1"), positive = F)
+        my_scGate_model <- gating_model(my_scGate_model,name = "NKG2E",level = 3, signature = c("KLRC3"), positive = F)
+        my_scGate_model <- gating_model(my_scGate_model,name = "NKG2F",level = 4, signature = c("KLRC4"), positive = T) #NKG2F
+        models.list$NKG2F <- my_scGate_model
 
         obj <- scGate(sc, model = models.list,
                       pos.thr = 0.5,
@@ -4903,9 +4995,10 @@ runSTEGO <- function(){
                       nfeatures = len,
                       ncores = 8
         )
+        # my_scGate_model <- gating_model(my_scGate_model,name = "NKp80",level = 3, signature = c("KLRF1"), positive = T)
+        # FeaturePlot(sc,features = "KLRF1")
 
-
-        sc@meta.data$NK_pheno <- obj@meta.data$scGate_multi
+        sc@meta.data$NK_receptors <- obj@meta.data$scGate_multi
 
         # DimPlot(sc, group.by = "NK_like_cells") + scale_colour_manual(values = rainbow(5), na.value = "grey90")
 
@@ -7174,7 +7267,7 @@ runSTEGO <- function(){
       top_BD_cluster$Selected_function <- ifelse(top_BD_cluster$Selected_function=="NA","-",top_BD_cluster$Selected_function)
       top_BD_cluster <- top_BD_cluster[order(top_BD_cluster$Selected_function),]
       top_BD_cluster$Selected_group <- top_BD_cluster[,names(top_BD_cluster) %in% input$clust_group]
-
+      top_BD_cluster$Selected_group <- factor(top_BD_cluster$Selected_group,level= input$Graph_split_order)
       top_BD_cluster$Selected_indiv <- top_BD_cluster[,names(top_BD_cluster) %in% input$Samp_col]
       top_BD_cluster
       df.col <- unlist(colors_pie())
@@ -8087,7 +8180,9 @@ runSTEGO <- function(){
         df2 <- df
       )
 
-      ggplot(df2, aes(x = get(input$string.data_Exp_top), y = get(input$clust_group), fill = get(input$clust_group))) +
+      df2$Selected_function <- factor(df2$Selected_function,levels = input$Graph_split_order)
+
+      ggplot(df2, aes(x = get(input$string.data_Exp_top), y = Selected_function, fill = Selected_function)) +
         geom_density_ridges() +
         theme_ridges() +
         theme(legend.text = element_text(colour="black", size=input$Bar_legend_size,family=input$font_type),
@@ -8150,8 +8245,8 @@ runSTEGO <- function(){
       else(
         df2 <- df
       )
-
-      ggplot(df2, aes(y = get(input$string.data_Exp_top), x = get(input$clust_group), fill = get(input$clust_group))) +
+      df2$Selected_function <- factor(df2$Selected_function,levels = input$Graph_split_order)
+      ggplot(df2, aes(y = get(input$string.data_Exp_top), x = Selected_function, fill = Selected_function)) +
         geom_violin() +
         geom_jitter(height = 0, width = 0.1)+
         theme(legend.position = "none",
@@ -8207,7 +8302,7 @@ runSTEGO <- function(){
         theme_ridges() +
         theme(legend.text = element_text(colour="black", size=input$Bar_legend_size,family=input$font_type),
               legend.title = element_blank(),
-              # axis.text.x = element_blank(),
+              axis.text.x = element_blank(),
               # axis.text.y = element_blank(),
               axis.title.x = element_blank(),
               axis.title.y = element_blank(),
@@ -8236,7 +8331,7 @@ runSTEGO <- function(){
         theme(
           axis.title.y = element_blank(),
           axis.text.y = element_text(colour="black",family=input$font_type,size = input$text_size),
-          axis.text.x = element_text(colour="black",family=input$font_type,size = input$text_size,angle=90),
+          axis.text.x = element_blank(),
           axis.title.x = element_blank(),
           legend.text = element_text(colour="black", size=input$Bar_legend_size,family=input$font_type),
           legend.title = element_blank(),
@@ -9787,7 +9882,7 @@ runSTEGO <- function(){
 
       df <- UMAP_metadata_with_labs()
       df <- as.data.frame(df)
-      unique.df <- unique(df[,names(df) %in% c(input$Samp_col,input$V_gene_sc) ])
+      unique.df <- (df[,names(df) %in% c(input$Samp_col,input$V_gene_sc) ])
       names(unique.df) <- c("group","chain")
       unique.df <- subset(unique.df,unique.df$chain != "NA")
       unique.df <- subset(unique.df,unique.df$group != "NA")
@@ -9795,14 +9890,22 @@ runSTEGO <- function(){
       unique.df
       mat <- acast(unique.df, chain~group, value.var="cloneCount")
       mat[is.na(mat)] <- 0
+
       sum_data <- as.data.frame(rowSums(mat))
       names(sum_data) <- "V1"
 
-      mat <- as.data.frame(mat)
 
-      mat$sum <-sum_data$V1
+      mat2 <- ifelse(mat>0,1,0)
+      Count_data <- as.data.frame(rowSums(mat))
+      names(Count_data) <- "V1"
+
+      mat <- as.data.frame(mat)
+      mat$No.TimePoints <-Count_data$V1
+      mat$CloneTotal <-sum_data$V1
+
       mat
     })
+
     output$Upset_plot_overlap_Tb <- DT::renderDataTable(escape = FALSE, filter = list(position = 'top', clear = FALSE),  options = list(autoWidth = FALSE, lengthMenu = c(2,5,10,20,50,100), pageLength = 5, scrollX = TRUE),{
       Upset_plot_overlap()
     })
