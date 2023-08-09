@@ -766,9 +766,7 @@ runSTEGO <- function(){
                                                         ),
 
                                                         fileInput('file_cluster_file', 'Upload clustering file from clusTCR2 (.csv)',
-                                                                  accept=c('csv')),
-
-
+                                                                  accept=c('.csv','csv')),
                                                         numericInput("skip_TCRex_up","Skip # of lines for TCRex file",value = 7),
                                                         fileInput('upload_TCRex_file', 'Upload TCRex (.tsv)',
                                                                   accept=c('tsv','.tsv')),
@@ -778,58 +776,64 @@ runSTEGO <- function(){
                                        # conditionalPanel(condition="input.STEGO_R_pro == 'STEGO_R (.h5Seurat)'",
 
                                        # ),
+                                       conditionalPanel(condition="input.check_up_files != 'up'",
 
-                                       fluidRow(
-                                         column(4,selectInput("colourtype","Type of colouring",choices = c("default","rainbow","random","heat.colors","terrain.colors","topo.colors","hcl.colors","one colour"))),
-                                         column(4,colourInput("one.colour.default","One colour","grey")),
-                                         column(4,colourInput("NA_col_analysis","NA colour","grey75"),)
-
-                                       ),
-
-                                       conditionalPanel(condition="input.QC_panel==2 || input.QC_panel==3",
-                                                        fluidRow(column(12,selectInput("Graph_type_bar","Type of graph",choices = c("Number_expanded","Frequency_expanded","Top_clonotypes")))),
                                                         fluidRow(
-                                                          conditionalPanel(condition="input.Graph_type_bar =='Top_clonotypes'",
-                                                                           column(6,numericInput("top_no_clonotypes","Top clonotypes per group",value = 1,step = 1, min = 0, max = 20)),
-                                                          ),
+                                                          column(4,selectInput("colourtype","Type of colouring",choices = c("default","rainbow","random","heat.colors","terrain.colors","topo.colors","hcl.colors","one colour"))),
+                                                          column(4,colourInput("one.colour.default","One colour","grey")),
+                                                          column(4,colourInput("NA_col_analysis","NA colour","grey75"),)
+
                                                         ),
-                                       ),
-                                       h4("What individuals to include"),
-                                       fluidRow(column(6,selectInput("Samp_col","Sample column name (e.g. Sample_Name)",choices = "")),
-                                                column(6,selectInput("Split_by_group","Include group comparison",choices=c("no","yes"))),
-                                                # column(6,conditionalPanel(condition="input.STEGO_R_pro == 'STEGO_R (.h5Seurat)'",
-                                                selectInput("V_gene_sc","V gene with/without CDR3",choices = "")
-                                       ),
-                                       fluidRow(
-                                         column(6,selectInput("by_indiv_pie_epi","Display one individual?",choices = c("no","yes"))),
 
-                                         column(6,selectInput("selected_Indiv","Display one individual",choices = ""),)
-                                       ),
+                                                        conditionalPanel(condition="input.check_up_files == 'up2'",
+                                                                         fluidRow(column(12,selectInput("Graph_type_bar","Type of graph",choices = c("Number_expanded","Frequency_expanded","Top_clonotypes")))),
+                                                                         fluidRow(
+                                                                           conditionalPanel(condition="input.Graph_type_bar =='Top_clonotypes'",
+                                                                                            column(6,numericInput("top_no_clonotypes","Top clonotypes per group",value = 1,step = 1, min = 0, max = 20)),
+                                                                           ),
+                                                                         ),
+                                                        ),
+                                                        h4("What individuals to include"),
+                                                        fluidRow(column(6,selectInput("Samp_col","Sample column name (e.g. Sample_Name)",choices = "")),
+                                                                 column(6,selectInput("Split_by_group","Include group comparison",choices=c("no","yes"))),
+                                                                 # column(6,conditionalPanel(condition="input.STEGO_R_pro == 'STEGO_R (.h5Seurat)'",
+                                                                 column(6,selectInput("V_gene_sc","V gene with/without CDR3",choices = "")),
+                                                                 conditionalPanel(condition = "input.Split_by_group == 'yes'",
+                                                                                  column(4, numericInput("wrap_row","Wrap rows", value = 1)),
+                                                                 ),
 
-                                       # ),
+                                                        ),
+                                                        fluidRow(
+                                                          column(6,selectInput("by_indiv_pie_epi","Display one individual?",choices = c("no","yes"))),
+
+                                                          column(6,selectInput("selected_Indiv","Display one individual",choices = ""),)
+                                                        ),
+
+                                                        # ),
 
 
 
-                                       selectInput("font_type",label = h4("Type of font"),choices = font,selected = "serif"),
-                                       fluidRow(
-                                         column(6,numericInput("text_size","Size of #",value=16)),
-                                         column(6,numericInput("title.text.sizer2","Axis text size",value=30)),
+                                                        selectInput("font_type",label = h4("Type of font"),choices = font,selected = "serif"),
+                                                        fluidRow(
+                                                          column(6,numericInput("text_size","Size of #",value=16)),
+                                                          column(6,numericInput("title.text.sizer2","Axis text size",value=30)),
 
-                                         column(6,numericInput("Bar_legend_size","Legend text size",value=16)),
-                                         column(4, selectInput("legend_position","Legend location",choices = c("top","bottom","left","right","none"),selected = "right")),
-                                       ),
-                                       # ),
-                                       p(""),
-                                       fluidRow(
-                                         column(4, numericInput("Strip_text_size","Strip text size", value = 12))
+                                                          column(6,numericInput("Bar_legend_size","Legend text size",value=16)),
+                                                          column(4, selectInput("legend_position","Legend location",choices = c("top","bottom","left","right","none"),selected = "right")),
+                                                        ),
+                                                        # ),
+                                                        p(""),
+                                                        fluidRow(
+                                                          column(4, numericInput("Strip_text_size","Strip text size", value = 12))
+                                                        )
+
                                        )
                           ),
 
                           # add in clustering  (why did I add this comment?) -----
                           mainPanel(
-                            column(12,selectInput("ID_Column_factor","Order of graph",choices = "", multiple = T, width = "1200px")),
-                            tabsetPanel(id = "check_up_files",
 
+                            tabsetPanel(id = "check_up_files",
                                         tabPanel("Check files uploaded",value = 'up',
                                                  add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
 
@@ -845,7 +849,11 @@ runSTEGO <- function(){
 
                                         ),
                                         ### UMAP -> TCR -----
-                                        tabPanel("Overview of TCR",
+                                        tabPanel("Overview", value = 'up2',
+                                                 fluidRow(column(3,uiOutput("classification_to_add_overview")),
+                                                          column(9,selectInput("ID_Column_factor","Order of graph",choices = "", multiple = T, width = "1200px")),
+                                                 ),
+
                                                  tabsetPanel(id = "QC_panel",
                                                              tabPanel("Check UMAP", value = 1,
                                                                       add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
@@ -869,270 +877,179 @@ runSTEGO <- function(){
 
 
                                                              ),
-
-                                                             tabPanel("Clonal expansion plots",value = 2,
-                                                                      add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
-
-
-                                                                      fluidRow(
-                                                                        # uiOutput('myPanel_top_clonal_plot'),
-                                                                        conditionalPanel(condition="input.Graph_type_bar=='Number_expanded' || input.Graph_type_bar=='Frequency_expanded'",
-                                                                                         fluidRow(
-                                                                                           column(3,
-                                                                                                  wellPanel(id = "tPanel23",style = "overflow-y:scroll; max-height: 600px",
-                                                                                                            uiOutput('myPanel_clonal_plot'))),
-                                                                                           column(9, plotOutput("clonality.bar.graph",height="600px"))
-                                                                                         )
-                                                                        ),
-                                                                        conditionalPanel(condition="input.Graph_type_bar=='Top_clonotypes'",
-                                                                                         fluidRow(
-                                                                                           column(3,
-                                                                                                  wellPanel(id = "tPanel23",style = "overflow-y:scroll; max-height: 600px",
-                                                                                                            uiOutput('myPanel_top_clonal_plot'))),
-                                                                                           column(9, plotOutput("clonality.bar.graph2",height="600px"))
-
-                                                                                         ),
-                                                                        ),
-
-
-                                                                      ),
-                                                                      # plotOutput("", height = "600px"),
-
-                                                                      fluidRow(
-                                                                        column(3,numericInput("width_clonality.bar.graph", "Width of PDF", value=10)),
-                                                                        column(3,numericInput("height_clonality.bar.graph", "Height of PDF", value=8)),
-                                                                        column(3),
-                                                                        column(3,style = "margin-top: 25px;",downloadButton('downloadPlot_clonaity.bar.graph','Download PDF'))),
-
-                                                                      fluidRow(
-                                                                        column(3,numericInput("width_png_clonality.bar.graph","Width of PNG", value = 2400)),
-                                                                        column(3,numericInput("height_png_clonality.bar.graph","Height of PNG", value = 1400)),
-                                                                        column(3,numericInput("resolution_PNG_clonality.bar.graph","Resolution of PNG", value = 144)),
-                                                                        column(3,style = "margin-top: 25px;",downloadButton('downloadPlotPNG_clonaity.bar.graph','Download PNG'))
-                                                                      )
-                                                             ),
-                                                             #### UMAP clonality -> TCR -----
-                                                             tabPanel("UMAP with clonality (counts)", value = 3,
-                                                                      add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
-                                                                      fluidRow(
-                                                                        column(3,selectInput("filter_umap_expand","Filter plot",choices = c("no","yes"))),
-
-
-                                                                      ),
-                                                                      conditionalPanel(condition="input.filter_umap_expand == 'yes'",
-                                                                                       fluidRow(
-                                                                                         column(3,numericInput("UMAP_1x","UMAP_1 <",value = 10)),
-                                                                                         column(3,numericInput("UMAP_1y","UMAP_1 >",value = -10)),
-                                                                                         column(3,numericInput("UMAP_2x","UMAP_2 <",value = 10)),
-                                                                                         column(3,numericInput("UMAP_2y","UMAP_2 >",value = -10))
-                                                                                       ),
-
-                                                                      ),
-                                                                      conditionalPanel(condition="input.Graph_type_bar=='Number_expanded' || input.Graph_type_bar=='Frequency_expanded'",
-                                                                                       fluidRow(
-                                                                                         column(3,
-                                                                                                wellPanel(id = "tPanel23",style = "overflow-y:scroll; max-height: 600px",
-                                                                                                          uiOutput('cols_UMAP_clonal_plot'))),
-                                                                                         column(9, plotOutput("clonality.TCR.UMAP",height="600px"))
-                                                                                       ),
-
-                                                                                       fluidRow(
-                                                                                         column(3,numericInput("width_TCR.UMAP", "Width of PDF", value=10)),
-                                                                                         column(3,numericInput("height_TCR.UMAP", "Height of PDF", value=5)),
-                                                                                         column(3),
-                                                                                         column(3,style = "margin-top: 25px;",downloadButton('downloadPlot_TCR.UMAP','Download PDF'))),
-
-                                                                                       fluidRow(
-                                                                                         column(3,numericInput("width_png_TCR.UMAP","Width of PNG", value = 2400)),
-                                                                                         column(3,numericInput("height_png_TCR.UMAP","Height of PNG", value = 1200)),
-                                                                                         column(3,numericInput("resolution_PNG_TCR.UMAP","Resolution of PNG", value = 144)),
-                                                                                         column(3,style = "margin-top: 25px;",downloadButton('downloadPlotPNG_TCR.UMAP','Download PNG'))
-                                                                                       ),
-
-                                                                      ),
-
-                                                                      conditionalPanel(condition="input.Graph_type_bar=='Top_clonotypes'",
-                                                                                       column(12,   div(DT::dataTableOutput("Tb_For_colouring_check"))),
-
-                                                                                       fluidRow(
-                                                                                         # column(4,selectInput("Split_by_group","Include group comparison",choices=c("no","yes"))),
-                                                                                         column(4,selectInput("display_all_samps","Display all sample",choices=c("yes","no"))),
+                                                             # TCR overview ontop of UMAP -----
+                                                             tabPanel("TCR",
+                                                                      tabsetPanel(id = "TCR",
+                                                                                  tabPanel("Overlap",
+                                                                                           tabsetPanel(
+                                                                                             tabPanel("Table",
+                                                                                                      div(DT::dataTableOutput("Upset_plot_overlap_Tb")),
+                                                                                                      downloadButton('downloaddf_Upset_plot_overlap_Tb','Download table')
 
 
 
+                                                                                             ),
+                                                                                             tabPanel("Upset Plot",
 
-                                                                                       ),
+                                                                                                      plotOutput("Upset_plot_overlap"),
+                                                                                                      fluidRow(
+                                                                                                        column(1,numericInput("width_Upset_plot_overlap", "Width of PDF", value=10)),
+                                                                                                        column(1,numericInput("height_Upset_plot_overlap", "Height of PDF", value=8)),
+                                                                                                        column(2,style = "margin-top: 25px;",downloadButton('downloadPlot_Upset_plot_overlap','Download PDF')),
+                                                                                                        column(2,numericInput("width_png_Upset_plot_overlap","Width of PNG", value = 1200)),
+                                                                                                        column(2,numericInput("height_png_Upset_plot_overlap","Height of PNG", value = 1000)),
+                                                                                                        column(2,numericInput("resolution_PNG_Upset_plot_overlap","Resolution of PNG", value = 144)),
+                                                                                                        column(2,style = "margin-top: 25px;",downloadButton('downloadPlotPNG_Upset_plot_overlap','Download PNG'))),
+                                                                                             ),
+                                                                                             # tabPanel("UMAP",
+                                                                                             #          fluidRow(
+                                                                                             #            column(3,
+                                                                                             #                   wellPanel(id = "tPanel23",style = "overflow-y:scroll; max-height: 600px",
+                                                                                             #                             # uiOutput('cols_overlap_classification')
+                                                                                             #                   )),
+                                                                                             #            column(9, plotOutput("UMAP_overlap_classification",height="600px"))
+                                                                                             #          ),
+                                                                                             #
+                                                                                             # ),
+                                                                                             # tabPanel("Pie",
+                                                                                             #          fluidRow(
+                                                                                             #            column(3,
+                                                                                             #                   wellPanel(id = "tPanel23",style = "overflow-y:scroll; max-height: 600px",
+                                                                                             #                             # uiOutput('cols_overlap_classification')
+                                                                                             #                   )),
+                                                                                             #            column(9, plotOutput("Classification_Overlap_pie",height="600px"))
+                                                                                             #          ),
+                                                                                             #
+                                                                                             # )
+                                                                                           )
+                                                                                  ),
 
-                                                                                       column(12,selectInput("ID_Column_metadata","Select to display",choices = "", multiple = T, width = "1200px")),
-
-                                                                                       add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
-                                                                                       fluidRow(
-                                                                                         column(3,
-                                                                                                wellPanel(id = "tPanel23",style = "overflow-y:scroll; max-height: 600px",
-                                                                                                          uiOutput('cols_UMAP_Topclonotypes'))),
-                                                                                         column(9, plotOutput("clonality.TCR.UMAP.top",height="600px")),
-
-                                                                                         fluidRow(
-                                                                                           column(3,numericInput("width_TCR.UMAP_top", "Width of PDF", value=10)),
-                                                                                           column(3,numericInput("height_TCR.UMAP_top", "Height of PDF", value=8)),
-                                                                                           column(3),
-                                                                                           column(3,style = "margin-top: 25px;",downloadButton('downloadPlot_TCR.UMAP_top','Download PDF'))),
-
-                                                                                         fluidRow(
-                                                                                           column(3,numericInput("width_png_TCR.UMAP_top","Width of PNG", value = 1200)),
-                                                                                           column(3,numericInput("height_png_TCR.UMAP_top","Height of PNG", value = 1400)),
-                                                                                           column(3,numericInput("resolution_PNG_TCR.UMAP_top","Resolution of PNG", value = 144)),
-                                                                                           column(3,style = "margin-top: 25px;",downloadButton('downloadPlotPNG_TCR.UMAP_top','Download PNG'))
-                                                                                         ),
-
-                                                                                       ),
-                                                                      ),
-
-                                                             ),
-                                                             # tabPanel("Clonotype overlap per cluster (upset plot)",
-                                                             #          # add in upset plot per cluster
-                                                             #          )
-                                                 )
-                                        ),
-                                        ### UMAP with TCR expression end -----
-                                        tabPanel("Differential expression",
-                                                 conditionalPanel(condition="input.Panel_DEX==5",
-                                                                  fluidRow(
-                                                                    column(3,numericInput("min.ptc.sc","minimum point",value = 0.25)),
-                                                                    column(3,numericInput("logfc.ptc.sc","Log fold change",value = 0.25)),
-                                                                    column(3,selectInput("normalN","Type of Differnetial expression",
-                                                                                         choices = c("wilcox","bimod","roc","t","negbinom","poisson","LR","MAST","DESeq2")
-                                                                    )),
-                                                                    column(3,style = "margin-top: 25px;",actionButton("run_differental.exp","run differental expression"),)
-                                                                  ),
-
-                                                 ),
-
-                                                 conditionalPanel(condition="input.Panel_DEX==55 || input.Panel_DEX==5",
-
-                                                                  fluidRow(
-                                                                    column(4,selectInput("multiple_group_sc","Include group comparison",choices=c("no","yes"))),
-                                                                    column(4,selectInput("meta_data_sc_clust","Cluster by",choices = "")),
-                                                                    column(4,selectInput("meta_data_sc_","Add group",choices = "")),
-
-                                                                  ),
-
-                                                 ),
+                                                                                  tabPanel("Clonal expansion plots",value = 2,
+                                                                                           add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
 
 
+                                                                                           fluidRow(
+                                                                                             # uiOutput('myPanel_top_clonal_plot'),
+                                                                                             conditionalPanel(condition="input.Graph_type_bar=='Number_expanded' || input.Graph_type_bar=='Frequency_expanded'",
+                                                                                                              fluidRow(
+                                                                                                                column(3,
+                                                                                                                       wellPanel(id = "tPanel23",style = "overflow-y:scroll; max-height: 600px",
+                                                                                                                                 uiOutput('myPanel_clonal_plot'))),
+                                                                                                                column(9, plotOutput("clonality.bar.graph",height="600px"))
+                                                                                                              )
+                                                                                             ),
+                                                                                             conditionalPanel(condition="input.Graph_type_bar=='Top_clonotypes'",
+                                                                                                              fluidRow(
+                                                                                                                column(3,
+                                                                                                                       wellPanel(id = "tPanel23",style = "overflow-y:scroll; max-height: 600px",
+                                                                                                                                 uiOutput('myPanel_top_clonal_plot'))),
+                                                                                                                column(9, plotOutput("clonality.bar.graph2",height="600px"))
 
-                                                 tabsetPanel(id = "Panel_DEX",
-                                                             #### Cluster table -----
-                                                             tabPanel("Cluster differences (Feature plot)",
-                                                                      actionButton("run_string.data3","View Feature plot"),
-                                                                      fluidRow(column(12, selectInput("string.data3","column names for summary","",multiple = T, width = "1200px") )),
-                                                                      fluidRow(
-                                                                        column(2,checkboxInput("label_is_true_features","Add plot lables",value=T)),
-                                                                        column(2,selectInput("norm_expression_for_all","Set Maximum",choices=c("no","yes"))),
-                                                                        column(2,numericInput("max_norm_FP","Set maximum scale value",value = 10, step = 1, min=1)),
-                                                                        column(2,colourInput("lower_col_FP","Min (Colour)",value = "grey90")),
-                                                                        column(2,colourInput("upper_col_FP","Max (colour)",value = "Darkblue"))
-                                                                      ),
-                                                                      plotOutput("markers_featurePlot_sc", height = "600px"),
+                                                                                                              ),
+                                                                                             ),
 
-                                                                      fluidRow(
-                                                                        column(3,numericInput("width_markers_featurePlot_sc", "Width of PDF", value=10)),
-                                                                        column(3,numericInput("height_markers_featurePlot_sc", "Height of PDF", value=8)),
-                                                                        column(3),
-                                                                        column(3,style = "margin-top: 25px;",downloadButton('downloadPlot_markers_featurePlot_sc','Download PDF'))),
-                                                                      fluidRow(
-                                                                        column(3,numericInput("width_png_markers_featurePlot_sc","Width of PNG", value = 1200)),
-                                                                        column(3,numericInput("height_png_markers_featurePlot_sc","Height of PNG", value = 1000)),
-                                                                        column(3,numericInput("resolution_PNG_markers_featurePlot_sc","Resolution of PNG", value = 144)),
-                                                                        column(3,style = "margin-top: 25px;",downloadButton('downloadPlotPNG_markers_featurePlot_sc','Download PNG'))
-                                                                      )
 
-                                                             ),
-                                                             #### differential expression within clusters ----
-                                                             tabPanel("Treatment differences within clusters",value = 55,
+                                                                                           ),
+                                                                                           # plotOutput("", height = "600px"),
 
-                                                                      actionButton("run_update_clust","Update comparisons"),
-                                                                      fluidRow(
-                                                                        column(4,selectInput("unique.Idents1","comaprison 1",choices = "")),
-                                                                        column(4,selectInput("unique.Idents2","comaprison 2",choices = "")),
-                                                                      ),
-                                                                      tabsetPanel(
-                                                                        tabPanel("Table",
-                                                                                 div(DT::dataTableOutput("DEx_table_comparison")),
-                                                                                 downloadButton('downloaddf_DEx_sc','Download Table (.csv)'),
-                                                                                 downloadButton('downloaddf_DEx_sc_ggVolcanoR','Download ggVolcanoR compatible table (.csv)')
-                                                                        ),
-                                                                        tabPanel("Plot",
-                                                                                 plotOutput("volc_plot_cluster", height = "600px"))
+                                                                                           fluidRow(
+                                                                                             column(3,numericInput("width_clonality.bar.graph", "Width of PDF", value=10)),
+                                                                                             column(3,numericInput("height_clonality.bar.graph", "Height of PDF", value=8)),
+                                                                                             column(3),
+                                                                                             column(3,style = "margin-top: 25px;",downloadButton('downloadPlot_clonaity.bar.graph','Download PDF'))),
+
+                                                                                           fluidRow(
+                                                                                             column(3,numericInput("width_png_clonality.bar.graph","Width of PNG", value = 2400)),
+                                                                                             column(3,numericInput("height_png_clonality.bar.graph","Height of PNG", value = 1400)),
+                                                                                             column(3,numericInput("resolution_PNG_clonality.bar.graph","Resolution of PNG", value = 144)),
+                                                                                             column(3,style = "margin-top: 25px;",downloadButton('downloadPlotPNG_clonaity.bar.graph','Download PNG'))
+                                                                                           )
+                                                                                  ),
+
+                                                                                  #### UMAP clonality -> TCR -----
+                                                                                  tabPanel("UMAP with clonality (counts)", value = 3,
+                                                                                           add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
+                                                                                           fluidRow(
+                                                                                             column(3,selectInput("filter_umap_expand","Filter plot",choices = c("no","yes"))),
+
+
+                                                                                           ),
+                                                                                           conditionalPanel(condition="input.filter_umap_expand == 'yes'",
+                                                                                                            fluidRow(
+                                                                                                              column(3,numericInput("UMAP_1x","UMAP_1 <",value = 10)),
+                                                                                                              column(3,numericInput("UMAP_1y","UMAP_1 >",value = -10)),
+                                                                                                              column(3,numericInput("UMAP_2x","UMAP_2 <",value = 10)),
+                                                                                                              column(3,numericInput("UMAP_2y","UMAP_2 >",value = -10))
+                                                                                                            ),
+
+                                                                                           ),
+                                                                                           conditionalPanel(condition="input.Graph_type_bar=='Number_expanded' || input.Graph_type_bar=='Frequency_expanded'",
+                                                                                                            fluidRow(
+                                                                                                              column(3,
+                                                                                                                     wellPanel(id = "tPanel23",style = "overflow-y:scroll; max-height: 600px",
+                                                                                                                               uiOutput('cols_UMAP_clonal_plot'))),
+                                                                                                              column(9, plotOutput("clonality.TCR.UMAP",height="600px"))
+                                                                                                            ),
+
+                                                                                                            fluidRow(
+                                                                                                              column(3,numericInput("width_TCR.UMAP", "Width of PDF", value=10)),
+                                                                                                              column(3,numericInput("height_TCR.UMAP", "Height of PDF", value=5)),
+                                                                                                              column(3),
+                                                                                                              column(3,style = "margin-top: 25px;",downloadButton('downloadPlot_TCR.UMAP','Download PDF'))),
+
+                                                                                                            fluidRow(
+                                                                                                              column(3,numericInput("width_png_TCR.UMAP","Width of PNG", value = 2400)),
+                                                                                                              column(3,numericInput("height_png_TCR.UMAP","Height of PNG", value = 1200)),
+                                                                                                              column(3,numericInput("resolution_PNG_TCR.UMAP","Resolution of PNG", value = 144)),
+                                                                                                              column(3,style = "margin-top: 25px;",downloadButton('downloadPlotPNG_TCR.UMAP','Download PNG'))
+                                                                                                            ),
+
+                                                                                           ),
+
+                                                                                           conditionalPanel(condition="input.Graph_type_bar=='Top_clonotypes'",
+                                                                                                            column(12,   div(DT::dataTableOutput("Tb_For_colouring_check"))),
+
+                                                                                                            fluidRow(
+                                                                                                              # column(4,selectInput("Split_by_group","Include group comparison",choices=c("no","yes"))),
+                                                                                                              column(4,selectInput("display_all_samps","Display all sample",choices=c("yes","no"))),
+
+
+
+
+                                                                                                            ),
+
+                                                                                                            column(12,selectInput("ID_Column_metadata","Select to display",choices = "", multiple = T, width = "1200px")),
+
+                                                                                                            add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
+                                                                                                            fluidRow(
+                                                                                                              column(3,
+                                                                                                                     wellPanel(id = "tPanel23",style = "overflow-y:scroll; max-height: 600px",
+                                                                                                                               uiOutput('cols_UMAP_Topclonotypes'))),
+                                                                                                              column(9, plotOutput("clonality.TCR.UMAP.top",height="600px")),
+
+                                                                                                              fluidRow(
+                                                                                                                column(3,numericInput("width_TCR.UMAP_top", "Width of PDF", value=10)),
+                                                                                                                column(3,numericInput("height_TCR.UMAP_top", "Height of PDF", value=8)),
+                                                                                                                column(3),
+                                                                                                                column(3,style = "margin-top: 25px;",downloadButton('downloadPlot_TCR.UMAP_top','Download PDF'))),
+
+                                                                                                              fluidRow(
+                                                                                                                column(3,numericInput("width_png_TCR.UMAP_top","Width of PNG", value = 1200)),
+                                                                                                                column(3,numericInput("height_png_TCR.UMAP_top","Height of PNG", value = 1400)),
+                                                                                                                column(3,numericInput("resolution_PNG_TCR.UMAP_top","Resolution of PNG", value = 144)),
+                                                                                                                column(3,style = "margin-top: 25px;",downloadButton('downloadPlotPNG_TCR.UMAP_top','Download PNG'))
+                                                                                                              ),
+
+                                                                                                            ),
+                                                                                           ),
+
+                                                                                  ),
                                                                       ),
                                                              ),
-                                                             tabPanel("Cluster differences (All markers)", value = 5,
-                                                                      add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
-                                                                      div(DT::dataTableOutput("DEx_table_clusters")),
-                                                                      downloadButton('downloaddf_DEx_table_clusters','Download Table (.csv)')
-                                                             ),
-                                                             ### Cluster table plot -----
-
-                                                             # tabPanel("Cluster differences (Heatmap/expression dot plot) "),
-                                                             # heatmap (Z-score)
-                                                             # clusters, mean expression and percentage with expression (Top x genes per cluster?)
 
 
-                                                             ### check meta data table ----
-
-
-                                                 )
-
-                                        ),
-                                        ### end of differential expression -----
-                                        ### TCR and GEX analysis section-----
-                                        tabPanel("TCR and GEX",
-                                                 fluidRow(
-                                                   column(4,uiOutput("classification_to_add")),
-                                                   column(4, selectInput("clust_group","Split graph by:",choices ="")),
-                                                   column(4, selectInput("Gene_V_top","Select V with/without CDR3",choices =""))),
-                                                 column(12,selectInput("Graph_split_order","Order of split by:",choices = "", multiple = T, width = "1200px")),
-                                                 conditionalPanel(
-                                                   condition="input.Panel_TCRUMAP=='top_clone'",
-                                                   fluidRow(
-                                                     column(4,actionButton("run_top","Update selected clonotype")),
-                                                     column(4, selectInput("Selected_clonotype","Select clonotype:",choices ="")),
-                                                     # column(4, selectInput("Selected_chain","Select chain:",choices ="")),
-                                                   ),
-
-                                                 ),
-                                                 conditionalPanel(condition="input.Panel_TCRUMAP=='ClusTCR2'",
-                                                                  fluidRow(
-                                                                    column(3,selectInput("chain_TCR","Chains included",choices = c("TRAG","TRBD","Ig"))
-                                                                    ),
-                                                                    conditionalPanel(condition="input.chain_TCR=='TRAG'",
-                                                                                     fluidRow( column(3,selectInput("V_call_clust_sc","V gene",choices = "")),
-                                                                                               column(3,selectInput("junction_clust_sc","Junction",choices = "")) ),
-
-                                                                    ),
-                                                                    conditionalPanel(condition="input.chain_TCR=='TRBD'",
-                                                                                     fluidRow(
-                                                                                       column(3,selectInput("V_call_clust_sc_BD","V gene",choices = "")),
-                                                                                       column(3,selectInput("junction_clust_sc_BD","Junction",choices = ""))
-                                                                                     )
-
-                                                                    ),
-                                                                    # column(3,selectInput("V_gene_clust","V gene",choices = c("v_gene_AG","v_gene_BD","v_gene_IgL","v_gene_IgH")),),
-                                                                    # column(3, selectInput("cdr3_clust","CDR3",choices = c("cdr3_AG","cdr3_BD","cdr3_IgL","cdr3_IgH")),)
-                                                                  ),
-                                                 ),
-
-                                                 conditionalPanel(condition="input.Panel_TCRUMAP=='Epitope'",
-                                                                  fluidRow(
-                                                                    column(4,uiOutput("classification_to_add_epitope")),
-                                                                    column(4,uiOutput("classification_to_add_epitope2")),
-
-                                                                  ),
-                                                 ),
-                                                 ##### Classification to include ------
-                                                 tabsetPanel(id = "Panel_TCRUMAP",
                                                              # T cell classification ------
-                                                             tabPanel("GEX",
+                                                             tabPanel("GEX", value = "GEX_panel",
                                                                       tabsetPanel(id = "Panel_class",
                                                                                   tabPanel("Percentage",value = 16,
                                                                                            add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
@@ -1227,11 +1144,168 @@ runSTEGO <- function(){
 
                                                                       ),
                                                              ),
+                                                             # tabPanel("Clonotype overlap per cluster (upset plot)",
+                                                             #          # add in upset plot per cluster
+                                                             #          )
+                                                 )
+                                        ),
+                                        ### UMAP with TCR expression end -----
+                                        tabPanel("Differential expression",
+                                                 conditionalPanel(condition="input.Panel_DEX==5",
+                                                                  fluidRow(
+                                                                    column(3,numericInput("min.ptc.sc","minimum point",value = 0.25)),
+                                                                    column(3,numericInput("logfc.ptc.sc","Log fold change",value = 0.25)),
+                                                                    column(3,selectInput("normalN","Type of Differnetial expression",
+                                                                                         choices = c("wilcox","bimod","roc","t","negbinom","poisson","LR","MAST","DESeq2")
+                                                                    )),
+                                                                    column(3,style = "margin-top: 25px;",actionButton("run_differental.exp","run differental expression"),)
+                                                                  ),
+
+                                                 ),
+
+                                                 conditionalPanel(condition="input.Panel_DEX==55 || input.Panel_DEX==5",
+
+                                                                  fluidRow(
+                                                                    column(4,selectInput("multiple_group_sc","Include group comparison",choices=c("no","yes"))),
+                                                                    column(4,selectInput("meta_data_sc_clust","Cluster by",choices = "")),
+                                                                    column(4,selectInput("meta_data_sc_","Add group",choices = "")),
+
+                                                                  ),
+
+                                                 ),
+                                                 tabsetPanel(id = "Panel_DEX",
+                                                             #### Cluster table -----
+                                                             tabPanel("Cluster differences (Feature plot)",
+                                                                      actionButton("run_string.data3","View Feature plot"),
+                                                                      fluidRow(column(12, selectInput("string.data3","column names for summary","",multiple = T, width = "1200px") )),
+                                                                      fluidRow(
+                                                                        column(2,checkboxInput("label_is_true_features","Add plot lables",value=T)),
+                                                                        column(2,selectInput("norm_expression_for_all","Set Maximum",choices=c("no","yes"))),
+                                                                        column(2,numericInput("max_norm_FP","Set maximum scale value",value = 10, step = 1, min=1)),
+                                                                        column(2,colourInput("lower_col_FP","Min (Colour)",value = "grey90")),
+                                                                        column(2,colourInput("upper_col_FP","Max (colour)",value = "Darkblue"))
+                                                                      ),
+                                                                      plotOutput("markers_featurePlot_sc", height = "600px"),
+
+                                                                      fluidRow(
+                                                                        column(3,numericInput("width_markers_featurePlot_sc", "Width of PDF", value=10)),
+                                                                        column(3,numericInput("height_markers_featurePlot_sc", "Height of PDF", value=8)),
+                                                                        column(3),
+                                                                        column(3,style = "margin-top: 25px;",downloadButton('downloadPlot_markers_featurePlot_sc','Download PDF'))),
+                                                                      fluidRow(
+                                                                        column(3,numericInput("width_png_markers_featurePlot_sc","Width of PNG", value = 1200)),
+                                                                        column(3,numericInput("height_png_markers_featurePlot_sc","Height of PNG", value = 1000)),
+                                                                        column(3,numericInput("resolution_PNG_markers_featurePlot_sc","Resolution of PNG", value = 144)),
+                                                                        column(3,style = "margin-top: 25px;",downloadButton('downloadPlotPNG_markers_featurePlot_sc','Download PNG'))
+                                                                      )
+
+                                                             ),
+                                                             #### differential expression within clusters ----
+                                                             tabPanel("Treatment differences within clusters",value = 55,
+
+                                                                      actionButton("run_update_clust","Update comparisons"),
+                                                                      fluidRow(
+                                                                        column(4,selectInput("unique.Idents1","comaprison 1",choices = "")),
+                                                                        column(4,selectInput("unique.Idents2","comaprison 2",choices = "")),
+                                                                      ),
+                                                                      tabsetPanel(
+                                                                        tabPanel("Table",
+                                                                                 div(DT::dataTableOutput("DEx_table_comparison")),
+                                                                                 downloadButton('downloaddf_DEx_sc','Download Table (.csv)'),
+                                                                                 downloadButton('downloaddf_DEx_sc_ggVolcanoR','Download ggVolcanoR compatible table (.csv)')
+                                                                        ),
+                                                                        tabPanel("Plot",
+                                                                                 plotOutput("volc_plot_cluster", height = "600px"))
+                                                                      ),
+                                                             ),
+                                                             tabPanel("Cluster differences (All markers)", value = 5,
+                                                                      add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
+                                                                      div(DT::dataTableOutput("DEx_table_clusters")),
+                                                                      downloadButton('downloaddf_DEx_table_clusters','Download Table (.csv)')
+                                                             ),
+                                                             ### Cluster table plot -----
+
+                                                             # tabPanel("Cluster differences (Heatmap/expression dot plot) "),
+                                                             # heatmap (Z-score)
+                                                             # clusters, mean expression and percentage with expression (Top x genes per cluster?)
+
+
+                                                             ### check meta data table ----
+
+
+                                                 )
+
+                                        ),
+                                        ### end of differential expression -----
+                                        ### TCR and GEX analysis section-----
+                                        tabPanel("TCR and GEX",
+                                                 #### User interface above the TCR with GEx
+                                                 fluidRow(
+                                                   column(3,
+                                                          conditionalPanel( condition="input.Panel_TCRUMAP != 'Expanded'",uiOutput("classification_to_add")),
+                                                          conditionalPanel( condition="input.Panel_TCRUMAP =='Expanded'",uiOutput("classification_to_add2"))
+                                                   )),
+
+
+                                                 # column(3, selectInput("V_gene_sc","Select V with/without CDR3",choices ="")),
+                                                 fluidRow(
+                                                   column(3,
+                                                          conditionalPanel(
+                                                            condition="input.Panel_TCRUMAP=='top_clone'",
+                                                            actionButton("run_top","Update selected clonotype")),
+                                                   ),
+                                                   column(3,
+                                                          conditionalPanel(
+                                                            condition="input.Panel_TCRUMAP=='top_clone'",
+                                                            selectInput("Selected_clonotype","Select clonotype:",choices ="") ),
+                                                   ),
+
+                                                 ),
+                                                 fluidRow(
+                                                   column(3,
+                                                          selectInput("Split_group_by_","Split graph by:",choices ="")),
+                                                   # column(2,conditionalPanel(condition="input.Panel_TCRUMAP=='top_clone' || input.Panel_TCRUMAP=='Epitope'",
+                                                   # selectInput("Split_by_group2","Split by Function?",choices=c("no","yes")))),
+
+                                                   column(9,
+                                                          conditionalPanel(condition="input.Panel_TCRUMAP=='top_clone' || input.Panel_TCRUMAP=='Epitope'",
+                                                                           selectInput("Graph_split_order","Order of split by:",choices = "", multiple = T, width = "900px"))
+                                                   ),
+                                                 ),
+
+                                                 conditionalPanel(condition="input.Panel_TCRUMAP=='ClusTCR2'",
+                                                                  fluidRow(
+                                                                    column(2,selectInput("chain_TCR","Chains included",choices = c("TRAG","TRBD","Ig"))),
+                                                                    column(2,
+                                                                           conditionalPanel(condition="input.chain_TCR=='TRAG'",selectInput("V_call_clust_sc","V gene",choices = "")),
+                                                                           conditionalPanel(condition="input.chain_TCR=='TRBD'",selectInput("V_call_clust_sc_BD","V gene",choices = ""))
+                                                                    ),
+                                                                    column(2,
+                                                                           conditionalPanel(condition="input.chain_TCR=='TRAG'",selectInput("junction_clust_sc","Junction",choices = "")),
+                                                                           conditionalPanel(condition="input.chain_TCR=='TRBD'",selectInput("junction_clust_sc_BD","Junction",choices = ""))
+                                                                    ),
+
+                                                                    # column(2,selectInput("V_gene_clust","V gene",choices = c("v_gene_AG","v_gene_BD","v_gene_IgL","v_gene_IgH")),),
+                                                                    # column(2, selectInput("cdr3_clust","CDR3",choices = c("cdr3_AG","cdr3_BD","cdr3_IgL","cdr3_IgH")),)
+                                                                  ),
+                                                 ),
+
+                                                 conditionalPanel(condition="input.Panel_TCRUMAP=='Epitope'",
+                                                                  fluidRow(
+                                                                    column(4,uiOutput("classification_to_add_epitope")),
+                                                                    column(4,uiOutput("classification_to_add_epitope2")),
+
+                                                                  ),
+                                                 ),
+                                                 ##### Classification to include ------
+                                                 tabsetPanel(id = "Panel_TCRUMAP",
+
                                                              # top clonotypes plot -----
                                                              tabPanel("Top clonotypes", value = "top_clone",
                                                                       # fluidRow(column(3,selectInput("View_AG_or_BD_top_clone","Select top chain:",choices = c("Alpha or Gamma","Beta or Delta"))),
                                                                       #
                                                                       #          ),
+
                                                                       tabsetPanel(
                                                                         tabPanel("Table",
                                                                                  add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
@@ -1326,6 +1400,48 @@ runSTEGO <- function(){
                                                              ),
                                                              # clusTCR specific analysis
                                                              # tabPanel("clusTCR"),
+
+                                                             # expanded phenotype -----
+                                                             tabPanel("Expanded", value = "Expanded",
+                                                                      fluidRow(
+                                                                        column(3,selectInput("Samp_col_expanded","Sample column name",choices = "")),
+                                                                        column(9,selectInput("ID_Column_factor_expanded","ID's to include",choices = "", multiple = T, width = "1200px"))
+                                                                      ),
+                                                                      fluidRow(
+                                                                        column(3,numericInput("cut.off_expanded","Cut off greater than", value = 1, step = 1, min = 1)),
+                                                                      ),
+
+                                                                      tabsetPanel(
+                                                                        tabPanel("Table",
+                                                                                 add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
+                                                                                 div(DT::dataTableOutput("Expansion_check")),
+                                                                        ),
+
+                                                                        tabPanel("UMAP",
+                                                                                 fluidRow(
+                                                                                   add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
+                                                                                   column(3,
+                                                                                          wellPanel(id = "tPanel23",style = "overflow-y:scroll; max-height: 600px",
+                                                                                                    uiOutput('cols_UMAP_Expanded'))),
+                                                                                   column(9, plotOutput("UMAP_Expanded",height="600px"))
+                                                                                 ),
+                                                                                 fluidRow(
+                                                                                   column(1,numericInput("width_UMAP_Expanded", "Width of PDF", value=10)),
+                                                                                   column(1,numericInput("height_UMAP_Expanded", "Height of PDF", value=8)),
+                                                                                   column(2,style = "margin-top: 25px;",downloadButton('downloadPlot_UMAP_Expanded','Download PDF')),
+                                                                                   column(2,numericInput("width_png_UMAP_Expanded","Width of PNG", value = 1200)),
+                                                                                   column(2,numericInput("height_png_UMAP_Expanded","Height of PNG", value = 1000)),
+                                                                                   column(2,numericInput("resolution_PNG_Expanded","Resolution of PNG", value = 144)),
+                                                                                   column(2,style = "margin-top: 25px;",downloadButton('downloadPlotPNG_UMAP_Expanded','Download PNG'))),
+
+                                                                        ),
+
+                                                                        tabPanel("Expression (Violin plot)"),
+
+                                                                      )
+
+                                                             ),
+
                                                              # epitope analysis -----
                                                              tabPanel("Epitope", value = "Epitope",
                                                                       tabsetPanel(
@@ -1344,6 +1460,7 @@ runSTEGO <- function(){
                                                                         ),
 
                                                                         tabPanel("Heatmap",
+                                                                                 add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
                                                                                  plotOutput("Heatmap_epi_plot",height="600px"),
 
                                                                                  fluidRow(
@@ -1358,9 +1475,11 @@ runSTEGO <- function(){
 
                                                                         ),
                                                                         tabPanel("UMAP",
+
                                                                                  numericInput("value_size_epi_umap","Size of epitope dots",value = 2),
 
                                                                                  # column(3,selectInput("epitope_umap_selected","Select",choices = c("beta","epitope","pathology"),selected = "pathology")),
+                                                                                 add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
                                                                                  fluidRow(
                                                                                    column(3,
                                                                                           wellPanel(id = "tPanel23",style = "overflow-y:scroll; max-height: 600px",
@@ -1380,7 +1499,7 @@ runSTEGO <- function(){
                                                                         ),
                                                                         tabPanel("Pie (Expression)",
 
-
+                                                                                 add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
                                                                                  fluidRow(
                                                                                    column(3,
                                                                                           wellPanel(id = "tPanel23",style = "overflow-y:scroll; max-height: 600px",
@@ -1407,8 +1526,8 @@ runSTEGO <- function(){
                                                                                  add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
                                                                                  div(DT::dataTableOutput("Tb_ClusTCR_selected")),
                                                                         ),
-                                                                        tabPanel("table 2",
-                                                                                 div(DT::dataTableOutput("Tb_ClusTCR_col"))),
+                                                                        # tabPanel("table 2",
+                                                                        #          div(DT::dataTableOutput("Tb_ClusTCR_col"))),
                                                                         tabPanel("UMAP",
                                                                                  fluidRow(
                                                                                    column(3,selectInput("ClusTCR_display","Colour by:",choices = c("all","Selected"))),
@@ -1452,7 +1571,8 @@ runSTEGO <- function(){
                                                                         tabPanel("Pie (Expression)",
                                                                                  fluidRow(
                                                                                    column(3,selectInput("Clusters_to_dis_PIE","Clusters to display (Pie expression)",
-                                                                                                        choices = "",multiple = F)),
+                                                                                                        choices = "",multiple = F))),
+                                                                                 fluidRow(
                                                                                    column(3,
                                                                                           wellPanel(id = "tPanel23",style = "overflow-y:scroll; max-height: 600px",
                                                                                                     uiOutput('myPanel_cols_clusTCR2_pie'))),
@@ -1470,49 +1590,7 @@ runSTEGO <- function(){
                                                                       )
                                                              ),
                                                              # Overlap ------
-                                                             tabPanel("Overlap",
-                                                                      tabsetPanel(
-                                                                        tabPanel("Table",
-                                                                                 div(DT::dataTableOutput("Upset_plot_overlap_Tb")),
-                                                                                 downloadButton('downloaddf_Upset_plot_overlap_Tb','Download table')
 
-
-
-                                                                        ),
-                                                                        tabPanel("Upset Plot",
-
-                                                                                 plotOutput("Upset_plot_overlap"),
-                                                                                 fluidRow(
-                                                                                   column(1,numericInput("width_Upset_plot_overlap", "Width of PDF", value=10)),
-                                                                                   column(1,numericInput("height_Upset_plot_overlap", "Height of PDF", value=8)),
-                                                                                   column(2,style = "margin-top: 25px;",downloadButton('downloadPlot_Upset_plot_overlap','Download PDF')),
-                                                                                   column(2,numericInput("width_png_Upset_plot_overlap","Width of PNG", value = 1200)),
-                                                                                   column(2,numericInput("height_png_Upset_plot_overlap","Height of PNG", value = 1000)),
-                                                                                   column(2,numericInput("resolution_PNG_Upset_plot_overlap","Resolution of PNG", value = 144)),
-                                                                                   column(2,style = "margin-top: 25px;",downloadButton('downloadPlotPNG_Upset_plot_overlap','Download PNG'))),
-                                                                        ),
-                                                                        tabPanel("UMAP",
-                                                                                 fluidRow(
-                                                                                   column(3,
-                                                                                          wellPanel(id = "tPanel23",style = "overflow-y:scroll; max-height: 600px",
-                                                                                                    # uiOutput('cols_overlap_classification')
-                                                                                          )),
-                                                                                   column(9, plotOutput("UMAP_overlap_classification",height="600px"))
-                                                                                 ),
-
-                                                                        ),
-                                                                        tabPanel("Pie",
-                                                                                 fluidRow(
-                                                                                   column(3,
-                                                                                          wellPanel(id = "tPanel23",style = "overflow-y:scroll; max-height: 600px",
-                                                                                                    # uiOutput('cols_overlap_classification')
-                                                                                          )),
-                                                                                   column(9, plotOutput("Classification_Overlap_pie",height="600px"))
-                                                                                 ),
-
-                                                                        )
-                                                                      )
-                                                             ),
                                                              # tabPanel("Clonotypes per cluster (Pie/bar plot)"),
                                                              # tabPanel("Upset plot")
                                                  ),
@@ -1558,9 +1636,22 @@ runSTEGO <- function(){
       )
       df3.meta <- c(names(UMAP_metadata_with_labs()))
       # df3.meta <- df3.meta[!grepl("RNA",df3.meta) & !grepl("BCR",df3.meta) & !grepl("TCR",df3.meta)& !grepl("_gene",df3.meta) & !grepl("allele",df3.meta) & !grepl("percent",df3.meta) & !grepl("cdr3",df3.meta)]
-      selectInput("clust_names_top","Colour by: ",choices = df3.meta,selected="seurat_clusters")
+      selectInput("Colour_By_this","Colour by: ",choices = df3.meta,selected="seurat_clusters")
 
     })
+    ## overview colouring
+    output$classification_to_add_overview <- renderUI({
+      sc <- input.data_sc_pro()
+      validate(
+        need(nrow(sc)>0,
+             error_message_val_UMAP)
+      )
+      df3.meta <- c(names(UMAP_metadata_with_labs()))
+      # df3.meta <- df3.meta[!grepl("RNA",df3.meta) & !grepl("BCR",df3.meta) & !grepl("TCR",df3.meta)& !grepl("_gene",df3.meta) & !grepl("allele",df3.meta) & !grepl("percent",df3.meta) & !grepl("cdr3",df3.meta)]
+      selectInput("Colour_By_this_overview","Colour by: ",choices = df3.meta,selected="seurat_clusters")
+
+    })
+
 
 
     output$classification_to_add_epitope <- renderUI({
@@ -1909,7 +2000,7 @@ runSTEGO <- function(){
       TCR_unfiltered_prod <- subset(TCR_unfiltered_prod,TCR_unfiltered_prod$cdr3_length<30)
       TCR_unfiltered_prod <- subset(TCR_unfiltered_prod,TCR_unfiltered_prod$cdr3_length>5)
       df_unique <- TCR_unfiltered_prod[,names(TCR_unfiltered_prod) %in% c("locus","junction_aa")]
-      df_unique$Clonal_expansion <- 1
+      df_unique$Clonal_Expanded <- 1
       df_unique_sum <- ddply(df_unique,names(df_unique)[-c(3)] ,numcolwise(sum))
       TCR_unfiltered_prod <- merge(TCR_unfiltered_prod,df_unique_sum,by = c("locus","junction_aa"))
       TCR_unfiltered_prod$juct_issue <- ifelse(grepl("CTCSAR",TCR_unfiltered_prod$junction_aa),"CTCSAR",
@@ -2070,7 +2161,7 @@ runSTEGO <- function(){
                                        "chain",
                                        "cell_type_experimental",
 
-                                       "Clonal_expansion"
+                                       "Clonal_Expanded"
         )])
       }
       else {
@@ -2103,7 +2194,7 @@ runSTEGO <- function(){
                                        "chain",
                                        "cell_type_experimental",
 
-                                       "Clonal_expansion"
+                                       "Clonal_Expanded"
         )])
       }
 
@@ -4232,6 +4323,8 @@ runSTEGO <- function(){
       }
       pbmc.normalized
     })
+
+
     output$testing_mult2 <- renderPrint({
       pbmc.normalized <- merging_sc()
       table(pbmc.normalized$orig.ident)
@@ -5407,7 +5500,7 @@ runSTEGO <- function(){
       UMAP$Cell_Index <- rownames(UMAP)
       meta.data <- as.data.frame(sc@meta.data)
       meta.data <- meta.data
-      umap.meta <- merge(UMAP,meta.data,by="Cell_Index")
+      umap.meta <- merge(UMAP,meta.data,by="Cell_Index",sort = F)
 
       if(input$add_additional_lables == "yes") {
         labs <- input.data_sc_Labels_to_add()
@@ -5416,7 +5509,7 @@ runSTEGO <- function(){
                "Upload lab file")
         )
         names(umap.meta)[names(umap.meta) %in% input$Samp_col2] <- "ID"
-        umap.meta <- merge(labs,umap.meta,by="ID")
+        umap.meta <- merge(labs,umap.meta,by="ID", sort = F)
         names(umap.meta)[names(umap.meta) %in% "ID"] <- input$Samp_col2
       }
       umap.meta
@@ -5457,7 +5550,7 @@ runSTEGO <- function(){
       names(umap.meta)[names(umap.meta) %in% input$Samp_col] <- "ID_Column"
       names(umap.meta)[names(umap.meta) %in% input$V_gene_sc] <- "v_gene_selected"
       umap.meta
-      sc_merged <- merge(umap.meta,TCR_Expansion(),by=c("v_gene_selected","ID_Column"),all.x=T)
+      sc_merged <- merge(umap.meta,TCR_Expanded(),by=c("v_gene_selected","ID_Column"),all.x=T)
       sc_merged
 
       if(nrow(sc_merged)>0) {
@@ -5600,7 +5693,7 @@ runSTEGO <- function(){
     })
 
     ## TCR expansion ----
-    TCR_Expansion <- reactive({
+    TCR_Expanded <- reactive({
       sc <- input.data_sc_pro()
 
       validate(
@@ -5675,7 +5768,7 @@ runSTEGO <- function(){
       names(umap.meta)[names(umap.meta) %in% input$Samp_col] <- "ID_Column"
       names(umap.meta)[names(umap.meta) %in% input$V_gene_sc] <- "v_gene_selected"
       umap.meta
-      FILE_MERGED <- merge(umap.meta,TCR_Expansion(),by=c("v_gene_selected","ID_Column"),all.x=T)
+      FILE_MERGED <- merge(umap.meta,TCR_Expanded(),by=c("v_gene_selected","ID_Column"),all.x=T)
       FILE_MERGED$ID_Column[FILE_MERGED$v_gene_selected == "NA"] <- "unknown"
       subset(FILE_MERGED,FILE_MERGED$v_gene_selected != "unknown")
     })
@@ -5693,7 +5786,7 @@ runSTEGO <- function(){
       umap.meta
 
 
-      sc <- merge(umap.meta,TCR_Expansion(),by=c("v_gene_selected","ID_Column"),all.x=T)
+      sc <- merge(umap.meta,TCR_Expanded(),by=c("v_gene_selected","ID_Column"),all.x=T)
       ggplot(sc,aes(x=UMAP_1,UMAP_2,colour=seurat_clusters))+
         geom_point()+
         scale_color_manual(values = rainbow(length(unique(sc$seurat_clusters))) , na.value=input$NA_col_analysis)+
@@ -5738,7 +5831,7 @@ runSTEGO <- function(){
 
     # clonotypes Plot -----
     cols_clonal_plot <- reactive({
-      df4 <- TCR_Expansion()
+      df4 <- TCR_Expanded()
       df4 <- df4[order(df4[,names(df4) %in% input$Graph_type_bar]),]
       df_col <- unique(df4[,names(df4) %in% input$Graph_type_bar])
 
@@ -5800,7 +5893,7 @@ runSTEGO <- function(){
     output$myPanel_clonal_plot <- renderUI({cols_clonal_plot()})
 
     colors_clonal_plot <- reactive({
-      df4 <- TCR_Expansion()
+      df4 <- TCR_Expanded()
       df4 <- df4[order(df4[,names(df4) %in% input$Graph_type_bar]),]
       df_col <- unique(df4[,names(df4) %in% input$Graph_type_bar])
 
@@ -5820,7 +5913,7 @@ runSTEGO <- function(){
     })
     clonal_plot <- reactive({
 
-      df4 <- TCR_Expansion()
+      df4 <- TCR_Expanded()
       names(df4)[names(df4) %in% input$Samp_col] <- "ID_Column"
       df4 <- df4[df4$ID_Column %in% input$ID_Column_factor,]
       df4$ID_Column <- as.character(df4$ID_Column)
@@ -5854,7 +5947,7 @@ runSTEGO <- function(){
     ### top clonotypes -----
     vals <- reactiveValues(top10=NULL)
     cols_top_clonal_plot <- reactive({
-      df4 <- TCR_Expansion()
+      df4 <- TCR_Expanded()
       top10 <- df4 %>%
         group_by(ID_Column) %>%
         top_n(n = input$top_no_clonotypes, wt = frequency)
@@ -5924,7 +6017,7 @@ runSTEGO <- function(){
     })
     output$myPanel_top_clonal_plot <- renderUI({cols_top_clonal_plot()})
     colors_top_clonal_plot <- reactive({
-      df4 <- TCR_Expansion()
+      df4 <- TCR_Expanded()
       df4
       top10 <- df4 %>%
         group_by(ID_Column) %>%
@@ -5943,7 +6036,7 @@ runSTEGO <- function(){
     })
 
     top_clonal_plot <- reactive({
-      df4 <- TCR_Expansion()
+      df4 <- TCR_Expanded()
       df4
       top10 <- df4 %>%
         group_by(ID_Column) %>%
@@ -6006,7 +6099,7 @@ runSTEGO <- function(){
     output$downloadPlot_clonaity.bar.graph <- downloadHandler(
       filename = function() {
         x <- gsub(":", ".", Sys.time())
-        paste("Clonal_expansion_",gsub("/", "-", x), ".pdf", sep = "")
+        paste("Clonal_Expanded_",gsub("/", "-", x), ".pdf", sep = "")
       },
       content = function(file) {
         pdf(file, width=input$width_clonality.bar.graph,height=input$height_clonality.bar.graph, onefile = FALSE) # open the pdf device
@@ -6024,7 +6117,7 @@ runSTEGO <- function(){
     output$downloadPlotPNG_clonaity.bar.graph <- downloadHandler(
       filename = function() {
         x <- gsub(":", ".", Sys.time())
-        paste("Clonal_expansion_", gsub("/", "-", x), ".png", sep = "")
+        paste("Clonal_Expanded_", gsub("/", "-", x), ".png", sep = "")
       },
       content = function(file) {
         png(file, width = input$width_png_clonality.bar.graph,
@@ -6168,7 +6261,7 @@ runSTEGO <- function(){
       names(umap.meta)[names(umap.meta) %in% input$Samp_col] <- "ID_Column"
       names(umap.meta)[names(umap.meta) %in% input$V_gene_sc] <- "v_gene_selected"
       umap.meta
-      UMAP.wt.clonality <- merge(umap.meta,TCR_Expansion(),by=c("v_gene_selected","ID_Column"),all.x=T)
+      UMAP.wt.clonality <- merge(umap.meta,TCR_Expanded(),by=c("v_gene_selected","ID_Column"),all.x=T)
       if (input$Graph_type_bar== "Number_expanded") {
         UMAP.wt.clonality$TYPE.clonality <- paste(UMAP.wt.clonality$Number_expanded)
       }
@@ -6223,7 +6316,7 @@ runSTEGO <- function(){
         plot
       }
       else {
-        plot+ facet_wrap(~ID_Column)
+        plot+ facet_wrap(~ID_Column, nrow = input$wrap_row)
       }
 
     })
@@ -6268,7 +6361,7 @@ runSTEGO <- function(){
     }) # ID_Column
 
     For_col_top <- reactive({
-      df4 <- TCR_Expansion()
+      df4 <- TCR_Expanded()
       df4 <- subset(df4, df4$samp.count!=1)
       top10 <- df4 %>%
         group_by(ID_Column) %>%
@@ -6466,7 +6559,7 @@ runSTEGO <- function(){
         session,
         "selected_Indiv",
         choices=df2,
-        selected = df2
+        selected = df2[1]
       )
 
 
@@ -6537,7 +6630,7 @@ runSTEGO <- function(){
         # UMAP.wt.clonality2$ID.names <- UMAP.wt.clonality2[,names(UMAP.wt.clonality2) %in% input$meta_data_sc_]
         # UMAP.wt.clonality2$ID.names <- UMAP.wt.clonality2[,names(UMAP.wt.clonality2) %in% input$Samp_col_UMAP]
 
-        plot+ facet_wrap(~ID_Column)
+        plot+ facet_wrap(~ID_Column, nrow = input$wrap_row)
       }
     })
 
@@ -6590,7 +6683,7 @@ runSTEGO <- function(){
         session,
         "meta_data_sc_",
         choices=names(df.test@meta.data),
-        selected = c("Sample_Name"))
+        selected = c("orig.ident"))
     })
     df_sc_clust <- reactive({
       sc <- input.data_sc_pro()
@@ -6945,10 +7038,7 @@ runSTEGO <- function(){
 
       meta.data <- UMAP_metadata_with_labs()
 
-      meta.data <- UMAP_metadata_with_labs()
-
-
-      totals <- meta.data[,names(meta.data) %in% c(input$Samp_col,input$clust_names_top)]
+      totals <- meta.data[,names(meta.data) %in% c(input$Samp_col,input$Colour_By_this_overview)]
       names(totals) <- c("groups","Function")
       tab <- table(totals$Function,totals$groups)
       as.matrix(round(t(tab)/colSums(tab)*100,2))
@@ -6961,7 +7051,7 @@ runSTEGO <- function(){
     })
     output$downloaddf_Percent_tab <- downloadHandler(
       filename = function(){
-        paste(input$name.file_clust,"_Percent_",input$clust_names_top,"_",gsub("-", ".", Sys.Date()),".tsv", sep = "")
+        paste(input$name.file_clust,"_Percent_",input$Colour_By_this,"_",gsub("-", ".", Sys.Date()),".tsv", sep = "")
       },
       content = function(file){
         df <- as.data.frame(Percent_tab_df())
@@ -6975,7 +7065,7 @@ runSTEGO <- function(){
              error_message_val_UMAP))
 
       df_class <- UMAP_metadata_with_labs()
-      df_class$selected <- df_class[,names(df_class) %in% input$clust_names_top]
+      df_class$selected <- df_class[,names(df_class) %in% input$Colour_By_this]
       selectInput("SiteNumInput", "Show on graph", choices = unique(df_class$selected), selected = NULL, multiple = TRUE)
     })
 
@@ -6988,7 +7078,7 @@ runSTEGO <- function(){
       )
 
       top_BD_cluster <- UMAP_metadata_with_labs()
-      top_BD_cluster$Selected_function <- top_BD_cluster[,names(top_BD_cluster) %in% input$clust_names_top]
+      top_BD_cluster$Selected_function <- top_BD_cluster[,names(top_BD_cluster) %in% input$Colour_By_this_overview]
       top_BD_cluster$Selected_function <- ifelse(grepl("NA", top_BD_cluster$Selected_function),NA,top_BD_cluster$Selected_function)
       top_BD_cluster$Selected_function <- factor(top_BD_cluster$Selected_function,levels = unique(top_BD_cluster$Selected_function))
       num <- as.data.frame(unique(top_BD_cluster$Selected_function))
@@ -7057,7 +7147,7 @@ runSTEGO <- function(){
              error_message_val1)
       )
       top_BD_cluster <- UMAP_metadata_with_labs()
-      top_BD_cluster$Selected_function <- top_BD_cluster[,names(top_BD_cluster) %in% input$clust_names_top]
+      top_BD_cluster$Selected_function <- top_BD_cluster[,names(top_BD_cluster) %in% input$Colour_By_this_overview]
       top_BD_cluster$Selected_function <- ifelse(grepl("NA", top_BD_cluster$Selected_function),NA,top_BD_cluster$Selected_function)
       top_BD_cluster$Selected_function <- factor(top_BD_cluster$Selected_function,levels = unique(top_BD_cluster$Selected_function))
       num <- as.data.frame(unique(top_BD_cluster$Selected_function))
@@ -7075,7 +7165,7 @@ runSTEGO <- function(){
              error_message_val1)
       )
       top_BD_cluster <- UMAP_metadata_with_labs()
-      top_BD_cluster$Selected_function <- top_BD_cluster[,names(top_BD_cluster) %in% input$clust_names_top]
+      top_BD_cluster$Selected_function <- top_BD_cluster[,names(top_BD_cluster) %in% input$Colour_By_this_overview]
       top_BD_cluster$Selected_function <- ifelse(grepl("NA", top_BD_cluster$Selected_function),NA,top_BD_cluster$Selected_function)
       # top_BD_cluster$Selected_function <- factor(top_BD_cluster$Selected_function,levels = unique(top_BD_cluster$Selected_function))
       col.file <- as.data.frame(unique(top_BD_cluster$Selected_function))
@@ -7093,9 +7183,16 @@ runSTEGO <- function(){
         col.file$col <- unlist(colors_UMAP_all_classification())
         col.file
       }
-      # top_BD_cluster$alpha_val <- ifelse(is.na(top_BD_cluster$Selected_function)==T,0.1,1)
 
       names(top_BD_cluster)[names(top_BD_cluster) %in% input$Samp_col] <- "ID_Column"
+
+      if (input$by_indiv_pie_epi == "yes") {
+        top_BD_cluster <- top_BD_cluster[top_BD_cluster$ID_Column %in% input$selected_Indiv,]
+      }
+
+      # top_BD_cluster$alpha_val <- ifelse(is.na(top_BD_cluster$Selected_function)==T,0.1,1)
+
+
       top_BD_cluster <- top_BD_cluster[top_BD_cluster$ID_Column %in% input$ID_Column_factor,]
       top_BD_cluster$ID_Column <- factor(top_BD_cluster$ID_Column,levels = input$ID_Column_factor)
 
@@ -7119,11 +7216,11 @@ runSTEGO <- function(){
         df <- df
       }
       else {
-        df <- df + facet_wrap(~ID_Column)
+        df <- df + facet_wrap(~ID_Column, nrow = input$wrap_row)
       }
       df
     })
-
+    # ?facet_wrap
     output$UMAP_all_classification2 <- renderPlot({
       UMAP_all_classification()
     })
@@ -7162,7 +7259,7 @@ runSTEGO <- function(){
       meta.data <- UMAP_metadata_with_labs()
       updateSelectInput(
         session,
-        "clust_group",
+        "Split_group_by_",
         choices=names(meta.data),
         selected = "seurat_clusters")
     })
@@ -7174,7 +7271,7 @@ runSTEGO <- function(){
              error_message_val1)
       )
       top_BD_cluster <- UMAP_metadata_with_labs()
-      top_BD_cluster$Selected_function <- top_BD_cluster[,names(top_BD_cluster) %in% input$clust_names_top]
+      top_BD_cluster$Selected_function <- top_BD_cluster[,names(top_BD_cluster) %in% input$Colour_By_this_overview]
       top_BD_cluster$Selected_function <- ifelse(top_BD_cluster$Selected_function=="NA","-",top_BD_cluster$Selected_function)
       top_BD_cluster <- top_BD_cluster[order(top_BD_cluster$Selected_function),]
 
@@ -7245,7 +7342,7 @@ runSTEGO <- function(){
       top_BD_cluster <- UMAP_metadata_with_labs()
 
 
-      top_BD_cluster$Selected_function <- top_BD_cluster[,names(top_BD_cluster) %in% input$clust_names_top]
+      top_BD_cluster$Selected_function <- top_BD_cluster[,names(top_BD_cluster) %in% input$Colour_By_this_overview]
       top_BD_cluster$Selected_function <- ifelse(top_BD_cluster$Selected_function=="NA","-",top_BD_cluster$Selected_function)
       top_BD_cluster <- top_BD_cluster[order(top_BD_cluster$Selected_function),]
       num <- as.data.frame(unique(top_BD_cluster$Selected_function))
@@ -7263,10 +7360,10 @@ runSTEGO <- function(){
              error_message_val1)
       )
       top_BD_cluster <- UMAP_metadata_with_labs()
-      top_BD_cluster$Selected_function <- top_BD_cluster[,names(top_BD_cluster) %in% input$clust_names_top]
+      top_BD_cluster$Selected_function <- top_BD_cluster[,names(top_BD_cluster) %in% input$Colour_By_this_overview]
       top_BD_cluster$Selected_function <- ifelse(top_BD_cluster$Selected_function=="NA","-",top_BD_cluster$Selected_function)
       top_BD_cluster <- top_BD_cluster[order(top_BD_cluster$Selected_function),]
-      top_BD_cluster$Selected_group <- top_BD_cluster[,names(top_BD_cluster) %in% input$clust_group]
+      top_BD_cluster$Selected_group <- top_BD_cluster[,names(top_BD_cluster) %in% input$Split_group_by_]
       top_BD_cluster$Selected_group <- factor(top_BD_cluster$Selected_group,level= input$Graph_split_order)
       top_BD_cluster$Selected_indiv <- top_BD_cluster[,names(top_BD_cluster) %in% input$Samp_col]
       top_BD_cluster
@@ -7277,19 +7374,6 @@ runSTEGO <- function(){
       }
 
       top_BD_cluster
-      # df3.meta3 <-  as.data.frame(table(top_BD_cluster$Selected_group,top_BD_cluster$Selected_function))
-      # total.condition <- as.data.frame(ddply(df3.meta3,"Var1",numcolwise(sum)))
-      # emtpy <- matrix(nrow =dim(df3.meta3)[1],ncol=dim(total.condition)[1])
-      #
-      # for (j in 1:dim(total.condition)[1]){
-      #   for (i in 1:dim(df3.meta3)[1]){
-      #     emtpy[i,j] <- ifelse(df3.meta3$Var1[i]==total.condition$Var1[j],total.condition$Freq[j],F)
-      #     #
-      #   }
-      # }
-      #
-      # df3.meta3$n <- df3.meta3$Freq/rowSums(emtpy)
-      # df3.meta3
     })
 
     Pie_chart_Class <- reactive({
@@ -7299,17 +7383,16 @@ runSTEGO <- function(){
              error_message_val1)
       )
       top_BD_cluster <- UMAP_metadata_with_labs()
-      top_BD_cluster$Selected_function <- top_BD_cluster[,names(top_BD_cluster) %in% input$clust_names_top]
+      top_BD_cluster$Selected_function <- top_BD_cluster[,names(top_BD_cluster) %in% input$Colour_By_this_overview]
       top_BD_cluster$Selected_function <- ifelse(top_BD_cluster$Selected_function=="NA","-",top_BD_cluster$Selected_function)
       top_BD_cluster <- top_BD_cluster[order(top_BD_cluster$Selected_function),]
-      top_BD_cluster$Selected_group <- top_BD_cluster[,names(top_BD_cluster) %in% input$clust_group]
-
-      top_BD_cluster$Selected_indiv <- top_BD_cluster[,names(top_BD_cluster) %in% input$Samp_col]
+      top_BD_cluster$Selected_group <- top_BD_cluster[,names(top_BD_cluster) %in% input$Split_group_by_]
 
       df.col <- unlist(colors_pie())
+      names(top_BD_cluster)[names(top_BD_cluster) %in% input$Samp_col] <- "ID_Column"
 
       if (input$by_indiv_pie_epi == "yes") {
-        top_BD_cluster <- top_BD_cluster[top_BD_cluster$Selected_indiv %in% input$selected_Indiv,]
+        top_BD_cluster <- top_BD_cluster[top_BD_cluster$ID_Column %in% input$selected_Indiv,]
       }
 
       df3.meta3 <-  as.data.frame(table(top_BD_cluster$Selected_group,top_BD_cluster$Selected_function))
@@ -7329,7 +7412,7 @@ runSTEGO <- function(){
         geom_bar(stat="identity", width=1)+
         coord_polar("y", start=0)  +
         theme_void(20) +
-        facet_wrap(~Var1) +
+        facet_wrap(~Var1, nrow = input$wrap_row) +
         theme(
           legend.key.size = unit(1, 'cm'))+
         scale_fill_manual(values = df.col, na.value = input$NA_col_analysis) +
@@ -7338,6 +7421,7 @@ runSTEGO <- function(){
               legend.title = element_blank()
 
         )
+
       # theme(strip.background =element_rect(fill=input$strip.colour.tree))+
       # theme(strip.text = element_text(colour = input$strip.text.colour.tree))
       # scale_pattern_fill_manual(values = class_col.t)
@@ -7378,7 +7462,7 @@ runSTEGO <- function(){
     chi_squ <- reactive({
       meta.data <- UMAP_metadata_with_labs()
       meta.data
-      totals <- meta.data[,names(meta.data) %in% c(input$Samp_col,input$clust_names_top)]
+      totals <- meta.data[,names(meta.data) %in% c(input$Samp_col,input$Colour_By_this_overview)]
       names(totals) <- c("groups","Function")
       totals <- totals[!totals$Function %in% c("NA"),]
       totals <- totals[!totals$groups %in% c("NA"),]
@@ -7504,38 +7588,38 @@ runSTEGO <- function(){
 
 
     # Select top clonotype ----
-    observe({
-      sc <- input.data_sc_pro()
-      validate(
-        need(nrow(sc)>0,
-             error_message_val1)
-      )
-      meta.data <- as.data.frame(sc@meta.data)
-      # meta.data <- meta.data[,names(meta.data) %in% c(grep("v",names(meta.data)), grep("cdr3",names(meta.data)))]
-
-      if (input$datasource == "BD_Rhapsody_Paired") {
-        updateSelectInput(
-          session,
-          "Gene_V_top",
-          choices=names(meta.data),
-          selected = "v_gene_cdr3_AB_GD")
-      }
-
-      else {
-        updateSelectInput(
-          session,
-          "Gene_V_top",
-          choices=names(meta.data),
-          selected = "vdj_gene_cdr3_AG_BD")
-      }
-
-      # updateSelectInput(
-      #  session,
-      #  "",
-      #  choices=names(meta.data),
-      #  selected = "v_gene_cdr3_AG")
-
-    })
+    # observe({
+    #   sc <- input.data_sc_pro()
+    #   validate(
+    #     need(nrow(sc)>0,
+    #          error_message_val1)
+    #   )
+    #   meta.data <- as.data.frame(sc@meta.data)
+    #   # meta.data <- meta.data[,names(meta.data) %in% c(grep("v",names(meta.data)), grep("cdr3",names(meta.data)))]
+    #
+    #   if (input$datasource == "BD_Rhapsody_Paired") {
+    #     updateSelectInput(
+    #       session,
+    #       "V_gene_sc",
+    #       choices=names(meta.data),
+    #       selected = "v_gene_cdr3_AB_GD")
+    #   }
+    #
+    #   else {
+    #     updateSelectInput(
+    #       session,
+    #       "V_gene_sc",
+    #       choices=names(meta.data),
+    #       selected = "vdj_gene_cdr3_AG_BD")
+    #   }
+    #
+    #   # updateSelectInput(
+    #   #  session,
+    #   #  "",
+    #   #  choices=names(meta.data),
+    #   #  selected = "v_gene_cdr3_AG")
+    #
+    # })
     Top_clonotype_df2 <- reactive({
       sc <- input.data_sc_pro()
       validate(
@@ -7554,7 +7638,7 @@ runSTEGO <- function(){
       }
 
       # summarising the clonality
-      df3.meta$cluster_name <- df3.meta[,names(df3.meta) %in% input$Gene_V_top]
+      df3.meta$cluster_name <- df3.meta[,names(df3.meta) %in% input$V_gene_sc]
       df3.meta$cloneCount <- 1
 
       BD <- df3.meta[,names(df3.meta) %in% c("cluster_name","cloneCount")]
@@ -7609,15 +7693,15 @@ runSTEGO <- function(){
 
       top_BD_cluster <-  top_clonotype_bar_code()
       top_BD_cluster
-      req(input$clust_names_top,input$clust_group,input$Graph_split_order)
+      req(input$Colour_By_this,input$Split_group_by_,input$Graph_split_order)
 
-      top_BD_cluster$Selected_function <- top_BD_cluster[,names(top_BD_cluster) %in% input$clust_names_top]
+      top_BD_cluster$Selected_function <- top_BD_cluster[,names(top_BD_cluster) %in% input$Colour_By_this]
       top_BD_cluster
       top_BD_cluster <- top_BD_cluster[order(top_BD_cluster$Selected_function),]
 
-      top_BD_cluster$Selected_function <-  as.character(top_BD_cluster[,names(top_BD_cluster) %in% input$clust_names_top])
+      top_BD_cluster$Selected_function <-  as.character(top_BD_cluster[,names(top_BD_cluster) %in% input$Colour_By_this])
 
-      top_BD_cluster$Selected_group <-  as.character(top_BD_cluster[,names(top_BD_cluster) %in% input$clust_group])
+      top_BD_cluster$Selected_group <-  as.character(top_BD_cluster[,names(top_BD_cluster) %in% input$Split_group_by_])
       #
       top_BD_cluster <- top_BD_cluster[top_BD_cluster$Selected_group %in% input$Graph_split_order,]
       top_BD_cluster$Selected_group <- factor(top_BD_cluster$Selected_group,levels = input$Graph_split_order)
@@ -7630,7 +7714,7 @@ runSTEGO <- function(){
     top_clonotype_bar_code <- reactive({
       df3.meta <- UMAP_metadata_with_labs()
       # summarising the clonality
-      df3.meta$cluster_name <- df3.meta[,names(df3.meta) %in% input$Gene_V_top]
+      df3.meta$cluster_name <- df3.meta[,names(df3.meta) %in% input$V_gene_sc]
 
       top_BD_clonotype <- df3.meta[df3.meta$cluster_name %in% input$Selected_clonotype,]
       top_BD_clonotype
@@ -7638,13 +7722,13 @@ runSTEGO <- function(){
     })
 
     select_split_by <- reactive ({
-      df <- top_clonotype_bar_code()
+      df <- UMAP_metadata_with_labs() # df <- top_clonotype_bar_code()
       validate(
         need(nrow(df)>0,
              "upload file")
       )
-      req(input$clust_group)
-      df2 <- as.data.frame(unique(df[names(df) %in% input$clust_group]))
+      req(input$Split_group_by_)
+      df2 <- as.data.frame(unique(df[names(df) %in% input$Split_group_by_]))
       df2 <- as.data.frame(df2)
       df2
 
@@ -7665,11 +7749,12 @@ runSTEGO <- function(){
       names(df2) <- "V1"
       df2
       # df2 <- subset(df2,df2$V1 != "NA")
-
+      # ?updateSelectInput
       updateSelectInput(
         session,
         "Graph_split_order",
-        choices=df2
+        choices=df2,
+        selected=df2
       )
 
 
@@ -7678,7 +7763,7 @@ runSTEGO <- function(){
     ##### bar graph of top clonotypes -----
     cols_Top_bar_clonotype <- reactive({
       dtop_clonotype_bar_code <- top_clonotype_bar_code()
-      dtop_clonotype_bar_code$Selected_chain <- dtop_clonotype_bar_code[,names(dtop_clonotype_bar_code) %in% input$Gene_V_top]
+      dtop_clonotype_bar_code$Selected_chain <- dtop_clonotype_bar_code[,names(dtop_clonotype_bar_code) %in% input$V_gene_sc]
 
       # top_BD_cluster$Selected_function <- factor(top_BD_cluster$Selected_function,levels = unique(top_BD_cluster$Selected_function))
       num <- as.data.frame(unique(dtop_clonotype_bar_code$Selected_chain))
@@ -7739,7 +7824,7 @@ runSTEGO <- function(){
     output$myPanel_Top_bar_clonotype <- renderUI({cols_Top_bar_clonotype()})
     colors_cols_Top_bar_clonotype <- reactive({
       dtop_clonotype_bar_code <- top_clonotype_bar_code()
-      dtop_clonotype_bar_code$Selected_chain <- dtop_clonotype_bar_code[,names(dtop_clonotype_bar_code) %in% input$Gene_V_top]
+      dtop_clonotype_bar_code$Selected_chain <- dtop_clonotype_bar_code[,names(dtop_clonotype_bar_code) %in% input$V_gene_sc]
       # top_BD_cluster$Selected_function <- factor(top_BD_cluster$Selected_function,levels = unique(top_BD_cluster$Selected_function))
       num <- as.data.frame(unique(dtop_clonotype_bar_code$Selected_chain))
       num <- as.data.frame(num[complete.cases(num)==T,])
@@ -7761,10 +7846,10 @@ runSTEGO <- function(){
 
       req(input$Graph_split_order)
 
-      dtop_clonotype_bar_code$Selected_group <- dtop_clonotype_bar_code[,names(dtop_clonotype_bar_code) %in% input$clust_group]
+      dtop_clonotype_bar_code$Selected_group <- dtop_clonotype_bar_code[,names(dtop_clonotype_bar_code) %in% input$Split_group_by_]
       colorblind_vector <- unlist(colors_cols_Top_bar_clonotype())
 
-      dtop_clonotype_bar_code$Selected_chain2 <- dtop_clonotype_bar_code[,names(dtop_clonotype_bar_code) %in% input$Gene_V_top]
+      dtop_clonotype_bar_code$Selected_chain2 <- dtop_clonotype_bar_code[,names(dtop_clonotype_bar_code) %in% input$V_gene_sc]
 
       dtop_clonotype_bar_code$Selected_chain3 <- gsub("_"," ",dtop_clonotype_bar_code$Selected_chain2)
       dtop_clonotype_bar_code$Selected_chain3 <- gsub("[.]"," ",dtop_clonotype_bar_code$Selected_chain3)
@@ -7820,10 +7905,10 @@ runSTEGO <- function(){
     #### top clonotype pie -----
     cols_Top_pie_clonotype <- reactive({
       top_BD_cluster <-  top_clonotype_bar_code()
-      top_BD_cluster$Selected_function <- top_BD_cluster[,names(top_BD_cluster) %in% input$clust_names_top]
+      top_BD_cluster$Selected_function <- top_BD_cluster[,names(top_BD_cluster) %in% input$Colour_By_this]
       top_BD_cluster <- top_BD_cluster[order(top_BD_cluster$Selected_function),]
-      top_BD_cluster$Selected_function <- top_BD_cluster[,names(top_BD_cluster) %in% input$clust_names_top]
-      top_BD_cluster$Selected_group <- top_BD_cluster[,names(top_BD_cluster) %in% input$clust_group]
+      top_BD_cluster$Selected_function <- top_BD_cluster[,names(top_BD_cluster) %in% input$Colour_By_this]
+      top_BD_cluster$Selected_group <- top_BD_cluster[,names(top_BD_cluster) %in% input$Split_group_by_]
       # top_BD_cluster$Selected_function <- factor(top_BD_cluster$Selected_function,levels = unique(top_BD_cluster$Selected_function))
       num <- (unique(top_BD_cluster$Selected_function))
       num <- as.data.frame(num[!num == "NA"])
@@ -7883,10 +7968,10 @@ runSTEGO <- function(){
     output$myPanel_Top_pie_clonotype <- renderUI({cols_Top_pie_clonotype()})
     colors_cols_Top_pie_clonotype <- reactive({
       top_BD_cluster <-  top_clonotype_bar_code()
-      top_BD_cluster$Selected_function <- top_BD_cluster[,names(top_BD_cluster) %in% input$clust_names_top]
+      top_BD_cluster$Selected_function <- top_BD_cluster[,names(top_BD_cluster) %in% input$Colour_By_this]
       top_BD_cluster <- top_BD_cluster[order(top_BD_cluster$Selected_function),]
-      top_BD_cluster$Selected_function <- top_BD_cluster[,names(top_BD_cluster) %in% input$clust_names_top]
-      top_BD_cluster$Selected_group <- top_BD_cluster[,names(top_BD_cluster) %in% input$clust_group]
+      top_BD_cluster$Selected_function <- top_BD_cluster[,names(top_BD_cluster) %in% input$Colour_By_this]
+      top_BD_cluster$Selected_group <- top_BD_cluster[,names(top_BD_cluster) %in% input$Split_group_by_]
       num <- as.data.frame(unique(top_BD_cluster$Selected_function))
       num <- as.data.frame(num[!num == "NA"])
 
@@ -7905,12 +7990,12 @@ runSTEGO <- function(){
     Pie_chart_alpha_gamma <- reactive({
       top_BD_cluster <-  top_clonotype_bar_code()
 
-      req(input$clust_names_top,input$clust_group,input$Graph_split_order)
-
-      top_BD_cluster$Selected_function <- top_BD_cluster[,names(top_BD_cluster) %in% input$clust_names_top]
+      req(input$Colour_By_this,input$Split_group_by_,input$Graph_split_order)
+      names(top_BD_cluster)[names(top_BD_cluster) %in% input$Samp_col] <- "ID_Column"
+      top_BD_cluster$Selected_function <- top_BD_cluster[,names(top_BD_cluster) %in% input$Colour_By_this]
       top_BD_cluster <- top_BD_cluster[order(top_BD_cluster$Selected_function),]
-      top_BD_cluster$Selected_function <-  as.character((top_BD_cluster[,names(top_BD_cluster) %in% input$clust_names_top]))
-      top_BD_cluster$Selected_group <-  as.character((top_BD_cluster[,names(top_BD_cluster) %in% input$clust_group]))
+      top_BD_cluster$Selected_function <-  as.character((top_BD_cluster[,names(top_BD_cluster) %in% input$Colour_By_this]))
+      top_BD_cluster$Selected_group <-  as.character((top_BD_cluster[,names(top_BD_cluster) %in% input$Split_group_by_]))
 
       top_BD_cluster <- top_BD_cluster[top_BD_cluster$Selected_group %in% input$Graph_split_order,]
       top_BD_cluster$Selected_group <- factor(top_BD_cluster$Selected_group,levels = input$Graph_split_order)
@@ -7933,7 +8018,7 @@ runSTEGO <- function(){
       as.data.frame(emtpy)
 
       df3.meta3$n <- df3.meta3$Freq/rowSums(emtpy)
-      # df3.meta3$Var2 <- ifelse(df3.meta3$Var2=="NA",NA,df3.meta3$Var2)
+      df3.meta3$Var2 <- ifelse(df3.meta3$Var2=="NA",NA,df3.meta3$Var2)
 
       ggplot(df3.meta3,aes(x="", y=n, fill=as.character(Var2), group =as.character(Var1))) +
         geom_bar(stat="identity", width=1)+
@@ -7949,10 +8034,15 @@ runSTEGO <- function(){
               legend.position = input$legend_position,
               legend.title = element_blank()
         )
-      # theme(strip.background =element_rect(fill=input$strip.colour.tree))+
-      # theme(strip.text = element_text(colour = input$strip.text.colour.tree))
-      # scale_pattern_fill_manual(values = class_col.t)
+      #  if (input$Split_by_group=="no") {
+      #   plot_pie
+      # }
+      # else {
+      #
+      #   plot_pie <- plot_pie + facet_wrap(~top_BD_cluster$Selected_group)
+      # }
 
+      # plot_pie
     })
 
     output$top_clonotype_pie <- renderPlot({
@@ -7965,6 +8055,50 @@ runSTEGO <- function(){
 
       }
     })
+
+    #### top  UMAP -----
+    UMAP_chart_alpha_gamma <- reactive({
+      top_BD_cluster <-  top_clonotype_bar_code()
+      req(input$Colour_By_this,input$Split_group_by_,input$Graph_split_order)
+      top_BD_cluster$Selected_function <- top_BD_cluster[,names(top_BD_cluster) %in% input$Colour_By_this]
+      top_BD_cluster <- top_BD_cluster[order(top_BD_cluster$Selected_function),]
+
+      top_BD_cluster$Selected_function <-  as.character(top_BD_cluster[,names(top_BD_cluster) %in% input$Colour_By_this])
+
+      top_BD_cluster$Selected_group <-  as.character(top_BD_cluster[,names(top_BD_cluster) %in% input$Split_group_by_])
+      #
+      top_BD_cluster <- top_BD_cluster[top_BD_cluster$Selected_group %in% input$Graph_split_order,]
+      top_BD_cluster$Selected_group <- factor(top_BD_cluster$Selected_group,levels = input$Graph_split_order)
+      top_BD_cluster$Selected_function <- ifelse(top_BD_cluster$Selected_function=="NA",NA,top_BD_cluster$Selected_function)
+
+      df.col <- unlist(colors_cols_Top_pie_clonotype())
+
+      plot_pie <- ggplot(data = top_BD_cluster,aes(x=UMAP_1,UMAP_2,colour=Selected_function))+
+        geom_point()+
+        scale_color_manual(values = df.col, na.value=input$NA_col_analysis) +
+        # scale_size_manual(values = rep(input$size_selected_top,dim(top_BD_cluster)[1]),na.value = 1) +
+        theme_bw()+
+        theme(
+          strip.text = element_text(size = input$Strip_text_size, family = input$font_type),
+          legend.text = element_text(colour="black", size=input$Bar_legend_size,family=input$font_type),
+          legend.title = element_blank(),
+          legend.position = input$legend_position,
+        )+
+        scale_size(guide = 'none')
+
+      # if (input$Split_by_group2=="no") {
+      #   plot_pie
+      # }
+      # else {
+
+      plot_pie <- plot_pie + facet_wrap(~top_BD_cluster$Selected_group)
+      #
+
+      plot_pie
+
+    })
+
+    # plot pie and UMAP ----
 
     output$downloadPlot_top_clonotype_pie <- downloadHandler(
       filename = function() {
@@ -8002,53 +8136,7 @@ runSTEGO <- function(){
         dev.off()},   contentType = "application/png" # MIME type of the image
     )
 
-    #### top  UMAP -----
-    UMAP_chart_alpha_gamma <- reactive({
-      top_BD_cluster <-  top_clonotype_bar_code()
-      req(input$clust_names_top,input$clust_group,input$Graph_split_order)
-      top_BD_cluster$Selected_function <- top_BD_cluster[,names(top_BD_cluster) %in% input$clust_names_top]
-      top_BD_cluster <- top_BD_cluster[order(top_BD_cluster$Selected_function),]
 
-      top_BD_cluster$Selected_function <-  as.character(top_BD_cluster[,names(top_BD_cluster) %in% input$clust_names_top])
-
-      top_BD_cluster$Selected_group <-  as.character(top_BD_cluster[,names(top_BD_cluster) %in% input$clust_group])
-      #
-      top_BD_cluster <- top_BD_cluster[top_BD_cluster$Selected_group %in% input$Graph_split_order,]
-      top_BD_cluster$Selected_group <- factor(top_BD_cluster$Selected_group,levels = input$Graph_split_order)
-      top_BD_cluster$Selected_function <- ifelse(top_BD_cluster$Selected_function=="NA",NA,top_BD_cluster$Selected_function )
-
-      df.col <- unlist(colors_cols_Top_pie_clonotype())
-
-
-      #
-      #       names(top_BD_cluster)[names(top_BD_cluster) %in% input$Samp_col] <- "ID_Column"
-      #       top_BD_cluster$ID_Column<- top_BD_cluster[top_BD_cluster$ID_Column %in% input$ID_Column_factor,]
-      #       top_BD_cluster$ID_Column <- factor(top_BD_cluster$ID_Column,levels = input$ID_Column_factor)
-
-      plot_pie <- ggplot(data = top_BD_cluster,aes(x=UMAP_1,UMAP_2,colour=Selected_function))+
-        geom_point()+
-        scale_color_manual(values = df.col, na.value=input$NA_col_analysis) +
-        # scale_size_manual(values = rep(input$size_selected_top,dim(top_BD_cluster)[1]),na.value = 1) +
-        theme_bw()+
-        theme(
-          strip.text = element_text(size = input$Strip_text_size, family = input$font_type),
-          legend.text = element_text(colour="black", size=input$Bar_legend_size,family=input$font_type),
-          legend.title = element_blank(),
-          legend.position = input$legend_position,
-        )+
-        scale_size(guide = 'none')
-
-      if (input$Split_by_group=="no") {
-        plot_pie
-      }
-      else {
-
-        plot_pie <- plot_pie + facet_wrap(~top_BD_cluster$ID_Column)
-      }
-
-      plot_pie
-
-    })
 
     ### Add in the TCR clustering to the seurat object ----
 
@@ -8067,7 +8155,7 @@ runSTEGO <- function(){
       min.logfc = 0.25 #0.25 is standard
       p.val.cutoff <- (1/10^3) #(1/10^3) is standard, use (1/10^0) to ignore
 
-      sc@meta.data$Vgene <- sc@meta.data[,names(sc@meta.data) %in% input$Gene_V_top]
+      sc@meta.data$Vgene <- sc@meta.data[,names(sc@meta.data) %in% input$V_gene_sc]
       name.clone <- input$Selected_clonotype
       sc@meta.data$Gene_select <- ifelse(sc@meta.data$Vgene == name.clone,name.clone,"unselected")
       unique(sc@meta.data$Gene_select)
@@ -8161,9 +8249,9 @@ runSTEGO <- function(){
       gene_df <- MainTcell[,names(MainTcell) %in% c("Cell_Index",input$string.data_Exp_top)]
 
       top_BD_cluster <-  top_clonotype_bar_code()
-      top_BD_cluster$Selected_function <- top_BD_cluster[,names(top_BD_cluster) %in% input$clust_group]
+      top_BD_cluster$Selected_function <- top_BD_cluster[,names(top_BD_cluster) %in% input$Split_group_by_]
       top_BD_cluster <- top_BD_cluster[top_BD_cluster$Selected_function %in% input$Graph_split_order,]
-      top_BD_cluster$Selected_function <-  as.character(top_BD_cluster[,names(top_BD_cluster) %in% input$clust_group])
+      top_BD_cluster$Selected_function <-  as.character(top_BD_cluster[,names(top_BD_cluster) %in% input$Split_group_by_])
       top_BD_cluster$Selected_function <- factor(top_BD_cluster$Selected_function,levels = input$Graph_split_order)
 
       merge(top_BD_cluster,gene_df,by = "Cell_Index")
@@ -8208,7 +8296,7 @@ runSTEGO <- function(){
         df2 <- df
       )
       df2[is.na(df2)] <- "-"
-      at <- TukeyHSD(aov(get(input$string.data_Exp_top)~ get(input$clust_group),data = df2))
+      at <- TukeyHSD(aov(get(input$string.data_Exp_top)~ get(input$Split_group_by_),data = df2))
       tab <- as.data.frame(at[1])
       names(tab) <- c("diff" ,"lwr","upr","p.adj")
       tab$stat <- ifelse(tab$p.adj<0.0001,"****",
@@ -8280,7 +8368,7 @@ runSTEGO <- function(){
       MainTcell$Cell_Index <- rownames(MainTcell)
       gene_df <- MainTcell[,names(MainTcell) %in% c("Cell_Index",input$string.data_Exp_top)]
       df3.meta <- UMAP_metadata_with_labs()
-      df3.meta$cluster_name <- df3.meta[,names(df3.meta) %in% input$Gene_V_top]
+      df3.meta$cluster_name <- df3.meta[,names(df3.meta) %in% input$V_gene_sc]
       df3.meta$selected_top_clonotype <- ifelse(df3.meta$cluster_name==input$Selected_clonotype,input$Selected_clonotype,"other")
       top_BD_clonotype2 <- merge(df3.meta,gene_df,by="Cell_Index")
       top_BD_clonotype2
@@ -8410,6 +8498,302 @@ runSTEGO <- function(){
     )
 
 
+
+    # Expanded TCR interrogation (regarless of TCR sequence ) -------
+    observe({
+      sc <- input.data_sc_pro()
+      validate(
+        need(nrow(sc)>0,
+             error_message_val_UMAP)
+      )
+      if(input$add_additional_lables == "yes") {
+        df3.meta <- UMAP_metadata_with_labs()
+        updateSelectInput(
+          session,
+          "Samp_col_expanded",
+          choices=names(df3.meta),
+          selected = "orig.ident")
+      }
+      else {
+        df3.meta <- sc@meta.data
+        updateSelectInput(
+          session,
+          "Samp_col_expanded",
+          choices=names(df3.meta),
+          selected = "orig.ident")
+      }
+
+    })
+
+
+    select_group_metadata_expanded <- reactive ({
+      sc <- input.data_sc_pro()
+      req(input$Samp_col2)
+      validate(
+        need(nrow(sc)>0,
+             "upload file")
+      )
+      df <- as.data.frame(sc@meta.data)
+
+      if(input$add_additional_lables == "yes") {
+        df <- UMAP_metadata_with_labs()
+        validate(
+          need(nrow(df)>0,
+               "upload Labal file")
+        )
+      }
+
+      df2 <- as.data.frame(unique(df[names(df) %in% input$Samp_col_expanded]))
+      df2 <- as.data.frame(df2)
+      df2
+
+    })
+
+    observe({
+      df2 <- select_group_metadata_expanded()
+      validate(
+        need(nrow(df2)>0,
+             error_message_val1)
+      )
+      df2 <- as.data.frame(df2)
+      names(df2) <- "V1"
+      df2 <- as.data.frame(df2[order(df2$V1),])
+      names(df2) <- "V1"
+      df2
+      df2 <- subset(df2,df2$V1 != "NA")
+
+      updateSelectInput(
+        session,
+        "ID_Column_factor_expanded",
+        choices=df2,
+        selected = df2[1]
+      )
+    })
+
+    Expansion_check_table <- reactive({
+      sc <- input.data_sc_pro()
+      req(input$Samp_col_expanded,input$ID_Column_factor_expanded)
+      validate(
+        need(nrow(sc)>0,
+             error_message_val_UMAP)
+      )
+
+      Expansion.meta.data <- UMAP_metadata_with_labs()
+      names(Expansion.meta.data)[names(Expansion.meta.data) %in% input$Samp_col_expanded] <- "Samp"
+      Expansion.meta.data <- Expansion.meta.data[Expansion.meta.data$Samp %in% c(input$ID_Column_factor_expanded),]
+      names(Expansion.meta.data)[names(Expansion.meta.data) %in% "Samp"] <- input$Samp_col_expanded
+      Expansion.meta.data
+      CDR3_Vgene_all <- as.data.frame(Expansion.meta.data[,names(Expansion.meta.data) %in% input$V_gene_sc])
+      names(CDR3_Vgene_all) <- "V1"
+      CDR3_Vgene_all$count <- 1
+      total.condition <- as.data.frame(ddply(CDR3_Vgene_all,"V1",numcolwise(sum)))
+      total.condition <- total.condition[total.condition$V1 != "NA",]
+      CDR3_Vgene_all2 <- as.data.frame(Expansion.meta.data[,names(Expansion.meta.data) %in% c(input$V_gene_sc,input$Samp_col_expanded)])
+      names(CDR3_Vgene_all2)[names(CDR3_Vgene_all2) %in% input$V_gene_sc] <- "V1"
+      names(CDR3_Vgene_all2)[names(CDR3_Vgene_all2) %in% input$Samp_col_expanded] <- "V2"
+      CDR3_Vgene_all2$count.group <- 1
+      total.condition.group <- as.data.frame(ddply(CDR3_Vgene_all2,c("V1","V2"),numcolwise(sum)))
+      total.condition.group <- total.condition.group[total.condition.group$V1 != "NA",]
+      total.condition.group.counts <- merge(total.condition.group,total.condition,by = "V1")
+      total.condition.group.counts <- total.condition.group.counts[order(total.condition.group.counts$count.group, decreasing = T),]
+      total.condition.group.counts$expand.singlets <- ifelse(total.condition.group.counts$count.group>input$cut.off_expanded,"Ex","NEx")
+      names(total.condition.group.counts)[names(total.condition.group.counts) %in% "V1"] <-input$V_gene_sc
+      names(total.condition.group.counts)[names(total.condition.group.counts) %in% "V2"] <-input$Samp_col_expanded
+      total.condition.group.counts
+      merge(total.condition.group.counts, Expansion.meta.data, by = c(input$Samp_col_expanded,input$V_gene_sc))
+
+
+    })
+    output$Expansion_check <- DT::renderDataTable(escape = FALSE, filter = list(position = 'top', clear = FALSE), options = list(autoWidth = FALSE, lengthMenu = c(2,5,10,20,50,100), pageLength = 10, scrollX = TRUE),{
+      Expansion_check_table()
+    })
+    ### add in colouring specific to Expanded
+    output$classification_to_add2 <- renderUI({
+      sc <- input.data_sc_pro()
+      validate(
+        need(nrow(sc)>0,
+             error_message_val_UMAP)
+      )
+      df3.meta <- c(names(Expansion_check_table()))
+      # df3.meta <- df3.meta[!grepl("RNA",df3.meta) & !grepl("BCR",df3.meta) & !grepl("TCR",df3.meta)& !grepl("_gene",df3.meta) & !grepl("allele",df3.meta) & !grepl("percent",df3.meta) & !grepl("cdr3",df3.meta)]
+      selectInput("Colour_By_this_Expanded","Expanded Colour by: ",choices = df3.meta,selected="seurat_clusters")
+
+    })
+
+    ## Expansion UMAP plot -----
+    cols_UMAP_Expanded <- reactive({
+      sc <- input.data_sc_pro()
+      validate(
+        need(nrow(sc)>0,
+             error_message_val_UMAP)
+      )
+      req(input$Colour_By_this_Expanded)
+
+      top_BD_cluster <-  Expansion_check_table()
+      top_BD_cluster$Selected_function <- top_BD_cluster[,names(top_BD_cluster) %in% input$Colour_By_this_Expanded]
+      top_BD_cluster$Selected_function <- ifelse(grepl("NA", top_BD_cluster$Selected_function),NA,top_BD_cluster$Selected_function)
+      top_BD_cluster$Selected_function <- factor(top_BD_cluster$Selected_function,levels = unique(top_BD_cluster$Selected_function))
+      num <- as.data.frame(unique(top_BD_cluster$Selected_function))
+      num <- as.data.frame(num[complete.cases(num)==T,])
+
+      col.gg <- gg_fill_hue(dim(num)[1])
+      palette_rainbow <- rainbow(dim(num)[1])
+      heat_col <- heat.colors(dim(num)[1])
+      col.terrain <- terrain.colors(dim(num)[1])
+      col.topo <- topo.colors(dim(num)[1])
+      col.hcl <- hcl.colors(dim(num)[1], palette = "viridis")
+
+      if (input$colourtype == "default") {
+        lapply(1:dim(num)[1], function(i) {
+          colourInput(paste("col.UMAP_Expanded", i, sep="_"), paste(num[i,]), col.gg[i])
+        })
+      }
+      else if (input$colourtype == "hcl.colors") {
+        lapply(1:dim(num)[1], function(i) {
+          colourInput(paste("col.UMAP_Expanded", i, sep="_"), paste(num[i,]), col.hcl[i])
+        })
+      }
+      else if (input$colourtype == "topo.colors") {
+        lapply(1:dim(num)[1], function(i) {
+          colourInput(paste("col.UMAP_Expanded", i, sep="_"), paste(num[i,]), col.topo[i])
+        })
+      }
+      else if (input$colourtype == "heat.colors") {
+        lapply(1:dim(num)[1], function(i) {
+          colourInput(paste("col.UMAP_Expanded", i, sep="_"), paste(num[i,]), heat_col[i])
+        })
+      }
+      else if (input$colourtype == "terrain.colors") {
+        lapply(1:dim(num)[1], function(i) {
+          colourInput(paste("col.UMAP_Expanded", i, sep="_"), paste(num[i,]), col.terrain[i])
+        })
+      }
+
+      else if (input$colourtype == "rainbow") {
+        lapply(1:dim(num)[1], function(i) {
+          colourInput(paste("col.UMAP_Expanded", i, sep="_"), paste(num[i,]), palette_rainbow[i])
+        }) }
+      else if (input$colourtype == "random") {
+        palette1 <- distinctColorPalette(dim(num)[1])
+        lapply(1:dim(num)[1], function(i) {
+          colourInput(paste("col.UMAP_Expanded", i, sep="_"), paste(num[i,]), palette1[i])
+        })
+
+      }
+      else {
+        lapply(1:dim(num)[1], function(i) {
+          colourInput(paste("col.UMAP_Expanded", i, sep="_"), paste(num[i,]), input$one.colour.default)
+        })
+      } # one colour
+
+    })
+
+    output$cols_UMAP_Expanded <- renderUI({cols_UMAP_Expanded()})
+    colors_Expanded <- reactive({
+      sc <- input.data_sc_pro()
+
+      validate(
+        need(nrow(sc)>0,
+             error_message_val1)
+      )
+      top_BD_cluster <-  Expansion_check_table()
+      top_BD_cluster$Selected_function <- top_BD_cluster[,names(top_BD_cluster) %in% input$Colour_By_this_Expanded]
+      top_BD_cluster$Selected_function <- ifelse(grepl("NA", top_BD_cluster$Selected_function),NA,top_BD_cluster$Selected_function)
+      top_BD_cluster$Selected_function <- factor(top_BD_cluster$Selected_function,levels = unique(top_BD_cluster$Selected_function))
+      num <- as.data.frame(unique(top_BD_cluster$Selected_function))
+      num <- as.data.frame(num[complete.cases(num)==T,])
+
+      lapply(1:dim(num)[1], function(i) {
+        input[[paste("col.UMAP_Expanded", i, sep="_")]]
+      })
+    })
+    UMAP_Expanded_plot <- reactive({
+      sc <- input.data_sc_pro()
+      validate(
+        need(nrow(sc)>0,
+             error_message_val1)
+      )
+      req(input$Colour_By_this_Expanded)
+      top_BD_cluster <-  Expansion_check_table()
+      top_BD_cluster$Selected_function <- top_BD_cluster[,names(top_BD_cluster) %in% input$Colour_By_this_Expanded]
+      top_BD_cluster$Selected_function <- ifelse(grepl("NA", top_BD_cluster$Selected_function),NA,top_BD_cluster$Selected_function)
+      top_BD_cluster$Selected_function <- factor(top_BD_cluster$Selected_function,levels = unique(top_BD_cluster$Selected_function))
+      # top_BD_cluster$Selected_function <- factor(top_BD_cluster$Selected_function,levels = unique(top_BD_cluster$Selected_function))
+      col.file <- as.data.frame(unique(top_BD_cluster$Selected_function))
+      col.file <- as.data.frame(col.file[complete.cases(col.file)==T,])
+      names(col.file) <- "V1"
+      # if (input$show_selected=="Selected_list") {
+      #   col.file$col <- unlist(colors_UMAP_all_classification())
+      #   col.file <- col.file[col.file$V1 %in% input$SiteNumInput,]
+      #   top_BD_cluster$Selected_function <- factor(top_BD_cluster$Selected_function,levels = col.file$V1)
+      # }
+      #
+      # else {
+
+      col.file$col <- unlist(colors_Expanded())
+      col.file
+      # }
+
+      names(top_BD_cluster)[names(top_BD_cluster) %in% input$Samp_col_expanded] <- "ID_Column"
+      top_BD_cluster <- top_BD_cluster[top_BD_cluster$ID_Column %in% input$ID_Column_factor_expanded,]
+      top_BD_cluster$ID_Column <- factor(top_BD_cluster$ID_Column,levels = input$ID_Column_factor_expanded)
+
+      df <- ggplot(top_BD_cluster,aes(x=UMAP_1,UMAP_2,colour=Selected_function,alpha = Selected_function,label = Selected_function))+
+        geom_point()+
+        scale_color_manual(labels = ~ stringr::str_wrap(.x, width = 20),values = col.file$col, na.value=input$NA_col_analysis)+
+        scale_alpha_manual(labels = ~ stringr::str_wrap(.x, width = 20),values = rep(1,length(unique(top_BD_cluster$Selected_function))), na.value=0.1) +
+        theme_bw() +
+        theme(
+          strip.text = element_text(size = input$Strip_text_size, family = input$font_type),
+          axis.title.y = element_text(colour="black",family=input$font_type,size = input$title.text.sizer2),
+          axis.text.y = element_text(colour="black",family=input$font_type,size = input$text_size),
+          axis.text.x = element_text(colour="black",family=input$font_type,size = input$text_size,angle=0),
+          axis.title.x = element_text(colour="black",angle=0,vjust=.5,face="plain",family=input$font_type,size = input$title.text.sizer2),
+          legend.text = element_text(colour="black", size=input$Bar_legend_size,family=input$font_type),
+          legend.title = element_blank(),
+          legend.position = input$legend_position,
+        )
+
+      if (input$Split_by_group=="no") {
+        df <- df
+      }
+      else {
+        df <- df + facet_wrap(~ID_Column, nrow = input$wrap_row)
+      }
+      df
+    })
+
+    output$UMAP_Expanded <- renderPlot({
+      UMAP_Expanded_plot()
+    })
+
+
+
+    #
+    output$downloadPlot_Expanded  <- downloadHandler(
+      filename = function() {
+        x <- gsub(":", ".", Sys.time())
+        paste(input$name.file_clust,"_Expanded_",gsub("/", "-", x), ".pdf", sep = "")
+      },
+      content = function(file) {
+        pdf(file, width=input$width_UMAP_Expanded ,height=input$height_UMAP_Expanded , onefile = FALSE) # open the pdf device
+        plot(UMAP_Expanded())
+        dev.off()}, contentType = "application/pdf" )
+
+    output$downloadPlotPNG_UMAP_Expanded  <- downloadHandler(
+      filename = function() {
+        x <- gsub(":", ".", Sys.time())
+        paste(input$name.file_clust,"_Expanded_", gsub("/", "-", x), ".png", sep = "")
+      },
+      content = function(file) {
+        png(file, width = input$width_png_UMAP_Expanded,
+            height = input$height_png_UMAP_Expanded ,
+            res = input$resolution_PNG_UMAP_Expanded )
+        plot(UMAP_Expanded())
+        dev.off()},   contentType = "application/png" # MIME type of the image
+    )
+
+
     #### Epitope upload -----
 
     df_tcrex <- reactive({
@@ -8512,7 +8896,8 @@ runSTEGO <- function(){
         dev.off()},   contentType = "application/png" # MIME type of the image
     )
 
-    #### epitope interrogation -----
+    #### epitope UMAP interrogation -----
+
     cols_epitope <- reactive({
       df3.meta <- UMAP_metadata_with_labs()
       epi <- input.data_sc_TCRex()
@@ -8662,9 +9047,9 @@ runSTEGO <- function(){
       df3.meta$selected <- factor(df3.meta$selected,levels = unique(df3.meta$selected))
 
 
-      names(df3.meta)[names(df3.meta) %in% input$Samp_col] <- "ID_Column"
+      names(df3.meta)[names(df3.meta) %in% input$Split_group_by_] <- "ID_Column"
       # df3.meta$ID_Column<- df3.meta[df3.meta$ID_Column %in% input$ID_Column_factor,]
-      df3.meta$ID_Column <- factor(df3.meta$ID_Column,levels = input$ID_Column_factor)
+      df3.meta$ID_Column <- factor(df3.meta$ID_Column,levels = input$Graph_split_order)
 
       num <- as.data.frame(unique(df3.meta$selected))
       num <- as.data.frame(num[complete.cases(num)==T,])
@@ -8685,7 +9070,7 @@ runSTEGO <- function(){
         df <- df
       }
       else {
-        df <- df + facet_wrap(~ID_Column)
+        df <- df + facet_wrap(~ID_Column, nrow = input$wrap_row)
       }
       df
     })
@@ -8890,7 +9275,7 @@ runSTEGO <- function(){
         geom_bar(stat="identity", width=1)+
         coord_polar("y", start=0)  +
         theme_void(20) +
-        facet_wrap(~Var1) +
+        facet_wrap(~Var1, nrow = input$wrap_row) +
         theme(
           legend.key.size = unit(1, 'cm'),
           legend.title = element_blank()) +
@@ -9361,7 +9746,7 @@ runSTEGO <- function(){
         figure
       }
       else {
-        figure+ facet_wrap(~ID_Column)
+        figure+ facet_wrap(~ID_Column, nrow = input$wrap_row)
       }
 
     })
@@ -9693,10 +10078,10 @@ runSTEGO <- function(){
     Pie_chart_ClusTCR2 <- reactive({
       cluster <- clusTCR2_df()
       cluster <- cluster[order(cluster$Clust_size_order),]
-      names(cluster)[names(cluster) %in% input$Samp_col] <- "ID_Column"
+      names(cluster)[names(cluster) %in% input$Samp_col] <- "ID_Column" ###
       cluster <- cluster[cluster$Clust_size_order == input$Clusters_to_dis_PIE,]
 
-      names(cluster)[names(cluster) %in% input$clust_names_top] <- "Selected"
+      names(cluster)[names(cluster) %in% input$Colour_By_this] <- "Selected"
 
       df3.meta3 <-  as.data.frame(table(cluster$ID_Column,cluster$Selected))
       total.condition <- as.data.frame(ddply(df3.meta3,"Var1",numcolwise(sum)))
@@ -9715,7 +10100,7 @@ runSTEGO <- function(){
         geom_bar(stat="identity", width=1)+
         coord_polar("y", start=0)  +
         theme_void(20) +
-        facet_wrap(~Var1) +
+        facet_wrap(~Var1, nrow = input$wrap_row) +
         theme(
           legend.key.size = unit(1, 'cm'),
           legend.title = element_blank()) +
@@ -9882,6 +10267,21 @@ runSTEGO <- function(){
 
       df <- UMAP_metadata_with_labs()
       df <- as.data.frame(df)
+
+      unique.df <- unique(df[,names(df) %in% c(input$Samp_col,input$V_gene_sc) ])
+      names(unique.df) <- c("group","chain")
+      unique.df <- subset(unique.df,unique.df$chain != "NA")
+      unique.df <- subset(unique.df,unique.df$group != "NA")
+      unique.df$cloneCount <- 1
+      unique.df
+      mat <- acast(unique.df, chain~group, value.var="cloneCount")
+      mat[is.na(mat)] <- 0
+      mat
+
+      Count_data <- as.data.frame(rowSums(mat))
+      names(Count_data) <- "V1"
+
+
       unique.df <- (df[,names(df) %in% c(input$Samp_col,input$V_gene_sc) ])
       names(unique.df) <- c("group","chain")
       unique.df <- subset(unique.df,unique.df$chain != "NA")
@@ -9890,19 +10290,14 @@ runSTEGO <- function(){
       unique.df
       mat <- acast(unique.df, chain~group, value.var="cloneCount")
       mat[is.na(mat)] <- 0
+      View(mat)
 
       sum_data <- as.data.frame(rowSums(mat))
       names(sum_data) <- "V1"
 
-
-      mat2 <- ifelse(mat>0,1,0)
-      Count_data <- as.data.frame(rowSums(mat))
-      names(Count_data) <- "V1"
-
       mat <- as.data.frame(mat)
       mat$No.TimePoints <-Count_data$V1
       mat$CloneTotal <-sum_data$V1
-
       mat
     })
 
@@ -9936,9 +10331,9 @@ runSTEGO <- function(){
       umap.meta <- merge(UMAP,meta.data,by="Cell_Index")
       names(umap.meta)[names(umap.meta) %in% input$V_gene_sc] <- "chain"
       names(umap.meta)[names(umap.meta) %in% input$Samp_col] <- "ID_Column"
-      names(umap.meta)[names(umap.meta) %in% input$clust_names_top] <- "Selected_function"
-      names(umap.meta)[names(umap.meta) %in% input$clust_group] <- "Selected_group"
-      # sc <- merge(umap.meta,TCR_Expansion(),by=c("v_gene_selected","ID_Column"),all.x=T)
+      names(umap.meta)[names(umap.meta) %in% input$Colour_By_this] <- "Selected_function"
+      names(umap.meta)[names(umap.meta) %in% input$Split_group_by_] <- "Selected_group"
+      # sc <- merge(umap.meta,TCR_Expanded(),by=c("v_gene_selected","ID_Column"),all.x=T)
 
       Upset_plot_overlap <- Upset_plot_overlap()
       Upset_plot_overlap_top <- subset(Upset_plot_overlap,Upset_plot_overlap$sum>1)
@@ -9998,7 +10393,7 @@ runSTEGO <- function(){
         geom_bar(stat="identity", width=1)+
         coord_polar("y", start=0)  +
         theme_void(20) +
-        facet_wrap(~Var1) +
+        facet_wrap(~Var1, nrow = input$wrap_row) +
         theme(
           legend.key.size = unit(1, 'cm'))+
         # scale_fill_manual(values = df.col, na.value = input$NA_col_analysis) +
