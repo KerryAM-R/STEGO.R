@@ -1468,7 +1468,10 @@ runSTEGO <- function(){
                                                                                    ),
                                                                                    tabPanel("Stats",
                                                                                             add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
-                                                                                            div(DT::dataTableOutput("compare.stat_Ex"))
+                                                                                            div(DT::dataTableOutput("compare.stat_Ex")),
+                                                                                            downloadButton('downloadtb_compare.stat_Ex','Download table')
+
+
                                                                                    ),
                                                                                    tabPanel("Dotplot",
                                                                                             fluidRow(
@@ -1490,7 +1493,7 @@ runSTEGO <- function(){
 
                                                                                    ),
 
-                                                                                   tabPanel("Violin plot"),
+                                                                                   # tabPanel("Violin plot"),
 
 
                                                                                  )
@@ -8979,6 +8982,9 @@ runSTEGO <- function(){
       sc_ex@meta.data
     })
 
+
+
+
     Vals_expanded.stats <- reactiveValues(output_ex1=NULL)
 
     observeEvent(input$run_Expanded_stats,{
@@ -8996,9 +9002,9 @@ runSTEGO <- function(){
       #
       min.pct.expression<- input$min_point_top_Ex #standard setting: 0.25
       min.logfc <-  input$LogFC_top_Ex #0.25 is standard
-      message(paste0("calculating markers for cluster ",input$selected_Indiv_Ex_1," vs ",input$selected_Indiv_Ex_2))
+      message(paste0("calculating markers for cluster ",c(input$selected_Indiv_Ex_1)," vs ",c(input$selected_Indiv_Ex_2)))
 
-      markers.fm.list <- FindMarkers(sc, ident.1 = input$selected_Indiv_Ex_1, ident.2 = input$selected_Indiv_Ex_2, min.pct = min.pct.expression,  logfc.threshold = min.logfc, only.pos=TRUE)
+      markers.fm.list <- FindMarkers(sc, ident.1 = input$selected_Indiv_Ex_1, ident.2 = c(input$selected_Indiv_Ex_2), min.pct = min.pct.expression,  logfc.threshold = min.logfc, only.pos=TRUE)
       markers.fm.list2 <- subset(markers.fm.list,markers.fm.list$p_val_adj < input$pval.ex.filter)
       Vals_expanded.stats$output_ex1 <- as.data.frame(markers.fm.list2)
       Vals_expanded.stats$output_ex1
@@ -9014,6 +9020,15 @@ runSTEGO <- function(){
       )
       as.data.frame(Vals_expanded.stats$output_ex1)
     })
+
+    output$downloadtb_compare.stat_Ex <- downloadHandler(
+      filename = function(){
+        paste("compare.stat_Expanded_",gsub("-", ".", Sys.Date()),".csv", sep = "")
+      },
+      content = function(file){
+        df <- as.data.frame(Vals_expanded.stats$output_ex1)
+        write.csv(df,file, row.names = T)
+      } )
 
 
     relative_expression_plot_ex <- reactive({
@@ -10725,5 +10740,4 @@ runSTEGO <- function(){
     ### end -----
   }
   shinyApp(ui, server)
-
 }
