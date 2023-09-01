@@ -6,7 +6,7 @@
 #' @export
 
 runSTEGO <- function(){
-  STEGO.R::Load_required_packages()
+  S  STEGO.R::Load_required_packages()
   source(system.file("Global","required_functions.R",package = "STEGO.R"))
   suppressWarnings(source(system.file("scGATE","custom_df_scGATE.R",package = "STEGO.R")))
   suppressWarnings(require("DescTools"))
@@ -33,17 +33,13 @@ runSTEGO <- function(){
                                                   # selectInput("dataset_10x", "Choose a dataset:", choices = c("test_data_10x", "own_data_10x")),
                                                   selectInput("Source_type_10x","Input types",choices = c("Raw",".h5")),
                                                   conditionalPanel(condition="input.Source_type_10x=='Raw'",
-                                                                   fileInput('file_calls_10x', 'Barcode file (.tsv.gz or .tsv)',
-                                                                             accept=c('.tsv','.tsv.gz')),
-                                                                   fileInput('file_features_10x', 'Features file (.tsv.gz or .tsv)',
-                                                                             accept=c('.tsv','.tsv.gz')),
-                                                                   fileInput('file_matrix_10x', 'Matrix file (.mtx.gz or .mtx)',
-                                                                             accept=c('.mtx.gz','.mtx')),
+                                                                   fileInput('file_calls_10x', 'Barcode file (.tsv.gz or .tsv)'),
+                                                                   fileInput('file_features_10x', 'Features file (.tsv.gz or .tsv)'),
+                                                                   fileInput('file_matrix_10x', 'Matrix file (.mtx.gz or .mtx)'),
 
                                                   ),
-
-                                                  fileInput('file_TCR_10x', 'filtered contig annotations (.csv)',
-                                                            accept=c('.csv',".csv.gz")),
+                                                  selectInput("csv_contig_file","format of the contig file",choices  = c("csv/csv.gz","tsv")),
+                                                  fileInput('file_TCR_10x', 'filtered contig annotations'),
                                                   textInput("sample_name_10x","Add file and sample name","Treatment_group"),
                                                   h6("TCR_explore name"),
                                                   fluidRow(
@@ -1359,11 +1355,13 @@ runSTEGO <- function(){
                                                                                  fluidRow(
                                                                                    column(3,numericInput("min_point_top","Min point cut off", value = 0.25)),
                                                                                    column(3,numericInput("LogFC_top","Min LogFC cut off", value = 0.25)),
+                                                                                   column(3,numericInput("pval.ex.filter_original","P-value<", value = 0.001)),
+
                                                                                    # column(3,numericInput("Pval_top","P-value", value = 0.001)),
                                                                                  ),
 
                                                                                  tabsetPanel(
-                                                                                   tabPanel("Plots",
+                                                                                   tabPanel("Ridge/Violin plots",
                                                                                             div(DT::dataTableOutput("Violin_chart_alpha_gamma")),
                                                                                             fluidRow(
                                                                                               column(3, checkboxInput("restric_ex","Restrict to above a threshold?", value = F )),
@@ -1383,6 +1381,7 @@ runSTEGO <- function(){
                                                                                               column(2,style = "margin-top: 25px;",downloadButton('downloadPlotPNG_Ridge_chart_alpha_gamma_plot_out','Download PNG'))),
 
                                                                                    ),
+
                                                                                    tabPanel("Stats",
                                                                                             add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
                                                                                             h5("Left = relative to all; Right based on function"),
@@ -1397,6 +1396,24 @@ runSTEGO <- function(){
 
                                                                                             ),
                                                                                    ),
+                                                                                   tabPanel("Dotplot",
+                                                                                            fluidRow(
+                                                                                              column(3,colourInput("low.dotplot","Lower color:","darkblue")),
+                                                                                              column(3,colourInput("middle.dotplot","Middle color:","white")),
+                                                                                              column(3,colourInput("high.dotplot","High color:","darkred")),
+                                                                                              column(3,textInput("name_clonotype_selected","Name of clone","clone 1"))
+                                                                                            ),
+                                                                                            add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
+                                                                                            plotOutput("all_expression_dotplot_ex",height="600px"),
+                                                                                            fluidRow(
+                                                                                              column(1,numericInput("width_all_expression_dotplot_ex", "Width of PDF", value=10)),
+                                                                                              column(1,numericInput("height_all_expression_dotplot_ex", "Height of PDF", value=8)),
+                                                                                              column(2,style = "margin-top: 25px;",downloadButton('downloadPlot_all_expression_dotplot_ex','Download PDF')),
+                                                                                              column(2,numericInput("width_png_all_expression_dotplot_ex","Width of PNG", value = 1200)),
+                                                                                              column(2,numericInput("height_png_all_expression_dotplot_ex","Height of PNG", value = 1000)),
+                                                                                              column(2,numericInput("resolution_PNG_all_expression_dotplot_ex","Resolution of PNG", value = 144)),
+                                                                                              column(2,style = "margin-top: 25px;",downloadButton('downloadPlotPNG_all_expression_dotplot_ex','Download PNG'))),
+                                                                                   )
                                                                                  ),
 
 
@@ -1474,6 +1491,11 @@ runSTEGO <- function(){
 
                                                                                    ),
                                                                                    tabPanel("Dotplot",
+                                                                                            fluidRow(
+                                                                                              column(3,colourInput("low.dotplot.ex","Lower color:","darkblue")),
+                                                                                              column(3,colourInput("middle.dotplot.ex","Middle color:","white")),
+                                                                                              column(3,colourInput("high.dotplot.ex","High color:","darkred")),
+                                                                                            ),
                                                                                             fluidRow(
                                                                                               column(3,selectInput("restrict.dotpot","Restrict to top list",choices = c("no","yes"))),
                                                                                               column(3,numericInput("restrict.dotpot.num","Total genes to display:", value = 10))
@@ -1947,6 +1969,9 @@ runSTEGO <- function(){
       )
       calls
     })
+
+
+
     ## combining Cell x genes ----
     TCR_Filtering_Paired <- function() {
 
@@ -2954,11 +2979,19 @@ runSTEGO <- function(){
 
     ## contig files ----
     input.data.TCR.10x <- reactive({
+
       inFile_10x_TCR <- input$file_TCR_10x
       if (is.null(inFile_10x_TCR)) return(NULL)
 
       else {
-        dataframe <- read.csv(inFile_10x_TCR$datapath)}
+        if (input$csv_contig_file == "csv/csv.gz") {
+          dataframe <- read.csv(inFile_10x_TCR$datapath)
+        }
+        else {
+          dataframe <- read.table(inFile_10x_TCR$datapath,sep = "\t",header =T)
+        }
+        dataframe
+      }
     })
     output$test.files.10x4 <- DT::renderDataTable(escape = FALSE, options = list(autoWidth = FALSE, lengthMenu = c(2,5,10,20,50,100), pageLength = 2, scrollX = TRUE),{
       calls <- input.data.TCR.10x()
@@ -2966,10 +2999,119 @@ runSTEGO <- function(){
         need(nrow(calls)>0,
              error_message_val_10x_features)
       )
-      calls
+      tb_10x_meta.data_TCR()
     })
     ## meta.data for seurat ----
-    tb_10x_meta.data_TCR <- function () {
+    tb_10x_for.tcr.exploreAIRR <- reactive({
+      contigs <- input.data.TCR.10x()
+      validate(
+        need(nrow(contigs)>0,
+             "Upload file")
+      )
+      contigs
+      names(contigs) <- gsub("call","gene",names(contigs))
+
+      names(contigs) <- gsub("junction_aa","cdr3",names(contigs))
+      contigs
+      contigs_lim <- contigs[!names(contigs) %in% c("is_cell","contig_id","high_confidence","raw_consensus_id","exact_subclonotype_id","umis","reads","length","cdr3_nt","germline_alignment","cdr3_nt_id","cdr3_nt_alignment","rev_comp",names(contigs[grep("_end",names(contigs))]),names(contigs[grep("cigar",names(contigs))]),names(contigs[grep("length",names(contigs))]),names(contigs[grep("count",names(contigs))]),names(contigs[grep("sequence",names(contigs))]),names(contigs[grep("fwr",names(contigs))]),names(contigs[grep("cdr1",names(contigs))]),names(contigs[grep("cdr2",names(contigs))])
+      )]
+
+
+      contigs_lim$chain <- ifelse(grepl("TRA",contigs_lim$v_gene),"TRA",
+                                  ifelse(grepl("TRB",contigs_lim$v_gene),"TRB",
+                                         ifelse(grepl("TRG",contigs_lim$v_gene),"TRG",
+                                                ifelse(grepl("TRD",contigs_lim$v_gene),"TRD",
+                                                       ""
+                                                ))))
+
+      contigs_lim
+      names(contigs_lim) <- gsub("junction","cdr3_nt",names(contigs_lim))
+
+      contig_AG <- subset(contigs_lim,contigs_lim$chain=="TRA" | contigs_lim$chain=="TRG")
+      head(contig_AG)
+      name.list <- names(contig_AG[c(names(contig_AG[grep("gene",names(contig_AG))]),
+                                     names(contig_AG[grep("cdr3",names(contig_AG))]),
+
+                                     "chain")])
+      name.list
+
+      contig_AG <- contig_AG %>%
+        select(all_of(name.list), everything())
+      names(contig_AG)[1:summary(name.list)[1]] <-paste(names(contig_AG[names(contig_AG) %in% name.list]),"_AG",sep="")
+      contig_AG
+
+      contig_BD <- subset(contigs_lim,contigs_lim$chain=="TRB" | contigs_lim$chain=="TRD")
+      name.list <- names(contig_BD[c(names(contig_BD[grep("gene",names(contig_BD))]),
+                                     names(contig_BD[grep("cdr3",names(contig_BD))]),
+                                     "chain")])
+      contig_BD <- contig_BD %>%
+        select(all_of(name.list), everything())
+
+
+      names(contig_BD)[1:summary(name.list)[1]] <-paste(names(contig_BD[names(contig_BD) %in% name.list]),"_BD",sep="")
+      contig_BD
+      # contig_paired <- merge(contig_AG,contig_BD, by=c("barcode", "full_length" ,"productive" ,"raw_clonotype_id"),all = T)
+      # contig_paired <- merge(contig_AG,contig_BD, by=c("barcode", "full_length" ,"productive" ,"raw_clonotype_id"),all = T)
+      contig_paired <- merge(contig_AG,contig_BD, by=c("cell_id", "clone_id"),all = T)
+
+      contig_paired$pairing <- ifelse(contig_paired$chain_BD=="TRB" & contig_paired$chain_AG=="TRA","abTCR Paired",
+                                      ifelse(contig_paired$chain_BD=="TRD" & contig_paired$chain_AG=="TRG","gdTCR Paired",NA
+                                      ))
+      contig_paired
+      contig_paired$pairing[is.na(contig_paired$pairing)] <- "unpaired"
+      contig_paired <- contig_paired[!names(contig_paired) %in% c("d_gene_AG")]
+      contig_paired_only <- contig_paired
+      contig_paired_only <- subset(contig_paired_only,contig_paired_only$cdr3_BD!="None")
+      contig_paired_only <- subset(contig_paired_only,contig_paired_only$cdr3_AG!="None")
+      contig_paired_only$d_gene_BD <- gsub("^$","NA", contig_paired_only$d_gene_BD)
+      #
+      contig_paired_only$vj_gene_AG <- paste(contig_paired_only$v_gene_AG,contig_paired_only$j_gene_AG,sep = ".")
+      contig_paired_only$vj_gene_AG <- gsub("NA.NA","",contig_paired_only$vj_gene_AG)
+      #
+      contig_paired_only$vj_gene_BD <- paste(contig_paired_only$v_gene_BD,contig_paired_only$j_gene_BD,sep = ".")
+      contig_paired_only$vj_gene_BD <- gsub(".NA.",".",contig_paired_only$vj_gene_BD)
+      contig_paired_only$vj_gene_BD <- gsub(".None.",".",contig_paired_only$vj_gene_BD)
+      contig_paired_only$vj_gene_BD <- gsub("NA.NA","",contig_paired_only$vj_gene_BD)
+      #
+      contig_paired_only$vdj_gene_BD <- paste(contig_paired_only$v_gene_BD,contig_paired_only$d_gene_BD,contig_paired_only$j_gene_BD,sep = ".")
+      contig_paired_only$vdj_gene_BD <- gsub(".NA.",".",contig_paired_only$vdj_gene_BD)
+      contig_paired_only$vdj_gene_BD <- gsub("[.]NA[.]",".",contig_paired_only$vdj_gene_BD)
+      contig_paired_only$vdj_gene_BD <- gsub("NA.NA","",contig_paired_only$vdj_gene_BD)
+      #
+      contig_paired_only$vj_gene_cdr3_AG <- paste(contig_paired_only$vj_gene_AG,contig_paired_only$cdr3_AG,sep = "_")
+      contig_paired_only$vj_gene_cdr3_AG <- gsub("_NA","",contig_paired_only$vj_gene_cdr3_AG)
+      #
+      contig_paired_only$vj_gene_cdr3_BD <- paste(contig_paired_only$vj_gene_BD,contig_paired_only$cdr3_BD,sep = "_")
+      contig_paired_only$vj_gene_cdr3_BD <- gsub("_NA","",contig_paired_only$vj_gene_cdr3_BD)
+      #
+      contig_paired_only$vdj_gene_cdr3_BD <- paste(contig_paired_only$vdj_gene_BD,contig_paired_only$cdr3_BD,sep = "_")
+      contig_paired_only$vdj_gene_cdr3_BD <- gsub("_NA","",contig_paired_only$vdj_gene_cdr3_BD)
+      #
+      contig_paired_only$vj_gene_AG_BD <- paste(contig_paired_only$vj_gene_AG,contig_paired_only$vj_gene_BD,sep = " & ")
+      contig_paired_only$vdj_gene_AG_BD <- paste(contig_paired_only$vj_gene_AG,contig_paired_only$vdj_gene_BD,sep = " & ")
+      contig_paired_only$vdj_gene_AG_BD <- gsub("^ & ","",contig_paired_only$vdj_gene_AG_BD)
+      contig_paired_only$vdj_gene_AG_BD <- gsub(" & $","",contig_paired_only$vdj_gene_AG_BD)
+      #
+      # #updating names to be consistant....
+      contig_paired_only$vj_gene_cdr3_AG_BD <- paste(contig_paired_only$vj_gene_cdr3_AG,contig_paired_only$vj_gene_cdr3_BD,sep = " & ")
+      contig_paired_only$vj_gene_cdr3_AG_BD <- gsub("^ & ","",contig_paired_only$vj_gene_cdr3_AG_BD)
+      contig_paired_only$vj_gene_cdr3_AG_BD <- gsub(" & $","",contig_paired_only$vj_gene_cdr3_AG_BD)
+
+      contig_paired_only$vdj_gene_cdr3_AG_BD <- paste(contig_paired_only$vj_gene_cdr3_AG,contig_paired_only$vdj_gene_cdr3_BD,sep = " & ")
+      contig_paired_only$vdj_gene_cdr3_AG_BD <- gsub("^ & ","",contig_paired_only$vdj_gene_cdr3_AG_BD)
+      contig_paired_only$vdj_gene_cdr3_AG_BD <- gsub(" & $","",contig_paired_only$vdj_gene_cdr3_AG_BD)
+
+
+      names(contig_paired_only)[names(contig_paired_only) %in% "cell_id"] <- "Cell_Index"
+
+      contig_paired_only$Sample_Name <- input$sample_name_10x
+
+      contig_paired_only <- contig_paired_only %>%
+        select(all_of(c("Cell_Index","Sample_Name")), everything())
+      contig_paired_only
+
+    })
+    tb_10x_meta.data_TCR_CSV <- function () {
       contigs <- input.data.TCR.10x()
       validate(
         need(nrow(contigs)>0,
@@ -3057,6 +3199,17 @@ runSTEGO <- function(){
 
       contig_paired_only
     }
+    tb_10x_meta.data_TCR <- reactive({
+      if (input$csv_contig_file == "csv/csv.gz") {
+        dataframe <- tb_10x_meta.data_TCR_CSV()
+      }
+      else {
+        dataframe <- tb_10x_for.tcr.exploreAIRR()
+      }
+      dataframe
+    })
+
+
     tb_10x_meta.data_BCR <- function () {
       contigs <- input.data.TCR.10x()
       validate(
@@ -3159,8 +3312,11 @@ runSTEGO <- function(){
 
       contig_paired_only_dup
     }
+
     output$tb_10x_meta1 <- DT::renderDataTable(escape = FALSE, options = list(autoWidth = FALSE, lengthMenu = c(2,5,10,20,50,100), pageLength = 5, scrollX = TRUE),{
       if (input$BCR_TCR_10x=="TCR only") {
+
+
         tb_10x_meta.data_TCR()
       }
       else if (input$BCR_TCR_10x=="BCR only") {
@@ -3243,6 +3399,14 @@ runSTEGO <- function(){
         need(nrow(contigs)>0,
              error_message_val_10x_features)
       )
+      if (input$csv_contig_file == "tsv") {
+        names(contigs) <- gsub("call","gene",names(contigs))
+        names(contigs) <- gsub("junction_aa","cdr3",names(contigs))
+      }
+      else {
+
+      }
+
       contigs2 <- contigs[names(contigs) %in% c("v_gene","cdr3")]
       contigs2$Sample_Name <- input$sample_name_10x
       names(contigs2)[names(contigs2) %in% c("cdr3")] <- "junction_aa"
@@ -3271,7 +3435,16 @@ runSTEGO <- function(){
     ## TCR explore 10x -----
     TCR_Explore_10x <- function () {
       if (input$BCR_TCR_10x=="TCR only") {
-        contig_paired_only <-  tb_10x_meta.data_TCR()
+        if (input$csv_contig_file == "csv/csv.gz") {
+
+          contig_paired_only <-  tb_10x_for.tcr.exploreAIRR()
+
+
+        }
+        else {
+          contig_paired_only <-  tb_10x_meta.data_TCR()
+        }
+
 
       }
 
@@ -3361,6 +3534,15 @@ runSTEGO <- function(){
         need(nrow(contigs)>0,
              error_message_val_10x_features)
       )
+
+      if (input$csv_contig_file == "tsv") {
+        names(contigs) <- gsub("call","gene",names(contigs))
+        names(contigs) <- gsub("junction_aa","cdr3",names(contigs))
+      }
+      else {
+
+      }
+
       contigs2 <- contigs[,names(contigs) %in% c("v_gene","j_gene","cdr3")]
 
       names(contigs2)[names(contigs2) %in% c("cdr3")] <- "CDR3_beta"
@@ -8258,7 +8440,8 @@ runSTEGO <- function(){
       cluster.names <- unique(Idents(sc))[order(unique(Idents(sc)))]
       # print(paste0("calculating markers for cluster ",name.clone,". Total: ",length(cluster.names)," clusters"))
       markers.fm.list <- FindMarkers(sc, ident.1 = name.clone, min.pct = min.pct.expression,  logfc.threshold = min.logfc, only.pos=TRUE)
-      as.data.frame(markers.fm.list)
+      markers.fm.list2 <- subset(markers.fm.list,markers.fm.list$p_val_adj < input$pval.ex.filter_original)
+      as.data.frame(markers.fm.list2)
 
 
     })
@@ -8298,7 +8481,7 @@ runSTEGO <- function(){
         selected = rownames(df)[1])
 
     })
-    #. comapre stats
+    #ridge plot ------
     Ridge_chart_alpha_gamma_df <- reactive({
       sc <-input.data_sc_pro()
       validate(
@@ -8384,10 +8567,6 @@ runSTEGO <- function(){
         df <- as.data.frame(Ridge_chart_alpha_gamma_stat_table())
         write.csv(df,file, row.names = T)
       } )
-
-
-
-
     ### Violin plots top clonotype -----
     Violin_plot_table <- reactive({
       sc <-input.data_sc_pro()
@@ -8592,7 +8771,78 @@ runSTEGO <- function(){
         dev.off()},   contentType = "application/png" # MIME type of the image
     )
 
+    # dot plot -----
+    all_expression_plot_ex <- reactive({
+      sc <-input.data_sc_pro()
+      validate(
+        need(nrow(sc)>0,
+             error_message_val_sc))
 
+      df <- sc@meta.data
+      unique.df <- (df[,names(df) %in% c(input$Samp_col,input$V_gene_sc) ])
+      names(unique.df) <- c("group","chain")
+
+      # unique.df <- unique.df[unique.df$group %in% "LTR35-12",]
+
+      unique.df <- subset(unique.df,unique.df$chain != "NA")
+      unique.df <- subset(unique.df,unique.df$group != "NA")
+      unique.df$cloneCount <- 1
+
+      df_unique_sum <- ddply(unique.df,names(unique.df)[-c(3)] ,numcolwise(sum))
+      df_unique_sum <- df_unique_sum[order(df_unique_sum$cloneCount, decreasing = T),]
+
+      sc@meta.data$Vgene <- sc@meta.data[,names(sc@meta.data) %in% input$V_gene_sc]
+
+      name.clone <- input$Selected_clonotype
+
+      sc@meta.data$Gene_select <- ifelse(sc@meta.data$Vgene %in% name.clone,input$name_clonotype_selected,"unselected")
+      unique(sc@meta.data$Gene_select)
+      Idents(object = sc) <- sc@meta.data$Gene_select
+
+      list.names <- rownames(compare.stat())
+
+      size_legend = input$Bar_legend_size-2
+      DotPlot(sc, features = list.names) +
+        RotatedAxis() +
+        theme(
+          axis.title.y = element_blank(),
+          axis.text.y = element_text(colour="black",family=input$font_type,size = input$text_size),
+          axis.text.x = element_text(colour="black",family=input$font_type,size = input$text_size, angle = 90),
+          axis.title.x = element_blank(),
+          legend.title = element_text(colour="black", size=input$Bar_legend_size,family=input$font_type),
+          legend.text = element_text(colour="black", size=size_legend,family=input$font_type),
+          legend.position = input$legend_position,
+        ) +
+        scale_colour_gradient2(low = input$low.dotplot, mid = input$middle.dotplot, high = input$high.dotplot)
+    })
+
+    output$all_expression_dotplot_ex <- renderPlot({
+      all_expression_plot_ex()
+    })
+
+    output$downloadPlot_all_expression_dotplot_ex <- downloadHandler(
+      filename = function() {
+        paste(input$Selected_clonotype,"_dotplot","_",today(), ".pdf", sep = "")
+      },
+      content = function(file) {
+        pdf(file, width=input$width_all_expression_dotplot_ex,height=input$height_all_expression_dotplot_ex, onefile = FALSE) # open the pdf device
+        df <- all_expression_plot_ex()
+        plot(df)
+        dev.off()}, contentType = "application/pdf" )
+
+    output$downloadPlotPNG_all_expression_dotplot_ex  <- downloadHandler(
+      filename = function() {
+        paste(input$Selected_clonotype,"_dotplot","_",today(), ".png", sep = "")
+      },
+      content = function(file) {
+        png(file, width = input$width_png_all_expression_dotplot_ex,
+            height = input$height_png_all_expression_dotplot_ex,
+            res = input$resolution_PNG_all_expression_dotplot_ex)
+        df <- all_expression_plot_ex()
+
+        plot(df)
+        dev.off()},   contentType = "application/png" # MIME type of the image
+    )
 
     # Expanded TCR interrogation (regarless of TCR sequence ) -------
     observe({
@@ -8982,9 +9232,6 @@ runSTEGO <- function(){
       sc_ex@meta.data
     })
 
-
-
-
     Vals_expanded.stats <- reactiveValues(output_ex1=NULL)
 
     observeEvent(input$run_Expanded_stats,{
@@ -9043,9 +9290,20 @@ runSTEGO <- function(){
       else {
         list.names <- rownames(Vals_expanded.stats$output_ex1)
       }
-
+      size_legend = input$Bar_legend_size-2
       Idents(object = sc) <- sc@meta.data$expansion.status
-      DotPlot(sc, cols = "RdYlBu",features = list.names) + RotatedAxis()
+      DotPlot(sc,features = list.names) +
+        RotatedAxis() +
+        theme(
+          axis.title.y = element_blank(),
+          axis.text.y = element_text(colour="black",family=input$font_type,size = input$text_size),
+          axis.text.x = element_text(colour="black",family=input$font_type,size = input$text_size, angle = 90),
+          axis.title.x = element_blank(),
+          legend.title = element_text(colour="black", size=input$Bar_legend_size,family=input$font_type),
+          legend.text = element_text(colour="black", size=size_legend,family=input$font_type),
+          legend.position = input$legend_position,
+        ) +
+        scale_colour_gradient2(low = input$low.dotplot, mid = input$middle.dotplot, high = input$high.dotplot)
 
 
     })
@@ -10740,4 +10998,5 @@ runSTEGO <- function(){
     ### end -----
   }
   shinyApp(ui, server)
+
 }
