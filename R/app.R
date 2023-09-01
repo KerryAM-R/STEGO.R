@@ -6,7 +6,6 @@
 #' @export
 
 runSTEGO <- function(){
-  S  STEGO.R::Load_required_packages()
   source(system.file("Global","required_functions.R",package = "STEGO.R"))
   suppressWarnings(source(system.file("scGATE","custom_df_scGATE.R",package = "STEGO.R")))
   suppressWarnings(require("DescTools"))
