@@ -8,13 +8,8 @@
 runSTEGO <- function(){
   source(system.file("Global","required_functions.R",package = "STEGO.R"))
   suppressWarnings(source(system.file("scGATE","custom_df_scGATE.R",package = "STEGO.R")))
-  suppressWarnings(require("DescTools"))
-  suppressWarnings(library(doParallel))
-
-  #   Error opening file C:\Users\ianng\AppData\Local\Temp\RtmpWWWuHE\file1f002ae37f99.h5Seurat: 32
-  # ?add_busy_spinner
-  # source(system.file("Global","global.R",package = "STEGO.R"))
   options(shiny.maxRequestSize = 100000*1024^2)
+
   # UI page -----
   ui <- fluidPage(
     theme=bs_theme(version = 5, bootswatch = "default"),
@@ -649,6 +644,8 @@ runSTEGO <- function(){
                tabPanel("Annotations",
                         sidebarLayout(
                           sidebarPanel(id = "tPanel4",style = "overflow-y:scroll; max-height: 800px; position:relative;", width=3,
+                                       selectInput("Data_types","Source",choices = c("10x_HS","BD_HS.Immune.Panel","BD_HS.Full.Panel","10x_MM","BD_MM_Full.Panel","BD_MM_Immune.Panel")),
+
                                        fileInput("file1_h5Seurat.file2",
                                                  "Choose merged or single .h5Seurat files from directory",
                                                  multiple = TRUE,
@@ -664,9 +661,9 @@ runSTEGO <- function(){
                                        verbatimTextOutput("testing_mult_anno")
                               ),
                               tabPanel("scGATE",
-                                       selectInput("Data_types","Source",choices = c("10x_HS","BD_Rhapsody_HS","10x_MM","BD_Rhapsody_MM")),
 
 
+                                       # human 10x annotations -----
                                        conditionalPanel(condition="input.Data_types == '10x_HS'",
                                                         selectInput("GenericID_scGATE","Generic To include",choices = c("Bcell","CD4T","CD8T","CD8TIL" ,"Erythrocyte" ,"Megakaryocyte" , "MoMacDC","Myeloid","NK","PanBcell","panDC","PlasmaCell","Tcell","Tcell.alphabeta"), selected = c("Bcell","MoMacDC","NK","CD8T","CD4T","PlasmaCell"), multiple = T),
                                                         fluidRow(
@@ -704,7 +701,8 @@ runSTEGO <- function(){
                                                         add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
                                                         verbatimTextOutput("scGATE_verbatum_Interlukin")
                                        ),
-                                       conditionalPanel("input.Data_types == 'BD_Rhapsody_HS'",
+                                       ### BD rhapsody human immune panel -----
+                                       conditionalPanel("input.Data_types == 'BD_HS.Immune.Panel'",
                                                         add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
                                                         column(3,checkboxInput("BDrhapsody_scGATE","BD Rhapsody (Human)", value = F)),
                                                         add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
@@ -712,12 +710,52 @@ runSTEGO <- function(){
 
                                        ),
 
+                                       ### BD rhapsody HS full panel ----
+                                       conditionalPanel("input.Data_types == 'BD_HS.Full.Panel'",
+                                                        h5("Under development")
 
+                                       ),
+                                       ### 10x MM ----
+                                       conditionalPanel("input.Data_types == '10x_MM'",
+                                                        h5("Under development")
 
-                                       # tabPanel("Table",
-                                       #          add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
-                                       #          div(DT::dataTableOutput("DEx_table_TcellClass_scGATE")),
-                                       # )
+                                       ),
+
+                                       ### BD rhapsody MM full panel ----
+                                       conditionalPanel("input.Data_types == 'BD_MM_Full.Panel'",
+                                                        h5("Under development"),
+                                                        add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
+                                                        h6("Curated from Sharland lab"),
+                                                        fluidRow(
+                                                          column(3,checkboxInput("BDrhapsody_scGATE.MM.Tcell","Major T cell popualtions", value = F)),
+                                                          column(3,checkboxInput("BDrhapsody_scGATE.MM.Memory","Memory", value = F)),
+                                                          column(3,checkboxInput("BDrhapsody_scGATE.MM.signatures","signatures", value = F)),
+                                                          column(3,checkboxInput("BDrhapsody_scGATE.MM.Innate.NK","Innate & NK", value = F)),
+                                                        ),
+                                                        h6("From the human BD Rhapsody searches"),
+                                                        fluidRow(
+                                                          column(3,checkboxInput("BDrhapsody_scGATE.MM.GNLY.PRF1.GZMB","GNLY.PFR1.GZMB", value = F)),
+                                                          column(3,checkboxInput("BDrhapsody_scGATE.MM.TNF.IFNg","TNF.IFNg", value = F)),
+                                                          column(3,checkboxInput("BDrhapsody_scGATE.MM.subtypes","Subtypes", value = F)),
+                                                          column(3,checkboxInput("BDrhapsody_scGATE.MM.other","other", value = F)),
+
+                                                        ),
+
+                                                        verbatimTextOutput("scGATE_verbatum_BDrhapsody_MM.FP.Tcell"),
+                                                        verbatimTextOutput("scGATE_verbatum_BDrhapsody_MM.FP.Memory"),
+                                                        verbatimTextOutput("scGATE_verbatum_BDrhapsody_MM.FP.signatures"),
+                                                        verbatimTextOutput("scGATE_verbatum_BDrhapsody_MM.FP.Innate.NK"),
+                                                        verbatimTextOutput("scGATE_verbatum_BDrhapsody_MM.FP.GNLY.PFR1.GZMB"),
+                                                        verbatimTextOutput("scGATE_verbatum_BDrhapsody_MM.FP.TNF.IFNg"),
+                                                        verbatimTextOutput("scGATE_verbatum_BDrhapsody_MM.FP.subtypes"),
+                                                        verbatimTextOutput("scGATE_verbatum_BDrhapsody_MM.FP.other"),
+                                                        ### BD rhapsody MM Immune panel ----
+
+                                       ),
+                                       conditionalPanel("input.Data_types == 'BD_MM_Immune.Panel'",
+                                                        h5("Under development")
+
+                                       ),
 
                               ),
                               tabPanel("Meta data table",
@@ -1733,9 +1771,6 @@ runSTEGO <- function(){
       selectInput("Colour_By_this_overview","Colour by: ",choices = df3.meta,selected="seurat_clusters")
 
     })
-
-
-
     output$classification_to_add_epitope <- renderUI({
       df3.meta <- UMAP_metadata_with_labs()
       # summarising the clonality
@@ -4763,7 +4798,7 @@ runSTEGO <- function(){
       sc <- getData_2()
       validate(
         need(nrow(sc)>0,
-             "Update K-means")
+             "Add annotation")
       )
       df= as.data.frame(sc[["RNA"]]@scale.data)
 
@@ -4797,7 +4832,7 @@ runSTEGO <- function(){
       head(sc)[1:6]
     })
 
-    # scGATE annotations -------
+    # scGATE annotations HS 10x -------
     scGATE_anno_generic <- reactive({
       sc <- getData_2()
       validate(
@@ -4855,27 +4890,6 @@ runSTEGO <- function(){
       }
       sc
     })
-    #####
-    # scGATE_anno_cellTypist_higher <- reactive({
-    #   sc <- getData_2()
-    #   validate(
-    #     need(nrow(sc)>0,
-    #          "Upload file for annotation")
-    #   )
-    #   df <- as.data.frame(sc@meta.data[,names(sc@meta.data) %in% c("Cell_Index")])
-    #   names(df) <- "Cell_Index"
-    #   if (input$cellTypist_higher_scGATE==T) {
-    #     scGate_models_DB <- suppressWarnings(custom_db_scGATE(system.file("scGATE","human/CellTypist_higher",package = "STEGO.R")))
-    #     models.list <- scGate_models_DB[c("Bcell","CD4Tcell","CD8Tcell","DC","DNTcell", "MonoMac","NK","Plasma")]
-    #      obj <- scGate(sc, model = models.list,ncores = 4)
-    #     df$CellTypist_higher <- obj@meta.data$scGate_multi
-    #   }
-    #   else {
-    #     df
-    #   }
-    #   df
-    # })
-    #####
     scGATE_anno_GeneralMarkers <- reactive({
       sc <- getData_2()
       validate(
@@ -5028,7 +5042,27 @@ runSTEGO <- function(){
       }
       sc
     })
-    # BD rhapsody gates
+
+    scGATE_anno_NK <- reactive({
+      sc <- getData_2()
+      validate(
+        need(nrow(sc)>0,
+             "Upload file for annotation")
+      )
+
+      if (input$Interlukin_scGATE==T) {
+        scGate_models_DB <- suppressWarnings(custom_db_scGATE(system.file("scGATE","human/IL",package = "STEGO.R")))
+        models.list <- scGate_models_DB
+        models.list
+        obj <- scGate(sc, model = models.list,ncores = 8)
+        sc@meta.data$Interleukins <- obj@meta.data$scGate_multi
+      }
+      else {
+        sc
+      }
+      sc
+    }) # need to do...
+    # BD rhapsody gates HS immune panel -----
     scGATE_anno_BD_rhapsody <- reactive({
       sc <- getData_2()
       validate(
@@ -5036,7 +5070,7 @@ runSTEGO <- function(){
              "Upload file for annotation")
       )
 
-      if (input$BDrhapsody_scGATE==T && input$Data_types=="BD_Rhapsody_HS") {
+      if (input$BDrhapsody_scGATE==T && input$Data_types=="BD_HS.Immune.Panel") {
 
         len <- length(rownames(sc@assays$RNA@meta.features))
         len
@@ -5056,8 +5090,8 @@ runSTEGO <- function(){
         models.list$CD4 <- my_scGate_model
 
         my_scGate_model <- gating_model(name = "CD8ANeg",level = 1, signature = c("CD8A","CD8B"), positive = F)
-        my_scGate_model <- gating_model(my_scGate_model,name = "CD4neg",level = 3, signature = c("CD4"), positive = F)
-        my_scGate_model <- gating_model(my_scGate_model,name = "CD3E",level = 4, signature = c("CD3E"), positive =T)
+        my_scGate_model <- gating_model(my_scGate_model,name = "CD4neg",level = 2, signature = c("CD4"), positive = F)
+        my_scGate_model <- gating_model(my_scGate_model,name = "CD3E",level = 3, signature = c("CD3E"), positive =T)
         models.list$DN <- my_scGate_model
 
         obj <- scGate(sc, model = models.list,
@@ -5091,36 +5125,8 @@ runSTEGO <- function(){
         my_scGate_model <- gating_model(name = "GZMB",level = 1, signature = c("GZMB"), positive = T)
         my_scGate_model <- gating_model(my_scGate_model,name = "PRF1",level = 2, signature = c("PRF1"), positive = F)
         my_scGate_model <- gating_model(my_scGate_model,name = "GNLY",level = 3, signature = c("GNLY"), positive = T)
-        models.list$GZMB.GNLY <- my_scGate_model
 
-        my_scGate_model <- gating_model(name = "GNLY",level = 1, signature = c("GNLY"), positive = T)
-        my_scGate_model <- gating_model(my_scGate_model,name = "PRF1",level = 2, signature = c("PRF1"), positive = F)
-        my_scGate_model <- gating_model(my_scGate_model,name = "GZMB",level = 3, signature = c("GZMB"), positive = F)
-        models.list$GNLY <- my_scGate_model
 
-        my_scGate_model <- gating_model(name = "GZMB",level = 1, signature = c("GZMB"), positive = T)
-        my_scGate_model <- gating_model(my_scGate_model,name = "PRF1",level = 2, signature = c("PRF1"), positive = F)
-        my_scGate_model <- gating_model(my_scGate_model,name = "GNLY",level = 3, signature = c("GNLY"), positive = F)
-        models.list$GZMB <- my_scGate_model
-
-        my_scGate_model <- gating_model(name = "PRF1",level = 1, signature = c("PRF1"), positive = T)
-        my_scGate_model <- gating_model(my_scGate_model,name = "GZMB",level = 2, signature = c("GZMB"), positive = F)
-        my_scGate_model <- gating_model(my_scGate_model,name = "GNLY",level = 3, signature = c("GNLY"), positive = F)
-        models.list$PRF1 <- my_scGate_model
-
-        obj <- scGate(sc, model = models.list,
-                      pos.thr = 0.5,
-                      neg.thr = 0.5,
-                      nfeatures = len,
-                      ncores = 8
-        )
-        sc@meta.data$GNLY.PRF1.GZMB <- obj@meta.data$scGate_multi
-        sc@meta.data$GNLY.PRF1.GZMB <- ifelse( sc@meta.data$GNLY.PRF1.GZMB=="NA",NA, sc@meta.data$GNLY.PRF1.GZMB)
-
-        FeaturePlot(sc,features = "GZMB") | FeaturePlot(sc,features = "PRF1")|FeaturePlot(sc,features = "GNLY")|DimPlot(sc, group.by = "GNLY.PRF1.GZMB")
-
-        DimPlot(sc, group.by = "GNLY.PRF1.GZMB") +
-          scale_colour_manual(values = rainbow(8),na.value = "grey90")
 
         # TNF and IFNg----
         models.list <- list()
@@ -5405,6 +5411,533 @@ runSTEGO <- function(){
       sc
     })
 
+    # BD rhapsody gates Mouse Full panel -----
+
+    scGATE_anno_BD_MM.FP_T.cell <- reactive({
+      sc <- getData_2()
+      validate(
+        need(nrow(sc)>0,
+             "Upload file for annotation")
+      )
+
+      len <- length(rownames(sc@assays$RNA@meta.features))
+      len
+      if (len>2000){
+        len = 2000
+      }
+
+      if (input$BDrhapsody_scGATE.MM.Tcell==T)  {
+        models.list <- list()
+        my_scGate_model <- gating_model(name = "Cd8b1",level = 1, signature = c("Cd8b1","Cd8a"), positive = T)
+        my_scGate_model <- gating_model(my_scGate_model,name = "CD4neg",level = 2, signature = c("Cd4"), positive = F)
+        models.list$CD8 <- my_scGate_model
+
+        my_scGate_model <- gating_model(name = "Cd8b1",level = 1, signature = c("Cd8b1","Cd8a"), positive = F)
+        my_scGate_model <- gating_model(my_scGate_model,name = "CD4neg",level = 2, signature = c("Cd4"), positive = T)
+        models.list$CD4 <- my_scGate_model
+
+        my_scGate_model <- gating_model(name = "Cd8b1",level = 1, signature = c("Cd8b1","Cd8a"), positive = F)
+        my_scGate_model <- gating_model(my_scGate_model,name = "CD4neg",level = 2, signature = c("Cd4"), positive = F)
+        my_scGate_model <- gating_model(my_scGate_model,name = "CD3E",level = 3, signature = c("Cd3e"), positive =T)
+        models.list$DN <- my_scGate_model
+        obj <- scGate(sc, model = models.list,
+                      pos.thr = 0.2,
+                      neg.thr = 0.2,
+                      nfeatures = len,
+                      ncores = 8
+        )
+
+        sc@meta.data$T_cells <- obj@meta.data$scGate_multi
+        sc
+      }
+      else {
+        sc
+      }
+
+    })
+    output$scGATE_verbatum_BDrhapsody_MM.FP.Tcell <- renderPrint({
+      FN <- tempfile()
+      zz <- file(FN, open = "wt")
+      sink(zz ,type = "output")
+      sink(zz, type = "message")
+      if (input$BDrhapsody_scGATE.MM.Tcell==T) {
+        scGATE_anno_BD_MM.FP_T.cell()
+      }
+      else{
+        print("MM T cell not run")
+      }
+      sink(type = "message")
+      sink(type = "output")
+      cat(readLines(FN), sep="\n")
+    })
+
+    scGATE_anno_BD_MM.FP_Memory <- reactive({
+      sc <- getData_2()
+      validate(
+        need(nrow(sc)>0,
+             "Upload file for annotation")
+      )
+
+      len <- length(rownames(sc@assays$RNA@meta.features))
+      len
+      if (len>2000){
+        len = 2000
+      }
+
+      if (input$BDrhapsody_scGATE.MM.Memory==T)  {
+
+        models.list <- list()
+        my_scGate_model <- gating_model(name = "Cd44",level = 1, signature = c("Cd44"), positive = F)
+        my_scGate_model <- gating_model(my_scGate_model,name = "Sell",level = 2, signature = c("Sell"), positive = T)
+        my_scGate_model <- gating_model(my_scGate_model,name = "Ly6c2",level = 3, signature = c("Ly6c2"), positive = F)
+        my_scGate_model <- gating_model(my_scGate_model,name = "Itga4",level = 4, signature = c("Itga4"), positive = F)
+        models.list$Naive <- my_scGate_model
+
+        my_scGate_model <- gating_model(name = "Cd44",level = 1, signature = c("Cd44"), positive = T)
+        my_scGate_model <- gating_model(my_scGate_model,name = "Sell",level = 2, signature = c("Sell"), positive = T)
+        my_scGate_model <- gating_model(my_scGate_model,name = "Ly6c2",level = 3, signature = c("Ly6c2"), positive = T)
+        my_scGate_model <- gating_model(my_scGate_model,name = "Itga4",level = 4, signature = c("Itga4"), positive = F)
+        models.list$VM <- my_scGate_model
+
+        my_scGate_model <- gating_model(name = "Cd44",level = 1, signature = c("Cd44"), positive = T)
+        my_scGate_model <- gating_model(my_scGate_model,name = "Sell",level = 2, signature = c("Sell"), positive = T)
+        my_scGate_model <- gating_model(my_scGate_model,name = "Ly6c2",level = 3, signature = c("Ly6c2"), positive = T)
+        my_scGate_model <- gating_model(my_scGate_model,name = "Itga4",level = 4, signature = c("Itga4"), positive = T)
+        models.list$CM <- my_scGate_model
+
+        my_scGate_model <- gating_model(name = "Cd44",level = 1, signature = c("Cd44"), positive = T)
+        my_scGate_model <- gating_model(my_scGate_model,name = "Sell",level = 2, signature = c("Sell"), positive = F)
+        my_scGate_model <- gating_model(my_scGate_model,name = "Itga4",level = 3, signature = c("Itga4"), positive = T)
+        models.list$Eff.or.RM <- my_scGate_model
+
+        obj <- scGate(sc, model = models.list,
+                      pos.thr = 0.2,
+                      neg.thr = 0.2,
+                      nfeatures = len,
+                      ncores = 8
+        )
+
+        sc@meta.data$Memory <- obj@meta.data$scGate_multi
+      }
+      else {
+        sc
+      }
+      sc
+    })
+    output$scGATE_verbatum_BDrhapsody_MM.FP.Memory <- renderPrint({
+      FN <- tempfile()
+      zz <- file(FN, open = "wt")
+      sink(zz ,type = "output")
+      sink(zz, type = "message")
+      if (input$BDrhapsody_scGATE.MM.Memory==T) {
+        scGATE_anno_BD_MM.FP_Memory()
+      }
+      else{
+        print("MM memory not run")
+      }
+      sink(type = "message")
+      sink(type = "output")
+      cat(readLines(FN), sep="\n")
+    })
+
+    scGATE_anno_BD_MM.FP_signatures <- reactive({
+      sc <- getData_2()
+      validate(
+        need(nrow(sc)>0,
+             "Upload file for annotation")
+      )
+
+      len <- length(rownames(sc@assays$RNA@meta.features))
+      len
+      if (len>2000){
+        len = 2000
+      }
+
+      if (input$BDrhapsody_scGATE.MM.signatures==T)  {
+        models.list <- list()
+        my_scGate_model <- gating_model(name = "Gzma",level = 1, signature = c("Gzma"), positive = T)
+        my_scGate_model <- gating_model(my_scGate_model,name = "Gzmb",level = 2, signature = c("Gzmb"), positive = T)
+        my_scGate_model <- gating_model(my_scGate_model,name = "Prf1",level = 3, signature = c("Prf1"), positive = T)
+        models.list$Eff <- my_scGate_model
+
+        my_scGate_model <- gating_model(name = "Sell",level = 1, signature = c("Sell"), positive = T)
+        my_scGate_model <- gating_model(my_scGate_model,name = "Ccr7",level = 2, signature = c("Ccr7"), positive = T)
+        my_scGate_model <- gating_model(my_scGate_model,name = "Cxcr6",level = 3, signature = c("Cxcr6"), positive = F)
+        my_scGate_model <- gating_model(my_scGate_model,name = "Itga1",level = 4, signature = c("Itga1"), positive = F)
+        my_scGate_model <- gating_model(my_scGate_model,name = "Prdm1",level = 5, signature = c("Prdm1"), positive = F)
+        models.list$Recirculation <- my_scGate_model
+
+        my_scGate_model <- gating_model(name = "Sell",level = 1, signature = c("Sell"), positive = F)
+        my_scGate_model <- gating_model(my_scGate_model,name = "Ccr7",level = 2, signature = c("Ccr7"), positive = F)
+        my_scGate_model <- gating_model(my_scGate_model,name = "Cxcr6",level = 3, signature = c("Cxcr6"), positive = T)
+        my_scGate_model <- gating_model(my_scGate_model,name = "Itga1",level = 4, signature = c("Itga1"), positive = T)
+        my_scGate_model <- gating_model(my_scGate_model,name = "Prdm1",level = 5, signature = c("Prdm1"), positive = T)
+        models.list$Tiss_res <- my_scGate_model
+
+        my_scGate_model <- gating_model(name = "Il2ra",level = 2, signature = c("Il2ra"), positive = T)
+        my_scGate_model <- gating_model(my_scGate_model,name = "Foxp3",level = 2, signature = c("Foxp3"), positive = T)
+        models.list$Treg <- my_scGate_model
+
+
+        obj <- scGate(sc, model = models.list,
+                      pos.thr = 0.2,
+                      neg.thr = 0.2,
+                      nfeatures = len,
+                      ncores = 8
+        )
+        sc@meta.data$Signature <- obj@meta.data$scGate_multi
+        sc@meta.data$Signature <- ifelse( sc@meta.data$Signature=="NA",NA, sc@meta.data$Signature)
+      }
+      else {
+        sc
+      }
+      sc
+    })
+    output$scGATE_verbatum_BDrhapsody_MM.FP.signatures <- renderPrint({
+      FN <- tempfile()
+      zz <- file(FN, open = "wt")
+      sink(zz ,type = "output")
+      sink(zz, type = "message")
+      if (input$BDrhapsody_scGATE.MM.signatures==T) {
+        scGATE_anno_BD_MM.FP_signatures()
+      }
+      else{
+        print("MM signatures not run")
+      }
+      sink(type = "message")
+      sink(type = "output")
+      cat(readLines(FN), sep="\n")
+    })
+
+    scGATE_anno_BD_MM.FP_Innate.NK <- reactive({
+      sc <- getData_2()
+      validate(
+        need(nrow(sc)>0,
+             "Upload file for annotation")
+      )
+
+      len <- length(rownames(sc@assays$RNA@meta.features))
+      len
+      if (len>2000){
+        len = 2000
+      }
+
+      if (input$BDrhapsody_scGATE.MM.Innate.NK==T)  {
+        models.list <- list()
+        my_scGate_model <- gating_model(name = "Gzma",level = 1, signature = c("Gzma"), positive = T)
+        my_scGate_model <- gating_model(my_scGate_model,name = "Gzmb",level = 2, signature = c("Gzmb"), positive = T)
+        my_scGate_model <- gating_model(my_scGate_model,name = "Prf1",level = 3, signature = c("Prf1"), positive = T)
+        models.list$Eff <- my_scGate_model
+
+        my_scGate_model <- gating_model(name = "Sell",level = 1, signature = c("Sell"), positive = T)
+        my_scGate_model <- gating_model(my_scGate_model,name = "Ccr7",level = 2, signature = c("Ccr7"), positive = T)
+        my_scGate_model <- gating_model(my_scGate_model,name = "Cxcr6",level = 3, signature = c("Cxcr6"), positive = F)
+        my_scGate_model <- gating_model(my_scGate_model,name = "Itga1",level = 4, signature = c("Itga1"), positive = F)
+        my_scGate_model <- gating_model(my_scGate_model,name = "Prdm1",level = 5, signature = c("Prdm1"), positive = F)
+        models.list$Recirculation <- my_scGate_model
+
+        my_scGate_model <- gating_model(name = "Sell",level = 1, signature = c("Sell"), positive = F)
+        my_scGate_model <- gating_model(my_scGate_model,name = "Ccr7",level = 2, signature = c("Ccr7"), positive = F)
+        my_scGate_model <- gating_model(my_scGate_model,name = "Cxcr6",level = 3, signature = c("Cxcr6"), positive = T)
+        my_scGate_model <- gating_model(my_scGate_model,name = "Itga1",level = 4, signature = c("Itga1"), positive = T)
+        my_scGate_model <- gating_model(my_scGate_model,name = "Prdm1",level = 5, signature = c("Prdm1"), positive = T)
+        models.list$Tiss_res <- my_scGate_model
+
+        my_scGate_model <- gating_model(name = "Il2ra",level = 2, signature = c("Il2ra"), positive = T)
+        my_scGate_model <- gating_model(my_scGate_model,name = "Foxp3",level = 2, signature = c("Foxp3"), positive = T)
+        models.list$Treg <- my_scGate_model
+
+
+        obj <- scGate(sc, model = models.list,
+                      pos.thr = 0.2,
+                      neg.thr = 0.2,
+                      nfeatures = len,
+                      ncores = 8
+        )
+        sc@meta.data$Signature <- obj@meta.data$scGate_multi
+        sc@meta.data$Signature <- ifelse( sc@meta.data$Signature=="NA",NA, sc@meta.data$Signature)
+      }
+      else {
+        sc
+      }
+      sc
+    })
+    output$scGATE_verbatum_BDrhapsody_MM.FP.Innate.NK <- renderPrint({
+      FN <- tempfile()
+      zz <- file(FN, open = "wt")
+      sink(zz ,type = "output")
+      sink(zz, type = "message")
+      if (input$BDrhapsody_scGATE.MM.Innate.NK==T) {
+        scGATE_anno_BD_MM.FP_Innate.NK()
+      }
+      else{
+        print("MM Innate.NK not run")
+      }
+      sink(type = "message")
+      sink(type = "output")
+      cat(readLines(FN), sep="\n")
+    })
+
+    scGATE_anno_BD_MM.FP_GNLY.PRF1.GZMB <- reactive({
+      sc <- getData_2()
+      validate(
+        need(nrow(sc)>0,
+             "Upload file for annotation")
+      )
+
+      len <- length(rownames(sc@assays$RNA@meta.features))
+      len
+      if (len>2000){
+        len = 2000
+      }
+
+      if (input$BDrhapsody_scGATE.MM.GNLY.PRF1.GZMB==T)  {
+        models.list <- list()
+        my_scGate_model <- gating_model(name = "Gzmb",level = 1, signature = c("Gzmb"), positive = T)
+        my_scGate_model <- gating_model(my_scGate_model,name = "Prf1",level = 2, signature = c("Prf1"), positive = T)
+        my_scGate_model <- gating_model(my_scGate_model,name = "GNLY",level = 3, signature = c("Gnly"), positive = T)
+
+        models.list$GNLY.PRF1.GZMB <- my_scGate_model
+        my_scGate_model <- gating_model(name = "GZMB",level = 1, signature = c("Gzmb"), positive = T)
+        my_scGate_model <- gating_model(my_scGate_model,name = "Prf1",level = 2, signature = c("Prf1"), positive = T)
+        my_scGate_model <- gating_model(my_scGate_model,name = "GNLY",level = 3, signature = c("Gnly"), positive = F)
+        models.list$PRF1.GZMB <- my_scGate_model
+
+        my_scGate_model <- gating_model(name = "GZMB",level = 1, signature = c("Gzmb"), positive = F)
+        my_scGate_model <- gating_model(my_scGate_model,name = "Prf1",level = 2, signature = c("Prf1"), positive = T)
+        my_scGate_model <- gating_model(my_scGate_model,name = "GNLY",level = 3, signature = c("Gnly"), positive = T)
+        models.list$PRF1.GNLY <- my_scGate_model
+
+        my_scGate_model <- gating_model(name = "GZMB",level = 1, signature = c("Gzmb"), positive = T)
+        my_scGate_model <- gating_model(my_scGate_model,name = "PRF1",level = 2, signature = c("Prf1"), positive = F)
+        my_scGate_model <- gating_model(my_scGate_model,name = "GNLY",level = 3, signature = c("Gnly"), positive = T)
+
+
+        obj <- scGate(sc, model = models.list,
+                      pos.thr = 0.2,
+                      neg.thr = 0.2,
+                      nfeatures = len,
+                      ncores = 8
+        )
+        sc@meta.data$GNLY.PRF1.GZMB <- obj@meta.data$scGate_multi
+        sc@meta.data$GNLY.PRF1.GZMB <- ifelse( sc@meta.data$GNLY.PRF1.GZMB=="NA",NA, sc@meta.data$GNLY.PRF1.GZMB)
+      }
+      else {
+        sc
+      }
+      sc
+    })
+    output$scGATE_verbatum_BDrhapsody_MM.FP.GNLY.PFR1.GZMB <- renderPrint({
+      FN <- tempfile()
+      zz <- file(FN, open = "wt")
+      sink(zz ,type = "output")
+      sink(zz, type = "message")
+      if (input$BDrhapsody_scGATE.MM.GNLY.PRF1.GZMB==T) {
+        scGATE_anno_BD_MM.FP_GNLY.PRF1.GZMB()
+      }
+      else{
+        print("MM GNLY.PRF1.GZMB not run")
+      }
+      sink(type = "message")
+      sink(type = "output")
+      cat(readLines(FN), sep="\n")
+    })
+
+    scGATE_anno_BD_MM.FP_TNF.IFNg <- reactive({
+      sc <- getData_2()
+      validate(
+        need(nrow(sc)>0,
+             "Upload file for annotation")
+      )
+
+      len <- length(rownames(sc@assays$RNA@meta.features))
+      len
+      if (len>2000){
+        len = 2000
+      }
+
+      if (input$BDrhapsody_scGATE.MM.TNF.IFNg==T)  {
+        models.list <- list()
+        models.list
+
+        my_scGate_model <- gating_model(name = "Ifng",level = 1, signature = c("Ifng"), positive = T)
+        my_scGate_model <- gating_model(my_scGate_model,name = "Tnf",level = 2, signature = c("Tnf"), positive = T)
+        models.list$IFNG.TNF <- my_scGate_model
+
+        my_scGate_model <- gating_model(name = "Ifng",level = 1, signature = c("Ifng"), positive = T)
+        my_scGate_model <- gating_model(my_scGate_model,name = "Tnf",level = 2, signature = c("Tnf"), positive = F)
+        models.list$IFNG <- my_scGate_model
+
+        my_scGate_model <- gating_model(name = "Ifng",level = 1, signature = c("Ifng"), positive = F)
+        my_scGate_model <- gating_model(my_scGate_model,name = "Tnf",level = 2, signature = c("Tnf"), positive = T)
+        models.list$TNF <- my_scGate_model
+
+
+        obj <- scGate(sc, model = models.list,
+                      pos.thr = 0.2,
+                      neg.thr = 0.2,
+                      nfeatures = len,
+                      ncores = 8
+        )
+        sc@meta.data$TNF.IFNg <- obj@meta.data$scGate_multi
+        sc@meta.data$TNF.IFNg <- ifelse( sc@meta.data$TNF.IFNg=="NA",NA, sc@meta.data$TNF.IFNg)
+      }
+      else {
+        sc
+      }
+      sc
+    })
+    output$scGATE_verbatum_BDrhapsody_MM.FP.TNF.IFNg <- renderPrint({
+      FN <- tempfile()
+      zz <- file(FN, open = "wt")
+      sink(zz ,type = "output")
+      sink(zz, type = "message")
+      if (input$BDrhapsody_scGATE.MM.TNF.IFNg==T) {
+        scGATE_anno_BD_MM.FP_TNF.IFNg()
+      }
+      else{
+        print("MM TNF.IFNg not run")
+      }
+      sink(type = "message")
+      sink(type = "output")
+      cat(readLines(FN), sep="\n")
+    })
+
+    scGATE_anno_BD_MM.FP_subtypes  <- reactive({
+      sc <- getData_2()
+      validate(
+        need(nrow(sc)>0,
+             "Upload file for annotation")
+      )
+
+      len <- length(rownames(sc@assays$RNA@meta.features))
+      len
+      if (len>2000){
+        len = 2000
+      }
+
+      if (input$BDrhapsody_scGATE.MM.subtypes==T)  {
+        models.list <- list()
+        my_scGate_model <- gating_model(name = "Ccr4",level = 1, signature = c("Ccr4"), positive = T)
+        my_scGate_model <- gating_model(my_scGate_model,name = "Foxp3",level = 2, signature = c("Foxp3"), positive = F)
+        models.list$Th2_like <- my_scGate_model
+
+        my_scGate_model <- gating_model(name = "Cxcr3",level = 1, signature = c("Cxcr3"), positive = T)
+        my_scGate_model <- gating_model(my_scGate_model,name = "Tbx21",level = 2, signature = c("Tbx21"), positive = T)
+        my_scGate_model <- gating_model(my_scGate_model,name = "CD8",level = 3, signature = c("Cd8a","Cd8b1"), positive = F)
+        models.list$Th1_like <- my_scGate_model
+        my_scGate_model <- gating_model(name = "RORC",level = 1, signature = c("Rorc"), positive = T)
+        my_scGate_model <- gating_model(my_scGate_model,name = "Foxp3",level = 2, signature = c("Foxp3"), positive = F)
+        models.list$Th17_like <- my_scGate_model
+        my_scGate_model <- gating_model(name = "Cxcr5",level = 1, signature = c("Cxcr5"), positive = T)
+        my_scGate_model <- gating_model(my_scGate_model,name = "Foxp3",level = 2, signature = c("Foxp3"), positive = F)
+        models.list$Tfh_like <- my_scGate_model
+        my_scGate_model <- gating_model(name = "Foxp3",level = 1, signature = c("Foxp3"), positive = T)
+        models.list$Treg_like <- my_scGate_model
+        my_scGate_model <- gating_model(name = "Klrk1",level = 1, signature = c("Klrk1"), positive = T) # https://pubmed.ncbi.nlm.nih.gov/36705564/
+        my_scGate_model <- gating_model(my_scGate_model,name = "Il7r",level = 2, signature = c("Il7r"), positive = T)
+        my_scGate_model <- gating_model(my_scGate_model,name = "Cxcr3",level = 3, signature = c("Cxcr3"), positive = F)
+        my_scGate_model <- gating_model(my_scGate_model,name = "Tbx21",level = 3, signature = c("Tbx21"), positive = F)
+        my_scGate_model <- gating_model(my_scGate_model,name = "Cd8a",level =4, signature = c("Cd8a"), positive = T)
+        models.list$KILR_CD8_effector <- my_scGate_model
+        my_scGate_model <- gating_model(name = "Gzma",level = 1, signature = c("Gzma"), positive = T) # https://pubmed.ncbi.nlm.nih.gov/36705564/
+        my_scGate_model <- gating_model(my_scGate_model,name = "Gzmk",level = 2, signature = c("Gzmk"), positive = T)
+        models.list$Effector_CD8 <- my_scGate_model
+
+        my_scGate_model <- gating_model(name = "CD3e",level = 1, signature = c("Cd3e"), positive = T)
+        my_scGate_model <- gating_model(my_scGate_model,name = "Cd14",level = 2, signature = c("Cd14"), positive = T)
+        models.list$Mono.Tcell.Complex <- my_scGate_model
+
+        obj <- scGate(sc, model = models.list,
+                      pos.thr = 0.2,
+                      neg.thr = 0.2,
+                      nfeatures = len,
+                      ncores = 8
+        )
+        sc@meta.data$subtypes <- obj@meta.data$scGate_multi
+        sc@meta.data$subtypes <- ifelse( sc@meta.data$subtypes=="NA",NA, sc@meta.data$subtypes)
+      }
+      else {
+        sc
+      }
+      sc
+    })
+    output$scGATE_verbatum_BDrhapsody_MM.FP.subtypes <- renderPrint({
+      FN <- tempfile()
+      zz <- file(FN, open = "wt")
+      sink(zz ,type = "output")
+      sink(zz, type = "message")
+      if (input$BDrhapsody_scGATE.MM.subtypes==T) {
+        scGATE_anno_BD_MM.FP_subtypes()
+      }
+      else{
+        print("MM subtypes not run")
+      }
+      sink(type = "message")
+      sink(type = "output")
+      cat(readLines(FN), sep="\n")
+    })
+
+    scGATE_anno_BD_MM.FP_other  <- reactive({
+      sc <- getData_2()
+      validate(
+        need(nrow(sc)>0,
+             "Upload file for annotation")
+      )
+
+      len <- length(rownames(sc@assays$RNA@meta.features))
+      len
+      if (len>2000){
+        len = 2000
+      }
+
+      if (input$BDrhapsody_scGATE.MM.other==T)  {
+        models.list <- list()
+        my_scGate_model <- gating_model(name = "Pdcd1",level = 1, signature = c("Pdcd1","Tigit"), positive = T)
+        my_scGate_model <- gating_model(my_scGate_model,name = "B3GAT1",level = 2, signature = c("B3gat1","Klrg1"), positive = T)
+        models.list$exhausted_and_senescent <- my_scGate_model
+
+        my_scGate_model <- gating_model(name = "PDCD1",level = 1, signature = c("Pdcd1","Tigit"), positive = T)
+        my_scGate_model <- gating_model(my_scGate_model,name = "B3GAT1",level = 2, signature = c("B3gat1","Klrg1"), positive = F)
+        models.list$exhausted <- my_scGate_model
+
+        my_scGate_model <- gating_model(name = "PDCD1",level = 1, signature = c("Pdcd1","Tigit"), positive = F)
+        my_scGate_model <- gating_model(my_scGate_model,name = "B3GAT1",level = 2, signature = c("B3gat1","Klrg1"), positive = T)
+        models.list$senescent <- my_scGate_model
+        my_scGate_model <- gating_model(name = "MKI67",level = 1, signature = c("Mki67","Top2a"), positive = T)
+        models.list$CellCycling <- my_scGate_model
+
+        obj <- scGate(sc, model = models.list,
+                      pos.thr = 0.2,
+                      neg.thr = 0.2,
+                      nfeatures = len,
+                      ncores = 8
+        )
+        sc@meta.data$other <- obj@meta.data$scGate_multi
+        sc@meta.data$other <- ifelse( sc@meta.data$other=="NA",NA, sc@meta.data$other)
+      }
+      else {
+        sc
+      }
+      sc
+    })
+    output$scGATE_verbatum_BDrhapsody_MM.FP.other <- renderPrint({
+      FN <- tempfile()
+      zz <- file(FN, open = "wt")
+      sink(zz ,type = "output")
+      sink(zz, type = "message")
+      if (input$BDrhapsody_scGATE.MM.other==T) {
+        scGATE_anno_BD_MM.FP_other()
+      }
+      else{
+        print("MM other not run")
+      }
+      sink(type = "message")
+      sink(type = "output")
+      cat(readLines(FN), sep="\n")
+    })
+    # BD rhapsody gates Mouse immune panel -----
+
     # verbatium outputs -----
     output$scGATE_verbatum_Generic <- renderPrint({
       FN <- tempfile()
@@ -5587,99 +6120,151 @@ runSTEGO <- function(){
       cat(readLines(FN), sep="\n")
     })
 
-    # creating the final object
-    scGATE_anno <- reactive({
+    ## BD MM FP -----
+
+
+    # creating the final object ------
+    scGATE_anno_HS.10x <- reactive({
       sc <- getData_2()
       validate(
         need(nrow(sc)>0,
              "Upload file for annotation")
       )
-      if (input$Data_types=="10x_HS") {
-        if (input$generic_scGATE==T) {
-          obj <- scGATE_anno_generic()
-          sc@meta.data$generic <- obj@meta.data$generic
-        }
-        if (input$CD4_scGATE==T) {
-          obj <- scGATE_anno_CD4()
-          sc@meta.data$CD4_TIL <- obj@meta.data$CD4_TIL
-        }
-        if (input$CD8_scGATE==T) {
-          obj <- scGATE_anno_CD8()
-          sc@meta.data$CD8_TIL <- obj@meta.data$CD8_TIL
-        }
-        if (input$GeneralMarkers_scGATE==T) {
-          obj <- scGATE_anno_GeneralMarkers()
-          sc@meta.data$GeneralMarkers <- obj@meta.data$GeneralMarkers
-        }
-        if (input$Function_scGATE==T) {
-          obj <- scGATE_anno_Function()
-          sc@meta.data$Function <- obj@meta.data$Function
-        }
-        if (input$Ex.Sen_scGATE==T) {
-          obj <- scGATE_anno_Ex.Sen()
-          sc@meta.data$Exhausted_Senescence <- obj@meta.data$Exhausted_Senescence
-        }
-        if (input$COVID_scGATE==T) {
-          obj <- scGATE_anno_COVID()
-          sc@meta.data$COVID <- obj@meta.data$COVID
-        }
-        if (input$Activation_scGATE==T) {
-          obj <- scGATE_anno_Activation()
-          sc@meta.data$Activation <- obj@meta.data$Activation
-        }
-        if (input$IFNgTNFa_scGATE==T) {
-          obj <- scGATE_anno_IFNgTNFa()
-          sc@meta.data$IFNgTNFa <- obj@meta.data$IFNgTNFa
-        }
-        if (input$GNLY.PFR1.GZMB_scGATE==T) {
-          obj <- scGATE_anno_GNLY.PFR1.GZMB()
-          sc@meta.data$GNLY.PFR1.GZMB <- obj@meta.data$GNLY.PFR1.GZMB
-        }
-        if (input$Interlukin_scGATE==T) {
-          obj <- scGATE_anno_Interlukin()
-          sc@meta.data$Interleukins <- obj@meta.data$Interleukins
-        }
-        else {
-          sc
-        }
-
+      if (input$generic_scGATE==T) {
+        obj <- scGATE_anno_generic()
+        sc@meta.data$generic <- obj@meta.data$generic
+      }
+      if (input$CD4_scGATE==T) {
+        obj <- scGATE_anno_CD4()
+        sc@meta.data$CD4_TIL <- obj@meta.data$CD4_TIL
+      }
+      if (input$CD8_scGATE==T) {
+        obj <- scGATE_anno_CD8()
+        sc@meta.data$CD8_TIL <- obj@meta.data$CD8_TIL
+      }
+      if (input$GeneralMarkers_scGATE==T) {
+        obj <- scGATE_anno_GeneralMarkers()
+        sc@meta.data$GeneralMarkers <- obj@meta.data$GeneralMarkers
+      }
+      if (input$Function_scGATE==T) {
+        obj <- scGATE_anno_Function()
+        sc@meta.data$Function <- obj@meta.data$Function
+      }
+      if (input$Ex.Sen_scGATE==T) {
+        obj <- scGATE_anno_Ex.Sen()
+        sc@meta.data$Exhausted_Senescence <- obj@meta.data$Exhausted_Senescence
+      }
+      if (input$COVID_scGATE==T) {
+        obj <- scGATE_anno_COVID()
+        sc@meta.data$COVID <- obj@meta.data$COVID
+      }
+      if (input$Activation_scGATE==T) {
+        obj <- scGATE_anno_Activation()
+        sc@meta.data$Activation <- obj@meta.data$Activation
+      }
+      if (input$IFNgTNFa_scGATE==T) {
+        obj <- scGATE_anno_IFNgTNFa()
+        sc@meta.data$IFNgTNFa <- obj@meta.data$IFNgTNFa
+      }
+      if (input$GNLY.PFR1.GZMB_scGATE==T) {
+        obj <- scGATE_anno_GNLY.PFR1.GZMB()
+        sc@meta.data$GNLY.PFR1.GZMB <- obj@meta.data$GNLY.PFR1.GZMB
+      }
+      if (input$Interlukin_scGATE==T) {
+        obj <- scGATE_anno_Interlukin()
+        sc@meta.data$Interleukins <- obj@meta.data$Interleukins
+      }
+      else {
         sc
-
       }
 
-      else if (input$Data_types=="BD_Rhapsody_HS") {
-        sc <- scGATE_anno_BD_rhapsody()
-        sc
+      sc
+
+    })
+    scGATE_anno_BD_HS.IP <- reactive({
+      sc <- getData_2()
+      validate(
+        need(nrow(sc)>0,
+             "Upload file for annotation")
+      )
+
+      sc <- scGATE_anno_BD_rhapsody()
+      sc
+
+    })
+    scGATE_anno_BD_MM.FP <- reactive({
+      sc <- getData_2()
+      validate(
+        need(nrow(sc)>0,
+             "Upload file for annotation")
+      )
+      if (input$BDrhapsody_scGATE.MM.Tcell==T) {
+        obj <- scGATE_anno_BD_MM.FP_T.cell()
+        sc@meta.data$T_cells <- obj@meta.data$T_cells
+      }
+      if (input$BDrhapsody_scGATE.MM.Memory==T) {
+        obj <- scGATE_anno_BD_MM.FP_Memory()
+        sc@meta.data$Memory <- obj@meta.data$Memory
+      }
+      if (input$BDrhapsody_scGATE.MM.signatures ==T) {
+        obj <- scGATE_anno_BD_MM.FP_signatures()
+        sc@meta.data$signatures <- obj@meta.data$signatures
+      }
+      if (input$BDrhapsody_scGATE.MM.Innate.NK ==T) {
+        obj <- scGATE_anno_BD_MM.FP_Innate.NK()
+        sc@meta.data$innate.NK <- obj@meta.data$innate.NK
+      }
+      if (input$BDrhapsody_scGATE.MM.GNLY.PRF1.GZMB ==T) {
+        obj <- scGATE_anno_BD_MM.FP_GNLY.PRF1.GZMB()
+        sc@meta.data$GNLY.PRF1.GZMB <- obj@meta.data$GNLY.PRF1.GZMB
+      }
+      if (input$BDrhapsody_scGATE.MM.TNF.IFNg ==T) {
+        obj <- scGATE_anno_BD_MM.FP_TNF.IFNg()
+        sc@meta.data$TNF.IFNg <- obj@meta.data$TNF.IFNg
+      }
+      if (input$BDrhapsody_scGATE.MM.subtypes ==T) {
+        obj <- scGATE_anno_BD_MM.FP_subtypes()
+        sc@meta.data$subtypes <- obj@meta.data$subtypes
+      }
+      if (input$BDrhapsody_scGATE.MM.other ==T) {
+        obj <- scGATE_anno_BD_MM.FP_other()
+        sc@meta.data$other <- obj@meta.data$other
       }
 
       else {
-        as.data.frame("Need to add Mouse annotations")
+        sc
       }
 
+      sc
     })
 
     # all.annotations added -----
     output$DEx_table_TcellClass_scGATE <-  DT::renderDataTable(escape = FALSE, filter = list(position = 'top', clear = FALSE),
                                                                options = list(autoWidth = FALSE, lengthMenu = c(2,5,10,20,50,100),
                                                                               pageLength = 5, scrollX = TRUE),{
-
+                                                                                # c("10x_HS","BD_HS.Immune.Panel","BD_HS.Full.Panel","10x_MM","BD_MM_Full.Panel","BD_MM_Immune.Panel",)
                                                                                 sc <- getData_2()
                                                                                 validate(
                                                                                   need(nrow(sc)>0,
                                                                                        "Upload file for annotation")
                                                                                 )
                                                                                 if (input$Data_types=="10x_HS") {
-                                                                                  sc <- scGATE_anno()
+                                                                                  sc <- scGATE_anno_HS.10x()
+                                                                                  as.data.frame(sc@meta.data)
+                                                                                }
+                                                                                else if (input$Data_types=="BD_HS.Immune.Panel") {
+                                                                                  sc <- scGATE_anno_BD_HS.IP()
                                                                                   as.data.frame(sc@meta.data)
                                                                                 }
 
-                                                                                else if (input$Data_types=="BD_Rhapsody_HS") {
-                                                                                  sc <- scGATE_anno()
+                                                                                else if (input$Data_types=="BD_MM_Full.Panel") {
+                                                                                  sc <- scGATE_anno_BD_MM.FP()
                                                                                   as.data.frame(sc@meta.data)
                                                                                 }
-
                                                                                 else {
-                                                                                  as.data.frame("Need to add Mouse annotations")
+                                                                                  df <- as.data.frame("Other panels are under development")
+                                                                                  names(df) <- "V1"
+                                                                                  df
                                                                                 }
 
                                                                               })
@@ -5690,14 +6275,19 @@ runSTEGO <- function(){
       },
       content = function(file){
         if (input$Data_types=="10x_HS") {
-          as.h5Seurat(scGATE_anno(),file)
+          sc <- scGATE_anno_HS.10x()
+          as.h5Seurat(sc,file)
         }
-        else if (input$Data_types=="BD_Rhapsody_HS") {
-          as.h5Seurat(scGATE_anno(),file)
+        else if (input$Data_types=="BD_HS.Immune.Panel") {
+          sc <- scGATE_anno_BD_HS.IP()
+          as.h5Seurat(sc,file)
         }
-
+        else if (input$Data_types=="BD_MM_Full.Panel") {
+          sc <- scGATE_anno_BD_MM.FP()
+          as.h5Seurat(sc,file)
+        }
         else {
-          as.data.frame("Need to add Mouse annotations")
+
         }
       } )
 
@@ -10997,5 +11587,4 @@ runSTEGO <- function(){
     ### end -----
   }
   shinyApp(ui, server)
-
 }
