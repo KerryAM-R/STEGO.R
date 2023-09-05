@@ -734,7 +734,6 @@ runSTEGO <- function(){
                                                         ),
                                                         h6("From the human BD Rhapsody searches"),
                                                         fluidRow(
-                                                          column(3,checkboxInput("BDrhapsody_scGATE.MM.GNLY.PRF1.GZMB","GNLY.PFR1.GZMB", value = F)),
                                                           column(3,checkboxInput("BDrhapsody_scGATE.MM.TNF.IFNg","TNF.IFNg", value = F)),
                                                           column(3,checkboxInput("BDrhapsody_scGATE.MM.subtypes","Subtypes", value = F)),
                                                           column(3,checkboxInput("BDrhapsody_scGATE.MM.other","other", value = F)),
@@ -745,7 +744,6 @@ runSTEGO <- function(){
                                                         verbatimTextOutput("scGATE_verbatum_BDrhapsody_MM.FP.Memory"),
                                                         verbatimTextOutput("scGATE_verbatum_BDrhapsody_MM.FP.signatures"),
                                                         verbatimTextOutput("scGATE_verbatum_BDrhapsody_MM.FP.Innate.NK"),
-                                                        verbatimTextOutput("scGATE_verbatum_BDrhapsody_MM.FP.GNLY.PFR1.GZMB"),
                                                         verbatimTextOutput("scGATE_verbatum_BDrhapsody_MM.FP.TNF.IFNg"),
                                                         verbatimTextOutput("scGATE_verbatum_BDrhapsody_MM.FP.subtypes"),
                                                         verbatimTextOutput("scGATE_verbatum_BDrhapsody_MM.FP.other"),
@@ -5578,7 +5576,6 @@ runSTEGO <- function(){
         my_scGate_model <- gating_model(my_scGate_model,name = "Foxp3",level = 2, signature = c("Foxp3"), positive = T)
         models.list$Treg <- my_scGate_model
 
-
         obj <- scGate(sc, model = models.list,
                       pos.thr = 0.2,
                       neg.thr = 0.2,
@@ -5654,8 +5651,8 @@ runSTEGO <- function(){
                       nfeatures = len,
                       ncores = 8
         )
-        sc@meta.data$Signature <- obj@meta.data$scGate_multi
-        sc@meta.data$Signature <- ifelse( sc@meta.data$Signature=="NA",NA, sc@meta.data$Signature)
+        sc@meta.data$Innate.NK <- obj@meta.data$scGate_multi
+        sc@meta.data$Innate.NK <- ifelse( sc@meta.data$Innate.NK=="NA",NA, sc@meta.data$Innate.NK)
       }
       else {
         sc
@@ -5672,71 +5669,6 @@ runSTEGO <- function(){
       }
       else{
         print("MM Innate.NK not run")
-      }
-      sink(type = "message")
-      sink(type = "output")
-      cat(readLines(FN), sep="\n")
-    })
-
-    scGATE_anno_BD_MM.FP_GNLY.PRF1.GZMB <- reactive({
-      sc <- getData_2()
-      validate(
-        need(nrow(sc)>0,
-             "Upload file for annotation")
-      )
-
-      len <- length(rownames(sc@assays$RNA@meta.features))
-      len
-      if (len>2000){
-        len = 2000
-      }
-
-      if (input$BDrhapsody_scGATE.MM.GNLY.PRF1.GZMB==T)  {
-        models.list <- list()
-        my_scGate_model <- gating_model(name = "Gzmb",level = 1, signature = c("Gzmb"), positive = T)
-        my_scGate_model <- gating_model(my_scGate_model,name = "Prf1",level = 2, signature = c("Prf1"), positive = T)
-        my_scGate_model <- gating_model(my_scGate_model,name = "GNLY",level = 3, signature = c("Gnly"), positive = T)
-
-        models.list$GNLY.PRF1.GZMB <- my_scGate_model
-        my_scGate_model <- gating_model(name = "GZMB",level = 1, signature = c("Gzmb"), positive = T)
-        my_scGate_model <- gating_model(my_scGate_model,name = "Prf1",level = 2, signature = c("Prf1"), positive = T)
-        my_scGate_model <- gating_model(my_scGate_model,name = "GNLY",level = 3, signature = c("Gnly"), positive = F)
-        models.list$PRF1.GZMB <- my_scGate_model
-
-        my_scGate_model <- gating_model(name = "GZMB",level = 1, signature = c("Gzmb"), positive = F)
-        my_scGate_model <- gating_model(my_scGate_model,name = "Prf1",level = 2, signature = c("Prf1"), positive = T)
-        my_scGate_model <- gating_model(my_scGate_model,name = "GNLY",level = 3, signature = c("Gnly"), positive = T)
-        models.list$PRF1.GNLY <- my_scGate_model
-
-        my_scGate_model <- gating_model(name = "GZMB",level = 1, signature = c("Gzmb"), positive = T)
-        my_scGate_model <- gating_model(my_scGate_model,name = "PRF1",level = 2, signature = c("Prf1"), positive = F)
-        my_scGate_model <- gating_model(my_scGate_model,name = "GNLY",level = 3, signature = c("Gnly"), positive = T)
-
-
-        obj <- scGate(sc, model = models.list,
-                      pos.thr = 0.2,
-                      neg.thr = 0.2,
-                      nfeatures = len,
-                      ncores = 8
-        )
-        sc@meta.data$GNLY.PRF1.GZMB <- obj@meta.data$scGate_multi
-        sc@meta.data$GNLY.PRF1.GZMB <- ifelse( sc@meta.data$GNLY.PRF1.GZMB=="NA",NA, sc@meta.data$GNLY.PRF1.GZMB)
-      }
-      else {
-        sc
-      }
-      sc
-    })
-    output$scGATE_verbatum_BDrhapsody_MM.FP.GNLY.PFR1.GZMB <- renderPrint({
-      FN <- tempfile()
-      zz <- file(FN, open = "wt")
-      sink(zz ,type = "output")
-      sink(zz, type = "message")
-      if (input$BDrhapsody_scGATE.MM.GNLY.PRF1.GZMB==T) {
-        scGATE_anno_BD_MM.FP_GNLY.PRF1.GZMB()
-      }
-      else{
-        print("MM GNLY.PRF1.GZMB not run")
       }
       sink(type = "message")
       sink(type = "output")
@@ -5834,12 +5766,14 @@ runSTEGO <- function(){
         models.list$Tfh_like <- my_scGate_model
         my_scGate_model <- gating_model(name = "Foxp3",level = 1, signature = c("Foxp3"), positive = T)
         models.list$Treg_like <- my_scGate_model
+
         my_scGate_model <- gating_model(name = "Klrk1",level = 1, signature = c("Klrk1"), positive = T) # https://pubmed.ncbi.nlm.nih.gov/36705564/
         my_scGate_model <- gating_model(my_scGate_model,name = "Il7r",level = 2, signature = c("Il7r"), positive = T)
         my_scGate_model <- gating_model(my_scGate_model,name = "Cxcr3",level = 3, signature = c("Cxcr3"), positive = F)
         my_scGate_model <- gating_model(my_scGate_model,name = "Tbx21",level = 3, signature = c("Tbx21"), positive = F)
         my_scGate_model <- gating_model(my_scGate_model,name = "Cd8a",level =4, signature = c("Cd8a"), positive = T)
         models.list$KILR_CD8_effector <- my_scGate_model
+
         my_scGate_model <- gating_model(name = "Gzma",level = 1, signature = c("Gzma"), positive = T) # https://pubmed.ncbi.nlm.nih.gov/36705564/
         my_scGate_model <- gating_model(my_scGate_model,name = "Gzmk",level = 2, signature = c("Gzmk"), positive = T)
         models.list$Effector_CD8 <- my_scGate_model
@@ -6212,11 +6146,7 @@ runSTEGO <- function(){
       }
       if (input$BDrhapsody_scGATE.MM.Innate.NK ==T) {
         obj <- scGATE_anno_BD_MM.FP_Innate.NK()
-        sc@meta.data$innate.NK <- obj@meta.data$innate.NK
-      }
-      if (input$BDrhapsody_scGATE.MM.GNLY.PRF1.GZMB ==T) {
-        obj <- scGATE_anno_BD_MM.FP_GNLY.PRF1.GZMB()
-        sc@meta.data$GNLY.PRF1.GZMB <- obj@meta.data$GNLY.PRF1.GZMB
+        sc@meta.data$Innate.NK <- obj@meta.data$Innate.NK
       }
       if (input$BDrhapsody_scGATE.MM.TNF.IFNg ==T) {
         obj <- scGATE_anno_BD_MM.FP_TNF.IFNg()
@@ -6453,7 +6383,7 @@ runSTEGO <- function(){
         session,
         "Samp_col",
         choices=names(df3.meta),
-        selected = "orig.ident")
+        selected = "Sample_Name")
     })
     #
     observe({
@@ -8051,8 +7981,8 @@ runSTEGO <- function(){
 
     output$downloadPlot_UMAP_all_classification  <- downloadHandler(
       filename = function() {
-        x <- gsub(":", ".", Sys.time())
-        paste(input$name.file_clust,"top_clonotype_",gsub("/", "-", x), ".pdf", sep = "")
+        x <- today()
+        paste(input$name.file_clust,"GEx_",input$Colour_By_this_overview,"_",x, ".pdf", sep = "")
       },
       content = function(file) {
         pdf(file, width=input$width_UMAP_all_classification ,height=input$height_UMAP_all_classification , onefile = FALSE) # open the pdf device
@@ -8061,8 +7991,8 @@ runSTEGO <- function(){
 
     output$downloadPlotPNG_UMAP_all_classification  <- downloadHandler(
       filename = function() {
-        x <- gsub(":", ".", Sys.time())
-        paste(input$name.file_clust,"top_clonotype_", gsub("/", "-", x), ".png", sep = "")
+        x <- today()
+        paste(input$name.file_clust,"GEx_",input$Colour_By_this_overview,"_",x, ".png", sep = "")
       },
       content = function(file) {
         png(file, width = input$width_png_UMAP_all_classification ,
