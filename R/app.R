@@ -851,7 +851,7 @@ runSTEGO <- function(){
 
                                                         selectInput("add_additional_lables", "add additional labels", choices = c("no","yes")),
                                                         conditionalPanel(condition="input.add_additional_lables== 'yes'",
-                                                                         p("The .csv file first column should be label 'ID' and match the selected column")
+                                                                         p("The .csv file first column should be label 'ID' and match the selected column"),
                                                                          selectInput("Samp_col2","Sample column name",choices = ""),
 
                                                                          fileInput("file_Labels_to_add","Upload other identifiers (.csv)",
