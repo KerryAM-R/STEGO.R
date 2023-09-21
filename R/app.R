@@ -145,94 +145,96 @@ runSTEGO <- function(){
 
                                      ),
                                      mainPanel( #### main panel ------
-                                                shiny::tabsetPanel(
-                                                  conditionalPanel(condition="input.filtered_list=='Dominant' || input.filtered_list=='Unfiltered'",
-                                                                   column(3,selectInput("locus_column",h5("Chain (e.g. locus)"),"")),
+                                     #### main panel ------
+                                     mainPanel(
+                                       shiny::tabsetPanel(
+                                         conditionalPanel(condition="input.filtered_list=='Dominant' || input.filtered_list=='Unfiltered'",
+                                                          column(3,selectInput("locus_column",h5("Chain (e.g. locus)"),"")),
+                                         ),
+                                         conditionalPanel(condition="input.filtered_list=='Paired'",
+
+                                                          fluidRow(
+                                                            column(3, selectInput("V_gene_AG_BDrhap",h6("Alpha/Gamma V gene"),""),),
+                                                            column(3, selectInput("Junction_AG_BDrhap",h6("Alpha/Gamma junction"),""),),
+                                                            column(3, selectInput("V_gene_BD_BDrhap",h6("Beta/Delta V gene"),"")),
+                                                            column(3, selectInput("Junction_BD_BDrhap",h6("Beta/Delta junction"),"") )
+
+                                                          ),
+                                         ),
+
+
+
+                                         tabPanel("Imported data",
+                                                  add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
+                                                  div(DT::dataTableOutput("test.files")),
+                                                  conditionalPanel(condition="input.Format_bd=='cellXgene'",
+                                                                   add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
+                                                                   div(DT::dataTableOutput("test.files3"))
+                                                  ),
+
+                                                  conditionalPanel(condition="input.Format_bd=='Barcode_features_matrix'",
+                                                                   add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
+                                                                   div(DT::dataTableOutput("test.files.bd1")),
+                                                                   add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
+                                                                   div(DT::dataTableOutput("test.files.bd2")),
+                                                                   add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
+                                                                   div(DT::dataTableOutput("test.files.bd3")),
+
                                                   ),
                                                   conditionalPanel(condition="input.filtered_list=='Paired'",
-
-                                                                   fluidRow(
-                                                                     column(3, selectInput("V_gene_AG_BDrhap",h6("Alpha/Gamma V gene"),""),),
-                                                                     column(3, selectInput("Junction_AG_BDrhap",h6("Alpha/Gamma junction"),""),),
-                                                                     column(3, selectInput("V_gene_BD_BDrhap",h6("Beta/Delta V gene"),"")),
-                                                                     column(3, selectInput("Junction_BD_BDrhap",h6("Beta/Delta junction"),"") )
-
-                                                                   ),
+                                                                   add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
+                                                                   div(DT::dataTableOutput("test.files2"))
+                                                  ),
+                                                  conditionalPanel(condition="input.filtered_list=='Dominant' || input.filtered_list=='Unfiltered'",
+                                                                   add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
+                                                                   div(DT::dataTableOutput("test.files.bd4")),
                                                   ),
 
+                                         ),
 
+                                         # tabPanel("Checking Merge",
+                                         #
+                                         #          div(DT::dataTableOutput("Check_table")),
+                                         #
+                                         #          ),
 
-                                                  tabPanel("Imported data",
-                                                           add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
-                                                           div(DT::dataTableOutput("test.files")),
-                                                           conditionalPanel(condition="input.Format_bd=='cellXgene'",
-                                                                            add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
-                                                                            div(DT::dataTableOutput("test.files3"))
-                                                           ),
-
-                                                           conditionalPanel(condition="input.Format_bd=='Barcode_features_matrix'",
-                                                                            add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
-                                                                            div(DT::dataTableOutput("test.files.bd1")),
-                                                                            add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
-                                                                            div(DT::dataTableOutput("test.files.bd2")),
-                                                                            add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
-                                                                            div(DT::dataTableOutput("test.files.bd3")),
-
-                                                           ),
-                                                           conditionalPanel(condition="input.filtered_list=='Paired'",
-                                                                            add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
-                                                                            div(DT::dataTableOutput("test.files2"))
-                                                           ),
-                                                           conditionalPanel(condition="input.filtered_list=='Dominant' || input.filtered_list=='Unfiltered'",
-                                                                            add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
-                                                                            div(DT::dataTableOutput("test.files.bd4")),
-                                                           ),
-
+                                         tabPanel("clusTCR2",
+                                                  tags$head(tags$style("#tb_clusTCR  {white-space: nowrap;  }")),
+                                                  add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
+                                                  div(DT::dataTableOutput("tb_clusTCR")),
+                                                  selectInput("chain_clusTCR2_bd","Select to download",choices = c("AG","BD")),
+                                                  downloadButton('downloaddf_clusTCR','Download table')
+                                         ),
+                                         tabPanel("TCRex",
+                                                  add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
+                                                  div(DT::dataTableOutput("tb_TCRex_BDrap_df")),
+                                                  downloadButton('downloaddf_TCRex_BDrap','Download table')
+                                         ),
+                                         tabPanel("For Seurat",
+                                                  tags$head(tags$style("#tb_count_matrix  {white-space: nowrap;  }")),
+                                                  add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
+                                                  div(DT::dataTableOutput("tb_count_matrix")),
+                                                  add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
+                                                  div(DT::dataTableOutput("tb_metadata_sc")),
+                                                  fluidRow(
+                                                    column(3,downloadButton('downloadtb_count_matrix','Download count table')),
+                                                    column(3),
+                                                    column(3,downloadButton('downloadtb_metadata_sc','Download meta.data table')),
                                                   ),
-
-                                                  # tabPanel("Checking Merge",
-                                                  #
-                                                  #          div(DT::dataTableOutput("Check_table")),
-                                                  #
-                                                  #          ),
-
-                                                  tabPanel("clusTCR2",
-                                                           tags$head(tags$style("#tb_clusTCR  {white-space: nowrap;  }")),
-                                                           add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
-                                                           div(DT::dataTableOutput("tb_clusTCR")),
-                                                           selectInput("chain_clusTCR2_bd","Select to download",choices = c("AG","BD")),
-                                                           downloadButton('downloaddf_clusTCR','Download table')
-                                                  ),
-                                                  tabPanel("TCRex",
-                                                           add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
-                                                           div(DT::dataTableOutput("tb_TCRex_BDrap_df")),
-                                                           downloadButton('downloaddf_TCRex_BDrap','Download table')
-                                                  ),
-                                                  tabPanel("For Seurat",
-                                                           tags$head(tags$style("#tb_count_matrix  {white-space: nowrap;  }")),
-                                                           add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
-                                                           div(DT::dataTableOutput("tb_count_matrix")),
-                                                           add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
-                                                           div(DT::dataTableOutput("tb_metadata_sc")),
-                                                           fluidRow(
-                                                             column(3,downloadButton('downloadtb_count_matrix','Download count table')),
-                                                             column(3),
-                                                             column(3,downloadButton('downloadtb_metadata_sc','Download meta.data table')),
-                                                           ),
-                                                  ),
-                                                  tabPanel("TCR_Explore",
-                                                           tags$head(tags$style("#tb_TCR_Explore  {white-space: nowrap;  }")),
-                                                           add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
-                                                           div(DT::dataTableOutput("tb_TCR_Explore")),
-                                                           downloadButton('downloadtb_TCR_Explore','Download table')
-                                                  ),
-                                                  tabPanel("Create Sample Tags file",
-                                                           tags$head(tags$style("#tb_sample_tags_created  {white-space: nowrap;  }")),
-                                                           textInput("sample_tags_name","Name of sample",value = "BD EA splenocyte"),
-                                                           div(DT::dataTableOutput("tb_sample_tags_created")),
-                                                           downloadButton('downloadtb_sample_tags','Download Tags')
-                                                  ),
-                                                )
+                                         ),
+                                         tabPanel("TCR_Explore",
+                                                  tags$head(tags$style("#tb_TCR_Explore  {white-space: nowrap;  }")),
+                                                  add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
+                                                  div(DT::dataTableOutput("tb_TCR_Explore")),
+                                                  downloadButton('downloadtb_TCR_Explore','Download table')
+                                         ),
+                                         tabPanel("Create Sample Tags file",
+                                                  tags$head(tags$style("#tb_sample_tags_created  {white-space: nowrap;  }")),
+                                                  textInput("sample_tags_name","Name of sample",value = "BD EA splenocyte"),
+                                                  div(DT::dataTableOutput("tb_sample_tags_created")),
+                                                  downloadButton('downloadtb_sample_tags','Download Tags')
+                                         ),
+                                       )
                                      )
 
                                    )
@@ -686,7 +688,6 @@ runSTEGO <- function(){
 
 
                           ),
-
                           mainPanel(
                             tabsetPanel(
                               tabPanel("Upload",
@@ -694,6 +695,7 @@ runSTEGO <- function(){
                                        verbatimTextOutput("testing_mult_anno")
                               ),
                               tabPanel("scGATE",
+
                                        ##### custom annotations databases -----
                                        conditionalPanel(condition="input.Require_custom_geneset == 'yes'",
                                                         fluidRow(
@@ -721,12 +723,9 @@ runSTEGO <- function(){
                                        ),
 
 
-
-
-
                                        # human 10x annotations -----
                                        conditionalPanel(condition="input.Data_types == '10x_HS' || input.Data_types == 'BD_HS.Full.Panel'",
-                                                        selectInput("GenericID_scGATE","Generic To include",choices = c("Bcell","CD4T","CD8T","CD8TIL" ,"Erythrocyte" ,"Megakaryocyte" , "MoMacDC","Myeloid","NK","PanBcell","panDC","PlasmaCell","Tcell","Tcell.alphabeta"), selected = c("Bcell","MoMacDC","NK","CD8T","CD4T","PlasmaCell"), multiple = T),
+                                                        selectInput("GenericID_scGATE","Generic To include",choices = c("Bcell","CD4T","CD8T","CD8TIL" ,"Erythrocyte" ,"Megakaryocyte" , "MoMacDC","Myeloid","NK","PanBcell","panDC","PlasmaCell","Tcell","Tcell.alphabeta"), selected = c("Bcell","MoMacDC","NK","CD8T","CD4T","PlasmaCell"), multiple = T,width = "1200px"),
                                                         add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
                                                         fluidRow(
                                                           add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
@@ -742,6 +741,7 @@ runSTEGO <- function(){
                                                           column(3,checkboxInput("GNLY.PFR1.GZMB_scGATE","GNLY.PFR1.GZMB markers (Human)", value = F)),
                                                           column(3,checkboxInput("Interlukin_scGATE","Interleukins markers (Human)", value = F))),
                                        ),
+
                                        ### BD rhapsody human immune panel -----
                                        conditionalPanel("input.Data_types == 'BD_HS.Immune.Panel'",
                                                         add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
@@ -767,15 +767,27 @@ runSTEGO <- function(){
                                                           column(3,checkboxInput("BDrhapsody_scGATE.MM.other","other", value = F)),
 
                                                         ),
-                                                        ### BD rhapsody MM Immune panel ----
 
                                        ),
+                                       ### BD rhapsody MM immune panel ----
                                        conditionalPanel("input.Data_types == 'BD_MM_Immune.Panel'",
                                                         h5("Under development")
 
                                        ),
+                                       conditionalPanel(condition="input.Require_custom_geneset == 'yes'",
+                                                        verbatimTextOutput("scGATE_verbatum_GeneSet1"),
+                                                        verbatimTextOutput("scGATE_verbatum_GeneSet2"),
+                                                        verbatimTextOutput("scGATE_verbatum_GeneSet3"),
+                                                        verbatimTextOutput("scGATE_verbatum_GeneSet4"),
+                                                        verbatimTextOutput("scGATE_verbatum_GeneSet5"),
+                                                        verbatimTextOutput("scGATE_verbatum_GeneSet6"),
+                                                        verbatimTextOutput("scGATE_verbatum_GeneSet7"),
+                                                        verbatimTextOutput("scGATE_verbatum_GeneSet8"),
+                                                        verbatimTextOutput("scGATE_verbatum_GeneSet9"),
+
+                                       ),
                                        ### human 10x annotations Verbatium -----
-                                       conditionalPanel(condition="input.Data_types == '10x_HS'",
+                                       conditionalPanel(condition="input.Data_types == '10x_HS' || input.Data_types == 'BD_HS.Full.Panel'",
                                                         add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
                                                         verbatimTextOutput("scGATE_verbatum_Generic"),
                                                         add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
@@ -799,56 +811,19 @@ runSTEGO <- function(){
                                                         add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
                                                         verbatimTextOutput("scGATE_verbatum_Interlukin")
                                        ),
-                                       ### BD rhapsody human immune panel Verbatium-----
-                                       conditionalPanel("input.Data_types == 'BD_HS.Immune.Panel'",
-                                                        add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
-                                                        verbatimTextOutput("scGATE_verbatum_BDrhapsody_scGATE"),
 
-                                       ),
-
-                                       ### BD rhapsody HS full panel Verbatium ----
-                                       conditionalPanel("input.Data_types == 'BD_HS.Full.Panel'",
-
-                                       ),
-                                       ### 10x MM Verbatium----
-                                       conditionalPanel("input.Data_types == '10x_MM'",
-
-                                       ),
-
-                                       ### BD rhapsody MM full panel Verbatium ----
-                                       conditionalPanel("input.Data_types == 'BD_MM_Full.Panel' || input.Data_types == '10x_MM",
+                                       conditionalPanel("input.Data_types == 'BD_MM_Full.Panel' || input.Data_types =='10x_MM'",
                                                         verbatimTextOutput("scGATE_verbatum_BDrhapsody_MM.FP.Tcell"),
                                                         verbatimTextOutput("scGATE_verbatum_BDrhapsody_MM.FP.Memory"),
                                                         verbatimTextOutput("scGATE_verbatum_BDrhapsody_MM.FP.signatures"),
                                                         verbatimTextOutput("scGATE_verbatum_BDrhapsody_MM.FP.Innate.NK"),
                                                         verbatimTextOutput("scGATE_verbatum_BDrhapsody_MM.FP.TNF.IFNg"),
                                                         verbatimTextOutput("scGATE_verbatum_BDrhapsody_MM.FP.subtypes"),
-                                                        verbatimTextOutput("scGATE_verbatum_BDrhapsody_MM.FP.other"),
-                                                        ### BD rhapsody MM Immune panel Verbatium ----
-
-                                       ),
-                                       conditionalPanel("input.Data_types == 'BD_MM_Immune.Panel'",
-
-
-                                       ),
-
-
-                                       conditionalPanel(condition="input.Require_custom_geneset == 'yes'",
-                                                        fluidRow(
-                                                          verbatimTextOutput("scGATE_verbatum_GeneSet1"),
-                                                          verbatimTextOutput("scGATE_verbatum_GeneSet2"),
-                                                          verbatimTextOutput("scGATE_verbatum_GeneSet3"),
-                                                          verbatimTextOutput("scGATE_verbatum_GeneSet4"),
-                                                          verbatimTextOutput("scGATE_verbatum_GeneSet5"),
-                                                          verbatimTextOutput("scGATE_verbatum_GeneSet6"),
-                                                          verbatimTextOutput("scGATE_verbatum_GeneSet7"),
-                                                          verbatimTextOutput("scGATE_verbatum_GeneSet8"),
-                                                          verbatimTextOutput("scGATE_verbatum_GeneSet9"),
-                                                        )
+                                                        verbatimTextOutput("scGATE_verbatum_BDrhapsody_MM.FP.other")
                                        ),
 
                               ),
-
+                              ##### display metadata -----
                               tabPanel("Meta data table",
                                        fluidRow(
                                          # column(3,checkboxInput("add.kmeans","Add K-means classification", value = F)),
@@ -857,13 +832,10 @@ runSTEGO <- function(){
                                        add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
                                        div(DT::dataTableOutput("DEx_table_TcellClass_scGATE")),
                               )
-                            )
-
-
-                          ),
+                            ),
+                          )
 
                         )
-
                ),
 
 
@@ -875,20 +847,18 @@ runSTEGO <- function(){
                                        # selectInput("STEGO_R_pro","QC processed",choices = c("STEGO_R (.h5Seurat)")), #,"Seurat (.rds)"
                                        textInput("name.file_clust","Name added to files",value = ""),
                                        conditionalPanel(condition="input.check_up_files== 'up'",
-
-
                                                         fileInput('file_SC_pro', 'Upload seurat file',
                                                                   accept=c("h5Seurat",'.h5Seurat','rds')),
 
                                                         selectInput("add_additional_lables", "add additional labels", choices = c("no","yes")),
                                                         conditionalPanel(condition="input.add_additional_lables== 'yes'",
-
+                                                                         p("The .csv file first column should be label 'ID' and match the selected column")
                                                                          selectInput("Samp_col2","Sample column name",choices = ""),
 
                                                                          fileInput("file_Labels_to_add","Upload other identifiers (.csv)",
                                                                                    accept=c('.csv','csv')
                                                                          ),
-                                                                         p("The .csv file first column should be label 'ID' and match the selected column")
+
                                                         ),
 
                                                         fileInput('file_cluster_file', 'Upload clustering file from clusTCR2 (.csv)',
@@ -12895,4 +12865,5 @@ runSTEGO <- function(){
     ### end -----
   }
   shinyApp(ui, server)
+
 }
