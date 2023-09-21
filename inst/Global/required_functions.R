@@ -12,6 +12,7 @@ font <- as.data.frame(font_families())
 font
 names(font) <- "Fonts"
 
+
 # set file upload limit
 
 # reticulate::use_condaenv("/Users/kerrymullan/miniconda", required = TRUE) # changes to the location that the python conda packages are installed.
