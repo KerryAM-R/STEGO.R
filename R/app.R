@@ -18,7 +18,7 @@ runSTEGO <- function(){
   # UI page -----
   ui <- fluidPage(
     theme=bs_theme(version = 5, bootswatch = "default"),
-    navbarPage(title = "STEGO_R",
+    navbarPage(title = "STEGO.R",
                theme=bs_theme(version = 5, bootswatch = "default"),
                navbarMenu("Quality control",
                           # tabPanel("Convert_to_AIRR_format",
@@ -144,7 +144,6 @@ runSTEGO <- function(){
 
 
                                      ),
-                                     mainPanel( #### main panel ------
                                      #### main panel ------
                                      mainPanel(
                                        shiny::tabsetPanel(
