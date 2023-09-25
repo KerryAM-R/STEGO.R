@@ -598,6 +598,7 @@ runSTEGO <- function(){
                         sidebarLayout(
                           # Sidebar with a slider input
                           sidebarPanel(id = "tPanel5",style = "overflow-y:scroll; max-height: 800px; position:relative;", width=3,
+                                       selectInput("sample.type.source","Species",choices = c("hs","mm")),
                                        fileInput("file1_h5Seurat.file",
                                                  "Choose .h5Seurat files from directory",
                                                  multiple = TRUE,
@@ -623,6 +624,7 @@ runSTEGO <- function(){
                               tabPanel("Scale data",
                                        add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
                                        actionButton("run_scale","Run Scale"),
+                                       div(DT::dataTableOutput("Tb_scaling_features_for_annotation")),
                                        add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
                                        verbatimTextOutput("scale_harmony_verbrose")
                               ),
@@ -4781,7 +4783,7 @@ runSTEGO <- function(){
     Vals_norm2 <- reactiveValues(Norm1=NULL)
     Vals_norm3 <- reactiveValues(Norm1=NULL)
     Vals_norm4 <- reactiveValues(Norm1=NULL)
-
+    Vals_normk <- reactiveValues(kmeans=NULL)
     observeEvent(input$run_var,{
       sc <- merging_sc()
       validate(
@@ -4801,12 +4803,19 @@ runSTEGO <- function(){
       sc
     })
 
+    output$Tb_scaling_features_for_annotation <-  DT::renderDataTable(escape = FALSE, filter = list(position = 'top', clear = FALSE), options = list(autoWidth = FALSE, lengthMenu = c(2,5,10,20,50,100), pageLength = 5, scrollX = TRUE),{
+      kmeans <- read.csv(system.file("Kmean","Kmeans.requires.annotation.csv",package = "STEGO.R"))
+      kmeans
+    })
+
+
     observeEvent(input$run_scale,{
       sc <- Vals_norm4$Norm1
       validate(
         need(nrow(sc)>0,
              "Run Scale")
       )
+      req(Vals_norm4$Norm1)
       kmeans <- read.csv(system.file("Kmean","Kmeans.requires.annotation.csv",package = "STEGO.R"))
 
       var.genes <- as.data.frame(sc@assays$RNA@var.features)
@@ -4816,7 +4825,7 @@ runSTEGO <- function(){
         kmeans2 <- as.data.frame(kmeans$human)
         names(kmeans2) <- "V1"
       }
-      else (input$sample.type.source == 'mm') {
+      else {
 
         kmeans2 <- as.data.frame(kmeans$mouse)
         names(kmeans2) <- "V1"
@@ -4830,11 +4839,23 @@ runSTEGO <- function(){
 
     output$scale_harmony_verbrose <- renderPrint({
       sc <- Vals_norm1$Norm1
+
       validate(
         need(nrow(sc)>0,
              "Run Scale")
       )
-      sc
+      kmeans <- read.csv(system.file("Kmean","Kmeans.requires.annotation.csv",package = "STEGO.R"))
+      if (input$sample.type.source == 'hs') {
+
+        kmeans2 <- as.data.frame(kmeans$human)
+        names(kmeans2) <- "V1"
+      }
+      else {
+
+        kmeans2 <- as.data.frame(kmeans$mouse)
+        names(kmeans2) <- "V1"
+      }
+      kmeans2
     })
 
     observeEvent(input$run_PCA,{
