@@ -823,6 +823,84 @@ runSTEGO <- function(){
 
                               ),
                               ##### display metadata -----
+                              tabPanel("Marker check",
+                                       conditionalPanel(condition="input.Panel_DEX==5",
+                                                        fluidRow(
+                                                          column(3,numericInput("min.ptc.sc","minimum point",value = 0.25)),
+                                                          column(3,numericInput("logfc.ptc.sc","Log fold change",value = 0.25)),
+                                                          column(3,selectInput("normalN","Type of Differnetial expression",
+                                                                               choices = c("wilcox","bimod","roc","t","negbinom","poisson","LR","MAST","DESeq2")
+                                                          )),
+                                                          column(3,style = "margin-top: 25px;",actionButton("run_differental.exp","run differental expression"),)
+                                                        ),
+
+                                       ),
+
+                                       conditionalPanel(condition="input.Panel_DEX==55 || input.Panel_DEX==5",
+
+                                                        fluidRow(
+                                                          column(4,selectInput("multiple_group_sc","Include group comparison",choices=c("no","yes"))),
+                                                          column(4,selectInput("meta_data_sc_clust","Cluster by",choices = "")),
+                                                          column(4,selectInput("meta_data_sc_","Add group",choices = "")),
+
+                                                        ),
+
+                                       ),
+                                       tabsetPanel(id = "Panel_DEX",
+                                                   #### Cluster table -----
+                                                   tabPanel("Cluster differences (Feature plot)",
+                                                            actionButton("run_string.data3","View Feature plot"),
+                                                            fluidRow(column(12, selectInput("string.data3","column names for summary","",multiple = T, width = "1200px") )),
+                                                            fluidRow(
+                                                              column(2,checkboxInput("label_is_true_features","Add plot lables",value=T)),
+                                                              column(2,selectInput("norm_expression_for_all","Set Maximum",choices=c("no","yes"))),
+                                                              column(2,numericInput("max_norm_FP","Set maximum scale value",value = 10, step = 1, min=1)),
+                                                              column(2,colourInput("lower_col_FP","Min (Colour)",value = "grey90")),
+                                                              column(2,colourInput("upper_col_FP","Max (colour)",value = "Darkblue"))
+                                                            ),
+                                                            plotOutput("markers_featurePlot_sc", height = "600px"),
+
+                                                            fluidRow(
+                                                              column(3,numericInput("width_markers_featurePlot_sc", "Width of PDF", value=10)),
+                                                              column(3,numericInput("height_markers_featurePlot_sc", "Height of PDF", value=8)),
+                                                              column(3),
+                                                              column(3,style = "margin-top: 25px;",downloadButton('downloadPlot_markers_featurePlot_sc','Download PDF'))),
+                                                            fluidRow(
+                                                              column(3,numericInput("width_png_markers_featurePlot_sc","Width of PNG", value = 1200)),
+                                                              column(3,numericInput("height_png_markers_featurePlot_sc","Height of PNG", value = 1000)),
+                                                              column(3,numericInput("resolution_PNG_markers_featurePlot_sc","Resolution of PNG", value = 144)),
+                                                              column(3,style = "margin-top: 25px;",downloadButton('downloadPlotPNG_markers_featurePlot_sc','Download PNG'))
+                                                            )
+
+                                                   ),
+                                                   #### differential expression within clusters ----
+                                                   tabPanel("Treatment differences within clusters",value = 55,
+
+                                                            actionButton("run_update_clust","Update comparisons"),
+                                                            fluidRow(
+                                                              column(4,selectInput("unique.Idents1","comaprison 1",choices = "")),
+                                                              column(4,selectInput("unique.Idents2","comaprison 2",choices = "")),
+                                                            ),
+                                                            tabsetPanel(
+                                                              tabPanel("Table",
+                                                                       div(DT::dataTableOutput("DEx_table_comparison")),
+                                                                       downloadButton('downloaddf_DEx_sc','Download Table (.csv)'),
+                                                                       downloadButton('downloaddf_DEx_sc_ggVolcanoR','Download ggVolcanoR compatible table (.csv)')
+                                                              ),
+                                                              tabPanel("Plot",
+                                                                       plotOutput("volc_plot_cluster", height = "600px"))
+                                                            ),
+                                                   ),
+                                                   tabPanel("Cluster differences (All markers)", value = 5,
+                                                            add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
+                                                            div(DT::dataTableOutput("DEx_table_clusters")),
+                                                            downloadButton('downloaddf_DEx_table_clusters','Download Table (.csv)')
+                                                   ),
+
+
+                                       )
+
+                              ),
                               tabPanel("Meta data table",
                                        fluidRow(
                                          # column(3,checkboxInput("add.kmeans","Add K-means classification", value = F)),
@@ -956,26 +1034,6 @@ runSTEGO <- function(){
                                                  p("6. Further prioritize based on function: relative to whole data set, relative to specific time points,relative to a specific group and or sample"),
                                                  p("7. Need to create a small ontology based on genes present: FindMarker genes,Expressed genes (e.g., CD8, CD4)"),
                                                  p("8. Multiple chains per cell for testing  BAA (CD8 ab T cells) or ABB (NKT?) - 2 different member of a dual beta (Dex binding)")
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-                                                 # column(3,checkboxInput("","TNF.IFNg", value = F)),
-
 
                                         ),
 
@@ -1260,92 +1318,7 @@ runSTEGO <- function(){
                                                  )
                                         ),
                                         ### UMAP with TCR expression end -----
-                                        tabPanel("Differential expression",
-                                                 conditionalPanel(condition="input.Panel_DEX==5",
-                                                                  fluidRow(
-                                                                    column(3,numericInput("min.ptc.sc","minimum point",value = 0.25)),
-                                                                    column(3,numericInput("logfc.ptc.sc","Log fold change",value = 0.25)),
-                                                                    column(3,selectInput("normalN","Type of Differnetial expression",
-                                                                                         choices = c("wilcox","bimod","roc","t","negbinom","poisson","LR","MAST","DESeq2")
-                                                                    )),
-                                                                    column(3,style = "margin-top: 25px;",actionButton("run_differental.exp","run differental expression"),)
-                                                                  ),
 
-                                                 ),
-
-                                                 conditionalPanel(condition="input.Panel_DEX==55 || input.Panel_DEX==5",
-
-                                                                  fluidRow(
-                                                                    column(4,selectInput("multiple_group_sc","Include group comparison",choices=c("no","yes"))),
-                                                                    column(4,selectInput("meta_data_sc_clust","Cluster by",choices = "")),
-                                                                    column(4,selectInput("meta_data_sc_","Add group",choices = "")),
-
-                                                                  ),
-
-                                                 ),
-                                                 tabsetPanel(id = "Panel_DEX",
-                                                             #### Cluster table -----
-                                                             tabPanel("Cluster differences (Feature plot)",
-                                                                      actionButton("run_string.data3","View Feature plot"),
-                                                                      fluidRow(column(12, selectInput("string.data3","column names for summary","",multiple = T, width = "1200px") )),
-                                                                      fluidRow(
-                                                                        column(2,checkboxInput("label_is_true_features","Add plot lables",value=T)),
-                                                                        column(2,selectInput("norm_expression_for_all","Set Maximum",choices=c("no","yes"))),
-                                                                        column(2,numericInput("max_norm_FP","Set maximum scale value",value = 10, step = 1, min=1)),
-                                                                        column(2,colourInput("lower_col_FP","Min (Colour)",value = "grey90")),
-                                                                        column(2,colourInput("upper_col_FP","Max (colour)",value = "Darkblue"))
-                                                                      ),
-                                                                      plotOutput("markers_featurePlot_sc", height = "600px"),
-
-                                                                      fluidRow(
-                                                                        column(3,numericInput("width_markers_featurePlot_sc", "Width of PDF", value=10)),
-                                                                        column(3,numericInput("height_markers_featurePlot_sc", "Height of PDF", value=8)),
-                                                                        column(3),
-                                                                        column(3,style = "margin-top: 25px;",downloadButton('downloadPlot_markers_featurePlot_sc','Download PDF'))),
-                                                                      fluidRow(
-                                                                        column(3,numericInput("width_png_markers_featurePlot_sc","Width of PNG", value = 1200)),
-                                                                        column(3,numericInput("height_png_markers_featurePlot_sc","Height of PNG", value = 1000)),
-                                                                        column(3,numericInput("resolution_PNG_markers_featurePlot_sc","Resolution of PNG", value = 144)),
-                                                                        column(3,style = "margin-top: 25px;",downloadButton('downloadPlotPNG_markers_featurePlot_sc','Download PNG'))
-                                                                      )
-
-                                                             ),
-                                                             #### differential expression within clusters ----
-                                                             tabPanel("Treatment differences within clusters",value = 55,
-
-                                                                      actionButton("run_update_clust","Update comparisons"),
-                                                                      fluidRow(
-                                                                        column(4,selectInput("unique.Idents1","comaprison 1",choices = "")),
-                                                                        column(4,selectInput("unique.Idents2","comaprison 2",choices = "")),
-                                                                      ),
-                                                                      tabsetPanel(
-                                                                        tabPanel("Table",
-                                                                                 div(DT::dataTableOutput("DEx_table_comparison")),
-                                                                                 downloadButton('downloaddf_DEx_sc','Download Table (.csv)'),
-                                                                                 downloadButton('downloaddf_DEx_sc_ggVolcanoR','Download ggVolcanoR compatible table (.csv)')
-                                                                        ),
-                                                                        tabPanel("Plot",
-                                                                                 plotOutput("volc_plot_cluster", height = "600px"))
-                                                                      ),
-                                                             ),
-                                                             tabPanel("Cluster differences (All markers)", value = 5,
-                                                                      add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
-                                                                      div(DT::dataTableOutput("DEx_table_clusters")),
-                                                                      downloadButton('downloaddf_DEx_table_clusters','Download Table (.csv)')
-                                                             ),
-                                                             ### Cluster table plot -----
-
-                                                             # tabPanel("Cluster differences (Heatmap/expression dot plot) "),
-                                                             # heatmap (Z-score)
-                                                             # clusters, mean expression and percentage with expression (Top x genes per cluster?)
-
-
-                                                             ### check meta data table ----
-
-
-                                                 )
-
-                                        ),
                                         ### end of differential expression -----
                                         ### TCR and GEX analysis section-----
                                         tabPanel("TCR and GEX",
@@ -4043,6 +4016,12 @@ runSTEGO <- function(){
         write.table(df,file, row.names = F,sep = "\t")
       })
 
+    # observeEvent(input$downloaddf_TCRexFiltered,{
+    #   write.table(merged_TCRexFiltered(),paste("TCRex_merged_",today(),".tsv", sep = ""), row.names = F,sep = "\t")
+    # }
+    #
+    #             )
+
 
 
     # ClusTCR2 ------
@@ -4832,7 +4811,19 @@ runSTEGO <- function(){
 
       var.genes <- as.data.frame(sc@assays$RNA@var.features)
       names(var.genes) <- "V1"
-      all.genes <- rbind(kmeans,var.genes)
+      if (input$sample.type.source == 'hs') {
+
+        kmeans2 <- as.data.frame(kmeans$human)
+        names(kmeans2) <- "V1"
+      }
+      else (input$sample.type.source == 'mm') {
+
+        kmeans2 <- as.data.frame(kmeans$mouse)
+        names(kmeans2) <- "V1"
+      }
+
+
+      all.genes <- rbind(kmeans2,var.genes)
       sc <- ScaleData(sc, features = all.genes$V1)
       Vals_norm1$Norm1 <- sc
     })
@@ -7054,6 +7045,181 @@ runSTEGO <- function(){
       } )
 
     #
+
+    ## differential expression -----
+    observe({
+      df.test <- getData_2()
+      validate(
+        need(nrow(df.test)>0,
+             error_message_val_sc)
+      )
+      updateSelectInput(
+        session,
+        "meta_data_sc_clust",
+        choices=names(df.test@meta.data),
+        selected = c("seurat_clusters"))
+    })
+    observe({
+      df.test <- getData_2()
+      validate(
+        need(nrow(df.test)>0,
+             error_message_val_sc)
+      )
+      updateSelectInput(
+        session,
+        "meta_data_sc_",
+        choices=names(df.test@meta.data),
+        selected = c("orig.ident"))
+    })
+    df_sc_clust <- reactive({
+      sc <- getData_2()
+      validate(
+        need(nrow(sc)>0,
+             error_message_val_sc)
+      )
+
+      if (input$multiple_group_sc =="yes") {
+        Idents(sc) <- paste(sc@meta.data[[input$meta_data_sc_clust]],
+                            sc@meta.data[[input$meta_data_sc_]] )
+      }
+      else {
+        Idents(sc) <- paste(sc@meta.data[[input$meta_data_sc_clust]])
+      }
+
+      sc
+
+    })
+
+    output$meta_data_comaprison_check <- DT::renderDataTable(escape = FALSE, filter = list(position = 'top', clear = FALSE),  options = list(autoWidth = FALSE, lengthMenu = c(2,5,10,20,50,100), pageLength = 10, scrollX = TRUE),{
+      calls <- sc@meta.data
+      calls
+    })
+
+    vals_clust_markers <- reactiveValues(markers_for_table=NULL)
+    observeEvent(input$run_differental.exp,{
+      sc <- df_sc_clust()
+
+      validate(
+        need(nrow(sc)>0,
+             "Run DEx")
+      )
+
+
+      sc.markers <- FindAllMarkers(df_sc_clust(),
+                                   only.pos = TRUE,
+                                   min.pct = input$min.ptc.sc,
+                                   logfc.threshold = input$logfc.ptc.sc,
+                                   test.use = input$normalN
+      )
+      vals_clust_markers$markers_for_table <- sc.markers
+    })
+
+    output$DEx_table_clusters <- DT::renderDataTable(escape = FALSE, filter = list(position = 'top', clear = FALSE),  options = list(autoWidth = FALSE, lengthMenu = c(2,5,10,20,50,100), pageLength = 2, scrollX = TRUE),{
+      calls <- vals_clust_markers$markers_for_table
+      calls
+    })
+
+    output$downloaddf_DEx_table_clusters <- downloadHandler(
+      filename = function(){
+        paste(input$name.file_clust,"DEx_all_",gsub("-", ".", Sys.Date()),".csv", sep = "")
+      },
+      content = function(file){
+        df <- as.data.frame(vals_clust_markers$markers_for_table)
+        write.csv(df,file, row.names = T)
+      } )
+
+    #
+    # markers_heatmap <- reactive({
+    #   sc.markers %>%
+    #     group_by(cluster) %>%
+    #     top_n(n = 5, wt = avg_log2FC) -> top10
+    #   DoHeatmap(sc, features = top10$gene) + NoLegend()
+    # })
+    #
+
+    ## View featurePlot markers ----
+
+    observeEvent(input$run_string.data3,{
+      df.test <- getData_2()
+      validate(
+        need(nrow(df.test)>0,
+             error_message_val_sc)
+      )
+
+      kmeans <- read.csv(system.file("Kmean","Kmeans.requires.annotation.csv",package = "STEGO.R"))
+      var.genes <- as.data.frame(unique(df.test@assays$RNA@var.features))
+      names(var.genes) <- "V1"
+      name.df <- rbind(kmeans,var.genes)
+      names(name.df) <- "Gene_Name"
+      name.df <- as.data.frame(name.df[order(name.df$Gene_Name),])
+      names(name.df) <- "Gene_Name"
+      updateSelectInput(
+        session,
+        "string.data3",
+        choices=name.df$Gene_Name,
+        selected = c("GZMB","CD4","CD8A"))
+
+    })
+    #
+    markers_featurePlot <- reactive({
+      sc <- df_sc_clust()
+      Feture_plots <- list()
+      feature_name <- c(input$string.data3)
+      x <- length(feature_name)
+
+      if (input$norm_expression_for_all=="yes") {
+
+        for (i in 1:x) {
+          Feture_plots[[i]] <- FeaturePlot(sc,features = feature_name[i],raster=FALSE,label=input$label_is_true_features) +
+            scale_color_gradientn(colours = c(input$lower_col_FP,input$upper_col_FP),limits=c(0,input$max_norm_FP)) +
+            theme(plot.background = element_rect(fill="white", color = NA))
+
+        }
+      }
+
+      else {
+        for (i in 1:x) {
+          Feture_plots[[i]] <- FeaturePlot(sc,features = feature_name[i],raster=FALSE,label=input$label_is_true_features) +
+            scale_color_gradientn(colours = c(input$lower_col_FP,input$upper_col_FP)) +
+            theme(plot.background = element_rect(fill="white", color = NA))
+
+        }
+      }
+
+      n <- length(Feture_plots)
+      nCol <- round(sqrt(n),0)
+      do.call("grid.arrange", c(Feture_plots, ncol=nCol))
+
+
+    })
+    output$markers_featurePlot_sc <- renderPlot({
+      markers_featurePlot()
+    })
+
+    # download markers_featurePlot_sc
+    output$downloadPlot_markers_featurePlot_sc <- downloadHandler(
+      filename = function() {
+        x <- gsub(":", ".", Sys.time())
+        paste(input$name.file_clust,"TCR_Explore_markers_featurePlot_sc_",gsub("/", "-", x), ".pdf", sep = "")
+      },
+      content = function(file) {
+        pdf(file, width=input$width_markers_featurePlot_sc,height=input$height_markers_featurePlot_sc, onefile = FALSE) # open the pdf device
+
+        plot(markers_featurePlot())
+        dev.off()}, contentType = "application/pdf" )
+
+    output$downloadPlotPNG_markers_featurePlot_sc <- downloadHandler(
+      filename = function() {
+        x <- gsub(":", ".", Sys.time())
+        paste(input$name.file_clust,"TCR_Explore_markers_featurePlot_sc_", gsub("/", "-", x), ".png", sep = "")
+      },
+      content = function(file) {
+        png(file, width = input$width_png_markers_featurePlot_sc,height = input$height_png_markers_featurePlot_sc,res = input$resolution_PNG_markers_featurePlot_sc)
+        plot(markers_featurePlot())
+        dev.off()},   contentType = "application/png")
+
+
+
     # Analysis -----
     observe({
       sc <- input.data_sc_pro()
@@ -8244,178 +8410,6 @@ runSTEGO <- function(){
         plot(Topclonotypes())
         dev.off()},   contentType = "application/png" # MIME type of the image
     )
-
-    ## differential expression -----
-    observe({
-      df.test <- input.data_sc_pro()
-      validate(
-        need(nrow(df.test)>0,
-             error_message_val_sc)
-      )
-      updateSelectInput(
-        session,
-        "meta_data_sc_clust",
-        choices=names(df.test@meta.data),
-        selected = c("seurat_clusters"))
-    })
-    observe({
-      df.test <- input.data_sc_pro()
-      validate(
-        need(nrow(df.test)>0,
-             error_message_val_sc)
-      )
-      updateSelectInput(
-        session,
-        "meta_data_sc_",
-        choices=names(df.test@meta.data),
-        selected = c("orig.ident"))
-    })
-    df_sc_clust <- reactive({
-      sc <- input.data_sc_pro()
-      validate(
-        need(nrow(sc)>0,
-             error_message_val_sc)
-      )
-
-      if (input$multiple_group_sc =="yes") {
-        Idents(sc) <- paste(sc@meta.data[[input$meta_data_sc_clust]],
-                            sc@meta.data[[input$meta_data_sc_]] )
-      }
-      else {
-        Idents(sc) <- paste(sc@meta.data[[input$meta_data_sc_clust]])
-      }
-
-      sc
-
-    })
-
-    output$meta_data_comaprison_check <- DT::renderDataTable(escape = FALSE, filter = list(position = 'top', clear = FALSE),  options = list(autoWidth = FALSE, lengthMenu = c(2,5,10,20,50,100), pageLength = 10, scrollX = TRUE),{
-      calls <- sc@meta.data
-      calls
-    })
-
-    vals_clust_markers <- reactiveValues(markers_for_table=NULL)
-    observeEvent(input$run_differental.exp,{
-      sc <- df_sc_clust()
-
-      validate(
-        need(nrow(sc)>0,
-             "Run DEx")
-      )
-
-
-      sc.markers <- FindAllMarkers(df_sc_clust(),
-                                   only.pos = TRUE,
-                                   min.pct = input$min.ptc.sc,
-                                   logfc.threshold = input$logfc.ptc.sc,
-                                   test.use = input$normalN
-      )
-      vals_clust_markers$markers_for_table <- sc.markers
-    })
-
-    output$DEx_table_clusters <- DT::renderDataTable(escape = FALSE, filter = list(position = 'top', clear = FALSE),  options = list(autoWidth = FALSE, lengthMenu = c(2,5,10,20,50,100), pageLength = 2, scrollX = TRUE),{
-      calls <- vals_clust_markers$markers_for_table
-      calls
-    })
-
-    output$downloaddf_DEx_table_clusters <- downloadHandler(
-      filename = function(){
-        paste(input$name.file_clust,"DEx_all_",gsub("-", ".", Sys.Date()),".csv", sep = "")
-      },
-      content = function(file){
-        df <- as.data.frame(vals_clust_markers$markers_for_table)
-        write.csv(df,file, row.names = T)
-      } )
-
-    #
-    # markers_heatmap <- reactive({
-    #   sc.markers %>%
-    #     group_by(cluster) %>%
-    #     top_n(n = 5, wt = avg_log2FC) -> top10
-    #   DoHeatmap(sc, features = top10$gene) + NoLegend()
-    # })
-    #
-
-    ## View featurePlot markers ----
-
-    observeEvent(input$run_string.data3,{
-      df.test <- input.data_sc_pro()
-      validate(
-        need(nrow(df.test)>0,
-             error_message_val_sc)
-      )
-
-      kmeans <- read.csv(system.file("Kmean","Kmeans.requires.annotation.csv",package = "STEGO.R"))
-      var.genes <- as.data.frame(unique(df.test@assays$RNA@var.features))
-      names(var.genes) <- "V1"
-      name.df <- rbind(kmeans,var.genes)
-      names(name.df) <- "Gene_Name"
-      name.df <- as.data.frame(name.df[order(name.df$Gene_Name),])
-      names(name.df) <- "Gene_Name"
-      updateSelectInput(
-        session,
-        "string.data3",
-        choices=name.df$Gene_Name,
-        selected = c("GZMB","CD4","CD8A"))
-
-    })
-    #
-    markers_featurePlot <- reactive({
-      sc <- df_sc_clust()
-      Feture_plots <- list()
-      feature_name <- c(input$string.data3)
-      x <- length(feature_name)
-
-      if (input$norm_expression_for_all=="yes") {
-
-        for (i in 1:x) {
-          Feture_plots[[i]] <- FeaturePlot(sc,features = feature_name[i],raster=FALSE,label=input$label_is_true_features) +
-            scale_color_gradientn(colours = c(input$lower_col_FP,input$upper_col_FP),limits=c(0,input$max_norm_FP)) +
-            theme(plot.background = element_rect(fill="white", color = NA))
-
-        }
-      }
-
-      else {
-        for (i in 1:x) {
-          Feture_plots[[i]] <- FeaturePlot(sc,features = feature_name[i],raster=FALSE,label=input$label_is_true_features) +
-            scale_color_gradientn(colours = c(input$lower_col_FP,input$upper_col_FP)) +
-            theme(plot.background = element_rect(fill="white", color = NA))
-
-        }
-      }
-
-      n <- length(Feture_plots)
-      nCol <- round(sqrt(n),0)
-      do.call("grid.arrange", c(Feture_plots, ncol=nCol))
-
-
-    })
-    output$markers_featurePlot_sc <- renderPlot({
-      markers_featurePlot()
-    })
-
-    # download markers_featurePlot_sc
-    output$downloadPlot_markers_featurePlot_sc <- downloadHandler(
-      filename = function() {
-        x <- gsub(":", ".", Sys.time())
-        paste(input$name.file_clust,"TCR_Explore_markers_featurePlot_sc_",gsub("/", "-", x), ".pdf", sep = "")
-      },
-      content = function(file) {
-        pdf(file, width=input$width_markers_featurePlot_sc,height=input$height_markers_featurePlot_sc, onefile = FALSE) # open the pdf device
-
-        plot(markers_featurePlot())
-        dev.off()}, contentType = "application/pdf" )
-
-    output$downloadPlotPNG_markers_featurePlot_sc <- downloadHandler(
-      filename = function() {
-        x <- gsub(":", ".", Sys.time())
-        paste(input$name.file_clust,"TCR_Explore_markers_featurePlot_sc_", gsub("/", "-", x), ".png", sep = "")
-      },
-      content = function(file) {
-        png(file, width = input$width_png_markers_featurePlot_sc,height = input$height_png_markers_featurePlot_sc,res = input$resolution_PNG_markers_featurePlot_sc)
-        plot(markers_featurePlot())
-        dev.off()},   contentType = "application/png")
 
 
     ### check Idents ----
@@ -12864,5 +12858,4 @@ runSTEGO <- function(){
     ### end -----
   }
   shinyApp(ui, server)
-
 }
