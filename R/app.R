@@ -116,6 +116,7 @@ runSTEGO <- function(){
                                                   selectInput("Format_bd","Format type",choices = c("cellXgene","Barcode_features_matrix"),selected = "Barcode_features_matrix"),
                                                   conditionalPanel(condition="input.Format_bd=='Barcode_features_matrix'",
                                                                    fileInput('file_barcode_bd', 'Barcode file (.tsv.gz or .tsv)'),
+                                                                   fileInput('file_matrix_bd', 'Matrix file'),
                                                                    fileInput('file_features_bd', 'Features file (.tsv.gz or .tsv)'),
 
                                                   ),
@@ -679,7 +680,7 @@ runSTEGO <- function(){
                         sidebarLayout(
                           sidebarPanel(id = "tPanel4",style = "overflow-y:scroll; max-height: 800px; position:relative;", width=3,
                                        selectInput("Data_types","Source",choices = c("10x_HS","BD_HS.Immune.Panel","BD_HS.Full.Panel","10x_MM","BD_MM_Full.Panel","BD_MM_Immune.Panel")),
-
+                                       selectInput("sample.type.source.markers","Species",choices = c("hs","mm")),
                                        fileInput("file1_h5Seurat.file2",
                                                  "Choose merged or single .h5Seurat files from directory",
                                                  multiple = TRUE,
@@ -851,8 +852,14 @@ runSTEGO <- function(){
                                                         ),
 
                                        ),
+
                                        tabsetPanel(id = "Panel_DEX",
                                                    #### Cluster table -----
+                                                   tabPanel("Checking files",
+                                                            div(DT::dataTableOutput("list_of_genes")),
+
+                                                            # verbatimTextOutput("checking_files_markers_featurePlot_sc"),
+                                                   ),
                                                    tabPanel("Cluster differences (Feature plot)",
                                                             actionButton("run_string.data3","View Feature plot"),
                                                             fluidRow(column(12, selectInput("string.data3","column names for summary","",multiple = T, width = "1200px") )),
@@ -1421,11 +1428,11 @@ runSTEGO <- function(){
                                                                                    column(2,style = "margin-top: 25px;",downloadButton('downloadPlotPNG_top_clonotype','Download PNG'))),
 
                                                                         ),
-                                                                        tabPanel("Pie labs",
-                                                                                 add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
-                                                                                 div(DT::dataTableOutput("Top_clonotype_Labs")),
-
-                                                                        ),
+                                                                        # tabPanel("Pie labs",
+                                                                        #          add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
+                                                                        #          div(DT::dataTableOutput("Top_clonotype_Labs")),
+                                                                        #
+                                                                        # ),
                                                                         tabPanel("Pie/UMAP chart",
 
                                                                                  add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
@@ -2944,7 +2951,7 @@ runSTEGO <- function(){
 
     output$downloadtb_metadata_sc <- downloadHandler(
       filename = function(){
-        x = today
+        x = today()
         paste(input$name.BD,"_Meta.data_",x,".csv", sep = "")
       },
       content = function(file){
@@ -2954,7 +2961,7 @@ runSTEGO <- function(){
 
 
     # for TCRex output -----
-    TCRex_BDrap_df <- function () {
+    TCRex_BDrap_df <- reactive({
 
       calls_TCR_paired.fun <- TCR_Filtering_Paired()
 
@@ -2975,9 +2982,9 @@ runSTEGO <- function(){
       calls_TCR_paired.fun3 <- calls_TCR_paired.fun3[!grepl("TRD", calls_TCR_paired.fun3$TRBV_gene),]
       calls_TCR_paired.fun3
 
-    }
+    })
 
-    TCRex_Bd_df <- function () {
+    TCRex_Bd_df <- reactive({
       contigs <- input.data.TCR.bd2()
       sample_tags <- input.data.calls.bd()
       validate(
@@ -3017,32 +3024,35 @@ runSTEGO <- function(){
       calls_TCR_paired.fun3 <- ddply(contigs2,names(contigs2)[-c(4)] ,numcolwise(sum))
       calls_TCR_paired.fun3 <- calls_TCR_paired.fun3[grepl("TRB", calls_TCR_paired.fun3$TRBV_gene),]
       calls_TCR_paired.fun3
-    }
-    output$tb_TCRex_BDrap_df <- DT::renderDataTable(escape = FALSE, options = list(autoWidth = FALSE, lengthMenu = c(2,5,10,20,50,100), pageLength = 10, scrollX = TRUE),{
+    })
+
+    tb_TCRex_BDrap_df <- reactive ({
       if (input$filtered_list == "Paired") {
         TCRex_BDrap_df()
       }
       else {
         TCRex_Bd_df()
       }
+
     })
+
+    output$tb_TCRex_BDrap_df <- DT::renderDataTable(escape = FALSE, options = list(autoWidth = FALSE, lengthMenu = c(2,5,10,20,50,100), pageLength = 10, scrollX = TRUE),{
+      tb_TCRex_BDrap_df()
+    })
+
 
     output$downloaddf_TCRex_BDrap <- downloadHandler(
       filename = function(){
-        paste(input$name.BD,"_TCRex_",gsub("-", ".", Sys.Date()),".tsv", sep = "")
+        x = today()
+        paste(input$name.BD,"_TCRex_",x,".tsv", sep = "")
+
       },
       content = function(file){
-        if (input$Format_bd=='Paired'){
-          df <- as.data.frame(TCRex_BDrap_df())
-          df <- df[,names(df) %in% c("TRBV_gene","CDR3_beta","TRBJ_gene")]
-          write.table(df,file, row.names = F,sep="\t", quote = F)
-        }
-        else {
-          df <- as.data.frame(TCRex_Bd_df())
-          df <- df[,names(df) %in% c("TRBV_gene","CDR3_beta","TRBJ_gene")]
-          write.table(df,file, row.names = F,sep="\t", quote = F)
 
-        }
+        df <- as.data.frame(tb_TCRex_BDrap_df())
+        write.table(df,file, row.names = F,sep="\t", quote = F)
+
+
       } )
 
     ## TCR_Explore compatible -----
@@ -7143,6 +7153,54 @@ runSTEGO <- function(){
 
     })
 
+
+    list_of_genes <- reactive({
+      df.test <- getData_2()
+      validate(
+        need(nrow(df.test)>0,
+             error_message_val_sc)
+      )
+
+      kmeans <- read.csv(system.file("Kmean","Kmeans.requires.annotation.csv",package = "STEGO.R"))
+      var.genes <- as.data.frame(unique(df.test@assays$RNA@var.features))
+      names(var.genes) <- "V1"
+
+      if (input$sample.type.source.markers == 'hs') {
+
+        kmeans2 <- as.data.frame(kmeans$Human)
+        names(kmeans2) <- "V1"
+      }
+      else {
+
+        kmeans2 <- as.data.frame(kmeans$Mouse)
+        names(kmeans2) <- "V1"
+      }
+      kmeans2
+      var.genes
+
+      name.df <- unique(c(kmeans$V1,var.genes$V1))
+      name.df <- as.data.frame(name.df)
+      names(name.df) <- "Gene_Name"
+      name.df <- as.data.frame(name.df[order(name.df$Gene_Name),])
+      names(name.df) <- "Gene_Name"
+
+      name.df
+
+    })
+
+
+
+
+    output$list_of_genes_df <- DT::renderDataTable(escape = FALSE, filter = list(position = 'top', clear = FALSE),  options = list(autoWidth = FALSE, lengthMenu = c(2,5,10,20,50,100), pageLength = 10, scrollX = TRUE),{
+      df.test <- getData_2()
+      validate(
+        need(nrow(df.test)>0,
+             error_message_val_sc)
+      )
+      list_of_genes()
+    })
+
+
     output$meta_data_comaprison_check <- DT::renderDataTable(escape = FALSE, filter = list(position = 'top', clear = FALSE),  options = list(autoWidth = FALSE, lengthMenu = c(2,5,10,20,50,100), pageLength = 10, scrollX = TRUE),{
       calls <- sc@meta.data
       calls
@@ -7191,33 +7249,27 @@ runSTEGO <- function(){
     #
 
     ## View featurePlot markers ----
-
     observeEvent(input$run_string.data3,{
       df.test <- getData_2()
       validate(
         need(nrow(df.test)>0,
              error_message_val_sc)
       )
-
-      kmeans <- read.csv(system.file("Kmean","Kmeans.requires.annotation.csv",package = "STEGO.R"))
-      var.genes <- as.data.frame(unique(df.test@assays$RNA@var.features))
-      names(var.genes) <- "V1"
-      name.df <- rbind(kmeans,var.genes)
-      names(name.df) <- "Gene_Name"
-      name.df <- as.data.frame(name.df[order(name.df$Gene_Name),])
+      name.df <- as.data.frame(list_of_genes())
       names(name.df) <- "Gene_Name"
       updateSelectInput(
         session,
         "string.data3",
         choices=name.df$Gene_Name,
         selected = c("GZMB","CD4","CD8A"))
-
     })
+
     #
     markers_featurePlot <- reactive({
       sc <- df_sc_clust()
       Feture_plots <- list()
       feature_name <- c(input$string.data3)
+      req(input$string.data3)
       x <- length(feature_name)
 
       if (input$norm_expression_for_all=="yes") {
@@ -10119,8 +10171,8 @@ runSTEGO <- function(){
 
     output$downloadPlot_Ridge_chart_alpha_gamma_plot_out <- downloadHandler(
       filename = function() {
-        x <- gsub(":", ".", Sys.time())
-        paste(input$name.file_clust,"_",input$plot_type_ridgvi,"_",gsub("/", "-", x), ".pdf", sep = "")
+        x <- today()
+        paste(input$string.data_Exp_top,"_",input$Selected_clonotype,"_",input$plot_type_ridgvi,"_",x, ".pdf", sep = "")
       },
       content = function(file) {
         pdf(file, width=input$width_Ridge_chart_alpha_gamma_plot_out,height=input$height_Ridge_chart_alpha_gamma_plot_out, onefile = FALSE) # open the pdf device
@@ -10141,8 +10193,9 @@ runSTEGO <- function(){
 
     output$downloadPlotPNG_Ridge_chart_alpha_gamma_plot_out  <- downloadHandler(
       filename = function() {
-        x <- gsub(":", ".", Sys.time())
-        paste(input$name.file_clust,"_",input$epitope_umap_selected,"_",input$epitope_umap_selected2,"_Heatmap_", gsub("/", "-", x), ".png", sep = "")
+        x <- today()
+        paste(input$string.data_Exp_top,"_",input$Selected_clonotype,"_",input$plot_type_ridgvi,"_",x, ".png", sep = "")
+        # paste(input$name.file_clust,"_",input$epitope_umap_selected,"_",input$epitope_umap_selected2,"_Heatmap_", gsub("/", "-", x), "", sep = "")
       },
       content = function(file) {
         png(file, width = input$width_png_Ridge_chart_alpha_gamma_plot_out,
@@ -10367,11 +10420,13 @@ runSTEGO <- function(){
 
     select_group_metadata_expanded <- reactive ({
       sc <- input.data_sc_pro()
-      req(input$Samp_col_expanded)
+
+
       validate(
         need(nrow(sc)>0,
              "upload file")
       )
+      req(input$Samp_col_expanded)
       df <- UMAP_metadata_with_labs()
       df2 <- as.data.frame(unique(df[names(df) %in% input$Samp_col_expanded]))
       df2 <- as.data.frame(df2)
@@ -10417,7 +10472,7 @@ runSTEGO <- function(){
       sc <- input.data_sc_pro()
       validate(
         need(nrow(sc)>0,
-             "upload file")
+             error_message_val_UMAP)
       )
 
       req(input$Samp_col_expanded,input$ID_Column_factor_expanded)
@@ -10477,7 +10532,13 @@ runSTEGO <- function(){
     ### table check ------
     Expansion_check_table <- reactive({
       sc <- input.data_sc_pro()
-      req(input$Samp_col_expanded,input$ID_Column_factor_expanded)
+      validate(
+        need(nrow(sc)>0,
+             error_message_val_UMAP)
+      )
+
+
+      req(input$Samp_col_expanded,input$ID_Column_factor_expanded,input$V_gene_sc,input$cut.off_expanded)
       validate(
         need(nrow(sc)>0,
              error_message_val_UMAP)
@@ -10522,6 +10583,7 @@ runSTEGO <- function(){
         need(nrow(sc)>0,
              error_message_val_UMAP)
       )
+
       df3.meta <- c(names(Expansion_check_table()))
       # df3.meta <- df3.meta[!grepl("RNA",df3.meta) & !grepl("BCR",df3.meta) & !grepl("TCR",df3.meta)& !grepl("_gene",df3.meta) & !grepl("allele",df3.meta) & !grepl("percent",df3.meta) & !grepl("cdr3",df3.meta)]
       selectInput("Colour_By_this_Expanded","Expanded Colour by: ",choices = df3.meta,selected="seurat_clusters")
@@ -12911,4 +12973,5 @@ runSTEGO <- function(){
     ### end -----
   }
   shinyApp(ui, server)
+
 }
