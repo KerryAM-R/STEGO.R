@@ -647,11 +647,14 @@ runSTEGO <- function(){
                                        ),
                                        actionButton("run_reduction_harmony","Run Dimentional reduction"),
                                        add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
-                                       verbatimTextOutput("testing_mult3")
+                                       verbatimTextOutput("testing_mult3"),
+                                       # actionButton("download_reduction_harmony","download"),
+
 
                               ),
                               tabPanel("UMAP",
                                        add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
+                                       actionButton("download_reduction_harmony","download"),
                                        plotOutput("create_UMAP_merged",height="600px"),
 
                                        fluidRow(
@@ -4783,7 +4786,9 @@ runSTEGO <- function(){
     Vals_norm2 <- reactiveValues(Norm1=NULL)
     Vals_norm3 <- reactiveValues(Norm1=NULL)
     Vals_norm4 <- reactiveValues(Norm1=NULL)
-    Vals_normk <- reactiveValues(kmeans=NULL)
+    Vals_normk <- reactiveValues(anno=NULL)
+
+    # find variable features
     observeEvent(input$run_var,{
       sc <- merging_sc()
       validate(
@@ -4802,10 +4807,39 @@ runSTEGO <- function(){
       )
       sc
     })
+    # scale data
+    observeEvent(input$run_var,{
+      sc <- Vals_norm4$Norm1
+      validate(
+        need(nrow(sc)>0,
+             "Run Scale")
+      )
+      req(Vals_norm4$Norm1)
+      kmeans <- read.csv(system.file("Kmean","Kmeans.requires.annotation.csv",package = "STEGO.R"))
+
+      var.genes <- as.data.frame(sc@assays$RNA@var.features)
+      names(var.genes) <- "V1"
+      if (input$sample.type.source == 'hs') {
+
+        kmeans2 <- as.data.frame(kmeans$Human)
+        names(kmeans2) <- "V1"
+      }
+      else {
+
+        kmeans2 <- as.data.frame(kmeans$Mouse)
+        names(kmeans2) <- "V1"
+      }
+      Vals_normk$kmeans <- unique(rbind(var.genes,kmeans2))
+    })
 
     output$Tb_scaling_features_for_annotation <-  DT::renderDataTable(escape = FALSE, filter = list(position = 'top', clear = FALSE), options = list(autoWidth = FALSE, lengthMenu = c(2,5,10,20,50,100), pageLength = 5, scrollX = TRUE),{
-      kmeans <- read.csv(system.file("Kmean","Kmeans.requires.annotation.csv",package = "STEGO.R"))
-      kmeans
+      sc <- Vals_norm4$Norm1
+      validate(
+        need(nrow(sc)>0,
+             "Run Scale")
+      )
+      req(Vals_norm4$Norm1)
+      Vals_normk$kmeans
     })
 
 
@@ -4822,17 +4856,17 @@ runSTEGO <- function(){
       names(var.genes) <- "V1"
       if (input$sample.type.source == 'hs') {
 
-        kmeans2 <- as.data.frame(kmeans$human)
+        kmeans2 <- as.data.frame(kmeans$Human)
         names(kmeans2) <- "V1"
       }
       else {
 
-        kmeans2 <- as.data.frame(kmeans$mouse)
+        kmeans2 <- as.data.frame(kmeans$Mouse)
         names(kmeans2) <- "V1"
       }
 
 
-      all.genes <- rbind(kmeans2,var.genes)
+      all.genes <- Vals_normk$kmeans
       sc <- ScaleData(sc, features = all.genes$V1)
       Vals_norm1$Norm1 <- sc
     })
@@ -4844,18 +4878,8 @@ runSTEGO <- function(){
         need(nrow(sc)>0,
              "Run Scale")
       )
-      kmeans <- read.csv(system.file("Kmean","Kmeans.requires.annotation.csv",package = "STEGO.R"))
-      if (input$sample.type.source == 'hs') {
+      sc
 
-        kmeans2 <- as.data.frame(kmeans$human)
-        names(kmeans2) <- "V1"
-      }
-      else {
-
-        kmeans2 <- as.data.frame(kmeans$mouse)
-        names(kmeans2) <- "V1"
-      }
-      kmeans2
     })
 
     observeEvent(input$run_PCA,{
@@ -4925,6 +4949,12 @@ runSTEGO <- function(){
       DimPlot(sc, reduction = "umap", group.by = "orig.ident", pt.size = 1)
     })
 
+    observeEvent(input$download_reduction_harmony,{
+      req(Vals_norm$Norm1)
+      x = today()
+      as.h5Seurat(Vals_norm$Norm1,paste(input$project_name2,"_merged_",x,".h5Seurat", sep = ""))
+    })
+
     # download Harmony merged ----
     output$downloadPlot_sc_merged <- downloadHandler(
       filename = function() {
@@ -4946,6 +4976,8 @@ runSTEGO <- function(){
         plot(DimPlot(Vals_norm$Norm1, reduction = "umap", group.by = "orig.ident", pt.size = 1))
         dev.off()},   contentType = "application/png" # MIME type of the image
     )
+
+
 
     output$downloaddf_SeruatObj_merged <- downloadHandler(
       filename = function(){
