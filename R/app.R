@@ -933,6 +933,7 @@ runSTEGO <- function(){
                         sidebarLayout(
                           sidebarPanel(id = "tPanel4",style = "overflow-y:scroll; max-height: 1000px; position:relative;", width=3,
                                        selectInput("datasource", "Data source",choices=c("10x_Genomics","BD_Rhapsody_Paired","BD_Rhapsody_AIRR")),
+                                       selectInput("species_analysis","Species",choices = c("hs","mm")),
                                        # selectInput("STEGO_R_pro","QC processed",choices = c("STEGO_R (.h5Seurat)")), #,"Seurat (.rds)"
                                        textInput("name.file_clust","Name added to files",value = ""),
                                        conditionalPanel(condition="input.check_up_files== 'up'",
@@ -958,6 +959,7 @@ runSTEGO <- function(){
 
 
                                        ),
+                                       column(12,selectInput("V_gene_sc","V gene with/without CDR3",choices = "")),
                                        # conditionalPanel(condition="input.STEGO_R_pro == 'STEGO_R (.h5Seurat)'",
 
                                        # ),
@@ -982,7 +984,7 @@ runSTEGO <- function(){
                                                         fluidRow(column(6,selectInput("Samp_col","Sample column name (e.g. Sample_Name)",choices = "")),
                                                                  column(6,selectInput("Split_by_group","Include group comparison",choices=c("no","yes"))),
                                                                  # column(6,conditionalPanel(condition="input.STEGO_R_pro == 'STEGO_R (.h5Seurat)'",
-                                                                 column(6,selectInput("V_gene_sc","V gene with/without CDR3",choices = "")),
+
                                                                  conditionalPanel(condition = "input.Split_by_group == 'yes'",
                                                                                   column(4, numericInput("wrap_row","Wrap rows", value = 1)),
                                                                  ),
@@ -1532,6 +1534,10 @@ runSTEGO <- function(){
                                                                                               column(2,style = "margin-top: 25px;",downloadButton('downloadPlotPNG_all_expression_dotplot_ex','Download PNG'))),
                                                                                    ),
                                                                                    tabPanel("Over-representation",
+
+
+                                                                                            numericInput("adjust_cutoff_top","BH cut-off",value = 0.05, min = 0, max = 1),
+
                                                                                             add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
                                                                                             div(DT::dataTableOutput("Over_rep_Top_clones_Tab")),
                                                                                             downloadButton('downloadtb_over.rep.Top_Ex','Download table')
@@ -7496,27 +7502,12 @@ runSTEGO <- function(){
              error_message_val_UMAP)
       )
       df3.meta <- sc@meta.data
-      if (input$datasource == "BD_Rhapsody_Paired") {
-        updateSelectInput(
-          session,
-          "V_gene_sc",
-          choices=names(df3.meta),
-          selected = "v_gene_cdr3_AB_GD")
-      }
-      else if (input$datasource == "BD_Rhapsody_AIRR") {
-        updateSelectInput(
-          session,
-          "V_gene_sc",
-          choices=names(df3.meta),
-          selected = "vdj_gene_cdr3_AG_BD")
-      }
-      else {
-        updateSelectInput(
-          session,
-          "V_gene_sc",
-          choices=names(df3.meta),
-          selected = "vdj_gene_cdr3_AG_BD")
-      }
+      updateSelectInput(
+        session,
+        "V_gene_sc",
+        choices=names(df3.meta),
+        selected = "vdj_gene_cdr3_AG_BD")
+
     })
 
     observe({
@@ -10329,8 +10320,17 @@ runSTEGO <- function(){
       total.sig <- length(DEx.genes$V1)
       geneSet$total.sig <- length(DEx.genes$V1)
 
+      if(input$datasource == "BD_Rhapsody_Paired" || input$datasource == "BD_Rhapsody_AIRR") { # selectInput("datasource", "Data source",choices=c("10x_Genomics","BD_Rhapsody_Paired","BD_Rhapsody_AIRR")),
+        geneSet$Gene <- gsub("-",".",geneSet$Gene)
+      }
+
+      if(input$species_analysis == "mm") { # selectInput("datasource", "Data source",choices=c("10x_Genomics","BD_Rhapsody_Paired","BD_Rhapsody_AIRR")),
+        require(stringr)
+        geneSet$Gene <- str_to_title(geneSet$Gene)
+      }
+
       for (i in 1:dim(geneSet)[1]) {
-        Gene.set.testing <- as.data.frame(strsplit(geneSet$hs_gene,";")[i])
+        Gene.set.testing <- as.data.frame(strsplit(geneSet$Gene,";")[i])
         names(Gene.set.testing) <- "V1"
         background.overlap <- merge(Gene.set.testing,background.genes.name,by= "V1")
         background.overlap
@@ -10385,7 +10385,8 @@ runSTEGO <- function(){
 
       # prop.table(d)
       geneSet$pval.BH.adj <- p.adjust(geneSet$p.val, method = "BH", n = length(geneSet$p.val))
-
+      geneSet <- subset(geneSet,geneSet$pval.BH.adj<=input$adjust_cutoff_top)
+      geneSet <- geneSet[order(geneSet$pval.BH.adj,decreasing = F),]
       geneSet
     })
 
