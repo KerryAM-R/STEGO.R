@@ -1,4 +1,4 @@
-print(message(getwd()))
+
 scGate_models_DB_geneset1 <- suppressMessages(suppressWarnings(custom_db_scGATE("custom_db/GeneSet1")))
 scGate_models_DB_geneset2 <- suppressMessages(suppressWarnings(custom_db_scGATE("custom_db/GeneSet2")))
 scGate_models_DB_geneset3 <- suppressMessages(suppressWarnings(custom_db_scGATE("custom_db/GeneSet3")))

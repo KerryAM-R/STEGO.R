@@ -445,10 +445,11 @@ runSTEGO <- function(){
                                        # selectInput("dataset_sc", "Choose a dataset:", choices = c("test_data_sc", "own_data_sc")),
                                        # upload the file
                                        fileInput('file_SC', 'Load csv (BDrhap), csv.gz (10x), .h5 (10x)',
-                                                 accept=c('text/csv','.csv','.csv.gz','gz','csv.gz','h5','.h5'),
+
                                        ),
                                        fileInput('file_SC_meta', 'Upload file meta.data file (.csv.gz or .csv)',
-                                                 accept=c('.csv','.csv.gz')),
+
+                                       ),
 
                                        textInput("project_name","Name of sample",value = ""),
                                        # selectInput("species","Species",choices = c("human","mouse","other")),
@@ -579,7 +580,9 @@ runSTEGO <- function(){
                                                   plotOutput("create_UMAP_sc", height = "600px")
                                          ), # Export a table with meta.data and expression.
                                          tabPanel("Add metadata",
+                                                  add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
                                                   div(DT::dataTableOutput("DEx_view.meta.dt")),
+                                                  add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
                                                   div(DT::dataTableOutput("DEx_table_meta.data")),
                                                   # selectInput("","comaprison 1")
                                          ),
@@ -828,6 +831,23 @@ runSTEGO <- function(){
                                        ),
 
                               ),
+                              tabPanel("UMAP check",
+                                       fluidRow(
+                                         column(4, plotOutput("create_custom_1", height = "600px")),
+                                         column(4,plotOutput("create_custom_2", height = "600px"),),
+                                         column(4, plotOutput("create_custom_3", height = "600px")),
+                                         column(4,plotOutput("create_custom_4", height = "600px"),),
+                                         column(4, plotOutput("create_custom_5", height = "600px")),
+                                         column(4,plotOutput("create_custom_6", height = "600px"),),
+                                         column(4, plotOutput("create_custom_7", height = "600px")),
+                                         column(4,plotOutput("create_custom_8", height = "600px"),),
+                                         column(4, plotOutput("create_custom_9", height = "600px")),
+                                       )
+                                       # plotOutput("create_custom_1", height = "600px"),
+
+
+                              ),
+
                               ##### display metadata -----
                               tabPanel("Marker check",
                                        conditionalPanel(condition="input.Panel_DEX==5",
@@ -855,11 +875,11 @@ runSTEGO <- function(){
 
                                        tabsetPanel(id = "Panel_DEX",
                                                    #### Cluster table -----
-                                                   tabPanel("Checking files",
-                                                            div(DT::dataTableOutput("list_of_genes")),
-
-                                                            # verbatimTextOutput("checking_files_markers_featurePlot_sc"),
-                                                   ),
+                                                   # tabPanel("Checking files",
+                                                   #          div(DT::dataTableOutput("list_of_genes")),
+                                                   #
+                                                   #          # verbatimTextOutput("checking_files_markers_featurePlot_sc"),
+                                                   #          ),
                                                    tabPanel("Cluster differences (Feature plot)",
                                                             actionButton("run_string.data3","View Feature plot"),
                                                             fluidRow(column(12, selectInput("string.data3","column names for summary","",multiple = T, width = "1200px") )),
@@ -948,9 +968,7 @@ runSTEGO <- function(){
                                                                          fileInput("file_Labels_to_add","Upload other identifiers (.csv)",
                                                                                    accept=c('.csv','csv')
                                                                          ),
-
                                                         ),
-
                                                         fileInput('file_cluster_file', 'Upload clustering file from clusTCR2 (.csv)',
                                                                   accept=c('.csv','csv')),
                                                         numericInput("skip_TCRex_up","Skip # of lines for TCRex file",value = 7),
@@ -960,6 +978,19 @@ runSTEGO <- function(){
 
                                        ),
                                        column(12,selectInput("V_gene_sc","V gene with/without CDR3",choices = "")),
+
+                                       conditionalPanel(condition="input.ExPan=='ExPan_stat' || input.ExPan=='ExPan_dot'",
+                                                        actionButton("run_Expanded_stats","Select comparison"),
+                                                        fluidRow(
+                                                          column(6,selectInput("Selected_status_of_","Add Status of samples ID",choices = "")),
+                                                          column(12,selectInput("selected_Indiv_Ex_1","Samp 1",choices = "", multiple = T)),
+                                                          column(12,selectInput("selected_Indiv_Ex_2","Samp 2",choices = "", multiple = T)),
+                                                          column(4,numericInput("min_point_top_Ex","Min point cut off", value = 0.25)),
+                                                          column(4,numericInput("LogFC_top_Ex","Min LogFC cut off", value = 0.25)),
+                                                          column(4,numericInput("pval.ex.filter","Min LogFC cut off", value = 0.001)),
+                                                        ),
+                                       ),
+
                                        # conditionalPanel(condition="input.STEGO_R_pro == 'STEGO_R (.h5Seurat)'",
 
                                        # ),
@@ -981,13 +1012,13 @@ runSTEGO <- function(){
                                                                          ),
                                                         ),
                                                         h4("What individuals to include"),
-                                                        fluidRow(column(6,selectInput("Samp_col","Sample column name (e.g. Sample_Name)",choices = "")),
-                                                                 column(6,selectInput("Split_by_group","Include group comparison",choices=c("no","yes"))),
-                                                                 # column(6,conditionalPanel(condition="input.STEGO_R_pro == 'STEGO_R (.h5Seurat)'",
+                                                        fluidRow(
+                                                          column(6,selectInput("Split_by_group","Include group comparison",choices=c("no","yes"))),
+                                                          # column(6,conditionalPanel(condition="input.STEGO_R_pro == 'STEGO_R (.h5Seurat)'",
 
-                                                                 conditionalPanel(condition = "input.Split_by_group == 'yes'",
-                                                                                  column(4, numericInput("wrap_row","Wrap rows", value = 1)),
-                                                                 ),
+                                                          conditionalPanel(condition = "input.Split_by_group == 'yes'",
+                                                                           column(4, numericInput("wrap_row","Wrap rows", value = 1)),
+                                                          ),
 
                                                         ),
                                                         fluidRow(
@@ -1012,7 +1043,9 @@ runSTEGO <- function(){
                                                         p(""),
                                                         fluidRow(
                                                           column(4, numericInput("Strip_text_size","Strip text size", value = 12))
-                                                        )
+                                                        ),
+
+
 
                                        )
                           ),
@@ -1055,9 +1088,12 @@ runSTEGO <- function(){
                                         tabPanel("Overview", value = 'up2',
                                                  column(3,uiOutput("classification_to_add_overview")),
                                                  fluidRow(
-                                                   column(3,
-                                                          selectInput("Split_group_by_overview","Split graph by:",choices ="")),
+                                                   column(6,selectInput("Samp_col","Sample column name (e.g. Sample_Name)",choices = "")),
+
                                                    column(9,selectInput("ID_Column_factor","Order of graph",choices = "", multiple = T, width = "900px")),
+                                                 ),
+                                                 fluidRow(
+                                                   column(3,selectInput("Split_group_by_overview","Split graph by:",choices ="")),
                                                  ),
                                                  tabsetPanel(id = "QC_panel",
                                                              # tabPanel("Check UMAP", value = 1,
@@ -1360,7 +1396,10 @@ runSTEGO <- function(){
                                                  ),
                                                  fluidRow(
                                                    column(3,
-                                                          selectInput("Split_group_by_","Split graph by:",choices ="")),
+                                                          conditionalPanel(
+                                                            condition="input.Panel_TCRUMAP!='Expanded'",
+                                                            selectInput("Split_group_by_","Split graph by:",choices =""))),
+
                                                    # column(2,conditionalPanel(condition="input.Panel_TCRUMAP=='top_clone' || input.Panel_TCRUMAP=='Epitope'",
                                                    # selectInput("Split_by_group2","Split by Function?",choices=c("no","yes")))),
 
@@ -1510,20 +1549,16 @@ runSTEGO <- function(){
                                                                                    ),
                                                                                    tabPanel("Dotplot",
                                                                                             fluidRow(
-                                                                                              column(3,colourInput("low.dotplot","Lower color:","darkblue")),
-                                                                                              column(3,colourInput("middle.dotplot","Middle color:","white")),
-                                                                                              column(3,colourInput("high.dotplot","High color:","darkred")),
-                                                                                              column(3,textInput("name_clonotype_selected","Name of clone","clone 1"))
+                                                                                              column(2,colourInput("low.dotplot","Lower color:","darkblue")),
+                                                                                              column(2,colourInput("middle.dotplot","Middle color:","white")),
+                                                                                              column(2,colourInput("high.dotplot","High color:","darkred")),
+
+                                                                                              column(2,checkboxInput("restict_no_points","Restrict Label",value = F)),
+                                                                                              column(2,numericInput("pval.ex.top_genes","Top genes to display", value = 40)),
                                                                                             ),
-
-                                                                                            fluidRow(
-                                                                                              column(3,checkboxInput("restict_no_points","Restrict Label",value = F)),
-
-                                                                                              column(3,numericInput("pval.ex.top_genes","Top genes to display", value = 40)),
-                                                                                            ),
-
                                                                                             add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
-                                                                                            plotOutput("all_expression_dotplot_ex",height="600px"),
+                                                                                            plotOutput("all_expression_dotplot_ex",height="400px"),
+                                                                                            textInput("name_clonotype_selected","Name of clone","clone 1"),
                                                                                             fluidRow(
                                                                                               column(1,numericInput("width_all_expression_dotplot_ex", "Width of PDF", value=20)),
                                                                                               column(1,numericInput("height_all_expression_dotplot_ex", "Height of PDF", value=4)),
@@ -1570,87 +1605,60 @@ runSTEGO <- function(){
 
                                                                       ),
 
-                                                                      tabsetPanel(
-                                                                        tabPanel("Table",
-                                                                                 add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
-                                                                                 div(DT::dataTableOutput("Expansion_check")),
-                                                                        ),
-
-                                                                        tabPanel("UMAP",
-                                                                                 fluidRow(
-                                                                                   add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
-                                                                                   column(3,
-                                                                                          wellPanel(id = "tPanel23",style = "overflow-y:scroll; max-height: 600px",
-                                                                                                    uiOutput('cols_UMAP_Expanded'))),
-                                                                                   column(9, plotOutput("UMAP_Expanded",height="600px"))
-                                                                                 ),
-                                                                                 fluidRow(
-                                                                                   column(1,numericInput("width_UMAP_Expanded", "Width of PDF", value=10)),
-                                                                                   column(1,numericInput("height_UMAP_Expanded", "Height of PDF", value=8)),
-                                                                                   column(2,style = "margin-top: 25px;",downloadButton('downloadPlot_UMAP_Expanded','Download PDF')),
-                                                                                   column(2,numericInput("width_png_UMAP_Expanded","Width of PNG", value = 1200)),
-                                                                                   column(2,numericInput("height_png_UMAP_Expanded","Height of PNG", value = 1000)),
-                                                                                   column(2,numericInput("resolution_PNG_UMAP_Expanded","Resolution of PNG", value = 144)),
-                                                                                   column(2,style = "margin-top: 25px;",downloadButton('downloadPlotPNG_UMAP_Expanded','Download PNG'))
-                                                                                 ),
-
-                                                                        ),
-
-                                                                        tabPanel("Expression",
-                                                                                 fluidRow(
-                                                                                   column(3,selectInput("Selected_status_of_","Add Status of samples ID",choices = "")),
-                                                                                   column(3,selectInput("selected_Indiv_Ex_1","Indent 1",choices = "", multiple = T)),
-                                                                                   column(3,selectInput("selected_Indiv_Ex_2","Indent 2",choices = "", multiple = T))),
-                                                                                 fluidRow(
-                                                                                   column(3,actionButton("run_Expanded_stats","Update Expansion stats")),
-                                                                                   column(3,numericInput("min_point_top_Ex","Min point cut off", value = 0.25)),
-                                                                                   column(3,numericInput("LogFC_top_Ex","Min LogFC cut off", value = 0.25)),
-                                                                                   column(3,numericInput("pval.ex.filter","Min LogFC cut off", value = 0.001)),
-
-                                                                                 ),
-                                                                                 tabsetPanel(
-
-                                                                                   tabPanel("Table",
-                                                                                            add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
-                                                                                            div(DT::dataTableOutput("compare.stat_Violin_plot"))
-                                                                                   ),
-                                                                                   tabPanel("Stats",
-                                                                                            add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
-                                                                                            div(DT::dataTableOutput("compare.stat_Ex")),
-                                                                                            downloadButton('downloadtb_compare.stat_Ex','Download table')
 
 
-                                                                                   ),
-                                                                                   tabPanel("Dotplot",
-                                                                                            fluidRow(
-                                                                                              column(3,colourInput("low.dotplot.ex","Lower color:","darkblue")),
-                                                                                              column(3,colourInput("middle.dotplot.ex","Middle color:","white")),
-                                                                                              column(3,colourInput("high.dotplot.ex","High color:","darkred")),
-                                                                                            ),
-                                                                                            fluidRow(
-                                                                                              column(3,selectInput("restrict.dotpot","Restrict to top list",choices = c("no","yes"))),
-                                                                                              column(3,numericInput("restrict.dotpot.num","Total genes to display:", value = 10))
+                                                                      tabsetPanel(id = "ExPan",
+                                                                                  tabPanel("Table",
+                                                                                           add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
+                                                                                           div(DT::dataTableOutput("Expansion_check")),
+                                                                                  ),
 
-                                                                                            ),
-                                                                                            add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
-                                                                                            plotOutput("relative_expression_dotplot_ex",height="600px"),
-                                                                                            fluidRow(
-                                                                                              column(1,numericInput("width_relative_expression_dotplot_ex", "Width of PDF", value=10)),
-                                                                                              column(1,numericInput("height_relative_expression_dotplot_ex", "Height of PDF", value=8)),
-                                                                                              column(2,style = "margin-top: 25px;",downloadButton('downloadPlot_relative_expression_dotplot_ex','Download PDF')),
-                                                                                              column(2,numericInput("width_png_relative_expression_dotplot_ex","Width of PNG", value = 1200)),
-                                                                                              column(2,numericInput("height_png_relative_expression_dotplot_ex","Height of PNG", value = 1000)),
-                                                                                              column(2,numericInput("resolution_PNG_relative_expression_dotplot_ex","Resolution of PNG", value = 144)),
-                                                                                              column(2,style = "margin-top: 25px;",downloadButton('downloadPlotPNG_relative_expression_dotplot_ex','Download PNG'))
-                                                                                            ),
+                                                                                  tabPanel("UMAP",value = "ExPan_UMAP",
+                                                                                           fluidRow(
+                                                                                             add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
+                                                                                             column(3,
+                                                                                                    wellPanel(id = "tPanel23",style = "overflow-y:scroll; max-height: 600px",
+                                                                                                              uiOutput('cols_UMAP_Expanded'))),
+                                                                                             column(9, plotOutput("UMAP_Expanded",height="600px"))
+                                                                                           ),
+                                                                                           fluidRow(
+                                                                                             column(1,numericInput("width_UMAP_Expanded", "Width of PDF", value=10)),
+                                                                                             column(1,numericInput("height_UMAP_Expanded", "Height of PDF", value=8)),
+                                                                                             column(2,style = "margin-top: 25px;",downloadButton('downloadPlot_UMAP_Expanded','Download PDF')),
+                                                                                             column(2,numericInput("width_png_UMAP_Expanded","Width of PNG", value = 1200)),
+                                                                                             column(2,numericInput("height_png_UMAP_Expanded","Height of PNG", value = 1000)),
+                                                                                             column(2,numericInput("resolution_PNG_UMAP_Expanded","Resolution of PNG", value = 144)),
+                                                                                             column(2,style = "margin-top: 25px;",downloadButton('downloadPlotPNG_UMAP_Expanded','Download PNG'))
+                                                                                           ),
 
-                                                                                   ),
+                                                                                  ),
 
-                                                                                   # tabPanel("Violin plot"),
+                                                                                  tabPanel("Stats",value = "ExPan_stat",
+                                                                                           add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
+                                                                                           div(DT::dataTableOutput("compare.stat_Ex")),
+                                                                                           downloadButton('downloadtb_compare.stat_Ex','Download table')
+                                                                                  ),
+                                                                                  tabPanel("Dotplot",value = "ExPan_dot",
+                                                                                           fluidRow(
+                                                                                             column(2,colourInput("low.dotplot.ex","Lower color:","darkblue")),
+                                                                                             column(2,colourInput("middle.dotplot.ex","Middle color:","white")),
+                                                                                             column(2,colourInput("high.dotplot.ex","High color:","darkred")),
+                                                                                             column(2,selectInput("restrict.dotpot","Restrict to top list",choices = c("no","yes"))),
+                                                                                             column(2,numericInput("restrict.dotpot.num","Total genes to display:", value = 10))
+                                                                                           ),
+                                                                                           add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
+                                                                                           plotOutput("relative_expression_dotplot_ex",height="600px"),
+                                                                                           fluidRow(
+                                                                                             column(1,numericInput("width_relative_expression_dotplot_ex", "Width of PDF", value=10)),
+                                                                                             column(1,numericInput("height_relative_expression_dotplot_ex", "Height of PDF", value=8)),
+                                                                                             column(2,style = "margin-top: 25px;",downloadButton('downloadPlot_relative_expression_dotplot_ex','Download PDF')),
+                                                                                             column(2,numericInput("width_png_relative_expression_dotplot_ex","Width of PNG", value = 1200)),
+                                                                                             column(2,numericInput("height_png_relative_expression_dotplot_ex","Height of PNG", value = 1000)),
+                                                                                             column(2,numericInput("resolution_PNG_relative_expression_dotplot_ex","Resolution of PNG", value = 144)),
+                                                                                             column(2,style = "margin-top: 25px;",downloadButton('downloadPlotPNG_relative_expression_dotplot_ex','Download PNG'))
+                                                                                           ),
 
-
-                                                                                 )
-                                                                        ),
+                                                                                  ),
 
                                                                       )
 
@@ -1747,8 +1755,8 @@ runSTEGO <- function(){
                                                                                    column(3,selectInput("ClusTCR_display","Colour by:",choices = c("all","Selected"))),
                                                                                    column(3,numericInput("lower_cluster","Lower range",value = 1, min = 1)),
                                                                                    column(3,numericInput("upper_cluster","Upper range",value = 50, min = 1)),
-                                                                                   column(3,conditionalPanel(condition="input.ClusTCR_display=='Selected'",selectizeInput("Clusters_to_dis","Clusters to display",
-                                                                                                                                                                          choices = "",multiple = T))),
+                                                                                   column(3,conditionalPanel(condition="input.ClusTCR_display=='Selected'",
+                                                                                                             selectizeInput("Clusters_to_dis","Clusters to display", choices = "",multiple = T))),
                                                                                  ),
                                                                                  fluidRow(
                                                                                    column(3,
@@ -1803,32 +1811,45 @@ runSTEGO <- function(){
                                                                         )
                                                                       )
                                                              ),
+                                                             # marker specific TCR analysis --------
+                                                             tabPanel("Marker",
+                                                                      tabsetPanel(
+                                                                        tabPanel("Single marker",
+                                                                                 tabsetPanel(
+                                                                                   tabPanel("Feature plot"),
+                                                                                   tabPanel("Violin plot"),
+                                                                                   tabPanel("UMAP"),
+                                                                                   tabPanel("TCR/BCR Table")
+                                                                                 )
+                                                                                 # cut-off 1,
+                                                                                 # umap filtering?
+
+
+                                                                        ),
+                                                                        tabPanel("DEX analysis",
+                                                                                 # marker 1 # cut-off 1
+                                                                                 # marker 2 @ cut-off 2 (negative control)
+                                                                                 tabsetPanel(
+                                                                                   tabPanel("Feature plots"),
+                                                                                   tabPanel("Dot-plot"),
+                                                                                   tabPanel("Violin plot"),# will include splitting by T cell/B cell markers? Ig?
+                                                                                   tabPanel("UMAP"),
+                                                                                   tabPanel("TCR/BCR Table")
+
+                                                                                 ))
+                                                                      )
+
+                                                             ),
+
                                                              # Overlap ------
+                                                             # Marker analysis ------
+
 
                                                              # tabPanel("Clonotypes per cluster (Pie/bar plot)"),
                                                              # tabPanel("Upset plot")
                                                  ),
                                         ),
-                                        ### Longitudinal  -----
-                                        #
-                                        # tabPanel("Longitudinal data",
-                                        #          tabsetPanel(
-                                        #            tabPanel("Gene expression",
-                                        #                     tabsetPanel(
-                                        #                       tabPanel("Violine Plot"),
-                                        #                       tabPanel("Ridge Plot"),
-                                        #                       tabPanel("Stat")
-                                        #                     )),
-                                        #
-                                        #            tabPanel("plot_trajectories"),
-                                        #            # Module Expression
-                                        #            # possibely represented as a heatmap? Downloadable table for pathway analysis
-                                        #            tabPanel("Series of treemaps/chord diagrams?"),
-                                        #            tabPanel("Correlation plot?"),
-                                        #            tabPanel("Shannon_entropy vs time"), # changes in diveristy
-                                        #            tabPanel("Module")
-                                        #          )
-                                        # ),
+
                             )
                           )
                         )
@@ -4697,7 +4718,7 @@ runSTEGO <- function(){
       }
     })
 
-    output$DEx_view.meta.dt <- DT::renderDataTable(escape = FALSE, filter = list(position = 'top', clear = FALSE),  options = list(autoWidth = FALSE, lengthMenu = c(2,5,10,20,50,100), pageLength = 5, scrollX = TRUE),{
+    output$DEx_view.meta.dt <- DT::renderDataTable(escape = FALSE, filter = list(position = 'top', clear = FALSE),  options = list(autoWidth = FALSE, lengthMenu = c(2,5,10,20,50,100), pageLength = 2, scrollX = TRUE),{
       sc <- input.data_sc_meta()
 
       validate(
@@ -4731,7 +4752,7 @@ runSTEGO <- function(){
       vals_meta.sc$metadata_SCobj
     })
 
-    output$DEx_table_meta.data <- DT::renderDataTable(escape = FALSE, filter = list(position = 'top', clear = FALSE),  options = list(autoWidth = FALSE, lengthMenu = c(2,5,10,20,50,100), pageLength = 5, scrollX = TRUE),{
+    output$DEx_table_meta.data <- DT::renderDataTable(escape = FALSE, filter = list(position = 'top', clear = FALSE),  options = list(autoWidth = FALSE, lengthMenu = c(2,5,10,20,50,100), pageLength = 2, scrollX = TRUE),{
       calls <- vals_meta.sc$metadata_SCobj
       validate(
         need(nrow(calls)>0,
@@ -6319,6 +6340,22 @@ runSTEGO <- function(){
       }
       sc
     })
+
+    create_UMAP_custom_1 <- reactive({
+      sc <- scGate_anno_GeneSet1()
+
+      validate(
+        need(nrow(sc)>0,
+             "Run Clustering")
+      )
+
+      DimPlot(sc, reduction = "umap", group.by = "geneSet1", pt.size = 1)
+    })
+    output$create_custom_1<- renderPlot({
+      create_UMAP_custom_1()
+    })
+
+
     output$scGATE_verbatum_GeneSet1 <- renderPrint({
       FN <- tempfile()
       zz <- file(FN, open = "wt")
@@ -6359,6 +6396,21 @@ runSTEGO <- function(){
       }
       sc
     })
+
+    create_UMAP_custom_2 <- reactive({
+      sc <- scGate_anno_GeneSet2()
+
+      validate(
+        need(nrow(sc)>0,
+             "Run Clustering")
+      )
+
+      DimPlot(sc, reduction = "umap", group.by = "geneSet2", pt.size = 1)
+    })
+    output$create_custom_2<- renderPlot({
+      create_UMAP_custom_2()
+    })
+
     output$scGATE_verbatum_GeneSet2 <- renderPrint({
       FN <- tempfile()
       zz <- file(FN, open = "wt")
@@ -6399,6 +6451,21 @@ runSTEGO <- function(){
       }
       sc
     })
+
+    create_UMAP_custom_3 <- reactive({
+      sc <- scGate_anno_GeneSet3()
+
+      validate(
+        need(nrow(sc)>0,
+             "Run Clustering")
+      )
+
+      DimPlot(sc, reduction = "umap", group.by = "geneSet3", pt.size = 1)
+    })
+    output$create_custom_3<- renderPlot({
+      create_UMAP_custom_3()
+    })
+
     output$scGATE_verbatum_GeneSet3 <- renderPrint({
       FN <- tempfile()
       zz <- file(FN, open = "wt")
@@ -6438,6 +6505,21 @@ runSTEGO <- function(){
       }
       sc
     })
+
+    create_UMAP_custom_4 <- reactive({
+      sc <- scGate_anno_GeneSet4()
+
+      validate(
+        need(nrow(sc)>0,
+             "Run Clustering")
+      )
+
+      DimPlot(sc, reduction = "umap", group.by = "geneSet4", pt.size = 1)
+    })
+    output$create_custom_4<- renderPlot({
+      create_UMAP_custom_4()
+    })
+
     output$scGATE_verbatum_GeneSet4 <- renderPrint({
       FN <- tempfile()
       zz <- file(FN, open = "wt")
@@ -6477,6 +6559,21 @@ runSTEGO <- function(){
       }
       sc
     })
+
+    create_UMAP_custom_5 <- reactive({
+      sc <- scGate_anno_GeneSet5()
+
+      validate(
+        need(nrow(sc)>0,
+             "Run Clustering")
+      )
+
+      DimPlot(sc, reduction = "umap", group.by = "geneSet5", pt.size = 1)
+    })
+    output$create_custom_5<- renderPlot({
+      create_UMAP_custom_5()
+    })
+
     output$scGATE_verbatum_GeneSet5 <- renderPrint({
       FN <- tempfile()
       zz <- file(FN, open = "wt")
@@ -6516,6 +6613,21 @@ runSTEGO <- function(){
       }
       sc
     })
+
+    create_UMAP_custom_6 <- reactive({
+      sc <- scGate_anno_GeneSet6()
+
+      validate(
+        need(nrow(sc)>0,
+             "Run Clustering")
+      )
+
+      DimPlot(sc, reduction = "umap", group.by = "geneSet6", pt.size = 1)
+    })
+    output$create_custom_6<- renderPlot({
+      create_UMAP_custom_6()
+    })
+
     output$scGATE_verbatum_GeneSet6 <- renderPrint({
       FN <- tempfile()
       zz <- file(FN, open = "wt")
@@ -6555,6 +6667,21 @@ runSTEGO <- function(){
       }
       sc
     })
+
+    create_UMAP_custom_7 <- reactive({
+      sc <- scGate_anno_GeneSet7()
+
+      validate(
+        need(nrow(sc)>0,
+             "Run Clustering")
+      )
+
+      DimPlot(sc, reduction = "umap", group.by = "geneSet7", pt.size = 1)
+    })
+    output$create_custom_7<- renderPlot({
+      create_UMAP_custom_7()
+    })
+
     output$scGATE_verbatum_GeneSet7 <- renderPrint({
       FN <- tempfile()
       zz <- file(FN, open = "wt")
@@ -6593,6 +6720,20 @@ runSTEGO <- function(){
         sc
       }
       sc
+    })
+
+    create_UMAP_custom_8 <- reactive({
+      sc <- scGate_anno_GeneSet8()
+
+      validate(
+        need(nrow(sc)>0,
+             "Run Clustering")
+      )
+
+      DimPlot(sc, reduction = "umap", group.by = "geneSet8", pt.size = 1)
+    })
+    output$create_custom_8<- renderPlot({
+      create_UMAP_custom_8()
     })
     output$scGATE_verbatum_GeneSet8 <- renderPrint({
       FN <- tempfile()
@@ -6633,6 +6774,21 @@ runSTEGO <- function(){
       }
       sc
     })
+
+    create_UMAP_custom_9 <- reactive({
+      sc <- scGate_anno_GeneSet9()
+
+      validate(
+        need(nrow(sc)>0,
+             "Run Clustering")
+      )
+
+      DimPlot(sc, reduction = "umap", group.by = "geneSet9", pt.size = 1)
+    })
+    output$create_custom_9<- renderPlot({
+      create_UMAP_custom_9()
+    })
+
     output$scGATE_verbatum_GeneSet9 <- renderPrint({
       FN <- tempfile()
       zz <- file(FN, open = "wt")
@@ -7283,7 +7439,8 @@ runSTEGO <- function(){
         for (i in 1:x) {
           Feture_plots[[i]] <- FeaturePlot(sc,features = feature_name[i],raster=FALSE,label=input$label_is_true_features) +
             scale_color_gradientn(colours = c(input$lower_col_FP,input$upper_col_FP),limits=c(0,input$max_norm_FP)) +
-            theme(plot.background = element_rect(fill="white", color = NA))
+            theme(plot.background = element_rect(fill="white", color = NA)) +
+            theme(plot.title = element_text(size=10))
 
         }
       }
@@ -7292,7 +7449,8 @@ runSTEGO <- function(){
         for (i in 1:x) {
           Feture_plots[[i]] <- FeaturePlot(sc,features = feature_name[i],raster=FALSE,label=input$label_is_true_features) +
             scale_color_gradientn(colours = c(input$lower_col_FP,input$upper_col_FP)) +
-            theme(plot.background = element_rect(fill="white", color = NA))
+            theme(plot.background = element_rect(fill="white", color = NA)) +
+            theme(plot.title = element_text(size=10))
 
         }
       }
@@ -9908,11 +10066,15 @@ runSTEGO <- function(){
 
 
     observeEvent(input$run_string.data_Exp_top,{
-      df <- compare.stat()
+      # df <- compare.stat()
+
+      sc <- input.data_sc_pro()
+
       validate(
-        need(nrow(df)>0,
-             error_message_val_sc)
+        need(nrow(sc)>0,
+             "Upload file for annotation")
       )
+      df <- as.data.frame(sc@assays$RNA@meta.features)
 
       updateSelectInput(
         session,
@@ -10441,6 +10603,9 @@ runSTEGO <- function(){
         need(nrow(df2)>0,
              error_message_val1)
       )
+
+      req(input$Samp_col2)
+
       df2 <- as.data.frame(df2)
       names(df2) <- "V1"
       df2 <- as.data.frame(df2[order(df2$V1),])
@@ -10451,17 +10616,19 @@ runSTEGO <- function(){
       updateSelectInput(
         session,
         "ID_Column_factor_expanded",
-        choices=df2,
-        selected = df2[1]
+        choices=df2$V1,
+        selected = df2$V1[1]
       )
     })
+
+
     observe({
       sc <- input.data_sc_pro()
       validate(
         need(nrow(sc)>0,
              error_message_val_UMAP)
       )
-      df3.meta <-UMAP_metadata_with_labs()
+      df3.meta <- UMAP_metadata_with_labs()
       updateSelectInput(
         session,
         "Selected_status_of_",
@@ -10470,14 +10637,9 @@ runSTEGO <- function(){
     })
 
     select_group_metadata_ex <- reactive ({
-      sc <- input.data_sc_pro()
-      validate(
-        need(nrow(sc)>0,
-             error_message_val_UMAP)
-      )
-
-      req(input$Samp_col_expanded,input$ID_Column_factor_expanded)
-
+      df <- Expansion_check_table()
+      req(df)
+      # req(input$Samp_col_expanded,input$ID_Column_factor_expanded)
       df <- Expansion_check_table()
       df2 <- df$expansion.status
       df2 <- as.data.frame(df2)
@@ -10485,7 +10647,7 @@ runSTEGO <- function(){
 
     })
 
-    observe({
+    observeEvent(input$run_Expanded_stats,{
       df2 <- select_group_metadata_ex()
 
       validate(
@@ -10507,7 +10669,7 @@ runSTEGO <- function(){
       )
     })
 
-    observe({
+    observeEvent(input$run_Expanded_stats,{
       df2 <- select_group_metadata_ex()
 
       validate(
@@ -10532,20 +10694,22 @@ runSTEGO <- function(){
 
     ### table check ------
     Expansion_check_table <- reactive({
-      sc <- input.data_sc_pro()
+      sc <- UMAP_metadata_with_labs()
       validate(
         need(nrow(sc)>0,
              error_message_val_UMAP)
       )
-
 
       req(input$Samp_col_expanded,input$ID_Column_factor_expanded,input$V_gene_sc,input$cut.off_expanded)
-      validate(
-        need(nrow(sc)>0,
-             error_message_val_UMAP)
-      )
+
       message(paste("Calculating expansion"))
+
       Expansion.meta.data <- UMAP_metadata_with_labs()
+      validate(
+        need(nrow(Expansion.meta.data)>0,
+             "Calculating")
+      )
+
       names(Expansion.meta.data)[names(Expansion.meta.data) %in% input$Samp_col_expanded] <- "Samp"
       Expansion.meta.data <- Expansion.meta.data[Expansion.meta.data$Samp %in% c(input$ID_Column_factor_expanded),]
       names(Expansion.meta.data)[names(Expansion.meta.data) %in% "Samp"] <- input$Samp_col_expanded
@@ -10587,7 +10751,7 @@ runSTEGO <- function(){
 
       df3.meta <- c(names(Expansion_check_table()))
       # df3.meta <- df3.meta[!grepl("RNA",df3.meta) & !grepl("BCR",df3.meta) & !grepl("TCR",df3.meta)& !grepl("_gene",df3.meta) & !grepl("allele",df3.meta) & !grepl("percent",df3.meta) & !grepl("cdr3",df3.meta)]
-      selectInput("Colour_By_this_Expanded","Expanded Colour by: ",choices = df3.meta,selected="seurat_clusters")
+      selectInput("Colour_By_this_Expanded","Expanded Colour by: ",choices = df3.meta,selected="expand.singlets")
 
     })
 
@@ -10660,6 +10824,7 @@ runSTEGO <- function(){
     })
 
     output$cols_UMAP_Expanded <- renderUI({cols_UMAP_Expanded()})
+
     colors_Expanded <- reactive({
       sc <- input.data_sc_pro()
 
@@ -10684,7 +10849,7 @@ runSTEGO <- function(){
         need(nrow(sc)>0,
              error_message_val1)
       )
-      req(input$Colour_By_this_Expanded)
+      req(input$Colour_By_this_Expanded,input$wrap_row)
       top_BD_cluster <-  Expansion_check_table()
       top_BD_cluster$Selected_function <- top_BD_cluster[,names(top_BD_cluster) %in% input$Colour_By_this_Expanded]
       top_BD_cluster$Selected_function <- ifelse(grepl("NA", top_BD_cluster$Selected_function),NA,top_BD_cluster$Selected_function)
@@ -10788,22 +10953,9 @@ runSTEGO <- function(){
       sc.Expanded@meta.data <- expanded.meta.data2
       sc.Expanded
     })
-    output$compare.stat_Violin_plot <- DT::renderDataTable(escape = FALSE, options = list(autoWidth = FALSE, lengthMenu = c(2,5,10,20,50,100), pageLength =10, scrollX = TRUE),{
+    # Vals_expanded.stats <- reactiveValues(output_ex1=NULL)
 
-      sc <-input.data_sc_pro()
-
-      validate(
-        need(nrow(sc)>0,
-             error_message_val_sc)
-      )
-      # message(paste("Adding table",system.time()))
-      sc_ex <- compare.stat_Violin_sc()
-      sc_ex@meta.data
-    })
-
-    Vals_expanded.stats <- reactiveValues(output_ex1=NULL)
-
-    observeEvent(input$run_Expanded_stats,{
+    Vals_expanded.stats <- reactive({
 
       sc <-input.data_sc_pro()
 
@@ -10813,6 +10965,7 @@ runSTEGO <- function(){
       )
 
       sc <- compare.stat_Violin_sc()
+      req(input$selected_Indiv_Ex_1,input$selected_Indiv_Ex_2,input$pval.ex.filter)
 
       Idents(object = sc) <- sc@meta.data$expansion.status
       #
@@ -10822,8 +10975,10 @@ runSTEGO <- function(){
 
       markers.fm.list <- FindMarkers(sc, ident.1 = input$selected_Indiv_Ex_1, ident.2 = c(input$selected_Indiv_Ex_2), min.pct = min.pct.expression,  logfc.threshold = min.logfc, only.pos=TRUE)
       markers.fm.list2 <- subset(markers.fm.list,markers.fm.list$p_val_adj < input$pval.ex.filter)
-      Vals_expanded.stats$output_ex1 <- as.data.frame(markers.fm.list2)
-      Vals_expanded.stats$output_ex1
+      Vals_expanded.stats <- as.data.frame(markers.fm.list2)
+      Vals_expanded.stats
+
+
     })
 
     output$compare.stat_Ex <- DT::renderDataTable(escape = FALSE, options = list(autoWidth = FALSE, lengthMenu = c(2,5,10,20,50,100), pageLength =10, scrollX = TRUE),{
@@ -10834,7 +10989,7 @@ runSTEGO <- function(){
         need(nrow(sc)>0,
              error_message_val_sc)
       )
-      as.data.frame(Vals_expanded.stats$output_ex1)
+      as.data.frame(Vals_expanded.stats())
     })
 
     output$downloadtb_compare.stat_Ex <- downloadHandler(
@@ -10842,7 +10997,7 @@ runSTEGO <- function(){
         paste("compare.stat_Expanded_",gsub("-", ".", Sys.Date()),".csv", sep = "")
       },
       content = function(file){
-        df <- as.data.frame(Vals_expanded.stats$output_ex1)
+        df <- as.data.frame(Vals_expanded.stats())
         write.csv(df,file, row.names = T)
       } )
 
@@ -10854,10 +11009,10 @@ runSTEGO <- function(){
              error_message_val_sc))
 
       if(input$restrict.dotpot == "yes") {
-        list.names <- rownames(Vals_expanded.stats$output_ex1)[1:input$restrict.dotpot.num]
+        list.names <- rownames(Vals_expanded.stats())[1:input$restrict.dotpot.num]
       }
       else {
-        list.names <- rownames(Vals_expanded.stats$output_ex1)
+        list.names <- rownames(Vals_expanded.stats())
       }
       size_legend = input$Bar_legend_size-2
       Idents(object = sc) <- sc@meta.data$expansion.status
@@ -12974,5 +13129,4 @@ runSTEGO <- function(){
     ### end -----
   }
   shinyApp(ui, server)
-
 }
