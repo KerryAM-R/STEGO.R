@@ -1,10 +1,10 @@
 Package: STEGO.R
 Title: Analysis of single cell RNA-seq with paired T cell receptor repertiore datasets
-Version: 1.0.0
+Version: 1.1.1
 Authors@R: 
     person("Kerry", "Mullan", , "Kerry.Mullan@uantwerpen.be", role = c("aut", "cre"),
            comment = c(ORCID = "0000-0003-4400-1198"))
-Description: What the package does (one paragraph).
+Description: This is a shiny R application designed to perform the dule analysis of single cell RNA-seq with scTCR-seq data. The program can input in 10x Genomics, BD rhapsody data and array based. The process standardises the annotations of the T cell subsets using scGate. 
 License: GPL (>= 3)
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
