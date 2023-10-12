@@ -5,7 +5,7 @@ require(sysfonts)
 font_add_google("Gochi Hand", "gochi")
 font_add_google("Schoolbell", "bell")
 font_add_google("Press Start 2P", "Game")
-showtext_auto()
+# showtext_auto()
 
 # font ------
 font <- as.data.frame(font_families())

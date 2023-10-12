@@ -65,7 +65,7 @@ runSTEGO <- function(){
                                                   selectInput("BCR_TCR_10x","Type of data",choices = c("TCR only","BCR only","both")),
 
                                      ),
-                                     ### 10x main panel -----
+### 10x main panel -----
                                      mainPanel(
 
                                        tabsetPanel(id = "panel_10x",
