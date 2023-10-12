@@ -9,13 +9,11 @@ runSTEGO <- function(){
   source(system.file("Global","required_functions.R",package = "STEGO.R"))
   suppressWarnings(source(system.file("scGATE","custom_df_scGATE.R",package = "STEGO.R")))
   suppressWarnings(source(system.file("scGATE","custom_annotation_models.R",package = "STEGO.R")))
-  # source("custom_annotation_models.R")
 
-  #   Error opening file C:\Users\ianng\AppData\Local\Temp\RtmpWWWuHE\file1f002ae37f99.h5Seurat: 32
-  # ?add_busy_spinner
-  # source(system.file("Global","global.R",package = "STEGO.R"))
+  col_markers <- c("Blues", "BuGn", "BuPu", "GnBu", "Greens", "Greys", "Oranges", "OrRd", "PuBu", "PuBuGn", "PuRd", "Purples", "RdPu", "Reds", "YlGn", "YlGnBu","YlOrBr", "YlOrRd")
   options(shiny.maxRequestSize = 100000*1024^2)
   options(future.globals.maxSize = 100000 * 1024^5) #to options (future.globals.maxSize = 4000 * 1024^5)
+
   # UI page -----
   ui <- fluidPage(
     theme = bs_theme(
@@ -981,7 +979,7 @@ runSTEGO <- function(){
                                        selectInput("datasource", "Data source",choices=c("10x_Genomics","BD_Rhapsody_Paired","BD_Rhapsody_AIRR")),
                                        selectInput("species_analysis","Species",choices = c("hs","mm")),
                                        # selectInput("STEGO_R_pro","QC processed",choices = c("STEGO_R (.h5Seurat)")), #,"Seurat (.rds)"
-                                       textInput("name.file_clust","Name added to files",value = ""),
+                                       # textInput("name.file_clust","Name added to files",value = ""),
                                        conditionalPanel(condition="input.check_up_files== 'up'",
                                                         fileInput('file_SC_pro', 'Upload seurat file',
                                                                   accept=c("h5Seurat",'.h5Seurat','rds')),
@@ -1007,11 +1005,14 @@ runSTEGO <- function(){
                                        ),
                                        column(12,selectInput("V_gene_sc","V gene with/without CDR3",choices = "")),
                                        # tags$style("#classification_to_add_overview {background-color:#e5e5e5;}"),
-                                       conditionalPanel( condition="input.check_up_files == 'up2'",uiOutput("classification_to_add_overview")),
+                                       conditionalPanel( condition="input.check_up_files == 'up2'",
+                                                         uiOutput("classification_to_add_overview")
+                                       ),
 
                                        conditionalPanel( condition="input.check_up_files != 'up'",
                                                          conditionalPanel( condition="input.Panel_TCRUMAP != 'Expanded'",
-                                                                           conditionalPanel( condition="input.check_up_files != 'up2'",uiOutput("classification_to_add")
+                                                                           conditionalPanel( condition="input.check_up_files != 'up2'",
+                                                                                             uiOutput("classification_to_add")
                                                                            )
 
                                                          )
@@ -1019,17 +1020,17 @@ runSTEGO <- function(){
 
                                        # Expanded stat cut-offs
                                        conditionalPanel( condition="input.Panel_TCRUMAP == 'Expanded'",
-                                                         conditionalPanel(condition="input.ExPan=='ExPan_stat' || input.ExPan=='ExPan_dot' || input.ExPan=='ExPan_OvRep'",
-                                                                          column(12,actionButton("run_Expanded_stats","Select comparison")),
-                                                                          fluidRow(
-                                                                            column(6,selectInput("Selected_status_of_","Add Status of samples ID",choices = "")),
-                                                                            column(12,selectInput("selected_Indiv_Ex_1","Samp 1",choices = "", multiple = T)),
-                                                                            column(12,selectInput("selected_Indiv_Ex_2","Samp 2",choices = "", multiple = T)),
-                                                                            column(4,numericInput("min_point_top_Ex","Min point cut off", value = 0.25)),
-                                                                            column(4,numericInput("LogFC_top_Ex","Min LogFC cut off", value = 0.25)),
-                                                                            column(4,numericInput("pval.ex.filter","adj.p-val cut-off", value = 0.1)),
-                                                                          ),
+                                                         # conditionalPanel(condition="input.ExPan=='ExPan_stat' || input.ExPan=='ExPan_dot' || input.ExPan=='ExPan_OvRep'",
+                                                         column(12,actionButton("run_Expanded_stats","Select comparison")),
+                                                         fluidRow(
+                                                           column(6,selectInput("Selected_status_of_","Add Status of samples ID",choices = "")),
+                                                           column(12,selectizeInput("selected_Indiv_Ex_1","Samp 1",choices = "", multiple = T)),
+                                                           column(12,selectizeInput("selected_Indiv_Ex_2","Samp 2",choices = "", multiple = T)),
+                                                           column(4,numericInput("min_point_top_Ex","Min point cut off", value = 0.25)),
+                                                           column(4,numericInput("LogFC_top_Ex","Min LogFC cut off", value = 0.25)),
+                                                           column(4,numericInput("pval.ex.filter","adj.p-val cut-off", value = 0.1)),
                                                          ),
+                                                         # ),
                                        ),
 
                                        conditionalPanel( condition="input.Panel_TCRUMAP == 'Epitope'",
@@ -1046,6 +1047,16 @@ runSTEGO <- function(){
                                                           column(4,numericInput("LogFC_Clust","Min LogFC cut off", value = 0.25)),
                                                           column(4,numericInput("pval.ex.filter_Clust","adj.p-val cut-off", value = 0.1)),
                                                         )
+                                       ),
+                                       conditionalPanel(condition="input.Panel_TCRUMAP == 'top_clone'",
+                                                        fluidRow(
+                                                          column(4,numericInput("min_point_top","Min point cut off", value = 0.25)),
+                                                          column(4,numericInput("LogFC_top","Min LogFC cut off", value = 0.25)),
+                                                          column(4,numericInput("pval.ex.filter_original","P-value<", value = 0.1)),
+                                                        )
+                                       ),
+                                       conditionalPanel(condition = "input.Panel_TCRUMAP == 'Marker'",
+                                                        selectInput("col_marker_scale","Colour scale",choices = col_markers,selected = col_markers[1])
                                        ),
 
                                        conditionalPanel(condition="input.check_up_files != 'up'",
@@ -1190,23 +1201,18 @@ runSTEGO <- function(){
 
                                                                                                               ),
                                                                                              ),
-
-
                                                                                            ),
-                                                                                           fluidRow(
-                                                                                             column(3,numericInput("width_clonality.bar.graph", "Width of PDF", value=10)),
-                                                                                             column(3,numericInput("height_clonality.bar.graph", "Height of PDF", value=8)),
-                                                                                             column(3),
-                                                                                             column(3,style = "margin-top: 25px;",downloadButton('downloadPlot_clonaity.bar.graph','Download PDF'))),
 
                                                                                            fluidRow(
-                                                                                             column(3,numericInput("width_png_clonality.bar.graph","Width of PNG", value = 2400)),
-                                                                                             column(3,numericInput("height_png_clonality.bar.graph","Height of PNG", value = 1400)),
-                                                                                             column(3,numericInput("resolution_PNG_clonality.bar.graph","Resolution of PNG", value = 144)),
-                                                                                             column(3,style = "margin-top: 25px;",downloadButton('downloadPlotPNG_clonaity.bar.graph','Download PNG'))
-                                                                                           )
+                                                                                             column(1,numericInput("width_clonality.bar.graph", "Width of PDF", value=10)),
+                                                                                             column(1,numericInput("height_clonality.bar.graph", "Height of PDF", value=8)),
+                                                                                             column(2,style = "margin-top: 25px;",downloadButton('downloadPlot_clonaity.bar.graph','Download PDF')),
+                                                                                             column(2,numericInput("width_png_clonality.bar.graph","Width of PNG", value = 1200)),
+                                                                                             column(2,numericInput("height_png_clonality.bar.graph","Height of PNG", value = 1000)),
+                                                                                             column(2,numericInput("resolution_PNG_clonality.bar.graph","Resolution of PNG", value = 144)),
+                                                                                             column(2,style = "margin-top: 25px;",downloadButton('downloadPlotPNG_clonaity.bar.graph','Download PNG'))
+                                                                                           ),
                                                                                   ),
-
                                                                                   #### UMAP clonality -> TCR -----
                                                                                   tabPanel("UMAP with clonality (counts)", value = 3,
                                                                                            add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
@@ -1231,18 +1237,17 @@ runSTEGO <- function(){
                                                                                                                                uiOutput('cols_UMAP_clonal_plot'))),
                                                                                                               column(9, plotOutput("clonality.TCR.UMAP",height="600px"))
                                                                                                             ),
-                                                                                                            fluidRow(
-                                                                                                              column(3,numericInput("width_TCR.UMAP", "Width of PDF", value=10)),
-                                                                                                              column(3,numericInput("height_TCR.UMAP", "Height of PDF", value=5)),
-                                                                                                              column(3),
-                                                                                                              column(3,style = "margin-top: 25px;",downloadButton('downloadPlot_TCR.UMAP','Download PDF'))),
 
                                                                                                             fluidRow(
-                                                                                                              column(3,numericInput("width_png_TCR.UMAP","Width of PNG", value = 2400)),
-                                                                                                              column(3,numericInput("height_png_TCR.UMAP","Height of PNG", value = 1200)),
-                                                                                                              column(3,numericInput("resolution_PNG_TCR.UMAP","Resolution of PNG", value = 144)),
-                                                                                                              column(3,style = "margin-top: 25px;",downloadButton('downloadPlotPNG_TCR.UMAP','Download PNG'))
+                                                                                                              column(1,numericInput("width_TCR.UMAP", "Width of PDF", value=10)),
+                                                                                                              column(1,numericInput("height_TCR.UMAP", "Height of PDF", value=8)),
+                                                                                                              column(2,style = "margin-top: 25px;",downloadButton('downloadPlot_TCR.UMAP','Download PDF')),
+                                                                                                              column(2,numericInput("width_png_TCR.UMAP","Width of PNG", value = 1200)),
+                                                                                                              column(2,numericInput("height_png_TCR.UMAP","Height of PNG", value = 1000)),
+                                                                                                              column(2,numericInput("resolution_PNG_TCR.UMAP","Resolution of PNG", value = 144)),
+                                                                                                              column(2,style = "margin-top: 25px;",downloadButton('downloadPlotPNG_TCR.UMAP','Download PNG'))
                                                                                                             ),
+
 
                                                                                            ),
                                                                                            conditionalPanel(condition="input.Graph_type_bar=='Top_clonotypes'",
@@ -1265,19 +1270,14 @@ runSTEGO <- function(){
                                                                                                                      wellPanel(id = "tPanel23",style = "overflow-y:scroll; max-height: 600px",
                                                                                                                                uiOutput('cols_UMAP_Topclonotypes'))),
                                                                                                               column(9, plotOutput("clonality.TCR.UMAP.top",height="600px")),
-
                                                                                                               fluidRow(
-                                                                                                                column(3,numericInput("width_TCR.UMAP_top", "Width of PDF", value=10)),
-                                                                                                                column(3,numericInput("height_TCR.UMAP_top", "Height of PDF", value=8)),
-                                                                                                                column(3),
-                                                                                                                column(3,style = "margin-top: 25px;",downloadButton('downloadPlot_TCR.UMAP_top','Download PDF'))),
-
-                                                                                                              fluidRow(
-                                                                                                                column(3,numericInput("width_png_TCR.UMAP_top","Width of PNG", value = 1200)),
-                                                                                                                column(3,numericInput("height_png_TCR.UMAP_top","Height of PNG", value = 1400)),
-                                                                                                                column(3,numericInput("resolution_PNG_TCR.UMAP_top","Resolution of PNG", value = 144)),
-                                                                                                                column(3,style = "margin-top: 25px;",downloadButton('downloadPlotPNG_TCR.UMAP_top','Download PNG'))
-                                                                                                              ),
+                                                                                                                column(1,numericInput("width_TCR.UMAP_top", "Width of PDF", value=10)),
+                                                                                                                column(1,numericInput("height_TCR.UMAP_top", "Height of PDF", value=8)),
+                                                                                                                column(2,style = "margin-top: 25px;",downloadButton('downloadPlot_TCR.UMAP_top','Download PDF')),
+                                                                                                                column(2,numericInput("width_png_TCR.UMAP_top","Width of PNG", value = 1200)),
+                                                                                                                column(2,numericInput("height_png_TCR.UMAP_top","Height of PNG", value = 1000)),
+                                                                                                                column(2,numericInput("resolution_PNG_TCR.UMAP_top","Resolution of PNG", value = 144)),
+                                                                                                                column(2,style = "margin-top: 25px;",downloadButton('downloadPlotPNG_TCR.UMAP_top','Download PNG'))),
 
                                                                                                             ),
                                                                                            ),
@@ -1328,9 +1328,9 @@ runSTEGO <- function(){
                                                                                                                      uiOutput('myPanel_pie'))), # pie chart
                                                                                                     column(9, plotOutput("Classification_clonotype_pie",height="600px"))
                                                                                            ),
-                                                                                           fluidRow(
-                                                                                             div(DT::dataTableOutput("table_pie")),
-                                                                                           ),
+                                                                                           # fluidRow(
+                                                                                           #   div(DT::dataTableOutput("table_pie")),
+                                                                                           # ),
 
                                                                                            fluidRow(
                                                                                              column(1,numericInput("width_Classification_clonotype_pie", "Width of PDF", value=10)),
@@ -1342,44 +1342,44 @@ runSTEGO <- function(){
                                                                                              column(2,style = "margin-top: 25px;",downloadButton('downloadPlotPNG_Classification_clonotype_pie','Download PNG'))),
 
                                                                                   ),
-                                                                                  tabPanel("Longitudinal (χ2) ",
-                                                                                           h5("balloonplot of χ2"),
-                                                                                           p("The plots include the pearsons residuals for each cell (aka standardized residuals), for the proportion of cell contribution. The Contrib = contribution in percentage (%)"),p("See:",tags$a(href="http://www.sthda.com/english/wiki/chi-square-test-of-independence-in-r", " for Information")),
-                                                                                           selectInput("type_res","Type of comparison",choices = c("Residuals","Contrib")),
-                                                                                           conditionalPanel(condition="input.type_res=='Residuals'",
-                                                                                                            fluidRow(
-                                                                                                              column(3,colourInput("lower_col_chi","Lower colour:","purple")),
-                                                                                                              column(3,colourInput("mid_col_chi","Mid colour:","White")),
-                                                                                                              column(3,colourInput("high_col_chi","Higher colour:","Gold")),
-                                                                                                            )),
-                                                                                           conditionalPanel(condition="input.type_res=='Contrib'",
-                                                                                                            fluidRow(
-                                                                                                              column(3,colourInput("lower_col_chi2","Lower colour:","purple")),
-                                                                                                              # column(3,colourInput("mid_col_chi","Mid colour:","White")),
-                                                                                                              column(3,colourInput("high_col_chi2","Higher colour:","Gold")),
-                                                                                                            )),
-
-                                                                                           tabsetPanel(
-                                                                                             tabPanel("Chi-square test",
-                                                                                                      # div(DT::dataTableOutput()),
-                                                                                                      verbatimTextOutput("Chi_tab_before"),
-                                                                                                      h5("Post hoc test"),
-                                                                                                      div(DT::dataTableOutput("Post_hoc_chi")),
-                                                                                                      # verbatimTextOutput(),
-                                                                                             ),
-                                                                                             tabPanel("balloonplot",
-                                                                                                      plotOutput("Chi_square_plot",height="600px"),
-                                                                                                      fluidRow(
-                                                                                                        column(1,numericInput("width_Chi_square_plot", "Width of PDF", value=10)),
-                                                                                                        column(1,numericInput("height_Chi_square_plot", "Height of PDF", value=8)),
-                                                                                                        column(2,style = "margin-top: 25px;",downloadButton('downloadPlot_Chi_square_plot','Download PDF')),
-                                                                                                        column(2,numericInput("width_png_Chi_square_plot","Width of PNG", value = 1200)),
-                                                                                                        column(2,numericInput("height_png_Chi_square_plot","Height of PNG", value = 1000)),
-                                                                                                        column(2,numericInput("resolution_PNG_Chi_square_plot","Resolution of PNG", value = 144)),
-                                                                                                        column(2,style = "margin-top: 25px;",downloadButton('downloadPlotPNG_Chi_square_plot','Download PNG'))),
-                                                                                             )
-                                                                                           ),
-                                                                                  )
+                                                                                  # tabPanel("Longitudinal (χ2) ",
+                                                                                  #          h5("balloonplot of χ2"),
+                                                                                  #          p("The plots include the pearsons residuals for each cell (aka standardized residuals), for the proportion of cell contribution. The Contrib = contribution in percentage (%)"),p("See:",tags$a(href="http://www.sthda.com/english/wiki/chi-square-test-of-independence-in-r", " for Information")),
+                                                                                  #          selectInput("type_res","Type of comparison",choices = c("Residuals","Contrib")),
+                                                                                  #          conditionalPanel(condition="input.type_res=='Residuals'",
+                                                                                  #                           fluidRow(
+                                                                                  #                             column(3,colourInput("lower_col_chi","Lower colour:","purple")),
+                                                                                  #                             column(3,colourInput("mid_col_chi","Mid colour:","White")),
+                                                                                  #                             column(3,colourInput("high_col_chi","Higher colour:","Gold")),
+                                                                                  #                           )),
+                                                                                  #          conditionalPanel(condition="input.type_res=='Contrib'",
+                                                                                  #                           fluidRow(
+                                                                                  #                             column(3,colourInput("lower_col_chi2","Lower colour:","purple")),
+                                                                                  #                             # column(3,colourInput("mid_col_chi","Mid colour:","White")),
+                                                                                  #                             column(3,colourInput("high_col_chi2","Higher colour:","Gold")),
+                                                                                  #                           )),
+                                                                                  #
+                                                                                  #          tabsetPanel(
+                                                                                  #            tabPanel("Chi-square test",
+                                                                                  #                     # div(DT::dataTableOutput()),
+                                                                                  #                     verbatimTextOutput("Chi_tab_before"),
+                                                                                  #                     h5("Post hoc test"),
+                                                                                  #                     div(DT::dataTableOutput("Post_hoc_chi")),
+                                                                                  #                     # verbatimTextOutput(),
+                                                                                  #            ),
+                                                                                  #            tabPanel("balloonplot",
+                                                                                  #                     plotOutput("Chi_square_plot",height="600px"),
+                                                                                  #                     fluidRow(
+                                                                                  #                       column(1,numericInput("width_Chi_square_plot", "Width of PDF", value=10)),
+                                                                                  #                       column(1,numericInput("height_Chi_square_plot", "Height of PDF", value=8)),
+                                                                                  #                       column(2,style = "margin-top: 25px;",downloadButton('downloadPlot_Chi_square_plot','Download PDF')),
+                                                                                  #                       column(2,numericInput("width_png_Chi_square_plot","Width of PNG", value = 1200)),
+                                                                                  #                       column(2,numericInput("height_png_Chi_square_plot","Height of PNG", value = 1000)),
+                                                                                  #                       column(2,numericInput("resolution_PNG_Chi_square_plot","Resolution of PNG", value = 144)),
+                                                                                  #                       column(2,style = "margin-top: 25px;",downloadButton('downloadPlotPNG_Chi_square_plot','Download PNG'))),
+                                                                                  #            )
+                                                                                  #          ),
+                                                                                  # )
 
                                                                       ),
                                                              ),
@@ -1525,90 +1525,81 @@ runSTEGO <- function(){
                                                                         # add in find marker for comparing population to other for top clonotype
                                                                         # tabPanel("FindMarker"),
 
-                                                                        tabPanel("Expression",
+                                                                        # tabPanel("Expression",
+
+
+
+                                                                        # tabsetPanel(
+                                                                        tabPanel("Ridge/Violin plots",
+
                                                                                  actionButton("run_string.data_Exp_top","View Ridge plot"),
                                                                                  fluidRow(column(12, selectInput("string.data_Exp_top","column names for summary","",multiple = F, width = "1200px") )),
                                                                                  fluidRow(
-                                                                                   column(3,numericInput("min_point_top","Min point cut off", value = 0.25)),
-                                                                                   column(3,numericInput("LogFC_top","Min LogFC cut off", value = 0.25)),
-                                                                                   column(3,numericInput("pval.ex.filter_original","P-value<", value = 0.001)),
-
-                                                                                   # column(3,numericInput("Pval_top","P-value", value = 0.001)),
+                                                                                   column(3, checkboxInput("restric_ex","Restrict to above a threshold?", value = F )),
+                                                                                   column(3, numericInput("Gre_ex","Expression above:", value = 0 )),
+                                                                                   column(3, selectInput("plot_type_ridgvi","Plot type", choices = c("Ridge (selected clonotype)","Ridge (compare)","Violin (selected clonotype)", "Violin (compare)"))),
                                                                                  ),
 
-                                                                                 tabsetPanel(
-                                                                                   tabPanel("Ridge/Violin plots",
-                                                                                            div(DT::dataTableOutput("Violin_chart_alpha_gamma")),
-                                                                                            fluidRow(
-                                                                                              column(3, checkboxInput("restric_ex","Restrict to above a threshold?", value = F )),
-                                                                                              column(3, numericInput("Gre_ex","Expression above:", value = 0 )),
-                                                                                              column(3, selectInput("plot_type_ridgvi","Plot type", choices = c("Ridge (selected clonotype)","Ridge (compare)","Violin (selected clonotype)", "Violin (compare)"))),
-                                                                                            ),
+                                                                                 add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
+                                                                                 fluidRow(
+                                                                                   column(6, div(DT::dataTableOutput("Ridge_chart_alpha_gamma_stat"))),
+                                                                                   column(6, plotOutput("Ridge_chart_alpha_gamma_plot_out",height="600px"))
 
-                                                                                            add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
-                                                                                            plotOutput("Ridge_chart_alpha_gamma_plot_out",height="600px"),
-                                                                                            fluidRow(
-                                                                                              column(1,numericInput("width_Ridge_chart_alpha_gamma_plot_out", "Width of PDF", value=10)),
-                                                                                              column(1,numericInput("height_Ridge_chart_alpha_gamma_plot_out", "Height of PDF", value=8)),
-                                                                                              column(2,style = "margin-top: 25px;",downloadButton('downloadPlot_Ridge_chart_alpha_gamma_plot_out','Download PDF')),
-                                                                                              column(2,numericInput("width_png_Ridge_chart_alpha_gamma_plot_out","Width of PNG", value = 1200)),
-                                                                                              column(2,numericInput("height_png_Ridge_chart_alpha_gamma_plot_out","Height of PNG", value = 1000)),
-                                                                                              column(2,numericInput("resolution_PNG_Ridge_chart_alpha_gamma_plot_out","Resolution of PNG", value = 144)),
-                                                                                              column(2,style = "margin-top: 25px;",downloadButton('downloadPlotPNG_Ridge_chart_alpha_gamma_plot_out','Download PNG'))),
-
-                                                                                   ),
-
-                                                                                   tabPanel("Stats",
-                                                                                            add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
-                                                                                            h5("Left = relative to all; Right based on function"),
-                                                                                            fluidRow(
-                                                                                              column(6, div(DT::dataTableOutput("Ridge_chart_alpha_gamma_stat"))),
-                                                                                              column(6, div(DT::dataTableOutput("Ridge_chart_alpha_gamma_stat_comp")))
-                                                                                            ),
-
-                                                                                            fluidRow(
-                                                                                              column(6,downloadButton('downloaddf_clusTCR_GEx','Download stat (left)')),
-                                                                                              column(6,downloadButton('downloaddf_FindMarker_Top','Download stat (Right)'))
-
-                                                                                            ),
-                                                                                   ),
-                                                                                   ##### dotplot top-----
-                                                                                   tabPanel("Dotplot",
-                                                                                            fluidRow(
-                                                                                              column(2,colourInput("low.dotplot","Lower color:","darkblue")),
-                                                                                              column(2,colourInput("middle.dotplot","Middle color:","white")),
-                                                                                              column(2,colourInput("high.dotplot","High color:","darkred")),
-                                                                                              column(2,checkboxInput("restict_no_points","Restrict Label",value = F)),
-                                                                                              column(2,numericInput("pval.ex.top_genes","Top genes to display", value = 40)),
-                                                                                            ),
-                                                                                            add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
-
-                                                                                            plotOutput("all_expression_dotplot_top",height="400px"),
-
-                                                                                            textInput("name_clonotype_selected","Name of clone","clone 1"),
-                                                                                            fluidRow(
-                                                                                              column(1,numericInput("width_all_expression_dotplot_top", "Width of PDF", value=20)),
-                                                                                              column(1,numericInput("height_all_expression_dotplot_top", "Height of PDF", value=4)),
-                                                                                              column(2,style = "margin-top: 25px;",downloadButton('downloadPlot_all_expression_dotplot_top','Download PDF')),
-                                                                                              column(2,numericInput("width_png_all_expression_dotplot_top","Width of PNG", value = 2400)),
-                                                                                              column(2,numericInput("height_png_all_expression_dotplot_top","Height of PNG", value = 600)),
-                                                                                              column(2,numericInput("resolution_PNG_all_expression_dotplot_top","Resolution of PNG", value = 144)),
-                                                                                              column(2,style = "margin-top: 25px;",downloadButton('downloadPlotPNG_all_expression_dotplot_top','Download PNG'))),
-
-                                                                                   ),
-                                                                                   tabPanel("Over-representation",
-                                                                                            fluidRow(
-                                                                                              column(3,numericInput("in.geneset.cutoff","Min number of genes in GeneSet",value = 1, min = 0)),
-                                                                                              column(3,numericInput("p.val_cutoff_top","p-val cut-off",value = 0.05, min = 0, max = 1)),
-                                                                                              column(3,numericInput("adjust_cutoff_top","BH cut-off",value = 1, min = 0, max = 1)),
-                                                                                            ),
-                                                                                            add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
-                                                                                            div(DT::dataTableOutput("Over_rep_Top_clones_Tab")),
-                                                                                            downloadButton('downloadtb_over.rep.Top_Ex','Download table')
-                                                                                            #
-                                                                                   )
                                                                                  ),
+                                                                                 column(6,downloadButton('downloaddf_clusTCR_GEx','Download stats')),
+                                                                                 fluidRow(
+                                                                                   column(1,numericInput("width_Ridge_chart_alpha_gamma_plot_out", "Width of PDF", value=10)),
+                                                                                   column(1,numericInput("height_Ridge_chart_alpha_gamma_plot_out", "Height of PDF", value=8)),
+                                                                                   column(2,style = "margin-top: 25px;",downloadButton('downloadPlot_Ridge_chart_alpha_gamma_plot_out','Download PDF')),
+                                                                                   column(2,numericInput("width_png_Ridge_chart_alpha_gamma_plot_out","Width of PNG", value = 1200)),
+                                                                                   column(2,numericInput("height_png_Ridge_chart_alpha_gamma_plot_out","Height of PNG", value = 1000)),
+                                                                                   column(2,numericInput("resolution_PNG_Ridge_chart_alpha_gamma_plot_out","Resolution of PNG", value = 144)),
+                                                                                   column(2,style = "margin-top: 25px;",downloadButton('downloadPlotPNG_Ridge_chart_alpha_gamma_plot_out','Download PNG'))),
+
                                                                         ),
+
+                                                                        tabPanel("Stats",
+                                                                                 add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
+                                                                                 div(DT::dataTableOutput("Ridge_chart_alpha_gamma_stat_comp")),
+                                                                                 downloadButton('downloaddf_FindMarker_Top','Download stat (Right)')
+                                                                        ),
+                                                                        ##### dotplot top-----
+                                                                        tabPanel("Dotplot",
+                                                                                 fluidRow(
+                                                                                   column(2,colourInput("low.dotplot","Lower color:","darkblue")),
+                                                                                   column(2,colourInput("middle.dotplot","Middle color:","white")),
+                                                                                   column(2,colourInput("high.dotplot","High color:","darkred")),
+                                                                                   column(2,checkboxInput("restict_no_points","Restrict Label",value = F)),
+                                                                                   column(2,numericInput("pval.ex.top_genes","Top genes to display", value = 40)),
+                                                                                 ),
+                                                                                 add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
+
+                                                                                 plotOutput("all_expression_dotplot_top",height="400px"),
+
+                                                                                 textInput("name_clonotype_selected","Name of clone","clone 1"),
+                                                                                 fluidRow(
+                                                                                   column(1,numericInput("width_all_expression_dotplot_top", "Width of PDF", value=20)),
+                                                                                   column(1,numericInput("height_all_expression_dotplot_top", "Height of PDF", value=4)),
+                                                                                   column(2,style = "margin-top: 25px;",downloadButton('downloadPlot_all_expression_dotplot_top','Download PDF')),
+                                                                                   column(2,numericInput("width_png_all_expression_dotplot_top","Width of PNG", value = 2400)),
+                                                                                   column(2,numericInput("height_png_all_expression_dotplot_top","Height of PNG", value = 600)),
+                                                                                   column(2,numericInput("resolution_PNG_all_expression_dotplot_top","Resolution of PNG", value = 144)),
+                                                                                   column(2,style = "margin-top: 25px;",downloadButton('downloadPlotPNG_all_expression_dotplot_top','Download PNG'))),
+
+                                                                        ),
+                                                                        tabPanel("Over-representation",
+                                                                                 fluidRow(
+                                                                                   column(3,numericInput("in.geneset.cutoff_top","Min number of genes in GeneSet",value = 1, min = 0,step = 1, max = 60000)),
+                                                                                   column(3,numericInput("p.val_cutoff_top","p-val cut-off",value = 0.05, min = 0, max = 1)),
+                                                                                   # column(3,numericInput("adjust_cutoff_top","BH cut-off",value = 1, min = 0, max = 1)),
+                                                                                 ),
+                                                                                 add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
+                                                                                 div(DT::dataTableOutput("Over_rep_Top_clones_Tab")),
+                                                                                 downloadButton('downloadtb_over.rep.Top_Ex','Download table')
+                                                                                 #
+                                                                        ),
+                                                                        # ),
+                                                                        # ),
                                                                       ),
                                                              ),
 
@@ -1673,9 +1664,9 @@ runSTEGO <- function(){
                                                                                   ),
                                                                                   tabPanel("Over-representation",value="ExPan_OvRep",
                                                                                            fluidRow(
-                                                                                             column(3,numericInput("in.geneset.cutoff_Exp","Min number of genes in GeneSet",value = 1, min = 0, max = 1)),
+                                                                                             column(3,numericInput("in.geneset.cutoff_Exp","Min number of genes in GeneSet",value = 1, min = 0,step = 1, max = 60000)),
                                                                                              column(3,numericInput("p.val_cutoff_Exp","p-val cut-off",value = 0.05, min = 0, max = 1)),
-                                                                                             column(3,numericInput("adjust_cutoff_Exp","BH cut-off",value = 1, min = 0, max = 1)),
+                                                                                             # column(3,numericInput("adjust_cutoff_Exp","BH cut-off",value = 1, min = 0, max = 1)),
                                                                                              # column(3,numericInput("adjust_cutoff_Exp","BH cut-off",value = 0.05, min = 0, max = 1)),
 
                                                                                            ),
@@ -1797,9 +1788,9 @@ runSTEGO <- function(){
                                                                                   ),
                                                                                   tabPanel("Over-representation",value="EpiPan_OvRep",
                                                                                            fluidRow(
-                                                                                             column(3,numericInput("in.geneset.cutoff_Epi","Min number of genes in GeneSet",value = 1, min = 0, max = 1)),
+                                                                                             column(3,numericInput("in.geneset.cutoff_Epi","Min number of genes in GeneSet",value = 1, min = 0,step = 1, max = 60000)),
                                                                                              column(3,numericInput("p.val_cutoff_Epi","p-val cut-off",value = 0.05, min = 0, max = 1)),
-                                                                                             column(3,numericInput("adjust_cutoff_Epi","BH cut-off",value = 1, min = 0, max = 1)),
+                                                                                             # column(3,numericInput("adjust_cutoff_Epi","BH cut-off",value = 1, min = 0, max = 1)),
                                                                                              # column(3,numericInput("adjust_cutoff_Exp","BH cut-off",value = 0.05, min = 0, max = 1)),
 
                                                                                            ),
@@ -1916,9 +1907,9 @@ runSTEGO <- function(){
                                                                         ),
                                                                         tabPanel("Over-representation",value="ClusPan_OvRep",
                                                                                  fluidRow(
-                                                                                   column(3,numericInput("in.geneset.cutoff_Clust","Min number of genes in GeneSet",value = 1, min = 0, max = 1)),
+                                                                                   column(3,numericInput("in.geneset.cutoff_Clust","Min number of genes in GeneSet",value = 1, min = 0,step = 1, max = 60000)),
                                                                                    column(3,numericInput("p.val_cutoff_Clust","p-val cut-off",value = 0.05, min = 0, max = 1)),
-                                                                                   column(3,numericInput("adjust_cutoff_Clust","BH cut-off",value = 1, min = 0, max = 1)),
+                                                                                   # column(3,numericInput("adjust_cutoff_Clust","BH cut-off",value = 1, min = 0, max = 1)),
                                                                                  ),
                                                                                  add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
 
@@ -1928,11 +1919,21 @@ runSTEGO <- function(){
                                                                       )
                                                              ),
                                                              # marker specific TCR analysis --------
-                                                             tabPanel("Marker",
+                                                             tabPanel("Marker",value = "Marker",
                                                                       tabsetPanel(
                                                                         tabPanel("Single marker",
+                                                                                 fluidRow(
+                                                                                   selectizeInput("Var_to_col_marker","Marker col","")
+                                                                                 ),
                                                                                  tabsetPanel(
-                                                                                   tabPanel("Feature plot"),
+                                                                                   tabPanel("Table",
+                                                                                            div(DT::dataTableOutput("marker_selected_tab")),
+                                                                                   ),
+                                                                                   tabPanel("Feature plot",
+                                                                                            add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
+
+                                                                                            plotOutput("marker_selected_UMAP_plot",height="600px")
+                                                                                   ),
                                                                                    tabPanel("Violin plot"),
                                                                                    tabPanel("UMAP"),
                                                                                    tabPanel("TCR/BCR Table")
@@ -1959,8 +1960,6 @@ runSTEGO <- function(){
 
                                                              # Overlap ------
                                                              # Marker analysis ------
-
-
                                                              # tabPanel("Clonotypes per cluster (Pie/bar plot)"),
                                                              # tabPanel("Upset plot")
                                                  ),
@@ -7511,7 +7510,7 @@ runSTEGO <- function(){
 
     output$downloaddf_DEx_table_clusters <- downloadHandler(
       filename = function(){
-        paste(input$name.file_clust,"DEx_all_",gsub("-", ".", Sys.Date()),".csv", sep = "")
+        paste("DEx_all_",gsub("-", ".", Sys.Date()),".csv", sep = "")
       },
       content = function(file){
         df <- as.data.frame(vals_clust_markers$markers_for_table)
@@ -7586,7 +7585,7 @@ runSTEGO <- function(){
     output$downloadPlot_markers_featurePlot_sc <- downloadHandler(
       filename = function() {
         x <- gsub(":", ".", Sys.time())
-        paste(input$name.file_clust,"TCR_Explore_markers_featurePlot_sc_",gsub("/", "-", x), ".pdf", sep = "")
+        paste("TCR_Explore_markers_featurePlot_sc_",gsub("/", "-", x), ".pdf", sep = "")
       },
       content = function(file) {
         pdf(file, width=input$width_markers_featurePlot_sc,height=input$height_markers_featurePlot_sc, onefile = FALSE) # open the pdf device
@@ -7597,7 +7596,7 @@ runSTEGO <- function(){
     output$downloadPlotPNG_markers_featurePlot_sc <- downloadHandler(
       filename = function() {
         x <- gsub(":", ".", Sys.time())
-        paste(input$name.file_clust,"TCR_Explore_markers_featurePlot_sc_", gsub("/", "-", x), ".png", sep = "")
+        paste("TCR_Explore_markers_featurePlot_sc_", gsub("/", "-", x), ".png", sep = "")
       },
       content = function(file) {
         png(file, width = input$width_png_markers_featurePlot_sc,height = input$height_png_markers_featurePlot_sc,res = input$resolution_PNG_markers_featurePlot_sc)
@@ -8248,8 +8247,9 @@ runSTEGO <- function(){
     # Downloading the bar plot -------
     output$downloadPlot_clonaity.bar.graph <- downloadHandler(
       filename = function() {
-        x <- gsub(":", ".", Sys.time())
-        paste("Clonal_Expanded_",gsub("/", "-", x), ".pdf", sep = "")
+        x <- today()
+        paste(input$V_gene_sc,"_clonal_expanded_",x, ".pdf", sep = "")
+
       },
       content = function(file) {
         pdf(file, width=input$width_clonality.bar.graph,height=input$height_clonality.bar.graph, onefile = FALSE) # open the pdf device
@@ -8266,8 +8266,8 @@ runSTEGO <- function(){
 
     output$downloadPlotPNG_clonaity.bar.graph <- downloadHandler(
       filename = function() {
-        x <- gsub(":", ".", Sys.time())
-        paste("Clonal_Expanded_", gsub("/", "-", x), ".png", sep = "")
+        x <- today()
+        paste(input$V_gene_sc,"_clonal_expanded_",x, ".png", sep = "")
       },
       content = function(file) {
         png(file, width = input$width_png_clonality.bar.graph,
@@ -8476,8 +8476,8 @@ runSTEGO <- function(){
 
     output$downloadPlot_TCR.UMAP <- downloadHandler(
       filename = function() {
-        x <- gsub(":", ".", Sys.time())
-        paste("TCR.UMAP_",gsub("/", "-", x), ".pdf", sep = "")
+        x <- today()
+        paste(input$V_gene_sc,"_TCR.UMAP_",x, ".pdf", sep = "")
       },
       content = function(file) {
         pdf(file, width=input$width_TCR.UMAP,height=input$height_TCR.UMAP, onefile = FALSE) # open the pdf device
@@ -8487,8 +8487,8 @@ runSTEGO <- function(){
 
     output$downloadPlotPNG_TCR.UMAP <- downloadHandler(
       filename = function() {
-        x <- gsub(":", ".", Sys.time())
-        paste("TCR.UMAP_", gsub("/", "-", x), ".png", sep = "")
+        x <- today()
+        paste(input$V_gene_sc,"_TCR.UMAP_",x, ".png", sep = "")
       },
       content = function(file) {
         png(file, width = input$width_png_TCR.UMAP,height = input$height_png_TCR.UMAP,res = input$resolution_PNG_TCR.UMAP)
@@ -8664,11 +8664,14 @@ runSTEGO <- function(){
       names(df2) <- "V1"
       df2
       # df2 <- subset(df2,df2$V1 != "NA")
+
+      df3 <- subset(df2,df2$V1 != "NA")
+
       updateSelectInput(
         session,
         "ID_Column_factor",
         choices=df2$V1,
-        selected = df2$V1
+        selected = df3$V1
       )
     })
     observe({
@@ -8842,7 +8845,7 @@ runSTEGO <- function(){
 
     output$downloaddf_DEx_sc <- downloadHandler(
       filename = function(){
-        paste(input$name.file_clust," Differential expresion of ",input$unique.Idents1, " vs. ", input$unique.Idents2,gsub("-", ".", Sys.Date()),".csv", sep = "")
+        paste(" Differential expresion of ",input$unique.Idents1, " vs. ", input$unique.Idents2,gsub("-", ".", Sys.Date()),".csv", sep = "")
       },
       content = function(file){
         df <- as.data.frame(DEx_sc())
@@ -8852,7 +8855,7 @@ runSTEGO <- function(){
 
     output$downloaddf_DEx_sc_ggVolcanoR <- downloadHandler(
       filename = function(){
-        paste(input$name.file_clust," Differential expresion of ",input$unique.Idents1, " vs. ", input$unique.Idents2,gsub("-", ".", Sys.Date()),".csv", sep = "")
+        paste(" Differential expresion of ",input$unique.Idents1, " vs. ", input$unique.Idents2,gsub("-", ".", Sys.Date()),".csv", sep = "")
       },
       content = function(file){
         df <- as.data.frame(DEx_sc())
@@ -9003,7 +9006,8 @@ runSTEGO <- function(){
     })
     output$downloaddf_Percent_tab <- downloadHandler(
       filename = function(){
-        paste(input$name.file_clust,"_Percent_",input$Colour_By_this_overview,"_",gsub("-", ".", Sys.Date()),".tsv", sep = "")
+        x = today()
+        paste("GEx_percent_",input$Colour_By_this_overview,"_",x,".tsv", sep = "")
       },
       content = function(file){
         df <- as.data.frame(Percent_tab_df())
@@ -9180,7 +9184,7 @@ runSTEGO <- function(){
     output$downloadPlot_UMAP_all_classification  <- downloadHandler(
       filename = function() {
         x <- today()
-        paste(input$name.file_clust,"GEx_",input$Colour_By_this_overview,"_",x, ".pdf", sep = "")
+        paste("UMAP_GEx_",input$Colour_By_this_overview,"_",x, ".pdf", sep = "")
       },
       content = function(file) {
         pdf(file, width=input$width_UMAP_all_classification ,height=input$height_UMAP_all_classification , onefile = FALSE) # open the pdf device
@@ -9190,7 +9194,7 @@ runSTEGO <- function(){
     output$downloadPlotPNG_UMAP_all_classification  <- downloadHandler(
       filename = function() {
         x <- today()
-        paste(input$name.file_clust,"GEx_",input$Colour_By_this_overview,"_",x, ".png", sep = "")
+        paste("UMAP_GEx_",input$Colour_By_this_overview,"_",x, ".png", sep = "")
       },
       content = function(file) {
         png(file, width = input$width_png_UMAP_all_classification ,
@@ -9387,8 +9391,8 @@ runSTEGO <- function(){
     })
     output$downloadPlot_Classification_clonotype_pie <- downloadHandler(
       filename = function() {
-        x <- gsub(":", ".", Sys.time())
-        paste(input$name.file_clust,"_Classification_clonotype_pie_",gsub("/", "-", x), ".pdf", sep = "")
+        x <- today()
+        paste("GEx_pie_",input$Colour_By_this_overview,"_",x,".pdf", sep = "")
       },
       content = function(file) {
         pdf(file, width=input$width_Classification_clonotype_pie,height=input$height_Classification_clonotype_pie, onefile = FALSE) # open the pdf device
@@ -9397,8 +9401,8 @@ runSTEGO <- function(){
 
     output$downloadPlotPNG_Classification_clonotype_pie <- downloadHandler(
       filename = function() {
-        x <- gsub(":", ".", Sys.time())
-        paste(input$name.file_clust,"_Classification_clonotype_pie_", gsub("/", "-", x), ".png", sep = "")
+        x <- today()
+        paste("GEx_pie_",input$Colour_By_this_overview,"_",x,".png", sep = "")
       },
       content = function(file) {
         png(file, width = input$width_png_Classification_clonotype_pie,
@@ -9496,7 +9500,7 @@ runSTEGO <- function(){
 
     output$downloadPlot_Chi_square_plot <- downloadHandler(
       filename = function() {
-        paste(input$name.file_clust,"_Chi_square_plot", ".pdf", sep = "")
+        paste("_Chi_square_plot", ".pdf", sep = "")
       },
       content = function(file) {
         pdf(file, width=input$width_Chi_square_plot,height=input$height_Chi_square_plot, onefile = FALSE) # open the pdf device
@@ -9506,7 +9510,7 @@ runSTEGO <- function(){
 
     output$downloadPlotPNG_Chi_square_plot <- downloadHandler(
       filename = function() {
-        paste(input$name.file_clust,"_Chi_square_plot_",".png", sep = "")
+        paste("_Chi_square_plot_",".png", sep = "")
       },
       content = function(file) {
         png(file, width = input$width_png_Chi_square_plot,height = input$height_png_Chi_square_plot,res = input$resolution_PNG_Chi_square_plot)
@@ -10107,7 +10111,7 @@ runSTEGO <- function(){
 
     output$downloaddf_FindMarker_Top <- downloadHandler(
       filename = function(){
-        paste(input$name.file_clust,"Stats_",gsub("-", ".", Sys.Date()),".csv", sep = "")
+        paste("Stats_",gsub("-", ".", Sys.Date()),".csv", sep = "")
       },
       content = function(file){
         df <- as.data.frame(compare.stat())
@@ -10213,7 +10217,7 @@ runSTEGO <- function(){
 
     output$downloaddf_clusTCR_GEx <- downloadHandler(
       filename = function(){
-        paste(input$name.file_clust,"Stats_",gsub("-", ".", Sys.Date()),".csv", sep = "")
+        paste("Stats_",gsub("-", ".", Sys.Date()),".csv", sep = "")
       },
       content = function(file){
         df <- as.data.frame(Ridge_chart_alpha_gamma_stat_table())
@@ -10398,7 +10402,7 @@ runSTEGO <- function(){
       filename = function() {
         x <- today()
         paste(input$string.data_Exp_top,"_",input$Selected_clonotype,"_",input$plot_type_ridgvi,"_",x, ".png", sep = "")
-        # paste(input$name.file_clust,"_",input$epitope_umap_selected,"_",input$epitope_umap_selected2,"_Heatmap_", gsub("/", "-", x), "", sep = "")
+        # paste("_",input$epitope_umap_selected,"_",input$epitope_umap_selected2,"_Heatmap_", gsub("/", "-", x), "", sep = "")
       },
       content = function(file) {
         png(file, width = input$width_png_Ridge_chart_alpha_gamma_plot_out,
@@ -10508,7 +10512,7 @@ runSTEGO <- function(){
 
     # Over representation analysis for top clonotypes -----
 
-    Over_rep_Top_clones <- reactive({
+    Over_rep_Top_clones_old <- reactive({
       sc <-input.data_sc_pro()
 
       validate(
@@ -10525,12 +10529,19 @@ runSTEGO <- function(){
       background.genes <- length(rownames(sc@assays$RNA@scale.data))
 
       geneSet$background.genes <- background.genes
-      head(geneSet)
+
       markers.fm.list <- compare.stat()
+
       DEx.genes <- as.data.frame(rownames(markers.fm.list))
       names(DEx.genes) <- "V1"
+
       total.sig <- length(DEx.genes$V1)
       geneSet$total.sig <- length(DEx.genes$V1)
+
+      geneSet$background.geneset <- NA
+      geneSet$background.geneset.name <- NA
+      geneSet$in.geneset <- NA
+      geneSet$in.geneset.name <- NA
 
       if(input$datasource == "BD_Rhapsody_Paired" || input$datasource == "BD_Rhapsody_AIRR") { # selectInput("datasource", "Data source",choices=c("10x_Genomics","BD_Rhapsody_Paired","BD_Rhapsody_AIRR")),
         geneSet$GeneSet <- gsub("-",".",geneSet$GeneSet)
@@ -10542,71 +10553,78 @@ runSTEGO <- function(){
       }
 
       for (i in 1:dim(geneSet)[1]) {
+        # listed GeneSet
+        message(paste("Sample: ", i))
         Gene.set.testing <- as.data.frame(strsplit(geneSet$GeneSet,";")[i])
         names(Gene.set.testing) <- "V1"
         Gene.set.testing2 <- as.data.frame(unique(Gene.set.testing$V1))
         names(Gene.set.testing2) <- "V1"
+        # message(paste(dim(Gene.set.testing2)[1],"GeneSet total"))
+        # background genes
         background.overlap <- merge(Gene.set.testing2,background.genes.name,by= "V1")
-        background.overlap
-
+        # message(paste(dim(background.overlap)[1],"in Background"))
         geneSet$background.geneset[i] <- length(background.overlap$V1)
-        geneSet$background.geneset.name[i] <- list(background.overlap$V1)
-        geneSet$background.geneset.name[i] <- paste(unlist(geneSet$background.geneset.name[i]), collapse=';')
-        geneSet$background.geneset.name2[i] <- geneSet$background.geneset.name[[i]]
-
-        overlap <- merge(Gene.set.testing2,DEx.genes,by= "V1")
+        geneSet$background.geneset.name[i] <- as.character(paste(unlist(background.overlap[1]), collapse=';'))
+        # in sig gene list
+        overlap <- merge(background.overlap,DEx.genes,by= "V1")
+        # message(paste(dim(overlap)[1],"# Sig genes"))
         geneSet$in.geneset[i] <- length(overlap$V1)
-        geneSet$in.geneset.name[i] <- list(overlap$V1)
-        geneSet$in.geneset.name[i] <- paste(unlist(geneSet$in.geneset.name[i]), collapse=';')
-        geneSet$in.geneset.name2[i] <- geneSet$in.geneset.name[[i]]
+        geneSet$in.geneset.name[i] <- as.character(paste(unlist(overlap[1]), collapse=';'))
+
       }
 
-      geneSet$background.geneset.name <- geneSet$background.geneset.name2
-      geneSet$in.geneset.name <- geneSet$in.geneset.name2
-      geneSet$in.geneset.name
+      geneSet2 <- subset(geneSet,geneSet$in.geneset>0)
 
-      geneSet <- geneSet[,!grepl("2",names(geneSet))]
-      geneSet <- subset(geneSet,geneSet$in.geneset>0)
+      for (i in 1:dim(geneSet2)[1]) {
+        tota.gene.set <- geneSet2$background.geneset[i] # genes that are identified in background
+        tota.gene.set
+        in.geneset <-  geneSet2$in.geneset[i]# DEx in geneset
 
-      for (i in 1:dim(geneSet)[1]) {
-        tota.gene.set <- geneSet$background.geneset[i] # genes that are identified in background
-
-        in.geneset <-  geneSet$in.geneset[i]# DEx in geneset
-        # background.genes <- 300 # features expressed in cell or total?
         background.genes
         not.in.total <- background.genes - tota.gene.set
         not.in.geneset.sig <- total.sig - in.geneset
-
-
-        d <- data.frame(gene.not.interest=c(not.in.total, tota.gene.set), gene.in.interest=c(not.in.geneset.sig, in.geneset))
-        row.names(d) <- c( "not.in.geneset","in.geneset")
-        d
+        d <- data.frame( gene.in.interest=c( in.geneset, not.in.geneset.sig),gene.not.interest=c( tota.gene.set, not.in.total))
+        row.names(d) <- c("In_category", "not_in_category")
 
         if (in.geneset>0) {
-          geneSet$p.val[i] <- unlist(fisher.test(d)$p.value)[1]
-          geneSet$lowerCI[i] <-  unlist(fisher.test(d)$conf.int)[1]
-          geneSet$upperCI[i] <-unlist(fisher.test(d)$conf.int)[2]
-          geneSet$OR[i] <- round(unlist(fisher.test(d)$estimate)[1],3)
+          geneSet2$p.val[i] <- unlist(fisher.test(d, alternative = "greater")$p.value)[1]
+          geneSet2$lowerCI[i] <-  unlist(fisher.test(d, alternative = "greater")$conf.int)[1]
+          geneSet2$upperCI[i] <-unlist(fisher.test(d)$conf.int)[2]
+          geneSet2$OR[i] <- round(unlist(fisher.test(d, alternative = "greater")$estimate)[1],3)
         }
 
         else {
-          geneSet$p.value[i] <- "-"
-          geneSet$lowerCI[i] <-  "-"
-          geneSet$upperCI[i] <- "-"
-          geneSet$OR[i] <- "-"
+          geneSet2$p.value[i] <- "-"
+          geneSet2$lowerCI[i] <-  "-"
+          geneSet2$upperCI[i] <- "-"
+          geneSet2$OR[i] <- "-"
         }
+        # message(print(d))
+        # message(print(round(prop.table(d),3)))
       }
 
-      geneSet <- subset(geneSet,geneSet$in.geneset>=input$in.geneset.cutoff)
+      geneSet2
 
-      # prop.table(d)
-      geneSet$pval.BH.adj <- p.adjust(geneSet$p.val, method = "BH")
-      geneSet <- subset(geneSet,geneSet$p.val<=input$p.val_cutoff_top)
-      geneSet <- subset(geneSet,geneSet$pval.BH.adj<=input$adjust_cutoff_top)
-      geneSet <- geneSet[order(geneSet$pval.BH.adj,decreasing = F),]
-      name.list <- c("Geneset_ID","p.val","pval.BH.adj","OR","lowerCI","upperCI","in.geneset.name","in.geneset","background.geneset","total.sig","background.genes","background.geneset.name")
-      geneSet %>%
+    })
+
+
+    Over_rep_Top_clones<- reactive({
+      geneSet2 <- Over_rep_Top_clones_old()
+
+      validate(
+        need(nrow(geneSet2)>0,
+             error_message_val_sc)
+      )
+      geneSet2 <- geneSet2[order(geneSet2$p.val,decreasing = F),]
+      geneSet2 <- subset(geneSet2,geneSet2$in.geneset>=input$in.geneset.cutoff_top)
+      geneSet2 <- subset(geneSet2,geneSet2$p.val<=input$p.val_cutoff_top)
+      geneSet2$FDR <- p.adjust(geneSet2$p.val, method = "fdr")
+      geneSet2$Bonferroni <- p.adjust(geneSet2$p.val, method = "bonferroni")
+      name.list <- c("Geneset_ID","p.val","FDR","Bonferroni","OR","lowerCI","upperCI","in.geneset.name","in.geneset","background.geneset","total.sig","background.genes","background.geneset.name")
+      geneSet2 <- geneSet2 %>%
         select(all_of(name.list), everything())
+
+      geneSet2
     })
 
     output$Over_rep_Top_clones_Tab <- DT::renderDataTable(escape = FALSE, filter = list(position = 'top', clear = FALSE), options = list(autoWidth = FALSE, lengthMenu = c(1,2,5,10,20,50,100), pageLength = 10, scrollX = TRUE),{
@@ -10718,7 +10736,7 @@ runSTEGO <- function(){
       names(df2) <- "V1"
       df2
       df2 <- subset(df2,df2$V1 != "NA")
-      updateSelectInput(
+      updateSelectizeInput(
         session,
         "selected_Indiv_Ex_1",
         choices=df2$V1,
@@ -10741,7 +10759,7 @@ runSTEGO <- function(){
       df2
       df2 <- subset(df2,df2$V1 != "NA")
 
-      updateSelectInput(
+      updateSelectizeInput(
         session,
         "selected_Indiv_Ex_2",
         choices=df2$V1,
@@ -10832,17 +10850,41 @@ runSTEGO <- function(){
 
       top_BD_cluster <-  Expansion_check_table()
       top_BD_cluster$Selected_function <- top_BD_cluster[,names(top_BD_cluster) %in% input$Colour_By_this_Expanded]
-      top_BD_cluster$Selected_function <- ifelse(grepl("NA", top_BD_cluster$Selected_function),NA,top_BD_cluster$Selected_function)
-      top_BD_cluster$Selected_function <- factor(top_BD_cluster$Selected_function,levels = unique(top_BD_cluster$Selected_function))
+
+      if (input$Colour_By_this_Expanded == "expand.singlets") {
+        top_BD_cluster$Selected_function <- ifelse(grepl("NA", top_BD_cluster$Selected_function),NA,top_BD_cluster$Selected_function)
+        top_BD_cluster$Selected_function <- factor(top_BD_cluster$Selected_function,levels = c("Ex","NEx"))
+        top_BD_cluster <- top_BD_cluster[order(top_BD_cluster$Selected_function,decreasing = F),]
+      }
+      else {
+        top_BD_cluster$Selected_function <- ifelse(grepl("NA", top_BD_cluster$Selected_function),NA,top_BD_cluster$Selected_function)
+        top_BD_cluster$Selected_function <- factor(top_BD_cluster$Selected_function,levels = unique(top_BD_cluster$Selected_function))
+
+      }
       num <- as.data.frame(unique(top_BD_cluster$Selected_function))
       num <- as.data.frame(num[complete.cases(num)==T,])
-
       col.gg <- gg_fill_hue(dim(num)[1])
       palette_rainbow <- rainbow(dim(num)[1])
       heat_col <- heat.colors(dim(num)[1])
       col.terrain <- terrain.colors(dim(num)[1])
       col.topo <- topo.colors(dim(num)[1])
       col.hcl <- hcl.colors(dim(num)[1], palette = "viridis")
+
+      if (input$Colour_By_this_Expanded == "expand.singlets") {
+        col.gg[1] <- "#00BFC4"
+        col.gg[2] <- "grey90"
+
+        palette_rainbow[2] <- "grey90"
+        heat_col[2] <- "grey90"
+        col.terrain[2] <- "grey90"
+        col.topo[2] <- "grey90"
+        col.hcl[2] <- "grey90"
+      }
+
+      else {
+
+      }
+
 
       if (input$colourtype == "default") {
         lapply(1:dim(num)[1], function(i) {
@@ -10900,8 +10942,17 @@ runSTEGO <- function(){
       )
       top_BD_cluster <-  Expansion_check_table()
       top_BD_cluster$Selected_function <- top_BD_cluster[,names(top_BD_cluster) %in% input$Colour_By_this_Expanded]
-      top_BD_cluster$Selected_function <- ifelse(grepl("NA", top_BD_cluster$Selected_function),NA,top_BD_cluster$Selected_function)
-      top_BD_cluster$Selected_function <- factor(top_BD_cluster$Selected_function,levels = unique(top_BD_cluster$Selected_function))
+
+      if (input$Colour_By_this_Expanded == "expand.singlets") {
+        top_BD_cluster$Selected_function <- ifelse(grepl("NA", top_BD_cluster$Selected_function),NA,top_BD_cluster$Selected_function)
+        top_BD_cluster$Selected_function <- factor(top_BD_cluster$Selected_function,levels = c("NEx","Ex"))
+      }
+      else {
+        top_BD_cluster$Selected_function <- ifelse(grepl("NA", top_BD_cluster$Selected_function),NA,top_BD_cluster$Selected_function)
+        top_BD_cluster$Selected_function <- factor(top_BD_cluster$Selected_function,levels = unique(top_BD_cluster$Selected_function))
+
+      }
+
       num <- as.data.frame(unique(top_BD_cluster$Selected_function))
       num <- as.data.frame(num[complete.cases(num)==T,])
 
@@ -10918,31 +10969,44 @@ runSTEGO <- function(){
       req(input$Colour_By_this_Expanded,input$wrap_row)
       top_BD_cluster <-  Expansion_check_table()
       top_BD_cluster$Selected_function <- top_BD_cluster[,names(top_BD_cluster) %in% input$Colour_By_this_Expanded]
-      top_BD_cluster$Selected_function <- ifelse(grepl("NA", top_BD_cluster$Selected_function),NA,top_BD_cluster$Selected_function)
-      top_BD_cluster$Selected_function <- factor(top_BD_cluster$Selected_function,levels = unique(top_BD_cluster$Selected_function))
-      # top_BD_cluster$Selected_function <- factor(top_BD_cluster$Selected_function,levels = unique(top_BD_cluster$Selected_function))
+
+      if (input$Colour_By_this_Expanded == "expand.singlets") {
+        top_BD_cluster$Selected_function <- ifelse(grepl("NA", top_BD_cluster$Selected_function),NA,top_BD_cluster$Selected_function)
+        top_BD_cluster$Selected_function <- factor(top_BD_cluster$Selected_function,levels = c("NEx","Ex"))
+        Ex <- subset(top_BD_cluster,top_BD_cluster$Selected_function=="Ex")
+        NEx <- subset(top_BD_cluster,top_BD_cluster$Selected_function=="NEx")
+      }
+      else {
+        top_BD_cluster$Selected_function <- ifelse(grepl("NA", top_BD_cluster$Selected_function),NA,top_BD_cluster$Selected_function)
+        top_BD_cluster$Selected_function <- factor(top_BD_cluster$Selected_function,levels = unique(top_BD_cluster$Selected_function))
+
+      }
+
       col.file <- as.data.frame(unique(top_BD_cluster$Selected_function))
       col.file <- as.data.frame(col.file[complete.cases(col.file)==T,])
       names(col.file) <- "V1"
-      # if (input$show_selected=="Selected_list") {
-      #   col.file$col <- unlist(colors_UMAP_all_classification())
-      #   col.file <- col.file[col.file$V1 %in% input$SiteNumInput,]
-      #   top_BD_cluster$Selected_function <- factor(top_BD_cluster$Selected_function,levels = col.file$V1)
-      # }
-      #
-      # else {
 
       col.file$col <- unlist(colors_Expanded())
       col.file
-      # }
 
       names(top_BD_cluster)[names(top_BD_cluster) %in% input$Samp_col_expanded] <- "ID_Column"
       top_BD_cluster <- top_BD_cluster[top_BD_cluster$ID_Column %in% input$ID_Column_factor_expanded,]
       top_BD_cluster$ID_Column <- factor(top_BD_cluster$ID_Column,levels = input$ID_Column_factor_expanded)
 
-      df <- ggplot(top_BD_cluster,aes(x=UMAP_1,UMAP_2,colour=Selected_function,alpha = Selected_function,label = Selected_function))+
-        geom_point()+
-        scale_color_manual(labels = ~ stringr::str_wrap(.x, width = 20),values = col.file$col, na.value=input$NA_col_analysis)+
+      df <- ggplot(top_BD_cluster,aes(x=UMAP_1,UMAP_2,colour=Selected_function,alpha = Selected_function,label = Selected_function))
+
+      if (input$Colour_By_this_Expanded == "expand.singlets") {
+
+        df <- df + geom_point(data= NEx, aes(x=UMAP_1,UMAP_2,colour=Selected_function,alpha = Selected_function,label = Selected_function))
+        df <- df + geom_point(data= Ex, aes(x=UMAP_1,UMAP_2,colour=Selected_function,alpha = Selected_function,label = Selected_function))
+      }
+
+      else {
+        df <-   df + geom_point()
+      }
+
+
+      df <- df + scale_color_manual(labels = ~ stringr::str_wrap(.x, width = 20),values = col.file$col, na.value=input$NA_col_analysis)+
         scale_alpha_manual(labels = ~ stringr::str_wrap(.x, width = 20),values = rep(1,length(unique(top_BD_cluster$Selected_function))), na.value=0.1) +
         theme_bw() +
         theme(
@@ -10975,7 +11039,7 @@ runSTEGO <- function(){
     output$downloadPlot_UMAP_Expanded  <- downloadHandler(
       filename = function() {
         x <- gsub(":", ".", Sys.time())
-        paste(input$name.file_clust,"_Expanded_",gsub("/", "-", x), ".pdf", sep = "")
+        paste("_Expanded_",gsub("/", "-", x), ".pdf", sep = "")
       },
       content = function(file) {
         pdf(file, width=input$width_UMAP_Expanded ,height=input$height_UMAP_Expanded , onefile = FALSE) # open the pdf device
@@ -10985,7 +11049,7 @@ runSTEGO <- function(){
     output$downloadPlotPNG_UMAP_Expanded  <- downloadHandler(
       filename = function() {
         x <- gsub(":", ".", Sys.time())
-        paste(input$name.file_clust,"_Expanded_", gsub("/", "-", x), ".png", sep = "")
+        paste("_Expanded_", gsub("/", "-", x), ".png", sep = "")
       },
       content = function(file) {
         png(file, width = input$width_png_UMAP_Expanded,
@@ -11033,11 +11097,12 @@ runSTEGO <- function(){
       sc <- compare.stat_Violin_sc()
       req(input$selected_Indiv_Ex_1,input$selected_Indiv_Ex_2,input$pval.ex.filter)
 
+      message("Updating Ident")
       Idents(object = sc) <- sc@meta.data$expansion.status
-      #
+
       min.pct.expression<- input$min_point_top_Ex #standard setting: 0.25
       min.logfc <-  input$LogFC_top_Ex #0.25 is standard
-      message(paste0("calculating markers for cluster ",c(input$selected_Indiv_Ex_1)," vs ",c(input$selected_Indiv_Ex_2)))
+      message(paste0("calculating markers for cluster ",input$selected_Indiv_Ex_1," vs ",c(input$selected_Indiv_Ex_2)))
 
       markers.fm.list <- FindMarkers(sc, ident.1 = input$selected_Indiv_Ex_1, ident.2 = c(input$selected_Indiv_Ex_2), min.pct = min.pct.expression,  logfc.threshold = min.logfc, only.pos=TRUE)
       markers.fm.list2 <- subset(markers.fm.list,markers.fm.list$p_val_adj < input$pval.ex.filter)
@@ -11158,7 +11223,7 @@ runSTEGO <- function(){
 
     # Over representation analysis for Expanded  -----
 
-    Over_rep_Exp <- reactive({
+    Over_rep_Exp_old <- reactive({
       sc <-input.data_sc_pro()
 
       validate(
@@ -11166,7 +11231,7 @@ runSTEGO <- function(){
              error_message_val_sc)
       )
 
-      req(input$datasource,input$in.geneset.cutoff_Exp,input$adjust_cutoff_Exp)
+      req(input$datasource,input$in.geneset.cutoff_Exp)
 
       geneSet <- read.csv(system.file("OverRep","GeneSets.csv",package = "STEGO.R"),header = T)
       background.genes.name <- as.data.frame(rownames(sc@assays$RNA@scale.data))
@@ -11179,6 +11244,11 @@ runSTEGO <- function(){
       total.sig <- length(DEx.genes$V1)
       geneSet$total.sig <- length(DEx.genes$V1)
 
+      geneSet$background.geneset <- NA
+      geneSet$background.geneset.name <- NA
+      geneSet$in.geneset <- NA
+      geneSet$in.geneset.name <- NA
+
       if(input$datasource == "BD_Rhapsody_Paired" || input$datasource == "BD_Rhapsody_AIRR") { # selectInput("datasource", "Data source",choices=c("10x_Genomics","BD_Rhapsody_Paired","BD_Rhapsody_AIRR")),
         geneSet$GeneSet <- gsub("-",".",geneSet$GeneSet)
       }
@@ -11189,73 +11259,80 @@ runSTEGO <- function(){
       }
 
       for (i in 1:dim(geneSet)[1]) {
+        # listed GeneSet
+        message(paste("Sample: ", i))
         Gene.set.testing <- as.data.frame(strsplit(geneSet$GeneSet,";")[i])
         names(Gene.set.testing) <- "V1"
         Gene.set.testing2 <- as.data.frame(unique(Gene.set.testing$V1))
         names(Gene.set.testing2) <- "V1"
+        # message(paste(dim(Gene.set.testing2)[1],"GeneSet total"))
+        # background genes
         background.overlap <- merge(Gene.set.testing2,background.genes.name,by= "V1")
-        background.overlap
-
+        # message(paste(dim(background.overlap)[1],"in Background"))
         geneSet$background.geneset[i] <- length(background.overlap$V1)
-        geneSet$background.geneset.name[i] <- list(background.overlap$V1)
-        geneSet$background.geneset.name[i] <- paste(unlist(geneSet$background.geneset.name[i]), collapse=';')
-        geneSet$background.geneset.name2[i] <- geneSet$background.geneset.name[[i]]
-
-        overlap <- merge(Gene.set.testing2,DEx.genes,by= "V1")
+        geneSet$background.geneset.name[i] <- as.character(paste(unlist(background.overlap[1]), collapse=';'))
+        # in sig gene list
+        overlap <- merge(background.overlap,DEx.genes,by= "V1")
+        # message(paste(dim(overlap)[1],"# Sig genes"))
         geneSet$in.geneset[i] <- length(overlap$V1)
-        geneSet$in.geneset.name[i] <- list(overlap$V1)
-        geneSet$in.geneset.name[i] <- paste(unlist(geneSet$in.geneset.name[i]), collapse=';')
-        geneSet$in.geneset.name2[i] <- geneSet$in.geneset.name[[i]]
+        geneSet$in.geneset.name[i] <- as.character(paste(unlist(overlap[1]), collapse=';'))
+
       }
 
-      geneSet$background.geneset.name <- geneSet$background.geneset.name2
-      geneSet$in.geneset.name <- geneSet$in.geneset.name2
-      geneSet$in.geneset.name
+      geneSet2 <- subset(geneSet,geneSet$in.geneset>0)
 
-      geneSet <- geneSet[,!grepl("2",names(geneSet))]
-      geneSet <- subset(geneSet,geneSet$in.geneset>0)
+      for (i in 1:dim(geneSet2)[1]) {
+        tota.gene.set <- geneSet2$background.geneset[i] # genes that are identified in background
+        tota.gene.set
+        in.geneset <-  geneSet2$in.geneset[i]# DEx in geneset
 
-      for (i in 1:dim(geneSet)[1]){
-        tota.gene.set <- geneSet$background.geneset[i] # genes that are identified in background
-
-        in.geneset <-  geneSet$in.geneset[i]# DEx in geneset
-        # background.genes <- 300 # features expressed in cell or total?
         background.genes
         not.in.total <- background.genes - tota.gene.set
         not.in.geneset.sig <- total.sig - in.geneset
-
-
-        d <- data.frame(gene.not.interest=c(not.in.total, tota.gene.set), gene.in.interest=c(not.in.geneset.sig, in.geneset))
-        row.names(d) <- c( "not.in.geneset","in.geneset")
-        d
+        d <- data.frame( gene.in.interest=c( in.geneset, not.in.geneset.sig),gene.not.interest=c( tota.gene.set, not.in.total))
+        row.names(d) <- c("In_category", "not_in_category")
 
         if (in.geneset>0) {
-          geneSet$p.val[i] <- unlist(fisher.test(d)$p.value)[1]
-          geneSet$lowerCI[i] <-  unlist(fisher.test(d)$conf.int)[1]
-          geneSet$upperCI[i] <-unlist(fisher.test(d)$conf.int)[2]
-          geneSet$OR[i] <- round(unlist(fisher.test(d)$estimate)[1],3)
+          geneSet2$p.val[i] <- unlist(fisher.test(d, alternative = "greater")$p.value)[1]
+          geneSet2$lowerCI[i] <-  unlist(fisher.test(d, alternative = "greater")$conf.int)[1]
+          geneSet2$upperCI[i] <-unlist(fisher.test(d)$conf.int)[2]
+          geneSet2$OR[i] <- round(unlist(fisher.test(d, alternative = "greater")$estimate)[1],3)
         }
 
         else {
-          geneSet$p.value[i] <- "-"
-          geneSet$lowerCI[i] <-  "-"
-          geneSet$upperCI[i] <- "-"
-          geneSet$OR[i] <- "-"
+          geneSet2$p.value[i] <- "-"
+          geneSet2$lowerCI[i] <-  "-"
+          geneSet2$upperCI[i] <- "-"
+          geneSet2$OR[i] <- "-"
         }
+        # message(print(d))
+        # message(print(round(prop.table(d),3)))
       }
 
-      geneSet <- subset(geneSet,geneSet$in.geneset>=input$in.geneset.cutoff_Exp)
+      geneSet2
+    })
 
-      # prop.table(d)
-      geneSet$pval.BH.adj <- p.adjust(geneSet$p.val, method = "BH", n = length(geneSet$p.val))
-      geneSet <- subset(geneSet,geneSet$p.val<=input$p.val_cutoff_Exp)
-      geneSet <- subset(geneSet,geneSet$pval.BH.adj<=input$adjust_cutoff_Exp)
-      geneSet <- geneSet[order(geneSet$pval.BH.adj,decreasing = F),]
-      # Origin	Exact.source	Cell_Type	Geneset_ID	GeneSet	total.genes	DOI	background.genes	total.sig	background.geneset	background.geneset.name	in.geneset	in.geneset.name	p.val	lowerCI	upperCI	OR	pval.BH.adj
-      name.list <- c("Geneset_ID","p.val","pval.BH.adj","OR","lowerCI","upperCI","in.geneset.name","in.geneset","background.geneset","total.sig","background.genes","background.geneset.name")
-      geneSet %>%
+    Over_rep_Exp <- reactive({
+      geneSet2 <-Over_rep_Exp_old()
+
+      validate(
+        need(nrow(geneSet2)>0,
+             error_message_val_sc)
+      )
+
+      req(input$datasource,input$in.geneset.cutoff_Exp)
+
+      geneSet2 <- geneSet2[order(geneSet2$p.val,decreasing = F),]
+      geneSet2 <- subset(geneSet2,geneSet2$in.geneset>=input$in.geneset.cutoff_Exp)
+
+      # geneSet2 <- subset(geneSet2,geneSet2$pval.BH.adj<=input$adjust_cutoff_Exp)
+
+      geneSet2$FDR <- p.adjust(geneSet2$p.val, method = "fdr")
+      geneSet2$Bonferroni <- p.adjust(geneSet2$p.val, method = "bonferroni")
+      geneSet2 <- subset(geneSet2,geneSet2$p.val<=input$p.val_cutoff_Exp)
+      name.list <- c("Geneset_ID","p.val","FDR","Bonferroni","OR","lowerCI","upperCI","in.geneset.name","in.geneset","background.geneset","total.sig","background.genes","background.geneset.name")
+      geneSet2 <- geneSet2 %>%
         select(all_of(name.list), everything())
-
     })
     output$Over_rep_Exp_Tab <- DT::renderDataTable(escape = FALSE, filter = list(position = 'top', clear = FALSE), options = list(autoWidth = FALSE, lengthMenu = c(1,2,5,10,20,50,100), pageLength = 20, scrollX = TRUE),{
       Over_rep_Exp()
@@ -11342,7 +11419,7 @@ runSTEGO <- function(){
     output$downloadPlot_Heatmap_epi_plot <- downloadHandler(
       filename = function() {
         x <- gsub(":", ".", Sys.time())
-        paste(input$name.file_clust,"_",input$epitope_umap_selected,"_",input$epitope_umap_selected2,"_Heatmap_",gsub("/", "-", x), ".pdf", sep = "")
+        paste("_",input$epitope_umap_selected,"_",input$epitope_umap_selected2,"_Heatmap_",gsub("/", "-", x), ".pdf", sep = "")
       },
       content = function(file) {
         pdf(file, width=input$width_Heatmap_epi_plot ,height=input$height_Heatmap_epi_plot , onefile = FALSE) # open the pdf device
@@ -11352,7 +11429,7 @@ runSTEGO <- function(){
     output$downloadPlotPNG_Heatmap_epi_plot  <- downloadHandler(
       filename = function() {
         x <- gsub(":", ".", Sys.time())
-        paste(input$name.file_clust,"_",input$epitope_umap_selected,"_",input$epitope_umap_selected2,"_Heatmap_", gsub("/", "-", x), ".png", sep = "")
+        paste("_",input$epitope_umap_selected,"_",input$epitope_umap_selected2,"_Heatmap_", gsub("/", "-", x), ".png", sep = "")
       },
       content = function(file) {
         png(file, width = input$width_png_Heatmap_epi_plot,
@@ -11548,7 +11625,7 @@ runSTEGO <- function(){
     output$downloadPlot_UMAP_Epitope <- downloadHandler(
       filename = function() {
         x <- today()
-        paste(input$name.file_clust,"_",input$epitope_umap_selected,"_UMAP_",x, ".pdf", sep = "")
+        paste("_",input$epitope_umap_selected,"_UMAP_",x, ".pdf", sep = "")
       },
       content = function(file) {
         pdf(file, width=input$width_UMAP_Epitope,height=input$height_UMAP_Epitope, onefile = FALSE) # open the pdf device
@@ -11558,7 +11635,7 @@ runSTEGO <- function(){
     output$downloadPlotPNG_UMAP_Epitope <- downloadHandler(
       filename = function() {
         x <- gsub(":", ".", Sys.time())
-        paste(input$name.file_clust,"_",input$epitope_umap_selected,"_UMAP_", gsub("/", "-", x), ".png", sep = "")
+        paste("_",input$epitope_umap_selected,"_UMAP_", gsub("/", "-", x), ".png", sep = "")
       },
       content = function(file) {
         png(file, width = input$width_png_UMAP_Epitope,
@@ -12076,7 +12153,7 @@ runSTEGO <- function(){
         dev.off()},   contentType = "application/png" # MIME type of the image
     )
     # Over representation analysis for Epitope  -----
-    Over_rep_Epi <- reactive({
+    Over_rep_Epi_old <- reactive({
       sc <- UMAP_metadata_with_labs()
       epi <- input.data_sc_TCRex()
       validate(
@@ -12123,13 +12200,18 @@ runSTEGO <- function(){
       background.genes <- length(rownames(sc@assays$RNA@scale.data))
 
       geneSet$background.genes <- background.genes
-      head(geneSet)
+
       markers.fm.list <- compare.stat_Epi() # need to change to epi
+
       DEx.genes <- as.data.frame(rownames(markers.fm.list))
       names(DEx.genes) <- "V1"
       total.sig <- length(DEx.genes$V1)
       geneSet$total.sig <- length(DEx.genes$V1)
-      geneSet
+
+      geneSet$background.geneset <- NA
+      geneSet$background.geneset.name <- NA
+      geneSet$in.geneset <- NA
+      geneSet$in.geneset.name <- NA
 
       if(input$datasource == "BD_Rhapsody_Paired" || input$datasource == "BD_Rhapsody_AIRR") { # selectInput("datasource", "Data source",choices=c("10x_Genomics","BD_Rhapsody_Paired","BD_Rhapsody_AIRR")),
         geneSet$GeneSet <- gsub("-",".",geneSet$GeneSet)
@@ -12141,66 +12223,72 @@ runSTEGO <- function(){
       }
 
       for (i in 1:dim(geneSet)[1]) {
+        # listed GeneSet
+        message(paste("Sample: ", i))
         Gene.set.testing <- as.data.frame(strsplit(geneSet$GeneSet,";")[i])
         names(Gene.set.testing) <- "V1"
-        background.overlap <- merge(Gene.set.testing,background.genes.name,by= "V1")
-        background.overlap
-
+        Gene.set.testing2 <- as.data.frame(unique(Gene.set.testing$V1))
+        names(Gene.set.testing2) <- "V1"
+        # message(paste(dim(Gene.set.testing2)[1],"GeneSet total"))
+        # background genes
+        background.overlap <- merge(Gene.set.testing2,background.genes.name,by= "V1")
+        # message(paste(dim(background.overlap)[1],"in Background"))
         geneSet$background.geneset[i] <- length(background.overlap$V1)
-        geneSet$background.geneset.name[i] <- list(background.overlap$V1)
-        geneSet$background.geneset.name[i] <- paste(unlist(geneSet$background.geneset.name[i]), collapse=';')
-        geneSet$background.geneset.name2[i] <- geneSet$background.geneset.name[[i]]
-
-        overlap <- merge(Gene.set.testing,DEx.genes,by= "V1")
+        geneSet$background.geneset.name[i] <- as.character(paste(unlist(background.overlap[1]), collapse=';'))
+        # in sig gene list
+        overlap <- merge(background.overlap,DEx.genes,by= "V1")
+        # message(paste(dim(overlap)[1],"# Sig genes"))
         geneSet$in.geneset[i] <- length(overlap$V1)
-        geneSet$in.geneset.name[i] <- list(overlap$V1)
-        geneSet$in.geneset.name[i] <- paste(unlist(geneSet$in.geneset.name[i]), collapse=';')
-        geneSet$in.geneset.name2[i] <- geneSet$in.geneset.name[[i]]
+        geneSet$in.geneset.name[i] <- as.character(paste(unlist(overlap[1]), collapse=';'))
+
       }
 
-      geneSet$background.geneset.name <- geneSet$background.geneset.name2
-      geneSet$in.geneset.name <- geneSet$in.geneset.name2
-      geneSet <- geneSet[,!grepl("2",names(geneSet))]
-      geneSet <- subset(geneSet,geneSet$in.geneset>0)
+      geneSet2 <- subset(geneSet,geneSet$in.geneset>0)
 
-      for (i in 1:dim(geneSet)[1]){
-        tota.gene.set <- geneSet$background.geneset[i] # genes that are identified in background
+      for (i in 1:dim(geneSet2)[1]) {
+        tota.gene.set <- geneSet2$background.geneset[i] # genes that are identified in background
+        tota.gene.set
+        in.geneset <-  geneSet2$in.geneset[i]# DEx in geneset
 
-        in.geneset <-  geneSet$in.geneset[i]# DEx in geneset
-        # background.genes <- 300 # features expressed in cell or total?
         background.genes
         not.in.total <- background.genes - tota.gene.set
         not.in.geneset.sig <- total.sig - in.geneset
-
-
-        d <- data.frame(gene.not.interest=c(not.in.total, tota.gene.set), gene.in.interest=c(not.in.geneset.sig, in.geneset))
-        row.names(d) <- c( "not.in.geneset","in.geneset")
-        d
+        d <- data.frame( gene.in.interest=c( in.geneset, not.in.geneset.sig),gene.not.interest=c( tota.gene.set, not.in.total))
+        row.names(d) <- c("In_category", "not_in_category")
 
         if (in.geneset>0) {
-          geneSet$p.val[i] <- unlist(fisher.test(d)$p.value)[1]
-          geneSet$lowerCI[i] <-  unlist(fisher.test(d)$conf.int)[1]
-          geneSet$upperCI[i] <-unlist(fisher.test(d)$conf.int)[2]
-          geneSet$OR[i] <- unlist(fisher.test(d)$estimate)[1]
+          geneSet2$p.val[i] <- unlist(fisher.test(d, alternative = "greater")$p.value)[1]
+          geneSet2$lowerCI[i] <-  unlist(fisher.test(d, alternative = "greater")$conf.int)[1]
+          geneSet2$upperCI[i] <-unlist(fisher.test(d)$conf.int)[2]
+          geneSet2$OR[i] <- round(unlist(fisher.test(d, alternative = "greater")$estimate)[1],3)
         }
 
         else {
-          geneSet$p.value[i] <- "-"
-          geneSet$lowerCI[i] <-  "-"
-          geneSet$upperCI[i] <- "-"
-          geneSet$OR[i] <- "-"
+          geneSet2$p.value[i] <- "-"
+          geneSet2$lowerCI[i] <-  "-"
+          geneSet2$upperCI[i] <- "-"
+          geneSet2$OR[i] <- "-"
         }
+        # message(print(d))
+        # message(print(round(prop.table(d),3)))
       }
+      geneSet2
+    })
+    Over_rep_Epi <- reactive({
+      geneSet2 <- Over_rep_Epi_old()
 
-      geneSet <- subset(geneSet,geneSet$in.geneset>=input$in.geneset.cutoff_Epi)
+      validate(
+        need(nrow(geneSet2)>0,
+             "Upload Files")
+      )
+      geneSet2 <- geneSet2[order(geneSet2$p.val,decreasing = F),]
+      geneSet2 <- subset(geneSet2,geneSet2$in.geneset>=input$in.geneset.cutoff_Epi)
+      geneSet2 <- subset(geneSet2,geneSet2$p.val<=input$p.val_cutoff_Epi)
 
-      geneSet$pval.BH.adj <- p.adjust(geneSet$p.val, method = "BH")
-      geneSet <- subset(geneSet,geneSet$p.val<=input$p.val_cutoff_Epi)
-      geneSet <- subset(geneSet,geneSet$pval.BH.adj<=input$adjust_cutoff_Epi)
-      geneSet <- geneSet[order(geneSet$pval.BH.adj,decreasing = F),]
-      # Origin	Exact.source	Cell_Type	Geneset_ID	GeneSet	total.genes	DOI	background.genes	total.sig	background.geneset	background.geneset.name	in.geneset	in.geneset.name	p.val	lowerCI	upperCI	OR	pval.BH.adj
-      name.list <- c("Geneset_ID","p.val","pval.BH.adj","OR","lowerCI","upperCI","in.geneset.name","in.geneset","background.geneset","total.sig","background.genes","background.geneset.name")
-      geneSet %>%
+      geneSet2$FDR <- p.adjust(geneSet2$p.val, method = "fdr")
+      geneSet2$Bonferroni <- p.adjust(geneSet2$p.val, method = "bonferroni")
+      name.list <- c("Geneset_ID","p.val","FDR","Bonferroni","OR","lowerCI","upperCI","in.geneset.name","in.geneset","background.geneset","total.sig","background.genes","background.geneset.name")
+      geneSet2 <- geneSet2 %>%
         select(all_of(name.list), everything())
     })
 
@@ -13438,7 +13526,7 @@ runSTEGO <- function(){
         dev.off()},   contentType = "application/png" # MIME type of the image
     )
     # Over representation analysis for Cluster  -----
-    Over_rep_cluster <- reactive({
+    Over_rep_cluster_old <- reactive({
       sc <- UMAP_metadata_with_labs()
       validate(
         need(nrow(sc)>0,
@@ -13463,6 +13551,11 @@ runSTEGO <- function(){
       total.sig <- length(DEx.genes$V1)
       geneSet$total.sig <- length(DEx.genes$V1)
 
+      geneSet$background.geneset <- NA
+      geneSet$background.geneset.name <- NA
+      geneSet$in.geneset <- NA
+      geneSet$in.geneset.name <- NA
+
       if(input$datasource == "BD_Rhapsody_Paired" || input$datasource == "BD_Rhapsody_AIRR") { # selectInput("datasource", "Data source",choices=c("10x_Genomics","BD_Rhapsody_Paired","BD_Rhapsody_AIRR")),
         geneSet$GeneSet <- gsub("-",".",geneSet$GeneSet)
       }
@@ -13473,70 +13566,72 @@ runSTEGO <- function(){
       }
 
       for (i in 1:dim(geneSet)[1]) {
+        # listed GeneSet
+        message(paste("Sample: ", i))
         Gene.set.testing <- as.data.frame(strsplit(geneSet$GeneSet,";")[i])
         names(Gene.set.testing) <- "V1"
-        background.overlap <- merge(Gene.set.testing,background.genes.name,by= "V1")
-        background.overlap
-
+        Gene.set.testing2 <- as.data.frame(unique(Gene.set.testing$V1))
+        names(Gene.set.testing2) <- "V1"
+        # message(paste(dim(Gene.set.testing2)[1],"GeneSet total"))
+        # background genes
+        background.overlap <- merge(Gene.set.testing2,background.genes.name,by= "V1")
+        # message(paste(dim(background.overlap)[1],"in Background"))
         geneSet$background.geneset[i] <- length(background.overlap$V1)
-        geneSet$background.geneset.name[i] <- list(background.overlap$V1)
-        geneSet$background.geneset.name[i] <- paste(unlist(geneSet$background.geneset.name[i]), collapse=';')
-        geneSet$background.geneset.name2[i] <- geneSet$background.geneset.name[[i]]
-
-        overlap <- merge(Gene.set.testing,DEx.genes,by= "V1")
+        geneSet$background.geneset.name[i] <- as.character(paste(unlist(background.overlap[1]), collapse=';'))
+        # in sig gene list
+        overlap <- merge(background.overlap,DEx.genes,by= "V1")
+        # message(paste(dim(overlap)[1],"# Sig genes"))
         geneSet$in.geneset[i] <- length(overlap$V1)
-        geneSet$in.geneset.name[i] <- list(overlap$V1)
-        geneSet$in.geneset.name[i] <- paste(unlist(geneSet$in.geneset.name[i]), collapse=';')
-        geneSet$in.geneset.name2[i] <- geneSet$in.geneset.name[[i]]
+        geneSet$in.geneset.name[i] <- as.character(paste(unlist(overlap[1]), collapse=';'))
+
       }
 
-      geneSet$background.geneset.name <- geneSet$background.geneset.name2
-      geneSet$in.geneset.name <- geneSet$in.geneset.name2
-      geneSet$in.geneset.name
+      geneSet2 <- subset(geneSet,geneSet$in.geneset>0)
 
-      geneSet <- geneSet[,!grepl("2",names(geneSet))]
-      geneSet <- subset(geneSet,geneSet$in.geneset>0)
+      for (i in 1:dim(geneSet2)[1]) {
+        tota.gene.set <- geneSet2$background.geneset[i] # genes that are identified in background
+        tota.gene.set
+        in.geneset <-  geneSet2$in.geneset[i]# DEx in geneset
 
-      for (i in 1:dim(geneSet)[1]) {
-        tota.gene.set <- geneSet$background.geneset[i] # genes that are identified in background
-
-        in.geneset <-  geneSet$in.geneset[i]# DEx in geneset
-        # background.genes <- 300 # features expressed in cell or total?
         background.genes
         not.in.total <- background.genes - tota.gene.set
         not.in.geneset.sig <- total.sig - in.geneset
-
-
-        d <- data.frame(gene.not.interest=c(not.in.total, tota.gene.set), gene.in.interest=c(not.in.geneset.sig, in.geneset))
-        row.names(d) <- c( "not.in.geneset","in.geneset")
-        d
+        d <- data.frame( gene.in.interest=c( in.geneset, not.in.geneset.sig),gene.not.interest=c( tota.gene.set, not.in.total))
+        row.names(d) <- c("In_category", "not_in_category")
 
         if (in.geneset>0) {
-          geneSet$p.val[i] <- unlist(fisher.test(d)$p.value)[1]
-          geneSet$lowerCI[i] <-  unlist(fisher.test(d)$conf.int)[1]
-          geneSet$upperCI[i] <-unlist(fisher.test(d)$conf.int)[2]
-          geneSet$OR[i] <- unlist(fisher.test(d)$estimate)[1]
+          geneSet2$p.val[i] <- unlist(fisher.test(d, alternative = "greater")$p.value)[1]
+          geneSet2$lowerCI[i] <-  unlist(fisher.test(d, alternative = "greater")$conf.int)[1]
+          geneSet2$upperCI[i] <-unlist(fisher.test(d)$conf.int)[2]
+          geneSet2$OR[i] <- round(unlist(fisher.test(d, alternative = "greater")$estimate)[1],3)
         }
 
         else {
-          geneSet$p.value[i] <- "-"
-          geneSet$lowerCI[i] <-  "-"
-          geneSet$upperCI[i] <- "-"
-          geneSet$OR[i] <- "-"
+          geneSet2$p.value[i] <- "-"
+          geneSet2$lowerCI[i] <-  "-"
+          geneSet2$upperCI[i] <- "-"
+          geneSet2$OR[i] <- "-"
         }
+        # message(print(d))
+        # message(print(round(prop.table(d),3)))
       }
+      geneSet2
+    })
 
-      # prop.table(d)
-      geneSet <- subset(geneSet,geneSet$in.geneset>=input$in.geneset.cutoff_Clust)
+    Over_rep_cluster <- reactive({
+      geneSet2 <- Over_rep_cluster_old()
+      validate(
+        need(nrow(geneSet2)>0,
+             "Upload Files")
+      )
 
-      # prop.table(d)
-      geneSet$pval.BH.adj <- p.adjust(geneSet$p.val, method = "BH")
-      geneSet <- subset(geneSet,geneSet$p.val<=input$p.val_cutoff_Clust)
-      geneSet <- subset(geneSet,geneSet$pval.BH.adj<=input$adjust_cutoff_Clust)
-      geneSet <- geneSet[order(geneSet$pval.BH.adj,decreasing = F),]
-      # Origin	Exact.source	Cell_Type	Geneset_ID	GeneSet	total.genes	DOI	background.genes	total.sig	background.geneset	background.geneset.name	in.geneset	in.geneset.name	p.val	lowerCI	upperCI	OR	pval.BH.adj
-      name.list <- c("Geneset_ID","p.val","pval.BH.adj","OR","lowerCI","upperCI","in.geneset.name","in.geneset","background.geneset","total.sig","background.genes","background.geneset.name")
-      geneSet %>%
+      geneSet2 <- geneSet2[order(geneSet2$p.val,decreasing = F),]
+      geneSet2 <- subset(geneSet2,geneSet2$in.geneset>=input$in.geneset.cutoff_Clust)
+      geneSet2 <- subset(geneSet2,geneSet2$p.val<=input$p.val_cutoff_Clust)
+      geneSet2$FDR <- p.adjust(geneSet2$p.val, method = "fdr")
+      geneSet2$Bonferroni <- p.adjust(geneSet2$p.val, method = "bonferroni")
+      name.list <- c("Geneset_ID","p.val","FDR","Bonferroni","OR","lowerCI","upperCI","in.geneset.name","in.geneset","background.geneset","total.sig","background.genes","background.geneset.name")
+      geneSet2 <- geneSet2 %>%
         select(all_of(name.list), everything())
     })
 
@@ -13604,8 +13699,8 @@ runSTEGO <- function(){
 
     output$downloadPlot_Upset_plot_overlap <- downloadHandler(
       filename = function() {
-        x <- gsub(":", ".", Sys.time())
-        paste(input$name.file_clust,"_Overlap_",gsub("/", "-", x), ".pdf", sep = "")
+        x <- today()
+        paste(input$Samp_col,"_",input$V_gene_sc,"_overlap_",x, ".pdf", sep = "")
       },
       content = function(file) {
         pdf(file, width=input$width_Upset_plot_overlap,height=input$height_Upset_plot_overlap, onefile = FALSE) # open the pdf device
@@ -13614,8 +13709,8 @@ runSTEGO <- function(){
 
     output$downloadPlotPNG_Upset_plot_overlap <- downloadHandler(
       filename = function() {
-        x <- gsub(":", ".", Sys.time())
-        paste(input$name.file_clust,"_Overlap_", gsub("/", "-", x), ".png", sep = "")
+        x <- today()
+        paste(input$Samp_col,"_",input$V_gene_sc,"_overlap_",x, ".png", sep = "")
       },
       content = function(file) {
         png(file, width = input$width_png_Upset_plot_overlap,height = input$height_png_Upset_plot_overlap,res = input$resolution_PNG_Upset_plot_overlap)
@@ -13789,6 +13884,11 @@ runSTEGO <- function(){
       total.sig <- length(DEx.genes$V1)
       geneSet$total.sig <- length(DEx.genes$V1)
 
+      geneSet$background.geneset <- NA
+      geneSet$background.geneset.name <- NA
+      geneSet$in.geneset <- NA
+      geneSet$in.geneset.name <- NA
+
       if(input$datasource == "BD_Rhapsody_Paired" || input$datasource == "BD_Rhapsody_AIRR") { # selectInput("datasource", "Data source",choices=c("10x_Genomics","BD_Rhapsody_Paired","BD_Rhapsody_AIRR")),
         geneSet$GeneSet <- gsub("-",".",geneSet$GeneSet)
       }
@@ -13799,70 +13899,67 @@ runSTEGO <- function(){
       }
 
       for (i in 1:dim(geneSet)[1]) {
+        # listed GeneSet
+        message(paste("Sample: ", i))
         Gene.set.testing <- as.data.frame(strsplit(geneSet$GeneSet,";")[i])
         names(Gene.set.testing) <- "V1"
-        background.overlap <- merge(Gene.set.testing,background.genes.name,by= "V1")
-        background.overlap
-
+        Gene.set.testing2 <- as.data.frame(unique(Gene.set.testing$V1))
+        names(Gene.set.testing2) <- "V1"
+        # message(paste(dim(Gene.set.testing2)[1],"GeneSet total"))
+        # background genes
+        background.overlap <- merge(Gene.set.testing2,background.genes.name,by= "V1")
+        # message(paste(dim(background.overlap)[1],"in Background"))
         geneSet$background.geneset[i] <- length(background.overlap$V1)
-        geneSet$background.geneset.name[i] <- list(background.overlap$V1)
-        geneSet$background.geneset.name[i] <- paste(unlist(geneSet$background.geneset.name[i]), collapse=';')
-        geneSet$background.geneset.name2[i] <- geneSet$background.geneset.name[[i]]
-
-        overlap <- merge(Gene.set.testing,DEx.genes,by= "V1")
+        geneSet$background.geneset.name[i] <- as.character(paste(unlist(background.overlap[1]), collapse=';'))
+        # in sig gene list
+        overlap <- merge(background.overlap,DEx.genes,by= "V1")
+        # message(paste(dim(overlap)[1],"# Sig genes"))
         geneSet$in.geneset[i] <- length(overlap$V1)
-        geneSet$in.geneset.name[i] <- list(overlap$V1)
-        geneSet$in.geneset.name[i] <- paste(unlist(geneSet$in.geneset.name[i]), collapse=';')
-        geneSet$in.geneset.name2[i] <- geneSet$in.geneset.name[[i]]
+        geneSet$in.geneset.name[i] <- as.character(paste(unlist(overlap[1]), collapse=';'))
+
       }
 
-      geneSet$background.geneset.name <- geneSet$background.geneset.name2
-      geneSet$in.geneset.name <- geneSet$in.geneset.name2
-      geneSet$in.geneset.name
+      geneSet2 <- subset(geneSet,geneSet$in.geneset>0)
 
-      geneSet <- geneSet[,!grepl("2",names(geneSet))]
-      geneSet <- subset(geneSet,geneSet$in.geneset>0)
+      for (i in 1:dim(geneSet2)[1]) {
+        tota.gene.set <- geneSet2$background.geneset[i] # genes that are identified in background
+        tota.gene.set
+        in.geneset <-  geneSet2$in.geneset[i]# DEx in geneset
 
-      for (i in 1:dim(geneSet)[1]) {
-        tota.gene.set <- geneSet$background.geneset[i] # genes that are identified in background
-
-        in.geneset <-  geneSet$in.geneset[i]# DEx in geneset
-        # background.genes <- 300 # features expressed in cell or total?
         background.genes
         not.in.total <- background.genes - tota.gene.set
         not.in.geneset.sig <- total.sig - in.geneset
-
-
-        d <- data.frame(gene.not.interest=c(not.in.total, tota.gene.set), gene.in.interest=c(not.in.geneset.sig, in.geneset))
-        row.names(d) <- c( "not.in.geneset","in.geneset")
-        d
+        d <- data.frame( gene.in.interest=c( in.geneset, not.in.geneset.sig),gene.not.interest=c( tota.gene.set, not.in.total))
+        row.names(d) <- c("In_category", "not_in_category")
 
         if (in.geneset>0) {
-          geneSet$p.val[i] <- unlist(fisher.test(d)$p.value)[1]
-          geneSet$lowerCI[i] <-  unlist(fisher.test(d)$conf.int)[1]
-          geneSet$upperCI[i] <-unlist(fisher.test(d)$conf.int)[2]
-          geneSet$OR[i] <- unlist(fisher.test(d)$estimate)[1]
+          geneSet2$p.val[i] <- unlist(fisher.test(d, alternative = "greater")$p.value)[1]
+          geneSet2$lowerCI[i] <-  unlist(fisher.test(d, alternative = "greater")$conf.int)[1]
+          geneSet2$upperCI[i] <-unlist(fisher.test(d)$conf.int)[2]
+          geneSet2$OR[i] <- round(unlist(fisher.test(d, alternative = "greater")$estimate)[1],3)
         }
 
         else {
-          geneSet$p.value[i] <- "-"
-          geneSet$lowerCI[i] <-  "-"
-          geneSet$upperCI[i] <- "-"
-          geneSet$OR[i] <- "-"
+          geneSet2$p.value[i] <- "-"
+          geneSet2$lowerCI[i] <-  "-"
+          geneSet2$upperCI[i] <- "-"
+          geneSet2$OR[i] <- "-"
         }
+        # message(print(d))
+        # message(print(round(prop.table(d),3)))
       }
+      geneSet2 <- geneSet2[order(geneSet2$p.val,decreasing = F),]
+      geneSet2 <- geneSet2[order(geneSet2$p.val,decreasing = F),]
+      geneSet2 <- subset(geneSet2,geneSet2$in.geneset>=input$in.geneset.cutoff_Exp)
+      geneSet2$FDR <- p.adjust(geneSet2$p.val, method = "fdr")
+      geneSet2$pval.bonferroni.adj <- p.adjust(geneSet2$p.val, method = "bonferroni")
+      geneSet2 <- subset(geneSet2,geneSet2$p.val<=input$p.val_cutoff_Exp)
+      # geneSet2 <- subset(geneSet2,geneSet2$pval.BH.adj<=input$adjust_cutoff_top)
 
-      # prop.table(d)
-      geneSet <- subset(geneSet,geneSet$in.geneset>=input$in.geneset.cutoff_Overlap)
-
-      # prop.table(d)
-      geneSet$pval.BH.adj <- p.adjust(geneSet$p.val, method = "BH", n = length(geneSet$p.val))
-      geneSet <- subset(geneSet,geneSet$p.val<=input$p.val_cutoff_Overlap)
-      geneSet <- subset(geneSet,geneSet$pval.BH.adj<=input$adjust_cutoff_Overlap)
-      geneSet <- geneSet[order(geneSet$pval.BH.adj,decreasing = F),]
-      # Origin	Exact.source	Cell_Type	Geneset_ID	GeneSet	total.genes	DOI	background.genes	total.sig	background.geneset	background.geneset.name	in.geneset	in.geneset.name	p.val	lowerCI	upperCI	OR	pval.BH.adj
-      name.list <- c("Geneset_ID","p.val","pval.BH.adj","OR","lowerCI","upperCI","in.geneset.name","in.geneset","background.geneset","total.sig","background.genes","background.geneset.name")
-      geneSet %>%
+      geneSet2$FDR <- p.adjust(geneSet2$p.val, method = "fdr")
+      geneSet2$Bonferroni <- p.adjust(geneSet2$p.val, method = "bonferroni")
+      name.list <- c("Geneset_ID","p.val","FDR","Bonferroni","OR","lowerCI","upperCI","in.geneset.name","in.geneset","background.geneset","total.sig","background.genes","background.geneset.name")
+      geneSet2 <- geneSet2 %>%
         select(all_of(name.list), everything())
     })
 
@@ -13882,7 +13979,128 @@ runSTEGO <- function(){
 
     # marker analysis -----
 
+    ### single marker feature plot -----
+
+    MainTcell_counts <- reactive({
+      sc <- input.data_sc_pro()
+      validate(
+        need(nrow(sc)>0,
+             "Upload File")
+      )
+
+      # req(input$V_call_clust_sc,input$junction_clust_sc,input$V_call_clust_sc_BD,input$junction_clust_sc_BD)
+      md <- sc@meta.data
+      df = as.data.frame(sc[["RNA"]]@counts)
+      df$Cell_Index <- rownames(df)
+      MainTcell <- as.data.frame(t(df))
+      MainTcell
+    })
+
+    MainTcell_counts_names <- reactive({
+      sc <- input.data_sc_pro()
+      validate(
+        need(nrow(sc)>0,
+             "Upload File")
+      )
+      req(sc)
+
+      md <- sc@meta.data
+      df = rownames(sc[["RNA"]]@counts)
+      df <-as.data.frame(df)
+      names(df) <- "V1"
+      df
+    })
+
+    observe({
+      sc <- (MainTcell_counts_names())
+      validate(
+        need(nrow(sc)>0,
+             "Upload File")
+      )
+      req(sc)
+
+      updateSelectizeInput(
+        session,
+        "Var_to_col_marker",
+        choices = sc$V1,
+        select = sc$V1[1]
+      )
+    })
+
+    selected_gene <- reactive({
+      MainTcell <- MainTcell_counts()
+      validate(
+        need(nrow(MainTcell)>0,
+             "Upload File")
+      )
+
+      MainTcell$Cell_Index <- rownames(MainTcell)
+      MainTcell[,names(MainTcell) %in% c("Cell_Index",input$Var_to_col_marker)]
+
+    })
+
+    meta_data_for_features <- reactive({
+      sc <- UMAP_metadata_with_labs()
+      validate(
+        need(nrow(sc)>0,
+             "Upload File")
+      )
+
+      md <- sc@meta.data
+      md <- merge(md,selected_gene(),by = "Cell_Index")
+      md$log2.count <- log2(as.numeric(md[,names(md) %in% input$Var_to_col_marker]))
+      md$log2.count[is.na(md$log2.count)] <- "-Inf"
+      md
+    })
+
+
+
+    output$marker_selected_tab <- DT::renderDataTable(escape = FALSE, filter = list(position = 'top', clear = FALSE), options = list(autoWidth = FALSE, lengthMenu = c(1,2,5,10,20,50,100), pageLength = 20, scrollX = TRUE),{
+      umap.meta <- meta_data_for_features()
+      umap.meta
+    })
+
+    marker_selected_UMAP <- reactive({
+      umap.meta <- meta_data_for_features()
+      validate(
+        need(nrow(umap.meta)>0,
+             "Upload File")
+      )
+
+      umap.meta <- meta_data_for_features()
+      umap.meta_pos <- subset(umap.meta,umap.meta$log2.count != "-Inf")
+
+      umap.meta$log2.count <- ifelse(umap.meta$log2.count == "-Inf",NA,umap.meta$log2.count)
+      umap.meta$log2.count <- as.numeric(umap.meta$log2.count)
+      umap.meta_pos$log2.count <- as.numeric(umap.meta_pos$log2.count)
+
+      ggplot(umap.meta,aes(x=UMAP_1,y=UMAP_2,color = log2.count))+
+        geom_point(size = 1) +
+        geom_point(data = umap.meta_pos,aes(x=UMAP_1,y=UMAP_2,color = log2.count),size = 1) +
+        # scale_color_continuous(type = "viridis",na.value="grey75") +
+        theme_bw() +
+        theme(
+          panel.grid.major = element_blank(),
+        ) +
+        scale_color_distiller(direction = 1, palette = input$col_marker_scale,na.value = "grey75")
+
+    })
+
+    output$marker_selected_UMAP_plot <- renderPlot({
+      umap.meta <- MainTcell_counts_names()
+      validate(
+        need(nrow(umap.meta)>0,
+             "Upload File")
+      )
+      marker_selected_UMAP()
+    })
+
+    # subset based on UMAP location, subset bashed on log2 threshold as well.
+
+    # display T cells assoicated with that marker.
+
     ### end -----
   }
   shinyApp(ui, server)
+
 }
