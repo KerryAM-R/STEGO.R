@@ -13,6 +13,7 @@ runSTEGO <- function(){
   col_markers <- c("Blues", "BuGn", "BuPu", "GnBu", "Greens", "Greys", "Oranges", "OrRd", "PuBu", "PuBuGn", "PuRd", "Purples", "RdPu", "Reds", "YlGn", "YlGnBu","YlOrBr", "YlOrRd")
   options(shiny.maxRequestSize = 100000*1024^2)
   options(shiny.maxRequestSize = 100000*1024^2)
+  options(shiny.maxRequestSize = 100000*1024^2)
   # UI page -----
   ui <- fluidPage(
 
@@ -4264,8 +4265,8 @@ runSTEGO <- function(){
 
       df$TRBJ_gene <- gsub("^$","None", df$TRBJ_gene)
 
-      if (nrow(contigs2[-c(grep("None",contigs2$TRBJ_gene)),]>0)) {
-        contigs2 <- subset(contigs2,contigs2$TRBJ_gene!= "None")
+      if (nrow(df[-c(grep("None",df$TRBJ_gene)),]>0)) {
+        df <- subset(df,df$TRBJ_gene!= "None")
       }
 
       df[!duplicated(df$CDR3_beta),]
