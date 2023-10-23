@@ -12,10 +12,11 @@ runSTEGO <- function(){
 
   col_markers <- c("Blues", "BuGn", "BuPu", "GnBu", "Greens", "Greys", "Oranges", "OrRd", "PuBu", "PuBuGn", "PuRd", "Purples", "RdPu", "Reds", "YlGn", "YlGnBu","YlOrBr", "YlOrRd")
   options(shiny.maxRequestSize = 100000*1024^2)
-  options(future.globals.maxSize = 100000 * 1024^5) #to options (future.globals.maxSize = 4000 * 1024^5)
-
+  options(shiny.maxRequestSize = 100000*1024^2)
   # UI page -----
   ui <- fluidPage(
+
+
     theme = bs_theme(
       # Controls the default grayscale palette
       bg = "white", fg = "black",
@@ -65,7 +66,7 @@ runSTEGO <- function(){
                                                   selectInput("BCR_TCR_10x","Type of data",choices = c("TCR only","BCR only","both")),
 
                                      ),
-### 10x main panel -----
+                                     ### 10x main panel -----
                                      mainPanel(
 
                                        tabsetPanel(id = "panel_10x",
@@ -1023,7 +1024,7 @@ runSTEGO <- function(){
                                                          # conditionalPanel(condition="input.ExPan=='ExPan_stat' || input.ExPan=='ExPan_dot' || input.ExPan=='ExPan_OvRep'",
                                                          column(12,actionButton("run_Expanded_stats","Select comparison")),
                                                          fluidRow(
-                                                           column(6,selectInput("Selected_status_of_","Add Status of samples ID",choices = "")),
+                                                           # column(6,selectInput("Samp_col_expanded","Add Status of samples ID",choices = "")),
                                                            column(12,selectizeInput("selected_Indiv_Ex_1","Samp 1",choices = "", multiple = T)),
                                                            column(12,selectizeInput("selected_Indiv_Ex_2","Samp 2",choices = "", multiple = T)),
                                                            column(4,numericInput("min_point_top_Ex","Min point cut off", value = 0.25)),
@@ -1042,7 +1043,7 @@ runSTEGO <- function(){
                                        ),
                                        conditionalPanel(condition="input.Panel_TCRUMAP == 'ClusTCR2'",
                                                         fluidRow(
-                                                          # column(6,selectInput("Selected_status_of_","Add Status of samples ID",choices = "")),
+                                                          # column(6,selectInput("Samp_col_expanded","Add Status of samples ID",choices = "")),
                                                           column(4,numericInput("min_point_Clust","Min point cut off", value = 0.25)),
                                                           column(4,numericInput("LogFC_Clust","Min LogFC cut off", value = 0.25)),
                                                           column(4,numericInput("pval.ex.filter_Clust","adj.p-val cut-off", value = 0.1)),
@@ -1056,7 +1057,14 @@ runSTEGO <- function(){
                                                         )
                                        ),
                                        conditionalPanel(condition = "input.Panel_TCRUMAP == 'Marker'",
-                                                        selectInput("col_marker_scale","Colour scale",choices = col_markers,selected = col_markers[1])
+
+                                                        column(12,selectInput("col_marker_scale","Colour scale",choices = col_markers,selected = col_markers[1])),
+
+                                                        fluidRow(
+                                                          column(4,numericInput("min_point_Marker","Min point cut off", value = 0.25)),
+                                                          column(4,numericInput("LogFC_Marker","Min LogFC cut off", value = 0.25)),
+                                                          column(4,numericInput("pval.ex.filter_Marker","adj.p-val cut-off", value = 0.1)),
+                                                        ),
                                        ),
 
                                        conditionalPanel(condition="input.check_up_files != 'up'",
@@ -1611,6 +1619,7 @@ runSTEGO <- function(){
                                                                       ),
 
                                                                       fluidRow(
+                                                                        # column(3,actionButton("update_Expansion_run","Upate expansion")),
                                                                         column(3,numericInput("cut.off_expanded","Cut off greater than", value = 1, step = 1, min = 1)),
                                                                         column(3,uiOutput("classification_to_add2")),
                                                                       ),
@@ -1920,46 +1929,121 @@ runSTEGO <- function(){
                                                              ),
                                                              # marker specific TCR analysis --------
                                                              tabPanel("Marker",value = "Marker",
-                                                                      tabsetPanel(
-                                                                        tabPanel("Single marker",
-                                                                                 fluidRow(
-                                                                                   selectizeInput("Var_to_col_marker","Marker col","")
-                                                                                 ),
-                                                                                 tabsetPanel(
-                                                                                   tabPanel("Table",
-                                                                                            div(DT::dataTableOutput("marker_selected_tab")),
-                                                                                   ),
-                                                                                   tabPanel("Feature plot",
-                                                                                            add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
+                                                                      tabsetPanel(id = "Marker_Panel",
+                                                                                  tabPanel("Single marker",
+                                                                                           fluidRow(
+                                                                                             column(4,selectizeInput("Var_to_col_marker","Marker col","")),
+                                                                                             column(2,numericInput("Filter_lower_UMAP1_marker","UMAP_1 >",value = -20)),
+                                                                                             column(2,numericInput("Filter_lower_UMAP1_marker2","UMAP_1 <",value = 20)),
+                                                                                             column(2,numericInput("Filter_lower_UMAP2_marker","UMAP_2 >",value = -20)),
+                                                                                             column(2,numericInput("Filter_lower_UMAP2_marker2","UMAP_2 <",value = 20)),
+                                                                                           ),
+                                                                                           # conditionalPanel(condition="input.Marker_Panel =='Marker_Panel_plot_stats'",
+                                                                                           fluidRow(
+                                                                                             column(3,selectInput("Analysis_marker_stats_type","Analysis type",choices = c("Population","Expanded"))),
+                                                                                             column(3,selectInput("Help_marer","Definitions",choices = c("No","Yes"))),
+                                                                                             column(3, numericInput("cutoff_marker_gt","Marker +ve cut-off (>)",value = 0,step = 0.1)),
+                                                                                             column(3,numericInput("pos_expanded_cut_off","clone count (>) for +ve",value = 2, min=1)),
+                                                                                           ),
+                                                                                           conditionalPanel(condition = "input.Help_marer == 'Yes'",
+                                                                                                            # p(strong("1. Total."), "Refers to the marker of interest compared to all negative cells"),
+                                                                                                            p(strong("1. Population."), "Refers to the the restricted UMAP selected population and compared the +ve to -ve marker population."),
+                                                                                                            p(strong("2. Expanded."), "Compares the clonal expaned (min 3) vs non-expanded population for all cells +ve for the marker in the restricted UMAP space."),
+                                                                                           ),
 
-                                                                                            plotOutput("marker_selected_UMAP_plot",height="600px")
-                                                                                   ),
-                                                                                   tabPanel("Violin plot"),
-                                                                                   tabPanel("UMAP"),
-                                                                                   tabPanel("TCR/BCR Table")
-                                                                                 )
-                                                                                 # cut-off 1,
-                                                                                 # umap filtering?
+                                                                                           tabsetPanel(
+                                                                                             tabPanel("Table", value = "Marker_Panel_table",
+                                                                                                      div(DT::dataTableOutput("marker_selected_tab")),
+                                                                                             ),
+                                                                                             tabPanel("UMAP plot",value = "Marker_Panel_plot_UMAP",
+                                                                                                      h4("Select area of the plot to keep for the specific marker"),
+                                                                                                      h6("Recommended to filter to broad populations based on UMAP e.g., CD4, CD8 or other"),
+                                                                                                      add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
+                                                                                                      plotOutput("marker_selected_UMAP_plot",height="600px")
+                                                                                             ),
+
+                                                                                             tabPanel("Violin/Ridge plot",value = "Marker_Panel_plot_VR",
+                                                                                                      h4("Filter marker of interest based on threshold"),
+                                                                                                      fluidRow(
+                                                                                                        column(3,selectInput("select_plot_vio.ridge","Plot type",choices = c("Violin","Ridge")))
+                                                                                                      ),
+                                                                                                      add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
+                                                                                                      plotOutput("marker_selected_VioRidge_plot",height="600px")
+
+                                                                                             ),
+                                                                                             # tabPanel("UMAP"),
+                                                                                             tabPanel("TCR/BCR mapped", value = "Marker_Panel_plot_TCR",
+                                                                                                      h4("TCR and/or BCR seqeunces that are positive for that marker"),
+                                                                                                      add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
+                                                                                                      fluidRow(
+                                                                                                        column(6,div(DT::dataTableOutput("TCR_marker_positive_count"))),
+                                                                                                        column(6,div(DT::dataTableOutput("TCR_marker_neg_count")))
+                                                                                                      ),
+
+                                                                                                      div(DT::dataTableOutput("merged_marker_hist_table")),
+                                                                                                      downloadButton('downloaddf_clonotype_distribution','Download table'),
+
+                                                                                                      add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
+                                                                                                      plotOutput("marker_selected_histogram_plot",height="600px")
 
 
-                                                                        ),
-                                                                        tabPanel("DEX analysis",
-                                                                                 # marker 1 # cut-off 1
-                                                                                 # marker 2 @ cut-off 2 (negative control)
-                                                                                 tabsetPanel(
-                                                                                   tabPanel("Feature plots"),
-                                                                                   tabPanel("Dot-plot"),
-                                                                                   tabPanel("Violin plot"),# will include splitting by T cell/B cell markers? Ig?
-                                                                                   tabPanel("UMAP"),
-                                                                                   tabPanel("TCR/BCR Table")
 
-                                                                                 ))
+                                                                                             ),
+
+                                                                                             tabPanel("Stats",value = "MP_plot_stats",
+                                                                                                      add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
+                                                                                                      div(DT::dataTableOutput("Compare.stat_marker")),
+                                                                                                      downloadButton('downloaddf_Marker_stats','Download table')
+
+                                                                                                      # filtered on marker of interest, broad population
+                                                                                                      # determine if
+                                                                                                      # segregated into expanded vs non-expaned  expanded clonotypes?
+
+
+                                                                                             ),
+                                                                                             # tabPanel("Dotplot",
+                                                                                             #
+                                                                                             #
+                                                                                             # ),
+                                                                                             # tabPanel("Over-representation",
+                                                                                             #
+                                                                                             # ),
+
+                                                                                           ),
+                                                                                           # cut-off 1,
+                                                                                           # umap filtering?
+
+
+                                                                                  ),
+                                                                                  # dual marker analysis ------
+                                                                                  tabPanel("Dual marker analysis",
+                                                                                           # marker 1 # cut-off 1
+                                                                                           # marker 2 @ cut-off 2 (negative control)
+                                                                                           fluidRow(
+                                                                                             column(4,selectizeInput("Var_to_col_marker2","Marker col","")),
+                                                                                             column(4,selectizeInput("Var_to_col_marker3","Marker col",""))
+                                                                                           ),
+                                                                                           fluidRow(
+                                                                                             column(2,numericInput("Filter_dual_UMAP1_marker","UMAP_1 >",value = -10)),
+                                                                                             column(2,numericInput("Filter_dual_UMAP1_marker2","UMAP_1 <",value = 10)),
+                                                                                             column(2,numericInput("Filter_dual_UMAP2_marker","UMAP_2 >",value = -10)),
+                                                                                             column(2,numericInput("Filter_dual_UMAP2_marker2","UMAP_2 <",value = 10)),
+                                                                                           ),
+
+                                                                                           tabsetPanel(
+                                                                                             tabPanel("Feature plots"),
+                                                                                             tabPanel("Dot-plot"),
+                                                                                             tabPanel("Violin plot"),# will include splitting by T cell/B cell markers? Ig?
+                                                                                             tabPanel("UMAP"),
+                                                                                             tabPanel("TCR/BCR Table")
+
+                                                                                           ))
                                                                       )
 
                                                              ),
 
                                                              # Overlap ------
-                                                             # Marker analysis ------
+
                                                              # tabPanel("Clonotypes per cluster (Pie/bar plot)"),
                                                              # tabPanel("Upset plot")
                                                  ),
@@ -3294,7 +3378,7 @@ runSTEGO <- function(){
 
       else {
         if (input$csv_contig_file == "csv/csv.gz") {
-          dataframe <- read.csv(inFile_10x_TCR$datapath)
+          dataframe <- read.csv(inFile_10x_TCR$datapath, na.strings = c("", "NA"))
         }
         else {
           dataframe <- read.table(inFile_10x_TCR$datapath,sep = "\t",header =T)
@@ -3723,7 +3807,13 @@ runSTEGO <- function(){
       if (nrow(contigs2[-c(grep("[*]",contigs2$junction_aa)),]>0)) {
         contigs2 <- contigs2[-c(grep("[*]",contigs2$junction_aa)),]
       }
-      contigs2 <- subset(contigs2,contigs2$junction_aa!= "None")
+
+      contigs2$junction_aa <- gsub("^$","None", contigs2$junction_aa)
+
+      if (nrow(contigs2[-c(grep("None",contigs2$junction_aa)),]>0)) {
+        contigs2 <- contigs2[-c(grep("None",contigs2$junction_aa)),]
+      }
+
       df <- contigs2[!duplicated(contigs2[,c('v_call','junction_aa')]),]
 
       if (input$chain_clusTCR2_10x == "AG") {
@@ -3877,7 +3967,19 @@ runSTEGO <- function(){
       contigs2 <- contigs2 %>%
         select(TRBV_gene,CDR3_beta,everything())
 
-      contigs2 <- subset(contigs2,contigs2$CDR3_beta!= "None")
+
+      contigs2$CDR3_beta <- gsub("^$","None", contigs2$CDR3_beta)
+
+      if (nrow(contigs2[-c(grep("None",contigs2$CDR3_beta)),]>0)) {
+        contigs2 <- subset(contigs2,contigs2$CDR3_beta!= "None")
+      }
+
+      contigs2$TRBJ_gene <- gsub("^$","None", contigs2$TRBJ_gene)
+
+      if (nrow(contigs2[-c(grep("None",contigs2$TRBJ_gene)),]>0)) {
+        contigs2 <- subset(contigs2,contigs2$TRBJ_gene!= "None")
+      }
+
 
       contigs2 <- contigs2
       contigs2$TRBV_gene <- gsub("[*]0.","",contigs2$TRBV_gene)
@@ -4154,6 +4256,18 @@ runSTEGO <- function(){
         df <- df[-c(grep("[*]",df$CDR3_beta)),]
       }
 
+      df$CDR3_beta <- gsub("^$","None", df$CDR3_beta)
+
+      if (nrow(df[-c(grep("None",df$CDR3_beta)),]>0)) {
+        df <- df[-c(grep("None",df$CDR3_beta)),]
+      }
+
+      df$TRBJ_gene <- gsub("^$","None", df$TRBJ_gene)
+
+      if (nrow(contigs2[-c(grep("None",contigs2$TRBJ_gene)),]>0)) {
+        contigs2 <- subset(contigs2,contigs2$TRBJ_gene!= "None")
+      }
+
       df[!duplicated(df$CDR3_beta),]
     })
 
@@ -4223,6 +4337,13 @@ runSTEGO <- function(){
       if (nrow(df[-c(grep("[*]",df$junction_aa)),]>0)) {
         df <- df[-c(grep("[*]",df$junction_aa)),]
       }
+
+      df$CDR3_beta <- gsub("^$","None", df$junction_aa)
+
+      if (nrow(df[-c(grep("None",df$CDR3_beta)),]>0)) {
+        df <- df[-c(grep("None",df$CDR3_beta)),]
+      }
+
 
       df[!duplicated(df$junction_aa),]
     })
@@ -10697,19 +10818,19 @@ runSTEGO <- function(){
     })
 
 
-    observe({
-      sc <- UMAP_metadata_with_labs()
-      validate(
-        need(nrow(sc)>0,
-             error_message_val_UMAP)
-      )
-      df3.meta <- sc@meta.data
-      updateSelectInput(
-        session,
-        "Selected_status_of_",
-        choices=names(df3.meta),
-        selected = "orig.ident")
-    })
+    #   observe({
+    #     sc <- UMAP_metadata_with_labs()
+    #     validate(
+    #       need(nrow(sc)>0,
+    #            error_message_val_UMAP)
+    #     )
+    #     df3.meta <- sc@meta.data
+    #       updateSelectInput(
+    #         session,
+    #         "Samp_col_expanded",
+    #         choices=names(df3.meta),
+    #         selected = "orig.ident")
+    # })
 
     select_group_metadata_ex <- reactive ({
       df <- Expansion_check_table()
@@ -10768,6 +10889,13 @@ runSTEGO <- function(){
     })
 
     ### table check ------
+
+    Vals_Expans_table <- reactiveValues(output_expTab=NULL)
+
+    observeEvent(input$update_Expansion_run,{
+
+    })
+
     Expansion_check_table <- reactive({
       sc <- UMAP_metadata_with_labs()
       validate(
@@ -10803,14 +10931,16 @@ runSTEGO <- function(){
       total.condition.group.counts
       umap.meta2 <- merge(Expansion.meta.data, total.condition.group.counts, by = c(input$Samp_col_expanded,input$V_gene_sc),sort = F)
       message(paste("Finished calculating expansion"))
-      names(umap.meta2)[names(umap.meta2) %in% input$Selected_status_of_] <- "Selected_Status"
+      names(umap.meta2)[names(umap.meta2) %in% input$Samp_col_expanded] <- "Selected_Status"
       umap.meta2$expansion.status <- paste0(umap.meta2$Selected_Status,"_",umap.meta2$expand.singlets)
-      names(umap.meta2)[names(umap.meta2) %in% "Selected_Status"] <- input$Selected_status_of_
+      names(umap.meta2)[names(umap.meta2) %in% "Selected_Status"] <- input$Samp_col_expanded
       umap.meta2
     })
-    output$Expansion_check <- DT::renderDataTable(escape = FALSE, filter = list(position = 'top', clear = FALSE), options = list(autoWidth = FALSE, lengthMenu = c(2,5,10,20,50,100), pageLength = 10, scrollX = TRUE),{
-      Expansion_check_table()
-    })
+
+
+    # output$Expansion_check <- DT::renderDataTable(escape = FALSE, filter = list(position = 'top', clear = FALSE), options = list(autoWidth = FALSE, lengthMenu = c(2,5,10,20,50,100), pageLength = 10, scrollX = TRUE),{
+    #   Expansion_check_table()
+    # })
     ### add in colouring specific to Expanded
     output$colour_by_this_clusters <- renderUI({
       sc <- UMAP_metadata_with_labs()
@@ -10997,8 +11127,8 @@ runSTEGO <- function(){
 
       if (input$Colour_By_this_Expanded == "expand.singlets") {
 
-        df <- df + geom_point(data= NEx, aes(x=UMAP_1,UMAP_2,colour=Selected_function,alpha = Selected_function,label = Selected_function))
-        df <- df + geom_point(data= Ex, aes(x=UMAP_1,UMAP_2,colour=Selected_function,alpha = Selected_function,label = Selected_function))
+        df <- df + geom_point(data= NEx, aes(x=UMAP_1,UMAP_2,colour=Selected_function,alpha = Selected_function))
+        df <- df + geom_point(data= Ex, aes(x=UMAP_1,UMAP_2,colour=Selected_function,alpha = Selected_function))
       }
 
       else {
@@ -11063,27 +11193,43 @@ runSTEGO <- function(){
     ## Expanded Violin plot ------
 
     compare.stat_Violin_sc <- reactive({
-      sc <- input.data_sc_pro()
+      sc <- UMAP_metadata_with_labs()
       validate(
         need(nrow(sc)>0,
-             error_message_val_sc))
-      # message(paste("Add expansion",system.time()))
+             error_message_val_UMAP)
+      )
+      sc@meta.data$Samp <- sc@meta.data[,names(sc@meta.data) %in% input$Samp_col_expanded]
+      sc@meta.data$Samp.filter <- ifelse(sc@meta.data$Samp %in% c(input$ID_Column_factor_expanded), sc@meta.data$Samp,"Abs")
+      sc <- subset(sc, Samp.filter != "Abs")
+      sc@meta.data$filter <- sc@meta.data[,names(sc@meta.data) %in% input$V_gene_sc]
+      sc@meta.data$filter <- gsub("NA","Unknown",sc@meta.data$filter )
+      sc <- subset(sc, filter != "Unknown")
+      sc@meta.data$filter <- gsub("Unknown","NA",sc@meta.data$filter )
+      req(input$Samp_col_expanded,input$ID_Column_factor_expanded,input$V_gene_sc,input$cut.off_expanded)
+      meta.data <- sc@meta.data
       expanded.meta.data <-  Expansion_check_table()
+      expanded.meta.data <- expanded.meta.data[,names(expanded.meta.data) %in% c(input$V_gene_sc,"Cell_Index",input$Samp_col_expanded,"expand.singlets","expansion.status")]
       expanded.meta.data <- expanded.meta.data %>%
         select("Cell_Index", everything())
-      rownames(expanded.meta.data) <- expanded.meta.data$Cell_Index
-      Idents(sc) <- "Cell_Index"
-      Cell_Index <- expanded.meta.data$Cell_Index
-      sc.Expanded <- subset(sc, idents = Cell_Index, invert = F)
-      Cell_Index.df <- as.data.frame(sc.Expanded@meta.data$Cell_Index)
-      names(Cell_Index.df) <- "Cell_Index"
-      # message(paste("Filtering",system.time()))
-      expanded.meta.data2 <- merge(Cell_Index.df,expanded.meta.data,by="Cell_Index",sort = F)
-      rownames(expanded.meta.data2) <- expanded.meta.data2$Cell_Index
-      sc.Expanded@meta.data <- expanded.meta.data2
-      sc.Expanded
+      meta.data_exp <- merge(meta.data,expanded.meta.data,by = c(input$V_gene_sc,"Cell_Index",input$Samp_col_expanded),all.x=T,sort = F)
+      meta.data_exp <- meta.data_exp[order(meta.data_exp$order,decreasing = F),]
+      rownames(meta.data_exp) <- meta.data_exp$Cell_Index
+      sc@meta.data <- meta.data_exp
+      sc
+
     })
     # Vals_expanded.stats <- reactiveValues(output_ex1=NULL)
+
+
+    output$Expansion_check <- DT::renderDataTable(escape = FALSE, filter = list(position = 'top', clear = FALSE), options = list(autoWidth = FALSE, lengthMenu = c(2,5,10,20,50,100), pageLength = 10, scrollX = TRUE),{
+      sc <- UMAP_metadata_with_labs()
+      validate(
+        need(nrow(sc)>0,
+             error_message_val_UMAP)
+      )
+      sc <- compare.stat_Violin_sc()
+      sc@meta.data
+    })
 
     Vals_expanded.stats <- reactive({
 
@@ -11102,7 +11248,7 @@ runSTEGO <- function(){
 
       min.pct.expression<- input$min_point_top_Ex #standard setting: 0.25
       min.logfc <-  input$LogFC_top_Ex #0.25 is standard
-      message(paste0("calculating markers for cluster ",input$selected_Indiv_Ex_1," vs ",c(input$selected_Indiv_Ex_2)))
+      message(paste0(" Calculating markers for cluster ",input$selected_Indiv_Ex_1," vs ",c(input$selected_Indiv_Ex_2)))
 
       markers.fm.list <- FindMarkers(sc, ident.1 = input$selected_Indiv_Ex_1, ident.2 = c(input$selected_Indiv_Ex_2), min.pct = min.pct.expression,  logfc.threshold = min.logfc, only.pos=TRUE)
       markers.fm.list2 <- subset(markers.fm.list,markers.fm.list$p_val_adj < input$pval.ex.filter)
@@ -11144,7 +11290,6 @@ runSTEGO <- function(){
         list.names <- rownames(Vals_expanded.stats())
       }
 
-
       size_legend = input$Bar_legend_size-2
       Idents(object = sc) <- sc@meta.data$expansion.status
       DotPlot(sc,features = list.names) +
@@ -11159,8 +11304,6 @@ runSTEGO <- function(){
           legend.position = input$legend_position,
         ) +
         scale_colour_gradient2(low = input$low.dotplot.ex, mid = input$middle.dotplot.ex, high = input$high.dotplot.ex)
-
-
     })
 
     output$relative_expression_dotplot_ex <- renderPlot({
@@ -11169,7 +11312,7 @@ runSTEGO <- function(){
 
 
     output$downloadPlot_all_expression_dotplot_ex <- downloadHandler(
-      filename = function() {
+      filename = function() {Var_to_col_marker
         paste("Expanded_dotplot","_",today(), ".pdf", sep = "")
       },
       content = function(file) {
@@ -13990,10 +14133,14 @@ runSTEGO <- function(){
 
       # req(input$V_call_clust_sc,input$junction_clust_sc,input$V_call_clust_sc_BD,input$junction_clust_sc_BD)
       md <- sc@meta.data
-      df = as.data.frame(sc[["RNA"]]@counts)
-      df$Cell_Index <- rownames(df)
-      MainTcell <- as.data.frame(t(df))
-      MainTcell
+      df1 <- as.data.frame(sc[["RNA"]]@counts[rownames(sc[["RNA"]]@counts) %in% c(input$Var_to_col_marker,input$Var_to_col_marker2,input$Var_to_col_marker3,"CD4","CD8A","Cd4","Cd8","CD3E","Cd3e"),])
+
+      colnames(sc[["RNA"]]@counts)
+      head(df1)
+      names(df1) <- colnames(sc[["RNA"]]@counts)
+      df1 <- as.data.frame(t(df1))
+      df1$Cell_Index <- rownames(df1)
+      df1
     })
 
     MainTcell_counts_names <- reactive({
@@ -14023,7 +14170,7 @@ runSTEGO <- function(){
         session,
         "Var_to_col_marker",
         choices = sc$V1,
-        select = sc$V1[1]
+        select = "CD8A"
       )
     })
 
@@ -14035,7 +14182,7 @@ runSTEGO <- function(){
       )
 
       MainTcell$Cell_Index <- rownames(MainTcell)
-      MainTcell[,names(MainTcell) %in% c("Cell_Index",input$Var_to_col_marker)]
+      MainTcell
 
     })
 
@@ -14051,32 +14198,81 @@ runSTEGO <- function(){
       md$log2.count <- log2(as.numeric(md[,names(md) %in% input$Var_to_col_marker]))
       md$log2.count[is.na(md$log2.count)] <- "-Inf"
       md
+      md <- subset(md,md$UMAP_1 > input$Filter_lower_UMAP1_marker)
+      md <- subset(md,md$UMAP_1 < input$Filter_lower_UMAP1_marker2)
+
+      md <- subset(md,md$UMAP_2 > input$Filter_lower_UMAP2_marker)
+      md <- subset(md,md$UMAP_2 < input$Filter_lower_UMAP2_marker2)
+
+      subset(md,md$v_gene_AG != "NA")
     })
 
 
 
-    output$marker_selected_tab <- DT::renderDataTable(escape = FALSE, filter = list(position = 'top', clear = FALSE), options = list(autoWidth = FALSE, lengthMenu = c(1,2,5,10,20,50,100), pageLength = 20, scrollX = TRUE),{
-      umap.meta <- meta_data_for_features()
-      umap.meta
+    # subset based on UMAP location, subset bashed on norm value for the marker of interest threshold as well. -----
+
+    MainTcell_scale <- reactive({
+      sc <- input.data_sc_pro()
+      validate(
+        need(nrow(sc)>0,
+             "Upload File")
+      )
+      md <- sc@meta.data
+      df1 <- as.data.frame(sc[["RNA"]]@scale.data[rownames(sc[["RNA"]]@scale.data) %in% c(input$Var_to_col_marker,input$Var_to_col_marker2,input$Var_to_col_marker3,"CD4","CD8A","Cd4","Cd8","CD3E","Cd3e"),])
+      names(df1) <- colnames(sc[["RNA"]]@scale.data)
+      df1 <- as.data.frame(t(df1))
+      df1$Cell_Index <- rownames(df1)
+      df1
     })
 
+    selected_scale <- reactive({
+      MainTcell <- MainTcell_scale()
+      validate(
+        need(nrow(MainTcell)>0,
+             "Upload File")
+      )
+
+      MainTcell$Cell_Index <- rownames(MainTcell)
+      MainTcell
+
+    })
+
+    meta_data_for_features_scale <- reactive({
+      sc <- UMAP_metadata_with_labs()
+      validate(
+        need(nrow(sc)>0,
+             "Upload File")
+      )
+
+      md <- sc@meta.data
+      md <- merge(md,selected_scale(),by = "Cell_Index")
+      md$scale <- as.numeric(md[,names(md) %in% input$Var_to_col_marker])
+
+      md <- subset(md,md$UMAP_1 > input$Filter_lower_UMAP1_marker)
+      md <- subset(md,md$UMAP_1 < input$Filter_lower_UMAP1_marker2)
+
+      md <- subset(md,md$UMAP_2 > input$Filter_lower_UMAP2_marker)
+      md <- subset(md,md$UMAP_2 < input$Filter_lower_UMAP2_marker2)
+      subset(md,md$v_gene_AG != "NA")
+    })
+    # umap scale -------
     marker_selected_UMAP <- reactive({
-      umap.meta <- meta_data_for_features()
+      umap.meta <- meta_data_for_features_scale()
       validate(
         need(nrow(umap.meta)>0,
              "Upload File")
       )
 
-      umap.meta <- meta_data_for_features()
-      umap.meta_pos <- subset(umap.meta,umap.meta$log2.count != "-Inf")
+      umap.meta <- meta_data_for_features_scale()
+      umap.meta_pos <- subset(umap.meta,umap.meta$scale != "-Inf")
 
-      umap.meta$log2.count <- ifelse(umap.meta$log2.count == "-Inf",NA,umap.meta$log2.count)
-      umap.meta$log2.count <- as.numeric(umap.meta$log2.count)
-      umap.meta_pos$log2.count <- as.numeric(umap.meta_pos$log2.count)
+      umap.meta$scale <- ifelse(umap.meta$scale == "-Inf",NA,umap.meta$scale)
+      umap.meta$scale <- as.numeric(umap.meta$scale)
+      umap.meta_pos$scale <- as.numeric(umap.meta_pos$scale)
 
-      ggplot(umap.meta,aes(x=UMAP_1,y=UMAP_2,color = log2.count))+
+      ggplot(umap.meta,aes(x=UMAP_1,y=UMAP_2,color = scale))+
         geom_point(size = 1) +
-        geom_point(data = umap.meta_pos,aes(x=UMAP_1,y=UMAP_2,color = log2.count),size = 1) +
+        geom_point(data = umap.meta_pos,aes(x=UMAP_1,y=UMAP_2,color = scale),size = 1) +
         # scale_color_continuous(type = "viridis",na.value="grey75") +
         theme_bw() +
         theme(
@@ -14095,12 +14291,316 @@ runSTEGO <- function(){
       marker_selected_UMAP()
     })
 
-    # subset based on UMAP location, subset bashed on log2 threshold as well.
+    # scale violin plot ----
+    marker_selected_Violine.ridge <- reactive({
+      # umap.meta <- meta_data_for_features_scale()
+      umap.meta <- meta_data_for_features()
+      validate(
+        need(nrow(umap.meta)>0,
+             "Upload File")
+      )
 
-    # display T cells assoicated with that marker.
+      umap.meta <- meta_data_for_features_scale()
+
+      if (input$select_plot_vio.ridge == "Violin") {
+        ggplot(umap.meta,aes(y=scale,x=Sample_Name))+
+          geom_violin() +
+          geom_jitter()+
+          theme(
+            legend.position = "none",
+          )+
+          theme_bw() +
+          geom_hline(yintercept = input$cutoff_marker_gt,color = "orange", size = 3)
+        # geom_vline(xintercept=neg, linetype="dashed", color = "darkorange")
+
+      }
+
+      else {
+        ggplot(umap.meta,aes(x=scale,y=Sample_Name))+
+          geom_density_ridges() +
+          theme_ridges() +
+          geom_vline(xintercept = input$cutoff_marker_gt,color = "orange",size = 3)
+      }
+
+
+    })
+
+
+    output$marker_selected_VioRidge_plot <- renderPlot({
+      umap.meta <- MainTcell_counts_names()
+      validate(
+        need(nrow(umap.meta)>0,
+             "Upload File")
+      )
+      marker_selected_Violine.ridge()
+    })
+
+
+    filtered_positive_marker_TCRsum <- reactive({
+      # umap.meta <- meta_data_for_features_scale()
+      umap.meta <- meta_data_for_features()
+      validate(
+        need(nrow(umap.meta)>0,
+             "Upload File")
+      )
+
+      umap.meta$log2.count <- ifelse(umap.meta$log2.count == "-Inf",-2,umap.meta$log2.count)
+      umap.meta$log2.count <- as.numeric(umap.meta$log2.count)
+
+      umap.meta_marker_pos <- subset(umap.meta,umap.meta$log2.count > input$cutoff_marker_gt )
+      umap.meta_marker_pos$cloneCount <- 1
+      umap.meta_marker_pos_TCR <- as.data.frame(umap.meta_marker_pos[,names(umap.meta_marker_pos) %in% c(input$V_gene_sc,"cloneCount")])
+      file.names <- input$V_gene_sc
+
+      df_unique_sum <- ddply(umap.meta_marker_pos_TCR,file.names ,numcolwise(sum))
+      df_unique_sum$type <- "Pos"
+      df_unique_sum[order(df_unique_sum$cloneCount, decreasing = T),]
+    })
+
+    filtered_negative_marker_TCRsum <- reactive({
+      umap.meta <- meta_data_for_features()
+      validate(
+        need(nrow(umap.meta)>0,
+             "Upload File")
+      )
+
+      umap.meta$log2.count <- ifelse(umap.meta$log2.count == "-Inf",-2,umap.meta$log2.count)
+      umap.meta$log2.count <- as.numeric(umap.meta$log2.count)
+
+      umap.meta_marker_neg <- subset(umap.meta,umap.meta$log2.count < input$cutoff_marker_gt )
+      umap.meta_marker_neg$cloneCount <- 1
+      umap.meta_marker_neg_TCR <- as.data.frame(umap.meta_marker_neg[,names(umap.meta_marker_neg) %in% c(input$V_gene_sc,"cloneCount")])
+      file.names <- input$V_gene_sc
+
+      df_unique_sum <- ddply(umap.meta_marker_neg_TCR,file.names ,numcolwise(sum))
+      df_unique_sum$type <- "Neg"
+      df_unique_sum[order(df_unique_sum$cloneCount, decreasing = T),]
+    })
+
+    output$TCR_marker_positive_count <- DT::renderDataTable(escape = FALSE, filter = list(position = 'top', clear = FALSE), options = list(autoWidth = FALSE, lengthMenu = c(1,2,5,10,20,50,100), pageLength = 1, scrollX = TRUE),{
+      umap.meta <- filtered_positive_marker_TCRsum()
+      umap.meta
+
+    })
+
+    output$TCR_marker_neg_count <- DT::renderDataTable(escape = FALSE, filter = list(position = 'top', clear = FALSE), options = list(autoWidth = FALSE, lengthMenu = c(1,2,5,10,20,50,100), pageLength = 1, scrollX = TRUE),{
+      umap.meta <- filtered_negative_marker_TCRsum()
+      umap.meta
+
+    })
+
+    # histogram of counts marker and TCR -----
+
+    merged_marker_hist <- reactive({
+      a <- filtered_negative_marker_TCRsum()
+      a$expand <- ifelse(a$cloneCount>=2,"Ex","NEx")
+      names(a)[2:4] <- paste(names(a)[2:4],"_neg",sep = "")
+
+      b <- filtered_positive_marker_TCRsum()
+      b$expand <- ifelse(b$cloneCount>=2,"Ex","NEx")
+      names(b)[2:4] <- paste(names(b)[2:4],"_pos",sep = "")
+
+      by_ab <- names(a)[1]
+      ab <-  merge(b,a, by =by_ab,all = T)
+
+
+
+      ab[is.na(ab)] <- 0
+
+      ab$expand_pos <- ifelse(ab$expand_pos!=0,ab$expand_pos,"Abs")
+      ab$expand_neg <- ifelse(ab$expand_neg!=0,ab$expand_neg,"Abs")
+      ab <- ab[,!names(ab) %in% c("type_neg","type_pos")]
+      ab$diff <- ab$cloneCount_pos -  ab$cloneCount_neg
+      ab$ratio <- ab$cloneCount_pos/ab$cloneCount_neg
+      ab[order(ab$diff,decreasing = T),]
+
+    })
+
+    output$merged_marker_hist_table <- DT::renderDataTable(escape = FALSE, filter = list(position = 'top', clear = FALSE), options = list(autoWidth = FALSE, lengthMenu = c(1,2,5,10,20,50,100), pageLength = 10, scrollX = TRUE),{
+      umap.meta <- merged_marker_hist()
+      umap.meta
+    })
+
+    marker_histogram <- reactive({
+      a <- filtered_negative_marker_TCRsum()
+      b <- filtered_positive_marker_TCRsum()
+      ab <- rbind(a,b)
+
+      # ab <- subset(ab,ab$cloneCount>2)
+
+      ab$log10_ab <- log10(ab$cloneCount)
+      ggplot(ab, aes(x=cloneCount, color=type)) +
+        geom_histogram(binwidth=0.1,fill="white", alpha=0.5, position="identity") +
+        theme_classic() +
+        # geom_density(alpha=.2) +
+        theme(legend.position="top") +
+        facet_wrap(~type)
+    })
+
+    output$marker_selected_histogram_plot <- renderPlot({
+      umap.meta <- MainTcell_counts_names()
+      validate(
+        need(nrow(umap.meta)>0,
+             "Upload File")
+      )
+      marker_histogram()
+    })
+
+    stats_marker_one <- reactive({
+      sc <- UMAP_metadata_with_labs()
+      validate(
+        need(nrow(sc)>0,
+             "Upload File")
+      )
+
+      md <- sc@meta.data
+      # md <- merge(md,selected_gene(),by = "Cell_Index",all.x = T, sort = F)
+      md <- merge(md,selected_scale(),by = "Cell_Index",all.x = T, sort = F)
+      rownames(md) <- md$Cell_Index
+      sc@meta.data <- md
+
+
+      sc@meta.data$scale <- (as.numeric(md[,names(md) %in% input$Var_to_col_marker]))
+
+      sc <- subset(sc,UMAP_1 > input$Filter_lower_UMAP1_marker)
+      sc <- subset(sc,UMAP_1 < input$Filter_lower_UMAP1_marker2)
+
+      sc <- subset(sc,UMAP_2 > input$Filter_lower_UMAP2_marker)
+      sc <- subset(sc,UMAP_2 < input$Filter_lower_UMAP2_marker2)
+      sc <- subset(sc,v_gene_AG != "NA")
+
+      sc@meta.data$pos_neg <- ifelse(sc@meta.data$scale > input$cutoff_marker_gt, "pos","neg")
+      df <- filtered_positive_marker_TCRsum()
+
+      df2 <- subset(df,df$cloneCount>input$pos_expanded_cut_off)
+
+      list.gene <- unique(df2[,names(df2) %in% input$V_gene_sc])
+      sc@meta.data$Selected_Gene <-  sc@meta.data[,names(sc@meta.data) %in% input$V_gene_sc]
+      # sc@meta.data$in.list <- ifelse(sc@meta.data$Selected_Gene %in% list.gene & sc@meta.data$scale > input$cutoff_marker_gt,"In.Pos.list","other")
+      sc@meta.data$Pos_Exp <- ifelse(sc@meta.data$Selected_Gene %in%  list.gene & sc@meta.data$pos_neg == "pos", "Ex_pos","other")
+      # ifelse(sc@meta.data$Selected_Gene %in%  list.gene & sc@meta.data$pos_neg == "neg", "Ex_neg","other"
+      # ))
+      sc
+
+    })
+
+    output$marker_selected_tab <- DT::renderDataTable(escape = FALSE, filter = list(position = 'top', clear = FALSE), options = list(autoWidth = FALSE, lengthMenu = c(1,2,5,10,20,50,100), pageLength = 20, scrollX = TRUE),{
+      umap.meta <- meta_data_for_features()
+      umap.meta
+      # stats_marker_one()
+      # meta_data_for_features_scale()
+    })
+
+
+    compare.stat_marker <- reactive({
+      sc <-stats_marker_one()
+
+      validate(
+        need(nrow(sc)>0,
+             error_message_val_sc)
+      )
+
+
+      if (input$Analysis_marker_stats_type == "Expanded") {
+        Idents(object = sc) <- sc@meta.data$Pos_Exp
+      }
+
+      else {
+        Idents(object = sc) <- sc@meta.data$pos_neg
+
+      }
+
+      min.pct.expression<- input$min_point_Marker #standard setting: 0.25
+      min.logfc<-  input$LogFC_Marker #0.25 is standard
+      # p.val.cutoff <-  input$pval_top #(1/10^3) is standard, use (1/10^0) to ignore
+
+      cluster.names <- unique(Idents(sc))[order(unique(Idents(sc)))]
+      # print(paste0("calculating markers for cluster ",name.clone,". Total: ",length(cluster.names)," clusters"))
+
+      if (input$Analysis_marker_stats_type == "Expanded") {
+        markers.fm.list <- FindMarkers(sc, ident.1 = "Ex_pos", min.pct = min.pct.expression,  logfc.threshold = min.logfc, only.pos=TRUE)
+      }
+
+      else {
+        markers.fm.list <- FindMarkers(sc, ident.1 = "pos", min.pct = min.pct.expression,  logfc.threshold = min.logfc, only.pos=TRUE)
+      }
+
+      markers.fm.list2 <- subset(markers.fm.list,markers.fm.list$p_val_adj < input$pval.ex.filter_Marker)
+      as.data.frame(markers.fm.list2)
+
+    })
+
+    output$Compare.stat_marker <- DT::renderDataTable(escape = FALSE, options = list(autoWidth = FALSE, lengthMenu = c(2,5,10,20,50,100), pageLength =10, scrollX = TRUE),{
+
+      sc <-input.data_sc_pro()
+
+      validate(
+        need(nrow(sc)>0,
+             error_message_val_sc)
+      )
+      compare.stat_marker()
+
+    })
+
+    # download tables ----
+
+    output$downloaddf_clonotype_distribution <- downloadHandler(
+      filename = function(){
+        x = today()
+        paste(input$Var_to_col_marker,"_clonotypes_", input$pos_expanded_cut_off,"_stats",x,".csv", sep = "")
+      },
+      content = function(file){
+        df <- as.data.frame(merged_marker_hist())
+        write.csv(df,file, row.names = T)
+      } )
+
+    output$downloaddf_Marker_stats <- downloadHandler(
+      filename = function(){
+        x = today()
+        paste(input$Var_to_col_marker,"_Exp_cuttoff", input$pos_expanded_cut_off,"_stats",x,".csv", sep = "")
+      },
+      content = function(file){
+        df <- as.data.frame(compare.stat_marker())
+        write.csv(df,file, row.names = T)
+      } )
+
+    # display T cells assoicated with that marker. ----
+
+    # Dule marker analysis -----
+
+    observe({
+      sc <- (MainTcell_counts_names())
+      validate(
+        need(nrow(sc)>0,
+             "Upload File")
+      )
+      req(sc)
+
+      updateSelectizeInput(
+        session,
+        "Var_to_col_marker2",
+        choices = sc$V1,
+        select = "CD8B"
+      )
+    })
+
+    observe({
+      sc <- (MainTcell_counts_names())
+      validate(
+        need(nrow(sc)>0,
+             "Upload File")
+      )
+      req(sc)
+
+      updateSelectizeInput(
+        session,
+        "Var_to_col_marker3",
+        choices = sc$V1,
+        select = "CD4"
+      )
+    })
 
     ### end -----
   }
   shinyApp(ui, server)
-
 }
