@@ -12,8 +12,6 @@ runSTEGO <- function(){
 
   col_markers <- c("Blues", "BuGn", "BuPu", "GnBu", "Greens", "Greys", "Oranges", "OrRd", "PuBu", "PuBuGn", "PuRd", "Purples", "RdPu", "Reds", "YlGn", "YlGnBu","YlOrBr", "YlOrRd")
   options(shiny.maxRequestSize = 100000*1024^2)
-  options(shiny.maxRequestSize = 100000*1024^2)
-  options(shiny.maxRequestSize = 100000*1024^2)
   # UI page -----
   ui <- fluidPage(
 
@@ -160,35 +158,25 @@ runSTEGO <- function(){
                                                                              accept=c('.tsv','tsv'))
                                                   ),
                                                   ### filter out non-function TCR and un-paired TCR
-
-
                                                   conditionalPanel(condition="input.filtered_list=='Dominant' || input.filtered_list=='Unfiltered'",
                                                                    column(6,selectInput("locus_column",h5("Chain (e.g. locus)"),"")),
                                                   ),
                                                   conditionalPanel(condition="input.filtered_list=='Paired'",
-
                                                                    fluidRow(
                                                                      column(6, selectInput("V_gene_AG_BDrhap",h6("Alpha/Gamma V gene"),""),),
                                                                      column(6, selectInput("Junction_AG_BDrhap",h6("Alpha/Gamma junction"),""),),
                                                                      column(6, selectInput("V_gene_BD_BDrhap",h6("Beta/Delta V gene"),"")),
                                                                      column(6, selectInput("Junction_BD_BDrhap",h6("Beta/Delta junction"),"") )
-
                                                                    ),
                                                   ),
                                                   fluidRow(
                                                     column(6, checkboxInput("filtering_TCR", "paired chains?", value = FALSE, width = NULL),),
                                                     column(6, checkboxInput("BCR_present", "BCR present?", value = FALSE, width = NULL),),
                                                   ),
-
                                      ),
                                      #### main panel ------
                                      mainPanel(
-
                                        tabsetPanel(
-
-
-
-
                                          tabPanel("Imported data",
                                                   add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
                                                   div(DT::dataTableOutput("test.files")),
@@ -196,7 +184,6 @@ runSTEGO <- function(){
                                                                    add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
                                                                    div(DT::dataTableOutput("test.files3"))
                                                   ),
-
                                                   conditionalPanel(condition="input.Format_bd=='Barcode_features_matrix'",
                                                                    add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
                                                                    div(DT::dataTableOutput("test.files.bd1")),
@@ -204,7 +191,6 @@ runSTEGO <- function(){
                                                                    div(DT::dataTableOutput("test.files.bd2")),
                                                                    add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
                                                                    div(DT::dataTableOutput("test.files.bd3")),
-
                                                   ),
                                                   conditionalPanel(condition="input.filtered_list=='Paired'",
                                                                    add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
@@ -214,15 +200,12 @@ runSTEGO <- function(){
                                                                    add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
                                                                    div(DT::dataTableOutput("test.files.bd4")),
                                                   ),
-
                                          ),
-
                                          # tabPanel("Checking Merge",
                                          #
                                          #          div(DT::dataTableOutput("Check_table")),
                                          #
                                          #          ),
-
                                          tabPanel("clusTCR2",
                                                   tags$head(tags$style("#tb_clusTCR  {white-space: nowrap;  }")),
                                                   add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
@@ -252,6 +235,10 @@ runSTEGO <- function(){
                                                   add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
                                                   div(DT::dataTableOutput("tb_TCR_Explore")),
                                                   downloadButton('downloadtb_TCR_Explore','Download table')
+                                         ),
+                                         tabPanel("Multi-TCR",
+                                                  div(DT::dataTableOutput("tb_multiTCR")),
+                                                  downloadButton('downloadtb_multiTCR','Download Multi-TCR table')
                                          ),
                                          tabPanel("Create Sample Tags file",
                                                   tags$head(tags$style("#tb_sample_tags_created  {white-space: nowrap;  }")),
@@ -707,7 +694,8 @@ runSTEGO <- function(){
                tabPanel("Annotations",
                         sidebarLayout(
                           sidebarPanel(id = "tPanel4",style = "overflow-y:scroll; max-height: 800px; position:relative;", width=3,
-                                       selectInput("Data_types","Source",choices = c("10x_HS","BD_HS.Immune.Panel","BD_HS.Full.Panel","10x_MM","BD_MM_Full.Panel","BD_MM_Immune.Panel")),
+                                       selectInput("Data_types","Source",choices = c("10x_HS","BD_HS.Immune.Panel","BD_HS.Full.Panel","10x_MM","BD_MM_Full.Panel","BD_MM_Immune.Panel",
+                                                                                     "TCR-seq")),
                                        selectInput("sample.type.source.markers","Species",choices = c("hs","mm")),
                                        fileInput("file1_h5Seurat.file2",
                                                  "Choose merged or single .h5Seurat files from directory",
@@ -873,6 +861,12 @@ runSTEGO <- function(){
 
                               ),
 
+                              #### classification based on TCR_seq -----
+
+                              tabPanel("TCR-seq",
+                                       add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "purple"),
+                                       div(DT::dataTableOutput("TCR_seq_classification_df")),
+                              ),
                               ##### display metadata -----
                               tabPanel("Marker check",
                                        conditionalPanel(condition="input.Panel_DEX==5",
@@ -958,6 +952,8 @@ runSTEGO <- function(){
                                        )
 
                               ),
+
+                              ##### meta data table ------
                               tabPanel("Meta data table",
                                        fluidRow(
                                          # column(3,checkboxInput("add.kmeans","Add K-means classification", value = F)),
@@ -1005,6 +1001,7 @@ runSTEGO <- function(){
 
 
                                        ),
+                                       column(12,selectInput("Samp_col","Column name",choices = "")),
                                        column(12,selectInput("V_gene_sc","V gene with/without CDR3",choices = "")),
                                        # tags$style("#classification_to_add_overview {background-color:#e5e5e5;}"),
                                        conditionalPanel( condition="input.check_up_files == 'up2'",
@@ -1157,8 +1154,8 @@ runSTEGO <- function(){
                                         ### UMAP -> TCR -----
                                         tabPanel("Overview", value = 'up2',
                                                  fluidRow(
-                                                   column(3,selectInput("Samp_col","Column name",choices = "")),
-                                                   column(9,selectInput("ID_Column_factor","Order of graph",choices = "", multiple = T, width = "900px")),
+
+                                                   column(12,selectInput("ID_Column_factor","Order of graph",choices = "", multiple = T, width = "1200px")),
                                                  ),
                                                  fluidRow(
                                                    column(3,selectInput("Split_group_by_overview","Split graph by:",choices ="")),
@@ -1309,6 +1306,15 @@ runSTEGO <- function(){
                                                                                            fluidRow(column(3,selectInput("show_selected","Show all labels?",choices=c("All","Selected_list"))),
                                                                                                     column(9,uiOutput("SiteNumInput",width = "900px")),
                                                                                            ),
+
+                                                                                           fluidRow(
+                                                                                             # column(4,selectizeInput("Var_to_col_marker","Marker col","")),
+                                                                                             column(2,numericInput("Filter_lower_UMAP1_marker_GEX","UMAP_1 >",value = -20)),
+                                                                                             column(2,numericInput("Filter_lower_UMAP1_marker2_GEX","UMAP_1 <",value = 20)),
+                                                                                             column(2,numericInput("Filter_lower_UMAP2_marker_GEX","UMAP_2 >",value = -20)),
+                                                                                             column(2,numericInput("Filter_lower_UMAP2_marker2_GEX","UMAP_2 <",value = 20)),
+                                                                                           ),
+
                                                                                            add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
                                                                                            fluidRow(
                                                                                              column(3,
@@ -1647,6 +1653,10 @@ runSTEGO <- function(){
                                                                                              column(2,style = "margin-top: 25px;",downloadButton('downloadPlotPNG_UMAP_Expanded','Download PNG'))
                                                                                            ),
                                                                                   ),
+                                                                                  tabPanel("Check expansion",
+                                                                                           add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
+                                                                                           div(DT::dataTableOutput("Expansion_check2")),
+                                                                                  ),
                                                                                   tabPanel("Stats",value = "ExPan_stat",
                                                                                            add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
                                                                                            div(DT::dataTableOutput("compare.stat_Ex")),
@@ -1847,8 +1857,9 @@ runSTEGO <- function(){
                                                                         ),
                                                                         tabPanel("motif",
                                                                                  plotOutput("Motif_ClusTCR2_cluster",height="300px"),
-                                                                                 div(DT::dataTableOutput("Tb_motif_cluster",height = "300px")),
                                                                                  verbatimTextOutput("print_unique_cases"),
+                                                                                 div(DT::dataTableOutput("Tb_motif_cluster")),
+
                                                                                  fluidRow(
                                                                                    column(1,numericInput("width_Motif_ClusTCR2_cluster", "Width of PDF", value=10)),
                                                                                    column(1,numericInput("height_Motif_ClusTCR2_cluster", "Height of PDF", value=4)),
@@ -1960,7 +1971,23 @@ runSTEGO <- function(){
                                                                                                       h4("Select area of the plot to keep for the specific marker"),
                                                                                                       h6("Recommended to filter to broad populations based on UMAP e.g., CD4, CD8 or other"),
                                                                                                       add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
-                                                                                                      plotOutput("marker_selected_UMAP_plot",height="600px")
+                                                                                                      numericInput("max_scale","MAX scale",value = ""),
+
+                                                                                                      plotOutput("marker_selected_UMAP_plot",height="600px"),
+
+                                                                                                      fluidRow(
+                                                                                                        column(3,numericInput("width_marker_selected_UMAP_plot", "Width of PDF", value=10)),
+                                                                                                        column(3,numericInput("height_marker_selected_UMAP_plot", "Height of PDF", value=8)),
+                                                                                                        column(3),
+                                                                                                        column(3,style = "margin-top: 25px;",downloadButton('downloadPlot_marker_selected_UMAP_plot','Download PDF'))),
+                                                                                                      fluidRow(
+                                                                                                        column(3,numericInput("width_png_marker_selected_UMAP_plot","Width of PNG", value = 1200)),
+                                                                                                        column(3,numericInput("height_png_marker_selected_UMAP_plot","Height of PNG", value = 1000)),
+                                                                                                        column(3,numericInput("resolution_PNG_marker_selected_UMAP_plot","Resolution of PNG", value = 144)),
+                                                                                                        column(3,style = "margin-top: 25px;",downloadButton('downloadPlotPNG_marker_selected_UMAP_plot','Download PNG'))
+                                                                                                      )
+
+
                                                                                              ),
 
                                                                                              tabPanel("Violin/Ridge plot",value = "Marker_Panel_plot_VR",
@@ -2330,8 +2357,6 @@ runSTEGO <- function(){
         dataframe <- read.table(inFile_bd2_TCR$datapath,sep = "\t", header = T)}
     })
     output$test.files.bd4 <- DT::renderDataTable(escape = FALSE, options = list(autoWidth = FALSE, lengthMenu = c(2,5,10,20,50,100), pageLength = 2, scrollX = TRUE),{
-
-
       calls <- input.data.TCR.bd2()
       validate(
         need(nrow(calls)>0,
@@ -2553,7 +2578,6 @@ runSTEGO <- function(){
     })
 
     tb_bd_meta.data_TCR <- function () {
-
       contigs <- input.data.TCR.bd2()
       sample_tags <- input.data.calls.bd()
       validate(
@@ -2952,14 +2976,7 @@ runSTEGO <- function(){
       contigs2[!duplicated(contigs2[,c('v_call','junction_aa')]),]
     })
 
-    output$tb_clusTCR <- DT::renderDataTable(escape = FALSE, options = list(autoWidth = FALSE, lengthMenu = c(2,5,10,20,50,100), pageLength = 10, scrollX = TRUE),{
-      if (input$filtered_list == "Paired") {
-        df_clusTCR()
-      }
-      else {
-        tb_bd_contigues_contig()
-      }
-    })
+
 
     df_clusTCR_Filtered <- reactive({
       if (input$filtered_list == "Paired") {
@@ -2968,6 +2985,7 @@ runSTEGO <- function(){
       }
       else {
         df <- tb_bd_contigues_contig()
+        df <- df[grep("^C",df$junction_aa),]
       }
 
       if (input$chain_clusTCR2_bd == "AG") {
@@ -2980,6 +2998,16 @@ runSTEGO <- function(){
       }
 
     })
+
+    output$tb_clusTCR <- DT::renderDataTable(escape = FALSE, options = list(autoWidth = FALSE, lengthMenu = c(2,5,10,20,50,100), pageLength = 10, scrollX = TRUE),{
+      if (input$filtered_list == "Paired") {
+        df_clusTCR()
+      }
+      else {
+        df_clusTCR_Filtered()
+      }
+    })
+
 
     output$downloaddf_clusTCR <- downloadHandler(
       filename = function(){
@@ -3315,6 +3343,214 @@ runSTEGO <- function(){
         write.csv(df,file, row.names = F)
       } )
 
+
+    # multi-TCR files -----
+
+    multi_TCR_BDrhap <- reactive({
+      contigs <- input.data.TCR.bd2()
+      sample_tags <- input.data.calls.bd()
+      validate(
+        need(nrow(contigs)>0 && nrow(sample_tags)>0,
+             "Upload files")
+      )
+
+      if (input$filtered_list == "Unfiltered") {
+        sample_tags$order <- 1:dim(sample_tags)[1]
+        head(sample_tags)
+        names(contigs)
+        contigs_merge <- merge(contigs,sample_tags,by.x="cell_id",by.y="Cell_Index") # need this for BD rhap to remove multiplets/undetermined
+
+        # remove non-functional sequences
+        if (nrow(contigs_merge[-c(grep("[*]",contigs_merge$junction_aa)),]>0)) {
+          contigs_merge <- contigs_merge[-c(grep("[*]",contigs_merge$junction_aa)),]
+        }
+        names(contigs_merge)
+
+        contigs_merge <- contigs_merge[contigs_merge[,names(contigs_merge) %in% "productive"]=="True",]
+
+        contigs_merge <- contigs_merge[grep("^C",contigs_merge$junction_aa),]
+        contigs_merge <- subset(contigs_merge,contigs_merge$Sample_Name != "Multiplet" )
+        contigs_merge <- subset(contigs_merge,contigs_merge$Sample_Name != "Undetermined")
+        contigs_lim <- contigs_merge[!names(contigs_merge) %in% c("consensus_count","sequence_id","duplicate_count","germline_alignment","reads","length","cdr3","rev_comp","complete_vdj",names(contigs_merge[grep("fwr",names(contigs_merge))]),names(contigs_merge[grep("cdr1",names(contigs_merge))]),"junction",names(contigs_merge[grep("length",names(contigs_merge))]),"productive",names(contigs_merge[grep("cdr2",names(contigs_merge))]),"productive",names(contigs_merge[grep("sequence",names(contigs_merge))]),names(contigs_merge[grep("cigar",names(contigs_merge))]),names(contigs_merge[grep("support",names(contigs_merge))]),"Sample_Tag","sum","dominant","putative_cell","juct_issue","seq_issue","c_call","cell_type_experimental")]
+        contigs_lim$v_gene <- gsub("[*]0.","",contigs_lim$v_call)
+        contigs_lim$j_gene <- gsub("[*]0.","",contigs_lim$j_call)
+        contigs_lim$d_gene <- gsub("[*]0.","",contigs_lim$d_call)
+        contigs_lim[grep("call",names(contigs_lim))]
+
+        names(contigs_lim) %in% names(contigs_lim[grep("call",names(contigs_lim))])
+
+        contigs_lim <- contigs_lim[,!names(contigs_lim) %in% names(contigs_lim[grep("call",names(contigs_lim))])]
+        head(contigs_lim)
+        contigs_lim$cdr3_aa <- gsub("$^","none",contigs_lim$cdr3_aa)
+        contigs_lim <- subset(contigs_lim,contigs_lim$cdr3_aa!= "none")
+
+        # contigs_lim$v_gene_BD <- gsub("[*]0.","",calls_TCR_paired.fun$TCR_Beta_Delta_V_gene_Dominant)
+        # names(contigs_lim)   <-  gsub("_call","_gene",names(contigs_lim))
+        names(contigs_lim)
+
+        names(contigs_lim)[names(contigs_lim) %in% "locus"] <- "chain" #input$locus_column
+
+        contig_A <- subset(contigs_lim,contigs_lim$chain=="TRA")
+        head(contig_A)
+        name.list <- names(contig_A[c(names(contig_A[grep("gene",names(contig_A))]),
+                                      names(contig_A[grep("call",names(contig_A))]),
+                                      names(contig_A[grep("cdr3",names(contig_A))]),
+                                      names(contig_A[grep("junction",names(contig_A))]),
+                                      "chain"
+        )])
+
+        contig_A <- contig_A %>%
+          select(all_of(name.list), everything())
+        names(contig_A)[1:summary(name.list)[1]] <-paste(names(contig_A[names(contig_A) %in% name.list]),"_A",sep="")
+
+        names(contig_A) %in% c("cell_id","Sample_Name")
+
+        contig_G <- subset(contigs_lim,contigs_lim$chain=="TRG")
+        head(contig_G)
+        name.list <- names(contig_G[c(names(contig_G[grep("gene",names(contig_G))]),
+                                      names(contig_G[grep("call",names(contig_G))]),
+                                      names(contig_G[grep("cdr3",names(contig_G))]),
+                                      names(contig_G[grep("junction",names(contig_G))]),
+                                      "chain"
+        )])
+        head(contig_A)
+        contig_G <- contig_G %>%
+          select(all_of(name.list), everything())
+        names(contig_G)[1:summary(name.list)[1]] <-paste(names(contig_G[names(contig_G) %in% name.list]),"_G",sep="")
+
+        names(contig_G) %in% c("cell_id","Sample_Name")
+
+
+        # contig_A
+
+        contig_B <- subset(contigs_lim,contigs_lim$chain=="TRB")
+        head(contig_B)
+        name.list <- names(contig_B[c(names(contig_B[grep("gene",names(contig_B))]),
+                                      names(contig_B[grep("call",names(contig_B))]),
+                                      names(contig_B[grep("cdr3",names(contig_B))]),
+                                      names(contig_B[grep("junction",names(contig_B))]),
+                                      "chain"
+        )])
+
+        contig_B <- contig_B %>%
+          select(all_of(name.list), everything())
+        names(contig_B)[1:summary(name.list)[1]] <-paste(names(contig_B[names(contig_B) %in% name.list]),"_B",sep="")
+
+        names(contig_B) %in% c("cell_id","Sample_Name")
+
+
+        contig_D <- subset(contigs_lim,contigs_lim$chain=="TRD")
+        head(contig_D)
+        name.list <- names(contig_D[c(names(contig_D[grep("gene",names(contig_D))]),
+                                      names(contig_D[grep("call",names(contig_D))]),
+                                      names(contig_D[grep("cdr3",names(contig_D))]),
+                                      names(contig_D[grep("junction",names(contig_D))]),
+                                      "chain"
+        )])
+
+        contig_D <- contig_D %>%
+          select(all_of(name.list), everything())
+        names(contig_D)[1:summary(name.list)[1]] <-paste(names(contig_D[names(contig_D) %in% name.list]),"_D",sep="")
+
+        names(contig_D) %in% c("cell_id","Sample_Name")
+
+        contig_paired_AB <- merge(contig_A,contig_B, by=c("cell_id","Sample_Name","order"),all = T)
+        contig_paired_GD <- merge(contig_G,contig_D, by=c("cell_id","Sample_Name","order"),all = T)
+        contig_paired <- merge(contig_paired_AB,contig_paired_GD, by=c("cell_id","Sample_Name","order"),all = T)
+
+        contig_paired <- contig_paired[!duplicated(contig_paired[names(contig_paired) %in% c("cell_id","Sample_Name","order","junction_aa_A","junction_aa_B","junction_aa_G","junction_aa_D")]),]
+        dim(contig_paired)
+
+        contig_paired[is.na(contig_paired)] <- "-"
+        contig_paired <- as.data.frame(contig_paired)
+
+        head(contig_paired)
+
+        contig_paired$pairing <-  ifelse(contig_paired$chain_B=="TRB" & contig_paired$chain_A=="TRA" & contig_paired$chain_D=="TRD" & contig_paired$chain_G=="TRG","AB GD",
+                                         ifelse(contig_paired$chain_B=="TRB" & contig_paired$chain_A=="TRA" & contig_paired$chain_D!="TRD" & contig_paired$chain_G=="TRG","AB G",
+                                                ifelse(contig_paired$chain_B=="TRB" & contig_paired$chain_A=="TRA" & contig_paired$chain_D=="TRD" & contig_paired$chain_G!="TRG", "AB D",
+                                                       ifelse(contig_paired$chain_B!="TRB" & contig_paired$chain_A=="TRA" & contig_paired$chain_D=="TRD" & contig_paired$chain_G=="TRG","AG D",
+                                                              ifelse(contig_paired$chain_B=="TRB" & contig_paired$chain_A!="TRA" & contig_paired$chain_D=="TRD" & contig_paired$chain_G=="TRG","B GD",
+                                                                     ifelse(contig_paired$chain_B=="TRB" & contig_paired$chain_A=="TRA" & contig_paired$chain_D!="TRD" & contig_paired$chain_G!="TRG","AB",
+                                                                            ifelse(contig_paired$chain_B!="TRB" & contig_paired$chain_A!="TRA" & contig_paired$chain_D=="TRD" & contig_paired$chain_G=="TRG","GD",
+
+                                                                                   ifelse(contig_paired$chain_B=="TRB" & contig_paired$chain_A!="TRA" & contig_paired$chain_D!="TRD" & contig_paired$chain_G=="TRG","B G",
+                                                                                          ifelse(contig_paired$chain_B!="TRB" & contig_paired$chain_A=="TRA" & contig_paired$chain_D=="TRD" & contig_paired$chain_G!="TRG","A D",
+                                                                                                 "other"
+                                                                                          )))))))))
+
+
+
+
+
+        unique(contig_paired$pairing)
+        contig_paired
+
+        contig_paired_only <- contig_paired
+        head(contig_paired_only)
+        # contig_paired_only <- subset(contig_paired_only,contig_paired_only$pairing!="single")
+
+        AB_G <- contig_paired_only[contig_paired_only$pairing %in% c("AB GD","AB G","B GD","B G"),]
+
+        grep("junction_aa",(names(AB_G)))
+
+        junction_only <- contig_paired_only[,c(names(contig_paired_only)[grep("junction_aa",(names(contig_paired_only)))],names(contig_paired_only)[grep("v_gene",(names(contig_paired_only)))], names(contig_paired_only)[grep("chain_",(names(contig_paired_only)))]),]
+        names.list <- names(junction_only)
+        junction_only$cloneCount <- 1
+
+        grep("^C",junction_only$junction_aa_A)
+
+        junction_only_sum <- ddply(junction_only,names.list ,numcolwise(sum))
+
+        junction_only_sum$pairing <-  ifelse(junction_only_sum$chain_B=="TRB" & junction_only_sum$chain_A=="TRA" & junction_only_sum$chain_D=="TRD" & junction_only_sum$chain_G=="TRG","AB GD",
+                                             ifelse(junction_only_sum$chain_B=="TRB" & junction_only_sum$chain_A=="TRA" & junction_only_sum$chain_D!="TRD" & junction_only_sum$chain_G=="TRG","AB G",
+                                                    ifelse(junction_only_sum$chain_B=="TRB" & junction_only_sum$chain_A=="TRA" & junction_only_sum$chain_D=="TRD" & junction_only_sum$chain_G!="TRG", "AB D",
+                                                           ifelse(junction_only_sum$chain_B!="TRB" & junction_only_sum$chain_A=="TRA" & junction_only_sum$chain_D=="TRD" & junction_only_sum$chain_G=="TRG","AG D",
+                                                                  ifelse(junction_only_sum$chain_B=="TRB" & junction_only_sum$chain_A!="TRA" & junction_only_sum$chain_D=="TRD" & junction_only_sum$chain_G=="TRG","B GD",
+                                                                         ifelse(junction_only_sum$chain_B=="TRB" & junction_only_sum$chain_A=="TRA" & junction_only_sum$chain_D!="TRD" & junction_only_sum$chain_G!="TRG","AB",
+                                                                                ifelse(junction_only_sum$chain_B!="TRB" & junction_only_sum$chain_A!="TRA" & junction_only_sum$chain_D=="TRD" & junction_only_sum$chain_G=="TRG","GD",
+                                                                                       ifelse(junction_only_sum$chain_B=="TRB" & junction_only_sum$chain_A!="TRA" & junction_only_sum$chain_D!="TRD" & junction_only_sum$chain_G=="TRG","B G",
+                                                                                              ifelse(junction_only_sum$chain_B=="TRB" & junction_only_sum$chain_A!="TRA" & junction_only_sum$chain_D=="TRD" & junction_only_sum$chain_G!="TRG","B D",
+                                                                                                     ifelse(junction_only_sum$chain_B!="TRB" & junction_only_sum$chain_A=="TRA" & junction_only_sum$chain_D=="TRD" & junction_only_sum$chain_G!="TRG","A D",
+                                                                                                            ifelse(junction_only_sum$chain_B!="TRB" & junction_only_sum$chain_A=="TRA" & junction_only_sum$chain_D!="TRD" & junction_only_sum$chain_G=="TRG","A G",
+                                                                                                                   ifelse(junction_only_sum$chain_B!="TRB" & junction_only_sum$chain_A=="TRA" & junction_only_sum$chain_D!="TRD" & junction_only_sum$chain_G!="TRG","A",
+                                                                                                                          ifelse(junction_only_sum$chain_B=="TRB" & junction_only_sum$chain_A!="TRA" & junction_only_sum$chain_D!="TRD" & junction_only_sum$chain_G!="TRG","B",
+                                                                                                                                 ifelse(junction_only_sum$chain_B!="TRB" & junction_only_sum$chain_A!="TRA" & junction_only_sum$chain_D!="TRD" & junction_only_sum$chain_G=="TRG","G",
+                                                                                                                                        ifelse(junction_only_sum$chain_B!="TRB" & junction_only_sum$chain_A!="TRA" & junction_only_sum$chain_D=="TRD" & junction_only_sum$chain_G!="TRG","D",
+                                                                                                                                               "other"
+                                                                                                                                        )))))))))))))))
+
+        head(junction_only_sum)
+        junction_only_sum_selected <- subset(junction_only_sum,junction_only_sum$junction_aa_A=="CVLSASSSFSKLVF")
+        head(junction_only_sum_selected)
+        merged_junction_contig <-  merge(contig_paired_only,junction_only_sum, by = c("junction_aa_A","junction_aa_B","junction_aa_G","junction_aa_D","v_gene_A","v_gene_B","v_gene_G","v_gene_D","chain_A","chain_B","chain_G","chain_D","pairing")) # "v_gene_B","v_gene_D","v_gene_G"
+        name.list_all <- c("cell_id","Sample_Name","pairing","order")
+        merged_junction_contig <- merged_junction_contig %>%
+          select(all_of(name.list_all), everything())
+
+        # merged_junction_contig <- merged_junction_contig[!names(merged_junction_contig) %in% c(names(merged_junction_contig[grep("v_gene",names(merged_junction_contig))]))]
+        merged_junction_contig <- merged_junction_contig[order(merged_junction_contig$cell_id),]
+        merged_junction_contig
+      }
+
+      else {
+        as.data.frame("Upload unfilted AIRR file")
+      }
+
+    })
+
+    output$tb_multiTCR <- DT::renderDataTable(escape = FALSE, options = list(autoWidth = FALSE, lengthMenu = c(2,5,10,20,50,100), pageLength = 10, scrollX = TRUE),{
+      multi_TCR_BDrhap()
+    })
+
+    output$downloadtb_multiTCR <- downloadHandler(
+      filename = function(){
+        paste(input$name.BD,"_Multi_TCR_",gsub("-", ".", Sys.Date()),".csv", sep = "")
+      },
+      content = function(file){
+        df <- as.data.frame(multi_TCR_BDrhap())
+        write.csv(df,file, row.names = F)
+      } )
 
     # 10x_Genomics data -----
     ## barcode file -----
@@ -5126,7 +5362,7 @@ runSTEGO <- function(){
       )
       req(Vals_norm4$Norm1)
       kmeans <- read.csv(system.file("Kmean","Kmeans.requires.annotation.csv",package = "STEGO.R"))
-
+      kmeans
       var.genes <- as.data.frame(sc@assays$RNA@var.features)
       names(var.genes) <- "V1"
       if (input$sample.type.source == 'hs') {
@@ -5340,6 +5576,41 @@ runSTEGO <- function(){
       sc <- test.data_anno()
       head(sc)[1:6]
     })
+
+    ## add classification based on TCR-seq ----
+    TCR_seq_classification <- reactive({
+      sc <- getData_2()
+      validate(
+        need(nrow(sc)>0,
+             "Upload files")
+      )
+
+      if (input$sample.type.source.markers == "hs") {
+        sc@meta.data$unconventional <- ifelse(sc@meta.data$vj_gene_AG == "TRAV1-2.TRAJ33","MAIT",
+                                              ifelse(sc@meta.data$vj_gene_AG == "TRAV1-2.TRAJ12","MAIT",
+                                                     ifelse(sc@meta.data$vj_gene_AG == "TRAV1-2.TRAJ23","MAIT",
+                                                            ifelse(sc@meta.data$vj_gene_AG == "TRAV10.TRAJ18","iNKT",
+                                                                   ifelse(sc@meta.data$v_gene_BD == "TRBV4-1","possible CD1c-restricted",
+                                                                          ifelse(sc@meta.data$chain_AG == 'TRG' & sc@meta.data$chain_BD == 'TRB',"gb T cell",
+                                                                                 ifelse(sc@meta.data$chain_AG == 'TRG' & sc@meta.data$chain_BD == 'TRD',"gd T cell",NA
+
+                                                                                 )))))))
+      }
+
+      else {
+
+      }
+
+
+      sc
+
+    })
+
+    output$TCR_seq_classification_df <-  DT::renderDataTable(escape = FALSE, filter = list(position = 'top', clear = FALSE), options = list(autoWidth = FALSE, lengthMenu = c(2,5,10,20,50,100), pageLength = 5, scrollX = TRUE),{
+      sc <- TCR_seq_classification()
+      sc@meta.data
+    })
+
 
 
     # scGATE annotations HS 10x -------
@@ -7459,6 +7730,12 @@ runSTEGO <- function(){
                                                                                   as.data.frame(sc@meta.data)
                                                                                 }
 
+                                                                                else if (input$Data_types=="TCR-seq") {
+                                                                                  sc <- TCR_seq_classification()
+                                                                                  as.data.frame(sc@meta.data)
+
+                                                                                }
+
 
                                                                                 else {
                                                                                   df <- as.data.frame("Other panels are under development")
@@ -7500,7 +7777,10 @@ runSTEGO <- function(){
           as.h5Seurat(sc,file)
         }
 
-
+        else if (input$Data_types=="TCR-seq") {
+          sc <- TCR_seq_classification()
+          as.h5Seurat(sc,file)
+        }
 
         else {
 
@@ -7785,7 +8065,7 @@ runSTEGO <- function(){
              error_message_val_UMAP)
       )
       req(input$Samp_col2)
-
+      sc@meta.data$order <- 1:dim(sc@meta.data)[1]
       reduction <- (sc@reductions$umap)
       UMAP <- as.data.frame(reduction@cell.embeddings)
       UMAP$Cell_Index <- rownames(UMAP)
@@ -7804,12 +8084,11 @@ runSTEGO <- function(){
         names(umap.meta)[names(umap.meta) %in% "ID"] <- input$Samp_col2
       }
       rownames(umap.meta) <- umap.meta$Cell_Index
+      umap.meta <- umap.meta[order(umap.meta$order),]
       sc@meta.data <- umap.meta
       sc
 
     })
-
-
 
     output$Sample_names_merging_sc <- DT::renderDataTable(escape = FALSE, options = list(autoWidth = FALSE, lengthMenu = c(2,5,10,20,50,100), pageLength = 2, scrollX = TRUE),{
       sc <- UMAP_metadata_with_labs()
@@ -9273,6 +9552,13 @@ runSTEGO <- function(){
 
       top_BD_cluster <- top_BD_cluster[top_BD_cluster$ID_Column %in% input$ID_Column_factor,]
       top_BD_cluster$ID_Column <- factor(top_BD_cluster$ID_Column,levels = input$ID_Column_factor)
+      md <- top_BD_cluster
+      md <- subset(md,md$UMAP_1 > input$Filter_lower_UMAP1_marker_GEX)
+      md <- subset(md,md$UMAP_1 < input$Filter_lower_UMAP1_marker2_GEX)
+
+      md <- subset(md,md$UMAP_2 > input$Filter_lower_UMAP2_marker_GEX)
+      md <- subset(md,md$UMAP_2 < input$Filter_lower_UMAP2_marker2_GEX)
+      top_BD_cluster <- md
 
       df <- ggplot(top_BD_cluster,aes(x=UMAP_1,UMAP_2,colour=Selected_function,alpha = Selected_function,label = Selected_function))+
         geom_point()+
@@ -9721,11 +10007,17 @@ runSTEGO <- function(){
         need(nrow(BD_sum)>0,
              error_message_val1)
       )
+
+      BD_sum <- subset(BD_sum,BD_sum$Total_count>1)
+
       updateSelectInput(
         session,
         "Selected_clonotype",
-        choices=BD_sum$cluster_name[1:50],
+        choices=BD_sum$cluster_name,
         selected = BD_sum$cluster_name[1])
+
+
+
     })
 
     select_split_by <- reactive ({
@@ -10930,7 +11222,8 @@ runSTEGO <- function(){
       names(total.condition.group.counts)[names(total.condition.group.counts) %in% "V1"] <-input$V_gene_sc
       names(total.condition.group.counts)[names(total.condition.group.counts) %in% "V2"] <-input$Samp_col_expanded
       total.condition.group.counts
-      umap.meta2 <- merge(Expansion.meta.data, total.condition.group.counts, by = c(input$Samp_col_expanded,input$V_gene_sc),sort = F)
+      umap.meta2 <- merge(Expansion.meta.data, total.condition.group.counts, by = c(input$Samp_col_expanded,input$V_gene_sc),sort = F,all.x =T)
+      rownames(umap.meta2) <- umap.meta2$Cell_Index
       message(paste("Finished calculating expansion"))
       names(umap.meta2)[names(umap.meta2) %in% input$Samp_col_expanded] <- "Selected_Status"
       umap.meta2$expansion.status <- paste0(umap.meta2$Selected_Status,"_",umap.meta2$expand.singlets)
@@ -10939,9 +11232,9 @@ runSTEGO <- function(){
     })
 
 
-    # output$Expansion_check <- DT::renderDataTable(escape = FALSE, filter = list(position = 'top', clear = FALSE), options = list(autoWidth = FALSE, lengthMenu = c(2,5,10,20,50,100), pageLength = 10, scrollX = TRUE),{
-    #   Expansion_check_table()
-    # })
+    output$Expansion_check2 <- DT::renderDataTable(escape = FALSE, filter = list(position = 'top', clear = FALSE), options = list(autoWidth = FALSE, lengthMenu = c(2,5,10,20,50,100), pageLength = 10, scrollX = TRUE),{
+      Expansion_check_table()
+    })
     ### add in colouring specific to Expanded
     output$colour_by_this_clusters <- renderUI({
       sc <- UMAP_metadata_with_labs()
@@ -11091,6 +11384,8 @@ runSTEGO <- function(){
         input[[paste("col.UMAP_Expanded", i, sep="_")]]
       })
     })
+
+
     UMAP_Expanded_plot <- reactive({
       sc <- input.data_sc_pro()
       validate(
@@ -11103,9 +11398,9 @@ runSTEGO <- function(){
 
       if (input$Colour_By_this_Expanded == "expand.singlets") {
         top_BD_cluster$Selected_function <- ifelse(grepl("NA", top_BD_cluster$Selected_function),NA,top_BD_cluster$Selected_function)
-        top_BD_cluster$Selected_function <- factor(top_BD_cluster$Selected_function,levels = c("NEx","Ex"))
-        Ex <- subset(top_BD_cluster,top_BD_cluster$Selected_function=="Ex")
-        NEx <- subset(top_BD_cluster,top_BD_cluster$Selected_function=="NEx")
+        top_BD_cluster$Selected_function <- factor(top_BD_cluster$Selected_function,levels = c("Ex","NEx"))
+        # Ex <- subset(top_BD_cluster,top_BD_cluster$Selected_function=="Ex")
+        # NEx <- subset(top_BD_cluster,top_BD_cluster$Selected_function=="NEx")
       }
       else {
         top_BD_cluster$Selected_function <- ifelse(grepl("NA", top_BD_cluster$Selected_function),NA,top_BD_cluster$Selected_function)
@@ -11126,15 +11421,15 @@ runSTEGO <- function(){
 
       df <- ggplot(top_BD_cluster,aes(x=UMAP_1,UMAP_2,colour=Selected_function,alpha = Selected_function,label = Selected_function))
 
-      if (input$Colour_By_this_Expanded == "expand.singlets") {
+      # if (input$Colour_By_this_Expanded == "expand.singlets") {
+      #
+      #   df <- df + geom_point(data= NEx, aes(x=UMAP_1,UMAP_2,colour=Selected_function,alpha = Selected_function))
+      #   df <- df + geom_point(data= Ex, aes(x=UMAP_1,UMAP_2,colour=Selected_function,alpha = Selected_function))
+      # }
 
-        df <- df + geom_point(data= NEx, aes(x=UMAP_1,UMAP_2,colour=Selected_function,alpha = Selected_function))
-        df <- df + geom_point(data= Ex, aes(x=UMAP_1,UMAP_2,colour=Selected_function,alpha = Selected_function))
-      }
-
-      else {
-        df <-   df + geom_point()
-      }
+      # else {
+      df <-   df + geom_point()
+      # }
 
 
       df <- df + scale_color_manual(labels = ~ stringr::str_wrap(.x, width = 20),values = col.file$col, na.value=input$NA_col_analysis)+
@@ -11212,6 +11507,7 @@ runSTEGO <- function(){
       expanded.meta.data <- expanded.meta.data[,names(expanded.meta.data) %in% c(input$V_gene_sc,"Cell_Index",input$Samp_col_expanded,"expand.singlets","expansion.status")]
       expanded.meta.data <- expanded.meta.data %>%
         select("Cell_Index", everything())
+
       meta.data_exp <- merge(meta.data,expanded.meta.data,by = c(input$V_gene_sc,"Cell_Index",input$Samp_col_expanded),all.x=T,sort = F)
       meta.data_exp <- meta.data_exp[order(meta.data_exp$order,decreasing = F),]
       rownames(meta.data_exp) <- meta.data_exp$Cell_Index
@@ -14279,7 +14575,18 @@ runSTEGO <- function(){
         theme(
           panel.grid.major = element_blank(),
         ) +
-        scale_color_distiller(direction = 1, palette = input$col_marker_scale,na.value = "grey75")
+        scale_color_distiller(direction = 1, palette = input$col_marker_scale,na.value = "grey85", limits = c(min(0),max(input$max_scale))) +
+        theme(
+          plot.title = element_text(colour="black",family=input$font_type,size = 24,face = "bold",vjust=.5),
+          axis.title.y = element_text(colour="black",family=input$font_type,size = input$title.text.sizer2),
+          axis.text.y = element_text(colour="black",family=input$font_type,size = input$text_size),
+          axis.text.x = element_text(colour="black",family=input$font_type,size = input$text_size),
+          axis.title.x = element_text(colour="black",angle=0,vjust=.5,face="plain",family=input$font_type,size = input$title.text.sizer2),
+          legend.text = element_text(colour="black", size=input$Bar_legend_size,family=input$font_type),
+          legend.title = element_blank(),
+          legend.position = input$legend_position,
+        ) +
+        labs(title = input$Var_to_col_marker)
 
     })
 
@@ -14291,6 +14598,28 @@ runSTEGO <- function(){
       )
       marker_selected_UMAP()
     })
+
+
+    output$downloadPlot_marker_selected_UMAP_plot <- downloadHandler(
+      filename = function() {
+        x <- today()
+        paste(input$Var_to_col_marker,"_marker_selected_UMAP_",x, ".pdf", sep = "")
+      },
+      content = function(file) {
+        pdf(file, width=input$width_marker_selected_UMAP_plot,height=input$height_marker_selected_UMAP_plot, onefile = FALSE) # open the pdf device
+
+        plot(marker_selected_UMAP())
+        dev.off()}, contentType = "application/pdf" )
+
+    output$downloadPlotPNG_marker_selected_UMAP_plot <- downloadHandler(
+      filename = function() {
+        x <- today()
+        paste(input$Var_to_col_marker,"_marker_selected_UMAP_",x, ".png", sep = "")
+      },
+      content = function(file) {
+        png(file, width = input$width_png_marker_selected_UMAP_plot,height = input$height_png_marker_selected_UMAP_plot,res = input$resolution_PNG_marker_selected_UMAP_plot)
+        plot(marker_selected_UMAP())
+        dev.off()},   contentType = "application/png")
 
     # scale violin plot ----
     marker_selected_Violine.ridge <- reactive({
@@ -14601,7 +14930,13 @@ runSTEGO <- function(){
       )
     })
 
+
+
+
+
     ### end -----
+
+
   }
   shinyApp(ui, server)
 }
