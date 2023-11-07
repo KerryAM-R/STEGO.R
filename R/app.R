@@ -619,7 +619,7 @@ runSTEGO <- function(){
                                                  "Choose .h5Seurat files from directory",
                                                  multiple = TRUE,
                                                  accept=c("h5Seurat",".h5Seurat")),
-                                       textInput("project_name2","Name of Project",value = ""),
+                                       textInput("project_name2","Name of Project",value = "Pro"),
                                        downloadButton('downloaddf_SeruatObj_merged','Download Merged Seurat')
                           ),
 
@@ -629,7 +629,7 @@ runSTEGO <- function(){
                               tabPanel("Upload files",
                                        add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
                                        verbatimTextOutput("testing_mult"),
-                                       # verbatimTextOutput("testing_mult2")
+                                       verbatimTextOutput("testing_mult2")
                               ),
                               tabPanel("Variable data",
                                        add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
@@ -5282,13 +5282,17 @@ runSTEGO <- function(){
       for (i in 2:num ) {
         pbmc.normalized <- merge(pbmc.normalized, y = samples_list[[i]], add.cell.ids = c("", paste("df",i,sep = "")), project = input$project_name2,merge.data = TRUE)
       }
+      pbmc.normalized@meta.data$Noval.ID <- paste(pbmc.normalized@meta.data$Sample_Name,pbmc.normalized@meta.data$Cell_Index,sep = ".")
+      pbmc.normalized@meta.data$Noval.ID <- ifelse(grepl("NA[.]",pbmc.normalized@meta.data$Noval.ID),NA,pbmc.normalized@meta.data$Noval.ID)
+      # rownames(pbmc.normalized@meta.data) <- pbmc.normalized@meta.data$Noval.ID
       pbmc.normalized
     })
 
 
     output$testing_mult2 <- renderPrint({
       pbmc.normalized <- merging_sc()
-      table(pbmc.normalized$orig.ident)
+      pbmc.normalized@meta.data$Noval.ID <- ifelse(grepl("NA[.]",pbmc.normalized@meta.data$Noval.ID),NA,pbmc.normalized@meta.data$Noval.ID)
+      head(pbmc.normalized@meta.data)
 
     })
 
@@ -5440,8 +5444,11 @@ runSTEGO <- function(){
         FindNeighbors(reduction = "harmony", dims = 1:input$dimension_Merged) %>%
         FindClusters(resolution = input$res_merged) %>%
         identity()
+      sc@meta.data$Cell_Index_2 <- sc@meta.data$Cell_Index
       sc@meta.data$Cell_Index <- rownames(sc@meta.data)
       Vals_norm$Norm1 <- sc
+
+
     })
     output$testing_mult3 <- renderPrint({
       df <- Vals_norm$Norm1
@@ -14930,12 +14937,7 @@ runSTEGO <- function(){
       )
     })
 
-
-
-
-
     ### end -----
-
 
   }
   shinyApp(ui, server)
