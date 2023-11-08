@@ -6,7 +6,7 @@
 <!-- badges: start -->
 <!-- badges: end -->
 
-For a complete Tutorial of Using STEGO please go to [Tutorial](https://stego.readthedocs.io/en/latest/)
+For a complete Tutorial of Using STEGO please go to [Tutorial](https://readthedocs.org/projects/stegor-documents/)
 
 ## requirements
 #### MAC:
