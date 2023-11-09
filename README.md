@@ -6,18 +6,18 @@
 <!-- badges: start -->
 <!-- badges: end -->
 
-For a complete Tutorial of Using STEGO please go to [Tutorial](stegor-documents.rtfd.io)
+For a complete Tutorial of Using STEGO please go to [Tutorial](https://stegor-documents.readthedocs.io/en/latest/index.html)
 
 ## requirements
 #### MAC:
-Install R: https://cran.r-project.org/bin/macosx/ 
+Install [R] (https://cran.r-project.org/bin/macosx/)
 
 Install RStudio: [https://posit.co/download/rstudio-desktop/](https://s3.amazonaws.com/rstudio-ide-build/desktop/macos/RStudio-2022.07.2-576.dmg)
 
-install XQuatz: https://www.xquartz.org
+install [XQuatz](https://www.xquartz.org)
 
 #### Windows:
-Install R: https://cran.r-project.org
+Install [R](https://cran.r-project.org)
 
 Install RStudio: https://posit.co/download/rstudio-desktop/
 
