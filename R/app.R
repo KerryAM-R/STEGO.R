@@ -1,7 +1,6 @@
 #' Run STEGO application.
 #' @name STEGO
 #' @importFrom stats chisq.test
-#' @import BiocParallel
 #' @import ClusTCR2
 #' @export
 
