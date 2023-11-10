@@ -13,8 +13,6 @@ runSTEGO <- function(){
   options(shiny.maxRequestSize = 100000*1024^2)
   # UI page -----
   ui <- fluidPage(
-
-
     theme = bs_theme(
       # Controls the default grayscale palette
       bg = "white", fg = "black",
@@ -61,8 +59,7 @@ runSTEGO <- function(){
                                                     column(6,textInput("group10x","Add Treatment/Group name","Group")),
                                                     column(6,textInput("Indiv10x","Add Individual name","Indiv"))
                                                   ),
-                                                  selectInput("BCR_TCR_10x","Type of data",choices = c("TCR only","BCR only","both")),
-
+                                                  selectInput("BCR_TCR_10x","Type of data",choices = c("TCR only","BCR only")),
                                      ),
                                      ### 10x main panel -----
                                      mainPanel(
@@ -99,7 +96,7 @@ runSTEGO <- function(){
                                                    tabPanel("ClusTCR",value = 3,
                                                             tags$head(tags$style("#tb_10x_contigues1  {white-space: nowrap;  }")),
                                                             div(DT::dataTableOutput("tb_10x_contigues1")),
-                                                            selectInput("chain_clusTCR2_10x","Select to download",choices = c("AG","BD")),
+                                                            selectInput("chain_clusTCR2_10x","Select to download",choices = c("AG","BD","IgH","IgLK")),
                                                             downloadButton('downloadtb_10x_contigues1','Download clusTCR')
                                                    ),
                                                    tabPanel("TCR_Explore",value = 4,
@@ -335,7 +332,6 @@ runSTEGO <- function(){
                         )
                ),
 
-
                ### TCR clustering with ClusTCR2 -----
                tabPanel("ClusTCR2",
                         sidebarLayout(
@@ -359,9 +355,17 @@ runSTEGO <- function(){
                                                         ),
                                                         fluidRow(
                                                           column(6,checkboxInput("allele_ClusTCR2","Remove allele *00?", value = T)),
-                                                          column(6, numericInput("cores_ClusTCR2","Number of cores to parallel",value=4))
-                                                        )
+                                                          # column(6, numericInput("cores_ClusTCR2","Number of cores to parallel",value=1))
+                                                        ),
                                        ),
+
+
+                                       conditionalPanel(condition="input.clusTCR2_tabs=='processing2'",
+                                                        selectInput("Clust_lab_tab_output","Add prefix to file",choices = c("AG","BD","IgH","IgKL")),
+                                                        downloadButton('download_ClusTCR_labels','Download Cluster table')
+
+                                       ),
+
                           ),
                           mainPanel(
                             tabsetPanel(id = "clusTCR2_tabs",
@@ -370,21 +374,23 @@ runSTEGO <- function(){
                                                  div(DT::dataTableOutput("DEx_multiple_ClusTCR2")),
                                                  downloadButton('downloaddf_multiple_ClusTCR2','Download table')
                                         ),
-                                        tabPanel("Uploaded file",value = "processing1",
+                                        tabPanel("Clustering inputs",value = "processing1",
                                                  add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
                                                  div(DT::dataTableOutput("clust_dt2_table")),
                                         ),
-
 
                                         tabPanel("Outputs",value = "processing2",
                                                  tabsetPanel(
                                                    tabPanel("Processing",
                                                             add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
-                                                            verbatimTextOutput('ClusTCR2_Time'),
-                                                            # div(DT::dataTableOutput("")),
+                                                            verbatimTextOutput('ClusTCR2_Time')),
+                                                   # div(DT::dataTableOutput("")),
+                                                   tabPanel("Table for analysis",
                                                             add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
                                                             div(DT::dataTableOutput("ClusTCR2_lab")),
-                                                            downloadButton('download_ClusTCR_labels','Download Cluster table'),
+
+                                                            p(" "),
+
                                                             # verbatimTextOutput('ClusTCR2_lab'),
                                                             # div(DT::dataTableOutput("")),
                                                    ),
@@ -477,11 +483,13 @@ runSTEGO <- function(){
                                                           column(6,numericInput("numberofcells","Number of cells to use for heatmap", value = 500)),
                                                         ),
                                                         selectInput("method_Seurat","Method",choices = c("vst","dist","mvp")),
-                                                        actionButton("run_reduction","Run clustering"),
+
                                                         fluidRow(
                                                           column(6,numericInput("dimension_sc","Max dimensions for clustering", value = 15)),
                                                           column(6,numericInput("resolution","Resolution of clusters", value = 1)),
                                                         ),
+                                                        actionButton("run_reduction","Run clustering"),
+                                                        p(""),
                                                         actionButton("run_metadata","Impute metadata after clustering"),
                                        ),
 
@@ -503,8 +511,8 @@ runSTEGO <- function(){
 
 
                             tabsetPanel(
-                              tabPanel("Instructions"
-                              ),
+                              # tabPanel("Instructions"
+                              #          ),
                               tabPanel("Header check",
                                        div(DT::dataTableOutput("DEx_header_name_check.dt")),
                               ),
@@ -2194,7 +2202,7 @@ runSTEGO <- function(){
         fluidRow(
           column(6,numericInput("features.min","minimum features (>)", value = 200)),
           column(6,numericInput("features.max","Maximum features (<)", value = 6000)),
-          column(6,numericInput("percent.mt","Mictochondrial DNA cut-off (<)", value = 20)),
+          column(6,numericInput("percent.mt","Mitochondrial DNA cut-off (<)", value = 20)),
           column(6,numericInput("percent.rb","Ribosomal RNA cut-off (>)", value = 5)),
         )
       }
@@ -2203,7 +2211,7 @@ runSTEGO <- function(){
         fluidRow(
           column(6,numericInput("features.min","minimum features (>)", value = 200)),
           column(6,numericInput("features.max","Maximum features (<)", value = 6000)),
-          column(6,numericInput("percent.mt","Mictochondrial DNA cut-off (<)", value = 20)),
+          column(6,numericInput("percent.mt","Mitochondrial DNA cut-off (<)", value = 20)),
           column(6,numericInput("percent.rb","Ribosomal RNA cut-off (>)", value = 5)),
         )
       }
@@ -2212,7 +2220,7 @@ runSTEGO <- function(){
         fluidRow(
           column(6,numericInput("features.min","minimum features (>)", value = 200)),
           column(6,numericInput("features.max","Maximum features (<)", value = 6000)),
-          column(6,numericInput("percent.mt","Mictochondrial DNA cut-off (<)", value = 20)),
+          column(6,numericInput("percent.mt","Mitochondrial DNA cut-off (<)", value = 20)),
           column(6,numericInput("percent.rb","Ribosomal RNA cut-off (>)", value = 0)),
         )
       }
@@ -2221,7 +2229,7 @@ runSTEGO <- function(){
         fluidRow(
           column(6,numericInput("features.min","minimum features (>)", value = 45)),
           column(6,numericInput("features.max","Maximum features (<)", value = 160)),
-          column(6,numericInput("percent.mt","Mictochondrial DNA cut-off (<)", value = 0)),
+          column(6,numericInput("percent.mt","Mitochondrial DNA cut-off (<)", value = 0)),
           column(6,numericInput("percent.rb","Ribosomal RNA cut-off (>)", value = 0)),
         )
       }
@@ -2230,7 +2238,7 @@ runSTEGO <- function(){
         fluidRow(
           column(6,numericInput("features.min","minimum features (>)", value = 200)),
           column(6,numericInput("features.max","Maximum features (<)", value = 6000)),
-          column(6,numericInput("percent.mt","Mictochondrial DNA cut-off (<)", value = 20)),
+          column(6,numericInput("percent.mt","Mitochondrial DNA cut-off (<)", value = 20)),
           column(6,numericInput("percent.rb","Ribosomal RNA cut-off (>)", value = 0)),
         )
       }
@@ -3623,12 +3631,24 @@ runSTEGO <- function(){
       }
     })
     output$test.files.10x4 <- DT::renderDataTable(escape = FALSE, options = list(autoWidth = FALSE, lengthMenu = c(2,5,10,20,50,100), pageLength = 2, scrollX = TRUE),{
-      calls <- input.data.TCR.10x()
-      validate(
-        need(nrow(calls)>0,
-             error_message_val_10x_features)
-      )
-      tb_10x_meta.data_TCR()
+      if (input$BCR_TCR_10x == "TCR only") {
+        calls <- input.data.TCR.10x()
+        validate(
+          need(nrow(calls)>0,
+               error_message_val_10x_features)
+        )
+        tb_10x_meta.data_TCR()
+      }
+
+      else {
+        calls <- input.data.TCR.10x()
+        validate(
+          need(nrow(calls)>0,
+               error_message_val_10x_features)
+        )
+        tb_10x_meta.data_BCR()
+      }
+
     })
     ## meta.data for seurat ----
     tb_10x_for.tcr.exploreAIRR <- reactive({
@@ -3944,19 +3964,17 @@ runSTEGO <- function(){
 
     output$tb_10x_meta1 <- DT::renderDataTable(escape = FALSE, options = list(autoWidth = FALSE, lengthMenu = c(2,5,10,20,50,100), pageLength = 5, scrollX = TRUE),{
       if (input$BCR_TCR_10x=="TCR only") {
-
-
         tb_10x_meta.data_TCR()
       }
       else if (input$BCR_TCR_10x=="BCR only") {
         tb_10x_meta.data_BCR()
       }
       else {
-        TCR <- tb_10x_meta.data_TCR()
-        BCR <- tb_10x_meta.data_BCR()
-        contig_paired <- names(BCR)[!grepl("_IgH",names(BCR)) & !grepl("_IgL",names(BCR))]
-        contig_paired <- merge(TCR,BCR,by = merge.names, all=T)
-        contig_paired
+        # TCR <- tb_10x_meta.data_TCR()
+        # BCR <- tb_10x_meta.data_BCR()
+        # contig_paired <- names(BCR)[!grepl("_IgH",names(BCR)) & !grepl("_IgL",names(BCR))]
+        # contig_paired <- merge(TCR,BCR,by = merge.names, all=T)
+        # contig_paired
       }
 
     })
@@ -4054,6 +4072,16 @@ runSTEGO <- function(){
 
       if (input$chain_clusTCR2_10x == "AG") {
         (rbind(df[grep("TRAV",df$v_call),],df[grep("TRGV",df$v_call),]))
+
+      }
+
+      else if (input$chain_clusTCR2_10x == "IgH") {
+        rbind(df[grep("IGH",df$v_call),])
+
+      }
+
+      else if (input$chain_clusTCR2_10x == "IgLK") {
+        (rbind(df[grep("IGL",df$v_call),],df[grep("IGK",df$v_call),]))
 
       }
 
@@ -4645,12 +4673,12 @@ runSTEGO <- function(){
              "Upload ClusTCR file")
       )
 
-      req(input$clusTCR2_names,input$clusTCR2_Vgene,input$cores_ClusTCR2)
+      req(input$clusTCR2_names,input$clusTCR2_Vgene)
 
       clust_dt_DATA_5 <- df1[,names(df1) %in% c(input$clusTCR2_names,input$clusTCR2_Vgene)]
       ptm <- proc.time()
 
-      df_cluster <- ClusTCR(clust_dt_DATA_5, allele =input$allele_ClusTCR2, v_gene = input$clusTCR2_Vgene, cores_selected = input$cores_ClusTCR2)
+      df_cluster <- ClusTCR(clust_dt_DATA_5, allele =input$allele_ClusTCR2, v_gene = input$clusTCR2_Vgene)
       cluster_lab <- mcl_cluster(df_cluster,expansion = 1,inflation = 1)
       end <- proc.time() - ptm
       cluster_lab[[3]] <- end
@@ -4683,7 +4711,7 @@ runSTEGO <- function(){
     output$download_ClusTCR_labels <- downloadHandler(
       filename = function(){
         x = today()
-        paste("ClusTCR2_output_",x,".csv", sep = "")
+        paste(input$Clust_lab_tab_output,"_ClusTCR2_output_",x,".csv", sep = "")
       },
       content = function(file){
         df <- as.data.frame(ClusTCR2_lab_df())
@@ -14935,9 +14963,7 @@ runSTEGO <- function(){
         select = "CD4"
       )
     })
-
     ### end -----
-
   }
   shinyApp(ui, server)
 }
