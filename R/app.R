@@ -383,7 +383,11 @@ runSTEGO <- function(){
                                                  tabsetPanel(
                                                    tabPanel("Processing",
                                                             add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
-                                                            verbatimTextOutput('ClusTCR2_Time')),
+                                                            verbatimTextOutput('ClusTCR2_Time'),
+                                                            verbatimTextOutput('verbatum_ClusTCR2')
+                                                   ),
+
+
                                                    # div(DT::dataTableOutput("")),
                                                    tabPanel("Table for analysis",
                                                             add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
@@ -4679,13 +4683,43 @@ runSTEGO <- function(){
       ptm <- proc.time()
 
       df_cluster <- ClusTCR(clust_dt_DATA_5, allele =input$allele_ClusTCR2, v_gene = input$clusTCR2_Vgene)
-      cluster_lab <- mcl_cluster(df_cluster,expansion = 1,inflation = 1)
-      end <- proc.time() - ptm
-      cluster_lab[[3]] <- end
-      vals_ClusTCR2$output_dt2 <- cluster_lab
-      vals_ClusTCR2$output_dt2
 
+      if (dim(df_cluster)[1]>1) {
+        cluster_lab <- mcl_cluster(df_cluster,expansion = 1,inflation = 1)
+        end <- proc.time() - ptm
+        cluster_lab[[3]] <- end
+        vals_ClusTCR2$output_dt2 <- cluster_lab
+        vals_ClusTCR2$output_dt2
+      }
     })
+
+    output$verbatum_ClusTCR2 <- renderPrint({
+      df1 <- input.data_ClusTCR2()
+      validate(
+        need(nrow(df1)>0,
+             "Upload ClusTCR file")
+      )
+
+
+      FN <- tempfile()
+      zz <- file(FN, open = "wt")
+      sink(zz ,type = "output")
+      sink(zz, type = "message")
+
+      # message("Clusters exist")
+      if ( is.null(vals_ClusTCR2$output_dt2) ) {
+        message("No clusters == 1 edit distance and therefore MCL not performed")
+      }
+
+      else {
+
+      }
+
+      sink(type = "message")
+      sink(type = "output")
+      cat(readLines(FN), sep="\n")
+    })
+
 
     ClusTCR2_lab_df <- reactive({
       df1 <- input.data_ClusTCR2()
