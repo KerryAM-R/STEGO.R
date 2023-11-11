@@ -506,7 +506,7 @@ runSTEGO <- function(){
 
                                        ),
                                        tags$hr(),
-                                       actionButton("reset_input", "Reset inputs")
+                                       # actionButton("reset_input", "Reset inputs")
 
                           ),
                           ### QC main panel -----
@@ -5171,7 +5171,6 @@ runSTEGO <- function(){
     output$downloadPlotPNG_after_plot_sc <- downloadHandler(
       filename = function() {
         x <- today()
-
         paste(input$project_name2,"_heatmap_sc_",x,".png", sep = "")
       },
       content = function(file) {
