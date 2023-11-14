@@ -28,7 +28,7 @@ Recommended to use a 64 bit OS with 16GB of RAM, but ideally 32GB of RAM.
 
 ## Installation
 
-For detailed instruction on installing and running STEGO go to the [readthedoc](https://stegor-documents.readthedocs.io/en/latest/index.html)
+For detailed instruction on installing and running STEGO go to the [readthedoc](https://stegor-documents.readthedocs.io/en/latest/1.installation.html)
 
 For those more familiar with the R and RStudio, you can install the current version of STEGO.R with:
 ``` r
