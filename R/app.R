@@ -206,7 +206,7 @@ runSTEGO <- function(){
                                                   tags$head(tags$style("#tb_clusTCR  {white-space: nowrap;  }")),
                                                   add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
                                                   div(DT::dataTableOutput("tb_clusTCR")),
-                                                  selectInput("chain_clusTCR2_bd","Select to download",choices = c("AG","BD")),
+                                                  selectInput("chain_clusTCR2_bd","Select to download",choices = c("AG","BD","IgH","IgLK")),
                                                   downloadButton('downloaddf_clusTCR','Download table')
                                          ),
                                          tabPanel("TCRex",
@@ -337,6 +337,9 @@ runSTEGO <- function(){
                         sidebarLayout(
                           sidebarPanel(id = "tPanel4",style = "overflow-y:scroll; max-height: 800px; position:relative;", width=3,
                                        # selectInput("dataset2", "Choose a dataset:", choices = c("test_data_clusTCR2","own_data_clusTCR2")),
+
+                                       selectInput("Clust_lab_tab_output","Add prefix to file",choices = c("AG","BD","IgH","IgKL")),
+
                                        conditionalPanel(condition="input.clusTCR2_tabs=='merge'",
                                                         fileInput('file1_ClusTCR2_multiple', 'Select files to merge',
                                                                   multiple = TRUE,
@@ -361,7 +364,7 @@ runSTEGO <- function(){
 
 
                                        conditionalPanel(condition="input.clusTCR2_tabs=='processing2'",
-                                                        selectInput("Clust_lab_tab_output","Add prefix to file",choices = c("AG","BD","IgH","IgKL")),
+
                                                         downloadButton('download_ClusTCR_labels','Download Cluster table')
 
                                        ),
@@ -1461,16 +1464,19 @@ runSTEGO <- function(){
 
                                                  conditionalPanel(condition="input.Panel_TCRUMAP=='ClusTCR2'",
                                                                   fluidRow(
-                                                                    column(2,selectInput("chain_TCR","Chains included",choices = c("TRAG","TRBD","Ig"))),
+                                                                    column(2,selectInput("chain_TCR","Chains included",choices = c("TRAG","TRBD","IgH","IgKL"))),
                                                                     column(2,
-                                                                           conditionalPanel(condition="input.chain_TCR=='TRAG'",selectInput("V_call_clust_sc","V gene",choices = "")),
-                                                                           conditionalPanel(condition="input.chain_TCR=='TRBD'",selectInput("V_call_clust_sc_BD","V gene",choices = ""))
+                                                                           selectInput("V_call_clust_sc","V gene",choices = "")
+                                                                           # conditionalPanel(condition="input.chain_TCR=='TRAG'",selectInput("V_call_clust_sc","V gene",choices = "")),
                                                                     ),
                                                                     column(2,
-                                                                           conditionalPanel(condition="input.chain_TCR=='TRAG'",selectInput("junction_clust_sc","Junction",choices = "")),
-                                                                           conditionalPanel(condition="input.chain_TCR=='TRBD'",selectInput("junction_clust_sc_BD","Junction",choices = ""))
+                                                                           # conditionalPanel(condition="input.chain_TCR=='TRAG'",
+                                                                           selectInput("junction_clust_sc","Junction",choices = "")
+                                                                           # ),
+                                                                           # conditionalPanel(condition="input.chain_TCR=='TRBD'",selectInput("junction_clust_sc_BD","Junction",choices = "")),
+                                                                           # # conditionalPanel(condition="input.chain_TCR=='IgH'",selectInput("junction_clust_sc_IgH","Junction",choices = "")),
+                                                                           # # conditionalPanel(condition="input.chain_TCR=='IgKL'",selectInput("junction_clust_sc_IgK","Junction",choices = ""))
                                                                     ),
-
                                                                     # column(2,selectInput("V_gene_clust","V gene",choices = c("v_gene_AG","v_gene_BD","v_gene_IgL","v_gene_IgH")),),
                                                                     # column(2, selectInput("cdr3_clust","CDR3",choices = c("cdr3_AG","cdr3_BD","cdr3_IgL","cdr3_IgH")),)
                                                                   ),
@@ -2101,10 +2107,9 @@ runSTEGO <- function(){
   # server ------
   server <- function(input, output,session) {
     # add UI ------
-    observeEvent(input$reset_input, {
-      shinyjs::reset("side-panel")
-    })
-
+    # observeEvent(input$reset_input, {
+    #   shinyjs::reset("side-panel")
+    # })
 
     output$scGate_cutoffs <- renderUI({
       if (input$Data_types == '10x_HS' || input$Data_types == 'BD_HS.Full.Panel' || input$Data_types == '10x_MM'|| input$Data_types == 'BD_MM_Full.Panel') {
@@ -2115,7 +2120,6 @@ runSTEGO <- function(){
         numericInput("threshold_scGate","scGate threshold",value = 0.5)
       }
       #c("10x_HS","BD_HS.Immune.Panel","BD_HS.Full.Panel","10x_MM","BD_MM_Full.Panel","BD_MM_Immune.Panel"
-
 
     })
 
@@ -3004,6 +3008,18 @@ runSTEGO <- function(){
 
       }
 
+
+      else if (input$chain_clusTCR2_bd == "IgH") {
+        rbind(df[grep("IGH",df$v_call),])
+
+      }
+
+      else if (input$chain_clusTCR2_bd == "IgLK") {
+        (rbind(df[grep("IGL",df$v_call),],df[grep("IGK",df$v_call),]))
+
+      }
+
+
       else {
         (rbind(df[grep("TRBV",df$v_call),],df[grep("TRDV",df$v_call),]))
       }
@@ -3027,6 +3043,16 @@ runSTEGO <- function(){
           paste("AG_",input$name.BD,"","_ClusTCR_",x,".csv", sep = "")
 
         }
+
+        else if (input$chain_clusTCR2_bd == "IgH") {
+          paste("IgH_",input$name.BD,"_ClusTCR_",x,".csv", sep = "")
+        }
+
+        else if (input$chain_clusTCR2_bd == "IgLK") {
+          paste("IgLK_",input$name.BD,"_ClusTCR_",x,".csv", sep = "")
+
+        }
+
         else {
           paste("BD_",input$name.BD,"_ClusTCR_",x,".csv", sep = "")
         }
@@ -4625,7 +4651,7 @@ runSTEGO <- function(){
     output$downloaddf_multiple_ClusTCR2 <- downloadHandler(
       filename = function(){
         x = today()
-        paste("Multi_ClusTCR_",x,".csv", sep = "")
+        paste(input$Clust_lab_tab_output,"_Multi_ClusTCR_",x,".csv", sep = "")
       },
       content = function(file){
         df <- merged_Clust_filtered()
@@ -4699,8 +4725,6 @@ runSTEGO <- function(){
         need(nrow(df1)>0,
              "Upload ClusTCR file")
       )
-
-
       FN <- tempfile()
       zz <- file(FN, open = "wt")
       sink(zz ,type = "output")
@@ -4719,6 +4743,7 @@ runSTEGO <- function(){
       sink(type = "output")
       cat(readLines(FN), sep="\n")
     })
+
 
 
     ClusTCR2_lab_df <- reactive({
@@ -4960,9 +4985,9 @@ runSTEGO <- function(){
         names(df.test) <- gsub("[.]1","-1",names(df.test) )
         rownames(df.test) <- make.unique(df.test$Gene_Name)
         df.test2 <- df.test[,!names(df.test) %in% c("Gene_Name")]
-        sc <- CreateSeuratObject(counts = df.test2, project = input$project_name)
-        sc <- PercentageFeatureSet2(sc, pattern = "^MT-",col.name = "mtDNA")
-        sc <- PercentageFeatureSet2(sc, pattern = "^RP[SL]",col.name = "rRNA")
+        sc <- CreateSeuratObject(counts = df.test2, assay = "RNA", project = input$project_name)
+        sc <- PercentageFeatureSet(sc, pattern = "^MT-",col.name = "mtDNA")
+        sc <- PercentageFeatureSet(sc, pattern = "^RP[SL]",col.name = "rRNA")
         sc
       }
 
@@ -4970,16 +4995,16 @@ runSTEGO <- function(){
         # rownames(df.test$`Gene Expression`) <- gsub("GRCh38___","",rownames(df.test$`Gene Expression`))
         # sc <- CreateSeuratObject(counts = df.test[[1]], project = input$project_name)
         sc <- CreateSeuratObject(counts = df.test, project = input$project_name)
-        sc <- PercentageFeatureSet2(sc, pattern = "^MT-",col.name = "mtDNA")
-        sc <- PercentageFeatureSet2(sc, pattern = "^RP[SL]",col.name = "rRNA")
+        sc <- PercentageFeatureSet(sc, pattern = "^MT-",col.name = "mtDNA")
+        sc <- PercentageFeatureSet(sc, pattern = "^RP[SL]",col.name = "rRNA")
         sc
       }
       else if (input$df_seruatobj_type =="BD Rhapsody (Mouse)") {
         names(df.test) <- gsub("X","",names(df.test))
         df.test2 <- df.test[!rownames(df.test) %in% c("Cell_Index"),]
         sc <- CreateSeuratObject(counts = df.test2, project = input$project_name)
-        sc <- PercentageFeatureSet2(sc, pattern = "^Mt",col.name = "mtDNA")
-        sc <- PercentageFeatureSet2(sc, pattern = "Rp[sl]",col.name = "rRNA")
+        sc <- PercentageFeatureSet(sc, pattern = "^Mt",col.name = "mtDNA")
+        sc <- PercentageFeatureSet(sc, pattern = "Rp[sl]",col.name = "rRNA")
         sc
       }
 
@@ -4987,8 +5012,8 @@ runSTEGO <- function(){
         names(df.test) <- gsub("X","",names(df.test))
         df.test2 <- df.test[!rownames(df.test) %in% c("Cell_Index"),]
         sc <- CreateSeuratObject(counts = df.test2, project = input$project_name)
-        sc <- PercentageFeatureSet2(sc, pattern = "^MT-",col.name = "mtDNA")
-        sc <- PercentageFeatureSet2(sc, pattern = "^RP[SL]",col.name = "rRNA")
+        sc <- PercentageFeatureSet(sc, pattern = "^MT-",col.name = "mtDNA")
+        sc <- PercentageFeatureSet(sc, pattern = "^RP[SL]",col.name = "rRNA")
         sc
       }
 
@@ -4996,9 +5021,9 @@ runSTEGO <- function(){
         names(df.test) <- gsub("[.]","-",names(df.test))
         rownames(df.test) <- gsub("[.]","-",rownames(df.test))
         sc <- CreateSeuratObject(counts = df.test, project = input$project_name)
-        sc <- PercentageFeatureSet2(sc, pattern = "^MT-",col.name = "mtDNA")
-        sc <- PercentageFeatureSet2(sc, pattern = "^RP[SL]",col.name = "rRNA")
-        sc
+        sc <- PercentageFeatureSet(sc, pattern = "^MT-",col.name = "mtDNA")
+        sc <- PercentageFeatureSet(sc, pattern = "^RP[SL]",col.name = "rRNA")
+
       }
     })
     before_plot <- reactive({
@@ -5007,7 +5032,7 @@ runSTEGO <- function(){
         need(nrow(sc)>0,
              "Upload files")
       )
-      VlnPlot(sc, features = c("nFeature_RNA", "nCount_RNA", "mtDNA_percent","rRNA_percent"), ncol = 2)
+      VlnPlot(sc, features = c("nFeature_RNA", "nCount_RNA", "mtDNA","rRNA"), ncol = 2)
     })
 
     output$before_plot_sc <- renderPlot({
@@ -5050,7 +5075,7 @@ runSTEGO <- function(){
         need(nrow(sc)>0,
              error_message_val_sc)
       )
-      vals2$after_violin_plot <- subset(sc, subset = nFeature_RNA >= input$features.min & nFeature_RNA <= input$features.max & mtDNA_percent <= input$percent.mt & rRNA_percent >= input$percent.rb)
+      vals2$after_violin_plot <- subset(sc, subset = nFeature_RNA >= input$features.min & nFeature_RNA <= input$features.max & mtDNA <= input$percent.mt & rRNA >= input$percent.rb)
     })
 
     output$after_plot_sc <- renderPlot({
@@ -5069,7 +5094,7 @@ runSTEGO <- function(){
       },
       content = function(file) {
         pdf(file, width=input$width_after_plot_sc,height=input$height_after_plot_sc, onefile = FALSE) # open the pdf device
-        plot_after <- VlnPlot(vals2$after_violin_plot, features = c("nFeature_RNA", "nCount_RNA", "mtDNA_percent","rRNA_percent"), ncol = 2)
+        plot_after <- VlnPlot(vals2$after_violin_plot, features = c("nFeature_RNA", "nCount_RNA", "mtDNA","rRNA"), ncol = 2)
         plot(plot_after)
         dev.off()}, contentType = "application/pdf")
 
@@ -5171,6 +5196,7 @@ runSTEGO <- function(){
     output$downloadPlotPNG_after_plot_sc <- downloadHandler(
       filename = function() {
         x <- today()
+
         paste(input$project_name2,"_heatmap_sc_",x,".png", sep = "")
       },
       content = function(file) {
@@ -12916,28 +12942,59 @@ runSTEGO <- function(){
       )
 
       df3.meta <- sc@meta.data
-      if (input$datasource == "BD_Rhapsody_Paired") {
+      # if (input$datasource == "BD_Rhapsody_Paired") {
+      #   updateSelectInput(
+      #     session,
+      #     "V_call_clust_sc",
+      #     choices=names(df3.meta),
+      #     selected = "v_gene_AG")
+      # }
+      if (input$chain_TCR == "TRAG") {
         updateSelectInput(
           session,
           "V_call_clust_sc",
           choices=names(df3.meta),
           selected = "v_gene_AG")
+
       }
-      else if (input$datasource == "BD_Rhapsody_AIRR") {
+
+      else if (input$chain_TCR == "TRBD") {
         updateSelectInput(
           session,
           "V_call_clust_sc",
           choices=names(df3.meta),
-          selected = "v_gene_AG")}
+          selected = "v_gene_BD")
+
+      }
+
+
+      else if (input$chain_TCR == "IgH") {
+        updateSelectInput(
+          session,
+          "V_call_clust_sc",
+          choices=names(df3.meta),
+          selected = "v_gene_IGH")
+
+      }
+
+      else if (input$chain_TCR == "IgLK") {
+        updateSelectInput(
+          session,
+          "V_call_clust_sc",
+          choices=names(df3.meta),
+          selected = "v_gene_IgLK")
+
+      }
 
       else {
+
         updateSelectInput(
           session,
           "V_call_clust_sc",
           choices=names(df3.meta),
-          selected = "v_gene_AG")
-      }
+          selected = "")
 
+      }
 
     })
 
@@ -12949,6 +13006,9 @@ runSTEGO <- function(){
       )
 
       df3.meta <- sc@meta.data
+
+
+
       if (input$datasource == "BD_Rhapsody_Paired") {
         updateSelectInput(
           session,
@@ -12963,6 +13023,7 @@ runSTEGO <- function(){
           choices=names(df3.meta),
           selected = "junction_aa_BD")}
 
+
       else {
         updateSelectInput(
           session,
@@ -12972,36 +13033,51 @@ runSTEGO <- function(){
       }
 
 
-    })
-
-    observe({
-      sc <- input.data_sc_pro()
-      validate(
-        need(nrow(sc)>0,
-             error_message_val_UMAP)
-      )
-
-      df3.meta <- sc@meta.data
-      if (input$datasource == "BD_Rhapsody_Paired") {
+      if (input$chain_TCR == "TRAG") {
         updateSelectInput(
           session,
-          "V_call_clust_sc_BD",
+          "V_call_clust_sc",
+          choices=names(df3.meta),
+          selected = "v_gene_AG")
+
+      }
+
+      else if (input$chain_TCR == "TRBD") {
+        updateSelectInput(
+          session,
+          "V_call_clust_sc",
           choices=names(df3.meta),
           selected = "v_gene_BD")
+
       }
-      else if (input$datasource == "BD_Rhapsody_AIRR") {
+
+
+      else if (input$chain_TCR == "IgH") {
         updateSelectInput(
           session,
-          "V_call_clust_sc_BD",
+          "V_call_clust_sc",
           choices=names(df3.meta),
-          selected = "v_gene_BD")}
+          selected = "v_gene_IGH")
+
+      }
+
+      else if (input$chain_TCR == "IgLK") {
+        updateSelectInput(
+          session,
+          "V_call_clust_sc",
+          choices=names(df3.meta),
+          selected = "v_gene_IgLK")
+
+      }
 
       else {
+
         updateSelectInput(
           session,
-          "V_call_clust_sc_BD",
+          "V_call_clust_sc",
           choices=names(df3.meta),
-          selected = "v_gene_BD")
+          selected = "")
+
       }
 
 
@@ -13015,7 +13091,7 @@ runSTEGO <- function(){
              "Upload File")
       )
 
-      req(input$V_call_clust_sc,input$junction_clust_sc,input$V_call_clust_sc_BD,input$junction_clust_sc_BD)
+      req(input$V_call_clust_sc,input$junction_clust_sc)
       md <- sc@meta.data
       if (input$chain_TCR == "TRAG") {
 
@@ -13037,9 +13113,35 @@ runSTEGO <- function(){
           need(nrow(clust)>0,
                "Upload File")
         )
-        names(md)[names(md) %in% input$V_call_clust_sc_BD] <- "Selected_V_BD"
-        names(md)[names(md) %in% input$junction_clust_sc_BD] <- "AminoAcid_BD"
+        names(md)[names(md) %in% input$V_call_clust_sc] <- "Selected_V_BD"
+        names(md)[names(md) %in% input$junction_clust_sc] <- "AminoAcid_BD"
         md$CDR3_Vgene <- paste(md$AminoAcid_BD,md$Selected_V_BD,sep="_")
+        df <- merge(md,clust,by = "CDR3_Vgene")
+      }
+
+      else if (input$chain_TCR == "IgLK") {
+
+        clust <- input.data_sc_clusTCR_IgLK()
+        validate(
+          need(nrow(clust)>0,
+               "Upload File")
+        )
+        names(md)[names(md) %in% input$V_call_clust_sc] <- "Selected_V_IgLK"
+        names(md)[names(md) %in% input$junction_clust_sc] <- "AminoAcid_IgLK"
+        md$CDR3_Vgene <- paste(md$AminoAcid_IgLK,md$Selected_V_IgLK,sep="_")
+        df <- merge(md,clust,by = "CDR3_Vgene")
+      }
+
+      else if (input$chain_TCR == "IgH") {
+
+        clust <- input.data_sc_clusTCR_IgH()
+        validate(
+          need(nrow(clust)>0,
+               "Upload File")
+        )
+        names(md)[names(md) %in% input$V_call_clust_sc] <- "Selected_V_IgH"
+        names(md)[names(md) %in% input$junction_clust_sc] <- "AminoAcid_IgH"
+        md$CDR3_Vgene <- paste(md$AminoAcid_IgLK,md$Selected_V_IgLK,sep="_")
         df <- merge(md,clust,by = "CDR3_Vgene")
       }
 
@@ -13313,7 +13415,7 @@ runSTEGO <- function(){
         need(nrow(sc)>0,
              "Upload file")
       )
-      req(input$V_call_clust_sc,input$junction_clust_sc,input$V_call_clust_sc_BD,input$junction_clust_sc_BD,input$Clusters_to_dis_PIE)
+      req(input$V_call_clust_sc,input$junction_clust_sc,input$Clusters_to_dis_PIE)
       req(input$upper_cluster,input$lower_cluster)
       md  <- sc@meta.data
 
@@ -13342,8 +13444,8 @@ runSTEGO <- function(){
         )
         req(input$upper_cluster,input$lower_cluster)
         clust <- clust[clust$Clust_size_order %in% input$lower_cluster:input$upper_cluster,]
-        names(md)[names(md) %in% input$V_call_clust_sc_BD] <- "Selected_V_BD"
-        names(md)[names(md) %in% input$junction_clust_sc_BD] <- "AminoAcid_BD"
+        names(md)[names(md) %in% input$V_call_clust_sc] <- "Selected_V_BD"
+        names(md)[names(md) %in% input$junction_clust_sc] <- "AminoAcid_BD"
         md$CDR3_Vgene <- paste(md$AminoAcid_BD,md$Selected_V_BD,sep="_")
         df <-clust[clust$CDR3_Vgene %in% unique(md$CDR3_Vgene),]
       }
@@ -13368,7 +13470,7 @@ runSTEGO <- function(){
              "Upload clusTCR table, which is needed for TCR -> UMAP section")
       )
 
-      req(input$V_call_clust_sc,input$junction_clust_sc,input$V_call_clust_sc_BD,input$junction_clust_sc_BD)
+      req(input$V_call_clust_sc,input$junction_clust_sc)
 
 
       md <- sc@meta.data
@@ -13400,8 +13502,8 @@ runSTEGO <- function(){
         req(input$upper_cluster,input$lower_cluster)
         clust <- clust[clust$Clust_size_order %in% input$lower_cluster:input$upper_cluster,]
 
-        names(md)[names(md) %in% input$V_call_clust_sc_BD] <- "Selected_V_BD"
-        names(md)[names(md) %in% input$junction_clust_sc_BD] <- "AminoAcid_BD"
+        names(md)[names(md) %in% input$V_call_clust_sc] <- "Selected_V_BD"
+        names(md)[names(md) %in% input$junction_clust_sc] <- "AminoAcid_BD"
         md$CDR3_Vgene <- paste(md$AminoAcid_BD,md$Selected_V_BD,sep="_")
         df <-merge(md, clust, by = "CDR3_Vgene")
         df <- df[df$Clust_size_order  %in% input$Clusters_to_dis_PIE,]
@@ -13423,7 +13525,7 @@ runSTEGO <- function(){
              "Upload clusTCR table, which is needed for TCR -> UMAP section")
       )
       md <- sc@meta.data
-      req(input$V_call_clust_sc,input$junction_clust_sc,input$V_call_clust_sc_BD,input$junction_clust_sc_BD,input$Clusters_to_dis_PIE)
+      req(input$V_call_clust_sc,input$junction_clust_sc,input$Clusters_to_dis_PIE)
 
       if (input$chain_TCR == "TRAG") {
 
@@ -13455,8 +13557,8 @@ runSTEGO <- function(){
         req(input$upper_cluster,input$lower_cluster)
         clust <- clust[clust$Clust_size_order %in% input$lower_cluster:input$upper_cluster,]
 
-        names(md)[names(md) %in% input$V_call_clust_sc_BD] <- "Selected_V_BD"
-        names(md)[names(md) %in% input$junction_clust_sc_BD] <- "AminoAcid_BD"
+        names(md)[names(md) %in% input$V_call_clust_sc] <- "Selected_V_BD"
+        names(md)[names(md) %in% input$junction_clust_sc] <- "AminoAcid_BD"
         md$CDR3_Vgene <- paste(md$AminoAcid_BD,md$Selected_V_BD,sep="_")
         df <-merge(md, clust, by = "CDR3_Vgene")
         df <- df[df$Clust_size_order  %in% input$Clusters_to_dis_PIE,]
@@ -13502,7 +13604,7 @@ runSTEGO <- function(){
         need(nrow(sc)>0,
              "Upload file")
       )
-      req(input$V_call_clust_sc,input$junction_clust_sc,input$V_call_clust_sc_BD,input$junction_clust_sc_BD,input$Clusters_to_dis_PIE)
+      req(input$V_call_clust_sc,input$junction_clust_sc,input$Clusters_to_dis_PIE)
 
       md  <- sc@meta.data
 
@@ -13530,8 +13632,8 @@ runSTEGO <- function(){
                "Upload File")
         )
         # clust <- clust[clust$Clust_size_order %in% input$lower_cluster:input$upper_cluster,]
-        names(md)[names(md) %in% input$V_call_clust_sc_BD] <- "Selected_V_BD"
-        names(md)[names(md) %in% input$junction_clust_sc_BD] <- "AminoAcid_BD"
+        names(md)[names(md) %in% input$V_call_clust_sc] <- "Selected_V_BD"
+        names(md)[names(md) %in% input$junction_clust_sc] <- "AminoAcid_BD"
         md$CDR3_Vgene <- paste(md$AminoAcid_BD,md$Selected_V_BD,sep="_")
         df <-merge(md, clust, by = "CDR3_Vgene")
       }
@@ -13557,7 +13659,7 @@ runSTEGO <- function(){
         need(nrow(sc)>0,
              "Upload file")
       )
-      req(input$V_call_clust_sc,input$junction_clust_sc,input$V_call_clust_sc_BD,input$junction_clust_sc_BD,input$Clusters_to_dis_PIE)
+      req(input$V_call_clust_sc,input$junction_clust_sc,input$Clusters_to_dis_PIE)
 
       md  <- sc@meta.data
 
@@ -13586,8 +13688,8 @@ runSTEGO <- function(){
         )
         req(input$upper_cluster,input$lower_cluster,input$Colour_By_this_Cluster)
         # clust <- clust[clust$Clust_size_order %in% input$lower_cluster:input$upper_cluster,]
-        names(md)[names(md) %in% input$V_call_clust_sc_BD] <- "Selected_V_BD"
-        names(md)[names(md) %in% input$junction_clust_sc_BD] <- "AminoAcid_BD"
+        names(md)[names(md) %in% input$V_call_clust_sc] <- "Selected_V_BD"
+        names(md)[names(md) %in% input$junction_clust_sc] <- "AminoAcid_BD"
         md$CDR3_Vgene <- paste(md$AminoAcid_BD,md$Selected_V_BD,sep="_")
         df <-merge(md, clust, by = "CDR3_Vgene")
       }
@@ -13665,7 +13767,7 @@ runSTEGO <- function(){
         need(nrow(sc)>0,
              "Upload file")
       )
-      req(input$V_call_clust_sc,input$junction_clust_sc,input$V_call_clust_sc_BD,input$junction_clust_sc_BD,input$Clusters_to_dis_PIE)
+      req(input$V_call_clust_sc,input$junction_clust_sc,input$Clusters_to_dis_PIE)
       req(input$upper_cluster,input$lower_cluster,input$Colour_By_this_Cluster)
       md  <- sc@meta.data
 
@@ -13692,8 +13794,8 @@ runSTEGO <- function(){
                "Upload File")
         )
         # clust <- clust[clust$Clust_size_order %in% input$lower_cluster:input$upper_cluster,]
-        names(md)[names(md) %in% input$V_call_clust_sc_BD] <- "Selected_V_BD"
-        names(md)[names(md) %in% input$junction_clust_sc_BD] <- "AminoAcid_BD"
+        names(md)[names(md) %in% input$V_call_clust_sc] <- "Selected_V_BD"
+        names(md)[names(md) %in% input$junction_clust_sc] <- "AminoAcid_BD"
         md$CDR3_Vgene <- paste(md$AminoAcid_BD,md$Selected_V_BD,sep="_")
         df <-merge(md, clust, by = "CDR3_Vgene")
       }
@@ -13859,7 +13961,7 @@ runSTEGO <- function(){
              "Upload File")
       )
 
-      req(input$V_call_clust_sc,input$junction_clust_sc,input$V_call_clust_sc_BD,input$junction_clust_sc_BD)
+      req(input$V_call_clust_sc,input$junction_clust_sc)
       md <- sc@meta.data
       if (input$chain_TCR == "TRAG") {
 
@@ -13881,8 +13983,8 @@ runSTEGO <- function(){
           need(nrow(clust)>0,
                "Upload File")
         )
-        names(md)[names(md) %in% input$V_call_clust_sc_BD] <- "Selected_V_BD"
-        names(md)[names(md) %in% input$junction_clust_sc_BD] <- "AminoAcid_BD"
+        names(md)[names(md) %in% input$V_call_clust_sc] <- "Selected_V_BD"
+        names(md)[names(md) %in% input$junction_clust_sc] <- "AminoAcid_BD"
         md$CDR3_Vgene <- paste(md$AminoAcid_BD,md$Selected_V_BD,sep="_")
         df <- merge(md,clust,by = "CDR3_Vgene",all.x = T, sort = F)
 
@@ -14495,7 +14597,7 @@ runSTEGO <- function(){
              "Upload File")
       )
 
-      # req(input$V_call_clust_sc,input$junction_clust_sc,input$V_call_clust_sc_BD,input$junction_clust_sc_BD)
+      # req(input$V_call_clust_sc,input$junction_clust_sc)
       md <- sc@meta.data
       df1 <- as.data.frame(sc[["RNA"]]@counts[rownames(sc[["RNA"]]@counts) %in% c(input$Var_to_col_marker,input$Var_to_col_marker2,input$Var_to_col_marker3,"CD4","CD8A","Cd4","Cd8","CD3E","Cd3e"),])
 
