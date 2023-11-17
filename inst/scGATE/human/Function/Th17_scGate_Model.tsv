@@ -1,3 +1,4 @@
 levels	use_as	name	signature
 level1	positive	Tcell	
 level2	positive	Th17	
+level3	negative	CD8	
