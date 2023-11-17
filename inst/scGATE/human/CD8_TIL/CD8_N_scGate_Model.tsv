@@ -1,11 +1,11 @@
 levels	use_as	name	signature
 level1	positive	CD8A	
 level2	positive	CD8_N	
-level2	negative	Cytotoxic	
-level2	negative	Exhausted	
-level2	negative	CD8_INN	
-level2	negative	CD8_INN2	
-level2	negative	CD8_GD	
-level2	negative	CD8_TEX	
-level2	negative	CD8_TPEX	
-level2	negative	CD8_TEMRA	
+level3	negative	Cytotoxic	
+level4	negative	Exhausted	
+level5	negative	CD8_INN	
+level6	negative	CD8_INN2	
+level7	negative	CD8_GD	
+level8	negative	CD8_TEX	
+level9	negative	CD8_TPEX	
+level10	negative	CD8_TEMRA	
