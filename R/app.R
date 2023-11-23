@@ -69,7 +69,6 @@ runSTEGO <- function(){
                                                             conditionalPanel(condition="input.Source_type_10x=='Raw'",
                                                                              div(DT::dataTableOutput("test.files.10x1")),
                                                                              div(DT::dataTableOutput("test.files.10x2")),
-
                                                             ),
 
                                                             # div(DT::dataTableOutput("test.files.10x3")),
@@ -1123,7 +1122,10 @@ runSTEGO <- function(){
                                                           column(6, selectInput("legend_position","Legend location",choices = c("top","bottom","left","right","none"),selected = "right")),
                                                         ),
                                                         fluidRow(
-                                                          column(6, numericInput("Strip_text_size","Strip text size", value = 12))
+                                                          column(6, numericInput("Strip_text_size","Strip text size", value = 12)),
+                                                          column(6, numericInput("anno_text_size","Annotation text size", value = 6)),
+
+
                                                         ),
 
 
@@ -1958,6 +1960,9 @@ runSTEGO <- function(){
                                                              ),
                                                              # marker specific TCR analysis --------
                                                              tabPanel("Marker",value = "Marker",
+
+                                                                      # actionButton("Marker_analysis", "Imput markers"),
+
                                                                       tabsetPanel(id = "Marker_Panel",
                                                                                   tabPanel("Single marker",
                                                                                            fluidRow(
@@ -2065,23 +2070,65 @@ runSTEGO <- function(){
                                                                                            # marker 1 # cut-off 1
                                                                                            # marker 2 @ cut-off 2 (negative control)
                                                                                            fluidRow(
-                                                                                             column(4,selectizeInput("Var_to_col_marker2","Marker col","")),
-                                                                                             column(4,selectizeInput("Var_to_col_marker3","Marker col",""))
+                                                                                             column(4,selectizeInput("Var_to_col_marker2","X-axis Marker","")),
+                                                                                             column(4,selectizeInput("Var_to_col_marker3","Y-axis Marker",""))
                                                                                            ),
                                                                                            fluidRow(
-                                                                                             column(2,numericInput("Filter_dual_UMAP1_marker","UMAP_1 >",value = -10)),
-                                                                                             column(2,numericInput("Filter_dual_UMAP1_marker2","UMAP_1 <",value = 10)),
-                                                                                             column(2,numericInput("Filter_dual_UMAP2_marker","UMAP_2 >",value = -10)),
-                                                                                             column(2,numericInput("Filter_dual_UMAP2_marker2","UMAP_2 <",value = 10)),
+                                                                                             column(2,numericInput("Filter_dual_UMAP1_marker","UMAP_1 >",value = -20)),
+                                                                                             column(2,numericInput("Filter_dual_UMAP1_marker2","UMAP_1 <",value = 20)),
+                                                                                             column(2,numericInput("Filter_dual_UMAP2_marker","UMAP_2 >",value = -20)),
+                                                                                             column(2,numericInput("Filter_dual_UMAP2_marker2","UMAP_2 <",value = 20)),
+                                                                                             # column(2),
+                                                                                             column(2,numericInput("X_axis_dot_dual","X-axis line",value = 0, step = 0.1)),
+                                                                                             column(2,numericInput("Y_axis_dot_dual","Y-axis line",value = 0, step = 0.1)),
+
                                                                                            ),
 
                                                                                            tabsetPanel(
-                                                                                             tabPanel("Feature plots"),
-                                                                                             tabPanel("Dot-plot"),
-                                                                                             tabPanel("Violin plot"),# will include splitting by T cell/B cell markers? Ig?
-                                                                                             tabPanel("UMAP"),
-                                                                                             tabPanel("TCR/BCR Table")
+                                                                                             tabPanel("table",
+                                                                                                      add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
+                                                                                                      div(DT::dataTableOutput("meta_data_for_features_scale2_df")),
 
+                                                                                             ),
+                                                                                             tabPanel("Feature plots",
+                                                                                                      add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
+                                                                                                      fluidRow(
+                                                                                                        column(3,numericInput("max_scale2","MAX scale (left)",value = "")),
+                                                                                                        column(3,numericInput("max_scale3","MAX scale (right)",value = "")),
+                                                                                                      ),
+
+                                                                                                      add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
+                                                                                                      fluidRow(
+                                                                                                        column(6,plotOutput("marker_selected_UMAP_plot2",height="600px")),
+                                                                                                        column(6,plotOutput("marker_selected_UMAP_plot3",height="600px")),
+                                                                                                      )
+                                                                                             ),
+                                                                                             tabPanel("Dot-plot",
+
+                                                                                                      add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
+                                                                                                      plotOutput("df_dotplot_marker_plot",height="600px"),
+
+                                                                                                      fluidRow(
+                                                                                                        column(1,numericInput("width_df_dotplot_marker_plot", "Width of PDF", value=10)),
+                                                                                                        column(1,numericInput("height_df_dotplot_marker_plot", "Height of PDF", value=8)),
+                                                                                                        column(2,style = "margin-top: 25px;",downloadButton('downloadPlot_df_dotplot_marker_plot','Download Network PDF')),
+                                                                                                        column(2,numericInput("width_png_df_dotplot_marker_plot","Width of PNG", value = 1200)),
+                                                                                                        column(2,numericInput("height_png_df_dotplot_marker_plot","Height of PNG", value = 1000)),
+                                                                                                        column(2,numericInput("resolution_PNG_df_dotplot_marker_plot","Resolution of PNG", value = 144)),
+                                                                                                        column(2,style = "margin-top: 25px;",downloadButton('downloadPlotPNG_df_dotplot_marker_plot','Download Network PNG')),
+
+                                                                                                      ),
+
+
+                                                                                             ),
+                                                                                             # tabPanel("Violin plot"),# will include splitting by T cell/B cell markers? Ig?
+                                                                                             # tabPanel("UMAP"),
+                                                                                             tabPanel("TCR quadrant table",
+                                                                                                      div(DT::dataTableOutput("dual_maker_TCR_Sum_DT")),
+
+                                                                                                      downloadButton('Dule_marker_TCRsummary_DT','Download table')
+
+                                                                                             )
                                                                                            ))
                                                                       )
 
@@ -4857,8 +4904,8 @@ runSTEGO <- function(){
     ## downloading plot -----
     output$downloadPlot_Network_plot2 <- downloadHandler(
       filename = function() {
-        x <- gsub(":", ".", Sys.time())
-        paste("clusTCR2_Network_plot_",gsub("/", "-", x), ".pdf", sep = "")
+        x <- today()
+        paste("clusTCR2_Network_plot_",x, ".pdf", sep = "")
       },
       content = function(file) {
         pdf(file, width=input$width_Network_plot2,height=input$height_Network_plot2, onefile = FALSE) # open the pdf device
@@ -4867,8 +4914,8 @@ runSTEGO <- function(){
 
     output$downloadPlotPNG_Network_plot2 <- downloadHandler(
       filename = function() {
-        x <- gsub(":", ".", Sys.time())
-        paste("clusTCR2_Network_plot_", gsub("/", "-", x), ".png", sep = "")
+        x <- today()
+        paste("clusTCR2_Network_plot_", x, ".png", sep = "")
       },
       content = function(file) {
         png(file, width = input$width_png_Network_plot2,
@@ -4881,8 +4928,8 @@ runSTEGO <- function(){
     # downlaod Motif
     output$downloadPlot_Motif_plot2 <- downloadHandler(
       filename = function() {
-        x <- gsub(":", ".", Sys.time())
-        paste("clusTCR2_Motif_plot"," Cluster ",input$selected_Cluster," ",gsub("/", "-", x), ".pdf", sep = "")
+        x <- today()
+        paste("clusTCR2_Motif_plot"," Cluster ",input$selected_Cluster," ",x, ".pdf", sep = "")
       },
       content = function(file) {
         pdf(file, width=input$width_Motif_plot2,height=input$height_Motif_plot2, onefile = FALSE) # open the pdf device
@@ -4891,8 +4938,8 @@ runSTEGO <- function(){
 
     output$downloadPlotPNG_Motif_plot2 <- downloadHandler(
       filename = function() {
-        x <- gsub(":", ".", Sys.time())
-        paste("clusTCR2_Motif_plot"," Cluster ",input$selected_Cluster," ", gsub("/", "-", x), ".png", sep = "")
+        x <- today()
+        paste("clusTCR2_Motif_plot"," Cluster ",input$selected_Cluster," ", x, ".png", sep = "")
       },
       content = function(file) {
         png(file, width = input$width_png_Motif_plot2, height = input$height_png_Motif_plot2, res = input$resolution_PNG_Motif_plot2)
@@ -5084,7 +5131,7 @@ runSTEGO <- function(){
         need(nrow(sc)>0,
              "Run Filtering")
       )
-      VlnPlot(vals2$after_violin_plot, features = c("nFeature_RNA", "nCount_RNA", "mtDNA_percent","rRNA_percent"), ncol = 2)
+      VlnPlot(vals2$after_violin_plot, features = c("nFeature_RNA", "nCount_RNA", "mtDNA","rRNA"), ncol = 2)
     })
 
     output$downloadPlot_after_plot_sc <- downloadHandler(
@@ -5106,7 +5153,7 @@ runSTEGO <- function(){
       },
       content = function(file) {
         png(file, width = input$width_png_after_plot_sc, height = input$height_png_after_plot_sc, res = input$resolution_PNG_after_plot_sc)
-        plot_after <- VlnPlot(vals2$after_violin_plot, features = c("nFeature_RNA", "nCount_RNA", "mtDNA_percent","rRNA_percent"), ncol = 2)
+        plot_after <- VlnPlot(vals2$after_violin_plot, features = c("nFeature_RNA", "nCount_RNA", "mtDNA","rRNA"), ncol = 2)
         plot(plot_after)
         dev.off()},   contentType = "application/png" # MIME type of the image
     )
@@ -5562,8 +5609,8 @@ runSTEGO <- function(){
     # download Harmony merged ----
     output$downloadPlot_sc_merged <- downloadHandler(
       filename = function() {
-        x <- gsub(":", ".", Sys.time())
-        paste(input$project_name2,"_SC_Merged_UMAP",gsub("/", "-", x), ".pdf", sep = "")
+        x <- today()
+        paste(input$project_name2,"_SC_Merged_UMAP",x, ".pdf", sep = "")
       },
       content = function(file) {
         pdf(file, width=input$width_sc_merged,height=input$height_sc_merged, onefile = FALSE) # open the pdf device
@@ -5572,8 +5619,8 @@ runSTEGO <- function(){
 
     output$downloadPlotPNG_sc_merged <- downloadHandler(
       filename = function() {
-        x <- gsub(":", ".", Sys.time())
-        paste(input$project_name2,"_SC_Merged_UMAP", gsub("/", "-", x), ".png", sep = "")
+        x <- today()
+        paste(input$project_name2,"_SC_Merged_UMAP", x, ".png", sep = "")
       },
       content = function(file) {
         png(file, width = input$width_png_sc_merged, height = input$height_png_sc_merged, res = input$resolution_PNG_sc_merged)
@@ -8079,8 +8126,8 @@ runSTEGO <- function(){
     # download markers_featurePlot_sc
     output$downloadPlot_markers_featurePlot_sc <- downloadHandler(
       filename = function() {
-        x <- gsub(":", ".", Sys.time())
-        paste("TCR_Explore_markers_featurePlot_sc_",gsub("/", "-", x), ".pdf", sep = "")
+        x <- today()
+        paste("TCR_Explore_markers_featurePlot_sc_",x, ".pdf", sep = "")
       },
       content = function(file) {
         pdf(file, width=input$width_markers_featurePlot_sc,height=input$height_markers_featurePlot_sc, onefile = FALSE) # open the pdf device
@@ -8090,8 +8137,8 @@ runSTEGO <- function(){
 
     output$downloadPlotPNG_markers_featurePlot_sc <- downloadHandler(
       filename = function() {
-        x <- gsub(":", ".", Sys.time())
-        paste("TCR_Explore_markers_featurePlot_sc_", gsub("/", "-", x), ".png", sep = "")
+        x <- today()
+        paste("TCR_Explore_markers_featurePlot_sc_", x, ".png", sep = "")
       },
       content = function(file) {
         png(file, width = input$width_png_markers_featurePlot_sc,height = input$height_png_markers_featurePlot_sc,res = input$resolution_PNG_markers_featurePlot_sc)
@@ -8452,8 +8499,8 @@ runSTEGO <- function(){
 
     output$downloadPlot_UMAP2 <- downloadHandler(
       filename = function() {
-        x <- gsub(":", ".", Sys.time())
-        paste("TCR_Explore_UMAP_",gsub("/", "-", x), ".pdf", sep = "")
+        x <- today()
+        paste("TCR_Explore_UMAP_",x, ".pdf", sep = "")
       },
       content = function(file) {
         pdf(file, width=input$width_UMAP2,height=input$height_UMAP2, onefile = FALSE) # open the pdf device
@@ -8462,8 +8509,8 @@ runSTEGO <- function(){
 
     output$downloadPlotPNG_UMAP2 <- downloadHandler(
       filename = function() {
-        x <- gsub(":", ".", Sys.time())
-        paste("TCR_Explore_UMAP_", gsub("/", "-", x), ".png", sep = "")
+        x <- today()
+        paste("TCR_Explore_UMAP_", x, ".png", sep = "")
       },
       content = function(file) {
         png(file, width = input$width_png_UMAP2,
@@ -9263,8 +9310,8 @@ runSTEGO <- function(){
 
     output$downloadPlot_TCR.UMAP_top <- downloadHandler(
       filename = function() {
-        x <- gsub(":", ".", Sys.time())
-        paste("TCR_Explore_TCR.UMAP_top_",gsub("/", "-", x), ".pdf", sep = "")
+        x <- today()
+        paste("TCR_Explore_TCR.UMAP_top_",x, ".pdf", sep = "")
       },
       content = function(file) {
         pdf(file, width=input$width_TCR.UMAP_top,height=input$height_TCR.UMAP_top, onefile = FALSE) # open the pdf device
@@ -9274,8 +9321,8 @@ runSTEGO <- function(){
 
     output$downloadPlotPNG_TCR.UMAP_top <- downloadHandler(
       filename = function() {
-        x <- gsub(":", ".", Sys.time())
-        paste("TCR_Explore_TCR.UMAP_top_", gsub("/", "-", x), ".png", sep = "")
+        x <- today()
+        paste("TCR_Explore_TCR.UMAP_top_", x, ".png", sep = "")
       },
       content = function(file) {
         png(file, width = input$width_png_TCR.UMAP_top,height = input$height_png_TCR.UMAP_top,res = input$resolution_PNG_TCR.UMAP_top)
@@ -10909,7 +10956,7 @@ runSTEGO <- function(){
       filename = function() {
         x <- today()
         paste(input$string.data_Exp_top,"_",input$Selected_clonotype,"_",input$plot_type_ridgvi,"_",x, ".png", sep = "")
-        # paste("_",input$epitope_umap_selected,"_",input$epitope_umap_selected2,"_Heatmap_", gsub("/", "-", x), "", sep = "")
+        # paste("_",input$epitope_umap_selected,"_",input$epitope_umap_selected2,"_Heatmap_", x, "", sep = "")
       },
       content = function(file) {
         png(file, width = input$width_png_Ridge_chart_alpha_gamma_plot_out,
@@ -11557,8 +11604,8 @@ runSTEGO <- function(){
     # download UMAP expanded ------
     output$downloadPlot_UMAP_Expanded  <- downloadHandler(
       filename = function() {
-        x <- gsub(":", ".", Sys.time())
-        paste("_Expanded_",gsub("/", "-", x), ".pdf", sep = "")
+        x <- today()
+        paste("_Expanded_",x, ".pdf", sep = "")
       },
       content = function(file) {
         pdf(file, width=input$width_UMAP_Expanded ,height=input$height_UMAP_Expanded , onefile = FALSE) # open the pdf device
@@ -11567,8 +11614,8 @@ runSTEGO <- function(){
 
     output$downloadPlotPNG_UMAP_Expanded  <- downloadHandler(
       filename = function() {
-        x <- gsub(":", ".", Sys.time())
-        paste("_Expanded_", gsub("/", "-", x), ".png", sep = "")
+        x <- today()
+        paste("_Expanded_", x, ".png", sep = "")
       },
       content = function(file) {
         png(file, width = input$width_png_UMAP_Expanded,
@@ -11702,7 +11749,7 @@ runSTEGO <- function(){
 
 
     output$downloadPlot_all_expression_dotplot_ex <- downloadHandler(
-      filename = function() {Var_to_col_marker
+      filename = function() {
         paste("Expanded_dotplot","_",today(), ".pdf", sep = "")
       },
       content = function(file) {
@@ -11951,8 +11998,8 @@ runSTEGO <- function(){
 
     output$downloadPlot_Heatmap_epi_plot <- downloadHandler(
       filename = function() {
-        x <- gsub(":", ".", Sys.time())
-        paste("_",input$epitope_umap_selected,"_",input$epitope_umap_selected2,"_Heatmap_",gsub("/", "-", x), ".pdf", sep = "")
+        x <- today()
+        paste("_",input$epitope_umap_selected,"_",input$epitope_umap_selected2,"_Heatmap_",x, ".pdf", sep = "")
       },
       content = function(file) {
         pdf(file, width=input$width_Heatmap_epi_plot ,height=input$height_Heatmap_epi_plot , onefile = FALSE) # open the pdf device
@@ -11961,8 +12008,8 @@ runSTEGO <- function(){
 
     output$downloadPlotPNG_Heatmap_epi_plot  <- downloadHandler(
       filename = function() {
-        x <- gsub(":", ".", Sys.time())
-        paste("_",input$epitope_umap_selected,"_",input$epitope_umap_selected2,"_Heatmap_", gsub("/", "-", x), ".png", sep = "")
+        x <- today()
+        paste("_",input$epitope_umap_selected,"_",input$epitope_umap_selected2,"_Heatmap_", x, ".png", sep = "")
       },
       content = function(file) {
         png(file, width = input$width_png_Heatmap_epi_plot,
@@ -12167,8 +12214,8 @@ runSTEGO <- function(){
 
     output$downloadPlotPNG_UMAP_Epitope <- downloadHandler(
       filename = function() {
-        x <- gsub(":", ".", Sys.time())
-        paste("_",input$epitope_umap_selected,"_UMAP_", gsub("/", "-", x), ".png", sep = "")
+        x <- today()
+        paste("_",input$epitope_umap_selected,"_UMAP_", x, ".png", sep = "")
       },
       content = function(file) {
         png(file, width = input$width_png_UMAP_Epitope,
@@ -12843,8 +12890,8 @@ runSTEGO <- function(){
     #### download Epitope files ------
     output$downloadPlot_Pie_Epitope <- downloadHandler(
       filename = function() {
-        x <- gsub(":", ".", Sys.time())
-        paste(input$epitope_Pie_Epitope,"_Pie_epi_",gsub("/", "-", x), ".pdf", sep = "")
+        x <- today()
+        paste(input$epitope_Pie_Epitope,"_Pie_epi_",x, ".pdf", sep = "")
       },
       content = function(file) {
         pdf(file, width=input$width_Pie_Epitope,height=input$height_Pie_Epitope, onefile = FALSE) # open the pdf device
@@ -12853,8 +12900,8 @@ runSTEGO <- function(){
 
     output$downloadPlotPNG_Pie_Epitope <- downloadHandler(
       filename = function() {
-        x <- gsub(":", ".", Sys.time())
-        paste(input$epitope_umap_selected,"_Pie_epi_", gsub("/", "-", x), ".png", sep = "")
+        x <- today()
+        paste(input$epitope_umap_selected,"_Pie_epi_", x, ".png", sep = "")
       },
       content = function(file) {
         png(file, width = input$width_png_Pie_Epitope,
@@ -12867,8 +12914,8 @@ runSTEGO <- function(){
 
     output$downloadPlot_UMAP_Epitope <- downloadHandler(
       filename = function() {
-        x <- gsub(":", ".", Sys.time())
-        paste(input$epitope_umap_selected,"_UMAP_",gsub("/", "-", x), ".pdf", sep = "")
+        x <- today()
+        paste(input$epitope_umap_selected,"_UMAP_",x, ".pdf", sep = "")
       },
       content = function(file) {
         pdf(file, width=input$width_UMAP_Epitope,height=input$height_UMAP_Epitope, onefile = FALSE) # open the pdf device
@@ -12877,8 +12924,8 @@ runSTEGO <- function(){
 
     output$downloadPlotPNG_UMAP_Epitope <- downloadHandler(
       filename = function() {
-        x <- gsub(":", ".", Sys.time())
-        paste(input$epitope_umap_selected,"_UMAP_", gsub("/", "-", x), ".png", sep = "")
+        x <- today()
+        paste(input$epitope_umap_selected,"_UMAP_", x, ".png", sep = "")
       },
       content = function(file) {
         png(file, width = input$width_png_UMAP_Epitope,
@@ -13350,8 +13397,8 @@ runSTEGO <- function(){
     })
     output$downloadPlot_UMAP_ClusTCR2_plot <- downloadHandler(
       filename = function() {
-        x <- gsub(":", ".", Sys.time())
-        paste("_UMAP_ClusTCR2_",gsub("/", "-", x), ".pdf", sep = "")
+        x <- today()
+        paste("_UMAP_ClusTCR2_",x, ".pdf", sep = "")
       },
       content = function(file) {
         pdf(file, width=input$width_UMAP_ClusTCR2_plot,height=input$height_UMAP_ClusTCR2_plot, onefile = FALSE) # open the pdf device
@@ -13360,8 +13407,8 @@ runSTEGO <- function(){
 
     output$downloadPlotPNG_UMAP_ClusTCR2_plot <- downloadHandler(
       filename = function() {
-        x <- gsub(":", ".", Sys.time())
-        paste("_UMAP_ClusTCR2_", gsub("/", "-", x), ".png", sep = "")
+        x <- today()
+        paste("_UMAP_ClusTCR2_", x, ".png", sep = "")
       },
       content = function(file) {
         png(file, width = input$width_png_UMAP_ClusTCR2_plot,
@@ -14616,9 +14663,7 @@ runSTEGO <- function(){
              "Upload File")
       )
       req(sc)
-
-      md <- sc@meta.data
-      df = rownames(sc[["RNA"]]@counts)
+      df <- rownames(sc@assays$RNA@scale.data)[rowSums(sc@assays$RNA@scale.data) !=0]
       df <-as.data.frame(df)
       names(df) <- "V1"
       df
@@ -14671,6 +14716,8 @@ runSTEGO <- function(){
       md <- subset(md,md$UMAP_2 < input$Filter_lower_UMAP2_marker2)
 
       subset(md,md$v_gene_AG != "NA")
+
+
     })
 
 
@@ -14684,7 +14731,7 @@ runSTEGO <- function(){
              "Upload File")
       )
       md <- sc@meta.data
-      df1 <- as.data.frame(sc[["RNA"]]@scale.data[rownames(sc[["RNA"]]@scale.data) %in% c(input$Var_to_col_marker,input$Var_to_col_marker2,input$Var_to_col_marker3,"CD4","CD8A","Cd4","Cd8","CD3E","Cd3e"),])
+      df1 <- as.data.frame(sc[["RNA"]]@scale.data[rownames(sc[["RNA"]]@scale.data) %in% c(input$Var_to_col_marker,input$Var_to_col_marker2,input$Var_to_col_marker3,"CD4","CD8A","Cd4","Cd8","CD3E","Cd3e","JCHAIN","Jchain","CD19","Cd19","MS4A1","Ms4a1"),])
       names(df1) <- colnames(sc[["RNA"]]@scale.data)
       df1 <- as.data.frame(t(df1))
       df1$Cell_Index <- rownames(df1)
@@ -14721,6 +14768,8 @@ runSTEGO <- function(){
       md <- subset(md,md$UMAP_2 < input$Filter_lower_UMAP2_marker2)
       subset(md,md$v_gene_AG != "NA")
     })
+
+
     # umap scale -------
     marker_selected_UMAP <- reactive({
       umap.meta <- meta_data_for_features_scale()
@@ -15098,6 +15147,329 @@ runSTEGO <- function(){
         select = "CD4"
       )
     })
+
+
+
+    meta_data_for_features_scale2 <- reactive({
+      sc <- UMAP_metadata_with_labs()
+      validate(
+        need(nrow(sc)>0,
+             "Upload File")
+      )
+
+      md <- sc@meta.data
+      md <- merge(md,selected_scale(),by = "Cell_Index")
+      md$scale2 <- as.numeric(md[,names(md) %in% input$Var_to_col_marker2])
+      md$scale3 <- as.numeric(md[,names(md) %in% input$Var_to_col_marker3])
+
+      md <- subset(md,md$UMAP_1 > input$Filter_dual_UMAP1_marker)
+      md <- subset(md,md$UMAP_1 < input$Filter_dual_UMAP1_marker2)
+
+      md <- subset(md,md$UMAP_2 > input$Filter_dual_UMAP2_marker)
+      md <- subset(md,md$UMAP_2 < input$Filter_dual_UMAP2_marker2)
+      subset(md,md$v_gene_AG != "NA")
+    })
+
+
+    output$meta_data_for_features_scale2_df <- DT::renderDataTable(escape = FALSE, filter = list(position = 'top', clear = FALSE), options = list(autoWidth = FALSE, lengthMenu = c(1,2,5,10,20,50,100), pageLength = 1, scrollX = TRUE),{
+      umap.meta <- meta_data_for_features_scale2()
+      umap.meta
+
+    })
+
+
+    # umap dual scale -------
+    marker_selected_UMAP_scale2 <- reactive({
+      umap.meta <- meta_data_for_features_scale2()
+      validate(
+        need(nrow(umap.meta)>0,
+             "Upload File")
+      )
+      umap.meta <- meta_data_for_features_scale2()
+      umap.meta_pos <- subset(umap.meta,umap.meta$scale2 != "-Inf")
+
+      umap.meta$scale2 <- ifelse(umap.meta$scale2 == "-Inf",NA,umap.meta$scale2)
+      umap.meta$scale2 <- as.numeric(umap.meta$scale2)
+      umap.meta_pos$scale2 <- as.numeric(umap.meta_pos$scale2)
+
+      ggplot(umap.meta,aes(x=UMAP_1,y=UMAP_2,color = scale2))+
+        geom_point(size = 1) +
+        geom_point(data = umap.meta_pos,aes(x=UMAP_1,y=UMAP_2,color = scale2),size = 1) +
+        # scale_color_continuous(type = "viridis",na.value="grey75") +
+        theme_bw() +
+        theme(
+          panel.grid.major = element_blank(),
+        ) +
+        scale_color_distiller(direction = 1, palette = input$col_marker_scale,na.value = "grey85", limits = c(min(0),max(input$max_scale2))) +
+        theme(
+          plot.title = element_text(colour="black",family=input$font_type,size = 24,face = "bold",vjust=.5),
+          axis.title.y = element_text(colour="black",family=input$font_type,size = input$title.text.sizer2),
+          axis.text.y = element_text(colour="black",family=input$font_type,size = input$text_size),
+          axis.text.x = element_text(colour="black",family=input$font_type,size = input$text_size),
+          axis.title.x = element_text(colour="black",angle=0,vjust=.5,face="plain",family=input$font_type,size = input$title.text.sizer2),
+          legend.text = element_text(colour="black", size=input$Bar_legend_size,family=input$font_type),
+          legend.title = element_blank(),
+          legend.position = input$legend_position,
+        ) +
+        labs(title = input$Var_to_col_marker2)
+    })
+
+    marker_selected_UMAP_scale3 <- reactive({
+      umap.meta <- meta_data_for_features_scale2()
+      validate(
+        need(nrow(umap.meta)>0,
+             "Upload File")
+      )
+
+      umap.meta <- meta_data_for_features_scale2()
+      umap.meta_pos <- subset(umap.meta,umap.meta$scale3 != "-Inf")
+
+      umap.meta$scale3 <- ifelse(umap.meta$scale3 == "-Inf",NA,umap.meta$scale2)
+      umap.meta$scale3 <- as.numeric(umap.meta$scale3)
+      umap.meta_pos$scale3 <- as.numeric(umap.meta_pos$scale3)
+
+      ggplot(umap.meta,aes(x=UMAP_1,y=UMAP_2,color = scale3))+
+        geom_point(size = 1) +
+        geom_point(data = umap.meta_pos,aes(x=UMAP_1,y=UMAP_2,color = scale3),size = 1) +
+        # scale_color_continuous(type = "viridis",na.value="grey75") +
+        theme_bw() +
+        theme(
+          panel.grid.major = element_blank(),
+        ) +
+        scale_color_distiller(direction = 1, palette = input$col_marker_scale,na.value = "grey85", limits = c(min(0),max(input$max_scale3))) +
+        theme(
+          plot.title = element_text(colour="black",family=input$font_type,size = 24,face = "bold",vjust=.5),
+          axis.title.y = element_text(colour="black",family=input$font_type,size = input$title.text.sizer2),
+          axis.text.y = element_text(colour="black",family=input$font_type,size = input$text_size),
+          axis.text.x = element_text(colour="black",family=input$font_type,size = input$text_size),
+          axis.title.x = element_text(colour="black",angle=0,vjust=.5,face="plain",family=input$font_type,size = input$title.text.sizer2),
+          legend.text = element_text(colour="black", size=input$Bar_legend_size,family=input$font_type),
+          legend.title = element_blank(),
+          legend.position = input$legend_position,
+        ) +
+        labs(title = input$Var_to_col_marker3)
+
+    })
+
+    output$marker_selected_UMAP_plot2 <- renderPlot({
+      umap.meta <- MainTcell_counts_names()
+      validate(
+        need(nrow(umap.meta)>0,
+             "Upload File")
+      )
+      marker_selected_UMAP_scale2()
+    })
+    output$marker_selected_UMAP_plot3 <- renderPlot({
+      umap.meta <- MainTcell_counts_names()
+      validate(
+        need(nrow(umap.meta)>0,
+             "Upload File")
+      )
+      marker_selected_UMAP_scale3()
+    })
+
+    # umap dual scale -------
+    df_dotplot_marker <- reactive({
+
+      umap.meta <- meta_data_for_features_scale2()
+
+      validate(
+        need(nrow(umap.meta)>0,
+             "Upload File")
+      )
+
+      selected.col <- umap.meta[,names(umap.meta) %in% input$Colour_By_this]
+
+      umap.meta$selected <- umap.meta[,names(umap.meta) %in% input$Colour_By_this]
+      umap.meta$selected <- as.character(umap.meta$selected)
+      umap.meta$selected <- gsub("NA",NA,umap.meta$selected)
+
+      len.colour <- length(unique(selected.col))
+      colour_markersby <- rainbow(len.colour)
+
+      umap.meta$markerX <- umap.meta[,names(umap.meta) %in% input$Var_to_col_marker2]
+      umap.meta$markerY <- umap.meta[,names(umap.meta) %in% input$Var_to_col_marker3]
+
+      Q1 <- umap.meta[umap.meta$markerX<input$X_axis_dot_dual & umap.meta$markerY> input$Y_axis_dot_dual,]
+      Q2 <- umap.meta[umap.meta$markerX>input$X_axis_dot_dual & umap.meta$markerY> input$Y_axis_dot_dual,]
+      Q3 <- umap.meta[umap.meta$markerX<input$X_axis_dot_dual & umap.meta$markerY< input$Y_axis_dot_dual,]
+      Q4 <- umap.meta[umap.meta$markerX>input$X_axis_dot_dual & umap.meta$markerY< input$Y_axis_dot_dual,]
+
+      Q1.per <- dim(Q1)[1]/dim(umap.meta)[1]*100
+      Q2.per <- dim(Q2)[1]/dim(umap.meta)[1]*100
+      Q3.per <- dim(Q3)[1]/dim(umap.meta)[1]*100
+      Q4.per <- dim(Q4)[1]/dim(umap.meta)[1]*100
+
+      annotations <- data.frame(
+        xpos = c(-Inf,-Inf,Inf,Inf),
+        ypos =  c(-Inf, Inf,-Inf,Inf),
+        annotateText = c(paste0("Q3: ",round(Q3.per,2),"%"),paste0("Q1: ",round(Q1.per,2),"%"),
+                         paste0("Q4: ",round(Q4.per,2),"%"),paste0("Q2: ",round(Q2.per,2),"%")),
+        hjustvar = c(-0.1,-0.1,1.1,1.2) ,
+        vjustvar = c(-0.4,1.4,-0.4,1.4)) #<- adjust
+
+      plot <-  ggplot() +
+        geom_point(data=umap.meta,aes(x=get(input$Var_to_col_marker2),y=get(input$Var_to_col_marker3), colour = selected)) +
+        theme_bw() +
+        geom_hline(yintercept=input$Y_axis_dot_dual) +
+        geom_vline(xintercept =input$X_axis_dot_dual) +
+        xlab(input$Var_to_col_marker2) +
+        ylab(input$Var_to_col_marker3) +
+        scale_colour_manual(values = colour_markersby, na.value = "grey85") +
+        geom_text(data=annotations,aes(x=xpos,y=ypos,hjust=hjustvar,vjust=vjustvar,label=annotateText), colour="black",family=input$font_type,size = input$anno_text_size) +
+        theme(
+          axis.title.y = element_text(colour="black",family=input$font_type,size = input$title.text.sizer2),
+          axis.text.y = element_text(colour="black",family=input$font_type,size = input$text_size),
+          axis.text.x = element_text(colour="black",family=input$font_type,size = input$text_size,angle=0),
+          axis.title.x = element_text(colour="black",angle=0,vjust=.5,face="plain",family=input$font_type,size = input$title.text.sizer2),
+          legend.text = element_text(colour="black", size=input$Bar_legend_size,family=input$font_type),
+          legend.title = element_blank(),
+          legend.position = input$legend_position,
+        )
+
+      plot
+
+      # ggExtra::ggMarginal(plot,groupColour = TRUE, groupFill = TRUE)
+
+      # ggplot(umap.meta.df,aes(x=scale2,y=scale3)) +
+      #   geom_point() +
+      #   theme_bw() +
+      #   geom_hline(yintercept=-1) +
+      #   geom_vline(xintercept = 0)
+
+    })
+
+    output$df_dotplot_marker_plot <- renderPlot({
+      umap.meta <- MainTcell_counts_names()
+      validate(
+        need(nrow(umap.meta)>0,
+             "Upload File")
+      )
+      df_dotplot_marker()
+    })
+
+    output$downloadPlot_df_dotplot_marker_plot <- downloadHandler(
+      filename = function() {
+        x <- today()
+        paste("Dual_marker_plot_",input$Var_to_col_marker2,"_",input$Var_to_col_marker3,"_",x, ".pdf", sep = "")
+      },
+      content = function(file) {
+        pdf(file, width=input$width_df_dotplot_marker_plot,height=input$height_df_dotplot_marker_plot, onefile = FALSE) # open the pdf device
+        plot(df_dotplot_marker())
+        dev.off()}, contentType = "application/pdf" )
+
+    output$downloadPlotPNG_df_dotplot_marker_plot <- downloadHandler(
+      filename = function() {
+        x <- today()
+        paste("Dual_marker_plot_",input$Var_to_col_marker2,"_",input$Var_to_col_marker3,"_",x, ".png", sep = "")
+      },
+      content = function(file) {
+        png(file, width = input$width_png_df_dotplot_marker_plot,
+            height = input$height_png_df_dotplot_marker_plot,
+            res = input$resolution_PNG_df_dotplot_marker_plot)
+        plot(df_dotplot_marker())
+        dev.off()},   contentType = "application/png" # MIME type of the image
+    )
+
+    # summary of TCR per quad -----
+    dual_maker_TCR_Sum <- reactive({
+
+      umap.meta <- meta_data_for_features_scale2()
+
+      validate(
+        need(nrow(umap.meta)>0,
+             "Upload File")
+      )
+
+      umap.meta$markerX <- umap.meta[,names(umap.meta) %in% input$Var_to_col_marker2]
+      umap.meta$markerY <- umap.meta[,names(umap.meta) %in% input$Var_to_col_marker3]
+
+      blank <- as.data.frame(names(umap.meta))
+      names(blank) <- "V1"
+      rownames(blank) <- blank$V1
+      blank$blank1 <- "blank"
+      blank$blank2 <- "blank"
+      blank$blank3 <- "blank"
+      blank$blank4 <- "blank"
+      blank <- blank[,-c(1)]
+      blank <- as.data.frame(t(blank))
+      head(blank)
+
+      list1 <- c(input$Y_axis_dot_dual-1,input$Y_axis_dot_dual-1,input$Y_axis_dot_dual+1,input$Y_axis_dot_dual+1)
+      blank$markerY <- list1
+
+      list2 <- c(input$X_axis_dot_dual-1,input$X_axis_dot_dual+1,input$X_axis_dot_dual-1,input$X_axis_dot_dual+1)
+      blank$markerX <- list2
+      blank
+
+      umap.meta <- rbind(umap.meta,blank)
+      umap.meta
+
+      Q1 <- umap.meta[umap.meta$markerX<input$X_axis_dot_dual & umap.meta$markerY> input$Y_axis_dot_dual,]
+      Q1$Q1 <- 1
+      Q2 <- umap.meta[umap.meta$markerX>input$X_axis_dot_dual & umap.meta$markerY> input$Y_axis_dot_dual,]
+      Q2$Q2 <- 1
+      Q3 <- umap.meta[umap.meta$markerX<input$X_axis_dot_dual & umap.meta$markerY< input$Y_axis_dot_dual,]
+      Q3$Q3 <- 1
+      Q4 <- umap.meta[umap.meta$markerX>input$X_axis_dot_dual & umap.meta$markerY< input$Y_axis_dot_dual,]
+      Q4$Q4 <- 1
+
+      # as.data.frame(is.data.frame(subset(umap.meta, markerX>input$X_axis_dot_dual & markerY> input$Y_axis_dot_dual)))
+
+
+      Q1_quad <- Q1[,names(Q1) %in% c(input$V_gene_sc,"Q1")]
+      Q1_quad <- ddply(Q1_quad,input$V_gene_sc ,numcolwise(sum))
+
+      Q2_quad <- Q2[,names(Q2) %in% c(input$V_gene_sc,"Q2")]
+      Q2_quad <- ddply(Q2_quad,input$V_gene_sc ,numcolwise(sum))
+
+      Q3_quad <- Q3[,names(Q3) %in% c(input$V_gene_sc,"Q3")]
+      Q3_quad <- ddply(Q3_quad,input$V_gene_sc ,numcolwise(sum))
+
+      Q4_quad <- Q4[,names(Q4) %in% c(input$V_gene_sc,"Q4")]
+      Q4_quad <- ddply(Q4_quad,input$V_gene_sc ,numcolwise(sum))
+
+      Q1_Q2 <- merge(Q1_quad,Q2_quad,by = input$V_gene_sc,all=T)
+      Q3_Q4 <- merge(Q3_quad,Q4_quad,by = input$V_gene_sc,all=T)
+      umeta.TCR <-  merge(Q1_Q2,Q3_Q4,by = input$V_gene_sc,all=T)
+
+      umeta.TCR[is.na(umeta.TCR)] <- 0
+      umeta.TCR_needed.names <- names(umeta.TCR)
+      umeta.TCR$total <- rowSums(umeta.TCR[2:5])
+      rownames(umeta.TCR) <- umeta.TCR[,c(1)]
+      umeta.TCR <- umeta.TCR[!(row.names(umeta.TCR) %in% c("blank")), ]
+      umeta.TCR <- umeta.TCR[,-c(1)]
+      names(umeta.TCR) <- c(paste0(input$Var_to_col_marker3,"pos",input$Var_to_col_marker2,"neg"),
+                            paste0(input$Var_to_col_marker3,"pos",input$Var_to_col_marker2,"pos"),
+                            paste0(input$Var_to_col_marker3,"neg",input$Var_to_col_marker2,"neg"),
+                            paste0(input$Var_to_col_marker3,"neg",input$Var_to_col_marker2,"pos"),
+                            "total"
+      )
+
+      umeta.TCR
+    })
+
+
+    output$dual_maker_TCR_Sum_DT <- DT::renderDataTable(escape = FALSE, filter = list(position = 'top', clear = FALSE), options = list(autoWidth = FALSE, lengthMenu = c(1,2,5,10,20,50,100), pageLength = 10, scrollX = TRUE),{
+      umeta.TCR <- dual_maker_TCR_Sum()
+      umeta.TCR
+
+    })
+
+    output$Dule_marker_TCRsummary_DT <- downloadHandler(
+      filename = function(){
+        x = today()
+        paste("Dule_marker_TCRsummary_",input$Var_to_col_marker2,"_",input$Var_to_col_marker3,"_",x,".csv", sep = "")
+      },
+      content = function(file){
+        df <- dual_maker_TCR_Sum()
+        write.csv(df,file)
+      } )
+
+
+    # Add ridge plot for the distribution...
+
+
     ### end -----
   }
   shinyApp(ui, server)
