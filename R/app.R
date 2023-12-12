@@ -16012,7 +16012,7 @@ runSTEGO <- function(){
           guides(color = "none", size = "none")
 
         x = today()
-        top.name.clonotypes.top_png <- paste("../Prioritisation/1_OneIndivOneSamp/ImmunoDom/",i,"_top_clone_",gsub("[/]","",gsub("&","",name.clone)),"_",x,".png",sep="")
+        top.name.clonotypes.top_png <- paste("Prioritisation/1_OneIndivOneSamp/ImmunoDom/",i,"_top_clone_",gsub("[/]","",gsub("&","",name.clone)),"_",x,".png",sep="")
         png(top.name.clonotypes.top_png, width = input$width_png_TCR.UMAP,height = input$height_png_TCR.UMAP,res = input$resolution_PNG_TCR.UMAP)
         plot(ggplot_plot)
         dev.off()
@@ -16064,7 +16064,7 @@ runSTEGO <- function(){
         markers.fm.list2 <- subset(markers.fm.list,markers.fm.list$p_val_adj < input$pval.ex.filter_original)
 
         x=today()
-        clonotype.name.stats <- paste("../Prioritisation/1_OneIndivOneSamp/ImmunoDom/",i,"_",gsub("[/]","",gsub("&","",name.clone)),"_stats_table","_",today(), ".csv", sep = "")
+        clonotype.name.stats <- paste("Prioritisation/1_OneIndivOneSamp/ImmunoDom/",i,"_",gsub("[/]","",gsub("&","",name.clone)),"_stats_table","_",today(), ".csv", sep = "")
         write.csv(markers.fm.list2,clonotype.name.stats,row.names = F)
 
         message(paste0("Saved csv",name.clone))
@@ -16096,7 +16096,7 @@ runSTEGO <- function(){
           scale_colour_gradient2(low = input$low.dotplot, mid = input$middle.dotplot, high = input$high.dotplot)
 
 
-        file.name.clone <- paste("../Prioritisation/1_OneIndivOneSamp/ImmunoDom/",i,"_",gsub("[/]","",gsub("&","",name.clone)),"_dotplot_plot","_",today(), ".png", sep = "")
+        file.name.clone <- paste("Prioritisation/1_OneIndivOneSamp/ImmunoDom/",i,"_",gsub("[/]","",gsub("&","",name.clone)),"_dotplot_plot","_",today(), ".png", sep = "")
 
         ### download the dot plot -------
         png(file.name.clone, width = input$width_png_all_expression_dotplot_top, height = input$height_png_all_expression_dotplot_top,res = input$resolution_PNG_all_expression_dotplot_top)
@@ -16188,8 +16188,8 @@ runSTEGO <- function(){
         geneSet2$FDR <- p.adjust(geneSet2$p.val, method = "fdr")
         geneSet2$Bonferroni <- p.adjust(geneSet2$p.val, method = "bonferroni")
 
-        file.name.clone <- paste("../Prioritisation/1_OneIndivOneSamp/ImmunoDom/",i,"_",gsub("[/]","",gsub("&","",name.clone)),"_dotplot_plot","_",today(), ".png", sep = "")
-        top.name.overrep <- paste("../Prioritisation/1_OneIndivOneSamp/ImmunoDom/",i,"_",gsub("[/]","",gsub("&","",name.clone)),"_OverRep","_",today(), ".csv", sep = "")
+        file.name.clone <- paste("Prioritisation/1_OneIndivOneSamp/ImmunoDom/",i,"_",gsub("[/]","",gsub("&","",name.clone)),"_dotplot_plot","_",today(), ".png", sep = "")
+        top.name.overrep <- paste("Prioritisation/1_OneIndivOneSamp/ImmunoDom/",i,"_",gsub("[/]","",gsub("&","",name.clone)),"_OverRep","_",today(), ".csv", sep = "")
         write.csv(geneSet2,top.name.overrep, row.names = F)
 
 
