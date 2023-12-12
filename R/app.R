@@ -16064,7 +16064,7 @@ runSTEGO <- function(){
         markers.fm.list2 <- subset(markers.fm.list,markers.fm.list$p_val_adj < input$pval.ex.filter_original)
 
         x=today()
-        clonotype.name.stats <- paste("Prioritisation/1_OneIndivOneSamp/ImmunoDom/",i,"_",gsub("[/]","",gsub("&","",name.clone)),"_stats_table","_",today(), ".csv", sep = "")
+        clonotype.name.stats <- paste("Prioritisation/1_OneIndivOneSamp/ImmunoDom/",i,"_stats_table","_",today(), ".csv", sep = "")
         write.csv(markers.fm.list2,clonotype.name.stats,row.names = F)
 
         message(paste0("Saved csv",name.clone))
