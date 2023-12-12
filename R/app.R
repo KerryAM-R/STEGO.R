@@ -15883,17 +15883,17 @@ runSTEGO <- function(){
 
       x = today()
       message("Downloading the Summary table...")
-      top.name.clonotypes <- paste("../Prioritisation/1_OneIndivOneSamp/ImmunoDom/Expansion_summary_table_",x,".csv",sep="")
+      top.name.clonotypes <- paste("Prioritisation/1_OneIndivOneSamp/ImmunoDom/Expansion_summary_table_",x,".csv",sep="")
       write.csv(Top_clonotype_df2(),top.name.clonotypes, row.names = F)
 
       message("Downloading the top UMAP...")
-      top.name.clonotypes.count_png <- paste("../Prioritisation/1_OneIndivOneSamp/ImmunoDom/Expansion_UMAP_top_",x,".png",sep="")
+      top.name.clonotypes.count_png <- paste("Prioritisation/1_OneIndivOneSamp/ImmunoDom/Expansion_UMAP_top_",x,".png",sep="")
       png(top.name.clonotypes.count_png, width = input$width_png_TCR.UMAP_top,height = input$height_png_TCR.UMAP_top,res = input$resolution_PNG_TCR.UMAP_top)
       plot(Topclonotypes())
       dev.off()
 
       message("Downloading the count UMAP...")
-      top.name.clonotypes.top_png <- paste("../Prioritisation/1_OneIndivOneSamp/ImmunoDom/Expansion_UMAP_count_",x,".png",sep="")
+      top.name.clonotypes.top_png <- paste("Prioritisation/1_OneIndivOneSamp/ImmunoDom/Expansion_UMAP_count_",x,".png",sep="")
       png(top.name.clonotypes.top_png, width = input$width_png_TCR.UMAP,height = input$height_png_TCR.UMAP,res = input$resolution_PNG_TCR.UMAP)
       plot(UMAP.TCRclonalit2())
       dev.off()
