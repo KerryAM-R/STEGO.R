@@ -9,7 +9,7 @@ Load_required_packages <- function() {
   suppressWarnings(require("DescTools"))
   suppressMessages(require("bslib"))
   suppressMessages(require("circlize")) # colorRamp2
-  # suppressMessages(suppressWarnings(require("ClusTCR2")))
+  suppressMessages(suppressWarnings(require("ClusTCR2")))
   suppressMessages(require("colourpicker")) # select visual colour
   suppressMessages(require("ComplexHeatmap"))
   suppressMessages(require("corrplot"))

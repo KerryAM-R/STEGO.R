@@ -12,6 +12,7 @@ RoxygenNote: 7.2.3
 Imports: 
     bslib,
     circlize,
+    ClusTCR2,
     colourpicker,
     ComplexHeatmap,
     corrplot,
@@ -67,6 +68,7 @@ Remotes:
   github::JiekaiLab/dior,
   github::mojaveazure/seurat-disk,
   github::satijalab/seurat-data,
+  github::KerryAM-R/ClusTCR2,
   github::briatte/ggnet,
   github::omarwagih/ggseqlogo,
   github::MarioniLab/DropletUtils,
