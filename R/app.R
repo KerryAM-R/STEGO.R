@@ -8,7 +8,7 @@
 
 runSTEGO <- function(){
 
-  source(system.file("Global","required_functions.R",package = "STEGO.R"))
+  # source(system.file("Global","required_functions.R",package = "STEGO.R"))
   suppressWarnings(source(system.file("scGATE","custom_df_scGATE.R",package = "STEGO.R")))
   suppressWarnings(source(system.file("scGATE","custom_annotation_models.R",package = "STEGO.R")))
 
