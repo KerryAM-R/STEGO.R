@@ -12,7 +12,6 @@ RoxygenNote: 7.2.3
 Imports: 
     bslib,
     circlize,
-    ClusTCR2,
     colourpicker,
     ComplexHeatmap,
     corrplot,
@@ -36,7 +35,6 @@ Imports:
     linkcomm,
     lubridate,
     Matrix,
-    motifStack,
     magrittr,
     network,
     plyr,
@@ -72,6 +70,5 @@ Remotes:
   github::briatte/ggnet,
   github::omarwagih/ggseqlogo,
   github::MarioniLab/DropletUtils,
-  github::KerryAM-R/ClusTCR2,
   github::jokergoo/ComplexHeatmap
 biocViews: SummarizedExperiment, SingleCellExperiment
