@@ -9,7 +9,7 @@ Load_required_packages <- function() {
   suppressWarnings(require("DescTools"))
   suppressMessages(require("bslib"))
   suppressMessages(require("circlize")) # colorRamp2
-  suppressMessages(suppressWarnings(require("ClusTCR2")))
+  # suppressMessages(suppressWarnings(require("ClusTCR2")))
   suppressMessages(require("colourpicker")) # select visual colour
   suppressMessages(require("ComplexHeatmap"))
   suppressMessages(require("corrplot"))
@@ -34,7 +34,7 @@ Load_required_packages <- function() {
   suppressMessages(require("linkcomm")) # create the network graphs.
   suppressMessages(require("lubridate")) # create the network graphs.
   suppressMessages(require("Matrix"))
-  suppressMessages(require("motifStack")) # function
+  # suppressMessages(require("motifStack")) # function
   suppressMessages(require("network"))
   suppressMessages(require("plyr"))
   suppressMessages(require("purrr"))
