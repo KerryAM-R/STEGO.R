@@ -3,7 +3,7 @@ options(shiny.maxRequestSize = 100000*1024^2)
 
 suppressMessages(require("bslib"))
 suppressMessages(require("circlize")) # colorRamp2
-suppressMessages(suppressWarnings(require("ClusTCR2")))
+# suppressMessages(suppressWarnings(require("ClusTCR2")))
 suppressMessages(require("colourpicker")) # select visual colour
 suppressMessages(require("ComplexHeatmap"))
 suppressMessages(require("corrplot"))
@@ -28,7 +28,7 @@ suppressMessages(require("iterators"))
 suppressMessages(require("linkcomm")) # create the network graphs.
 suppressMessages(require("lubridate")) # create the network graphs.
 suppressMessages(require("Matrix"))
-suppressMessages(require("motifStack")) # function
+# suppressMessages(require("motifStack")) # function
 suppressMessages(require("network"))
 suppressMessages(require("plyr"))
 suppressMessages(require("purrr"))
