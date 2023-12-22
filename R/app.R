@@ -227,23 +227,14 @@ runSTEGO <- function(){
 
   # UI page -----
   ui <- fluidPage(
-    theme = bs_theme(
-      # Controls the default grayscale palette
-      bg = "white", fg = "black",
-      # Controls the accent (e.g., hyperlink, button, etc) colors
-      primary = "#0000FF",
-      secondary = "#E5E5E5",
-      base_font = c("Grandstander", "sans-serif"),
-      code_font = c("Courier", "monospace"),
-      heading_font = "'Helvetica Neue', Helvetica, sans-serif",
-      # Can also add lower-level customization
-      "input-border-color" = "black"
-    ),
+    # shinythemes::themeSelector(),
     tags$style(HTML("
-                    .tabbable > .nav > li > a {background-color: #ADD8E6;  color:black}
+                    .tabbable > .nav > li > a {background-color: #808080;  color:white}
                     ")
     ),
     navbarPage(title = "STEGO.R",
+               # theme = "cerulean",  # <--- To use a theme, uncomment this
+               # "shinythemes",
                # theme=bs_theme(version = 5, bootswatch = "default"),
 
                navbarMenu("Quality control",
@@ -1218,23 +1209,30 @@ runSTEGO <- function(){
                                                                                    accept=c('.csv','csv')
                                                                          ),
                                                         ),
-                                                        fileInput('file_cluster_file_AG', 'Upload AG clusTCR2 file (.csv)',
-                                                                  accept=c('.csv','csv')),
-                                                        fileInput('file_cluster_file_BD', 'Upload BD clusTCR2 file (.csv)',
-                                                                  accept=c('.csv','csv')),
+                                                        selectInput("Type_of_receptor","Type of receptor",choices = c("TCR","BCR"),selected = "TCR"),
+                                                        conditionalPanel(condition="input.Type_of_receptor== 'TCR'",
+
+                                                                         fileInput('file_cluster_file_AG', 'Upload AG clusTCR2 file (.csv)',
+                                                                                   accept=c('.csv','csv')),
+                                                                         fileInput('file_cluster_file_BD', 'Upload BD clusTCR2 file (.csv)',
+                                                                                   accept=c('.csv','csv')),
+
+                                                        ),
+
+                                                        conditionalPanel(condition="input.Type_of_receptor== 'BCR'",
+
+                                                                         fileInput('file_cluster_file_IgH', 'Upload IgH clusTCR2 file (.csv)',
+                                                                                   accept=c('.csv','csv')),
+                                                                         fileInput('file_cluster_file_IgKL', 'Upload IgKL clusTCR2 file (.csv)',
+                                                                                   accept=c('.csv','csv')),
+                                                        ),
                                                         numericInput("skip_TCRex_up","Skip # of lines for TCRex file",value = 7),
                                                         fileInput('upload_TCRex_file', 'Upload TCRex (.tsv)',
-                                                                  accept=c('tsv','.tsv')),
-
+                                                                  accept=c('tsv','.tsv'))
 
                                        ),
-                                       column(12,selectInput("Samp_col","Column name",choices = "")),
-                                       column(12,selectInput("V_gene_sc","V gene with/without CDR3",choices = "")),
-                                       # tags$style("#classification_to_add_overview {background-color:#e5e5e5;}"),
-                                       conditionalPanel( condition="input.check_up_files == 'up2'",
-                                                         uiOutput("classification_to_add_overview")
-                                       ),
-
+                                       selectInput("Samp_col","Column name",choices = ""),
+                                       selectInput("V_gene_sc","V gene with/without CDR3",choices = ""),
                                        conditionalPanel( condition="input.check_up_files != 'up'",
                                                          conditionalPanel( condition="input.Panel_TCRUMAP != 'Expanded'",
                                                                            conditionalPanel( condition="input.check_up_files != 'up2'",
@@ -1243,53 +1241,68 @@ runSTEGO <- function(){
 
                                                          )
                                        ),
+                                       #
+                                       conditionalPanel( condition="input.check_up_files == 'up2'",
+                                                         uiOutput("classification_to_add_overview")
+                                       ),
 
-                                       # Expanded stat cut-offs
-                                       conditionalPanel( condition="input.Panel_TCRUMAP == 'Expanded'",
-                                                         # conditionalPanel(condition="input.ExPan=='ExPan_stat' || input.ExPan=='ExPan_dot' || input.ExPan=='ExPan_OvRep'",
-                                                         column(12,actionButton("run_Expanded_stats","Select comparison")),
+                                       # expansion priority UI -------
+                                       conditionalPanel( condition="input.check_up_files == 'Prior' || input.check_up_files == 'TCR_and_GEX_tb' ",
                                                          fluidRow(
-                                                           # column(6,selectInput("Samp_col_expanded","Add Status of samples ID",choices = "")),
+                                                           column(6,selectInput("Split_group_by_","Split graph by:",choices ="")),
+
+
+
+                                                           column(6,numericInput("cutoff.expanded","Cut off greater than", value = 0.5, step = 0.01, min = 0,max = 0.99)),
+                                                           column(6,uiOutput("cut.off_expanded2")),
+                                                           column(6,uiOutput("classification_to_add2")),
+                                                         ),
+
+
+                                                         column(6, conditionalPanel( condition="input.PriorTBMods == 'PriorClustTB' || input.Panel_TCRUMAP == 'ClusTCR2'",
+                                                                                     selectInput("Clusters_to_dis_PIE","Clusters to display",choices = "",multiple = F))
+                                                         ),
+                                                         fluidRow(
+
+                                                           column(6,numericInput("cut.off_percent_rep","Percent of Repertoire", value = 1, step = 1, min = 1,max = 100)),
+                                                           column(6,numericInput("size.dot.umap","size of UMAP dot's",value =2,step = 1, min = 1))
+                                                         )
+                                       ),
+
+                                       conditionalPanel( condition="input.PriorTBMods == 'PriorRepertoireTB' || input.Panel_TCRUMAP == 'Expanded'",
+                                                         fluidRow(
+                                                           column(12, uiOutput("Expanded.dotplot.cutoffs")),
+
+
                                                            column(12,selectizeInput("selected_Indiv_Ex_1","Samp 1",choices = "", multiple = T)),
                                                            column(12,selectizeInput("selected_Indiv_Ex_2","Samp 2",choices = "", multiple = T)),
-                                                           column(4,numericInput("min_point_top_Ex","Min point cut off", value = 0.25)),
-                                                           column(4,numericInput("LogFC_top_Ex","Min LogFC cut off", value = 0.25)),
-                                                           column(4,numericInput("pval.ex.filter","adj.p-val cut-off", value = 0.1)),
-                                                         ),
-                                                         # ),
+
+
+                                                         )
                                        ),
 
-                                       conditionalPanel( condition="input.Panel_TCRUMAP == 'Epitope'",
+                                       conditionalPanel(condition="input.Panel_TCRUMAP=='ClusTCR2'",
+                                                        fluidRow(
+                                                          column(4,selectInput("chain_TCR","Chains included",choices = c("TRAG","TRBD","IgH","IgKL"))),
+                                                          column(4,selectInput("V_call_clust_sc","V gene",choices = "")),
+                                                          column(4,selectInput("junction_clust_sc","Junction",choices = "")
+                                                          ),
+                                                        ),
+                                       ),
+                                       #
+
+
+                                       # Expanded stat cut-offs -----
+
+                                       conditionalPanel( condition="input.PriorTBMods == 'PriorRepertoireTB' || input.check_up_files == 'TCR_and_GEX_tb' ",
                                                          fluidRow(
-                                                           column(4,numericInput("min_point_Epi","Min point cut off", value = 0.25)),
-                                                           column(4,numericInput("LogFC_Epi","Min LogFC cut off", value = 0.25)),
-                                                           column(4,numericInput("pval.ex.filter_Epi","adj.p-val cut-off", value = 0.1)),
-                                                         ),
-                                       ),
-                                       conditionalPanel(condition="input.Panel_TCRUMAP == 'ClusTCR2'",
-                                                        fluidRow(
-                                                          # column(6,selectInput("Samp_col_expanded","Add Status of samples ID",choices = "")),
-                                                          column(4,numericInput("min_point_Clust","Min point cut off", value = 0.25)),
-                                                          column(4,numericInput("LogFC_Clust","Min LogFC cut off", value = 0.25)),
-                                                          column(4,numericInput("pval.ex.filter_Clust","adj.p-val cut-off", value = 0.1)),
-                                                        )
-                                       ),
-                                       conditionalPanel(condition="input.Panel_TCRUMAP == 'top_clone'",
-                                                        fluidRow(
-                                                          column(4,numericInput("min_point_top","Min point cut off", value = 0.25)),
-                                                          column(4,numericInput("LogFC_top","Min LogFC cut off", value = 0.25)),
-                                                          column(4,numericInput("pval.ex.filter_original","P-value<", value = 0.1)),
-                                                        )
-                                       ),
+                                                           column(4,numericInput("min_point_","Min point cut off", value = 0.25)),
+                                                           column(4,numericInput("LogFC_","Min LogFC cut off", value = 0.25)),
+                                                           column(4,numericInput("pval.ex.filter","adj.p-val cut-off", value = 0.1)),
+                                                         )),
                                        conditionalPanel(condition = "input.Panel_TCRUMAP == 'Marker'",
 
                                                         column(12,selectInput("col_marker_scale","Colour scale",choices = col_markers,selected = col_markers[1])),
-
-                                                        fluidRow(
-                                                          column(4,numericInput("min_point_Marker","Min point cut off", value = 0.25)),
-                                                          column(4,numericInput("LogFC_Marker","Min LogFC cut off", value = 0.25)),
-                                                          column(4,numericInput("pval.ex.filter_Marker","adj.p-val cut-off", value = 0.1)),
-                                                        ),
                                        ),
 
                                        conditionalPanel(condition="input.check_up_files != 'up' ",
@@ -1333,11 +1346,11 @@ runSTEGO <- function(){
                                                           column(6,numericInput("text_size","Size of #",value=16)),
                                                           column(6,numericInput("title.text.sizer2","Axis text size",value=30)),
 
-                                                          column(6,numericInput("Bar_legend_size","Legend text size",value=16)),
+                                                          column(6,numericInput("Bar_legend_size","Legend text size",value=12)),
                                                           column(6, selectInput("legend_position","Legend location",choices = c("top","bottom","left","right","none"),selected = "right")),
                                                         ),
                                                         fluidRow(
-                                                          column(6, numericInput("Strip_text_size","Strip text size", value = 12)),
+                                                          column(6, numericInput("Strip_text_size","Strip text size", value = 16)),
                                                           column(6, numericInput("anno_text_size","Annotation text size", value = 6)),
 
 
@@ -1366,45 +1379,65 @@ runSTEGO <- function(){
                                                  ),
 
                                         ),
-                                        #priortisation statergy ------
+                                        #prioritization strategy ------
 
                                         tabPanel("Priortisation",value = "Prior",
                                                  # sidebarLayout(
                                                  # sidebarPanel(
                                                  h5("under construction"),
-
-
                                                  # ),
                                                  # mainPanel(
-                                                 tabsetPanel(
-                                                   tabPanel("Consideration for the analysis",
-                                                            p("Preliminary rules for decision tree"),
-                                                            p("1. dataset size, one or more conditions, TCR-seq coverage"),
-                                                            p("2. Total clonal expansion phenotype vs immunodominant clones?"),
-                                                            p("3. TCR clustering single chain"),
-                                                            p("4. TCRex predicted TCR - distinct TCR seuqences with same predicted epitope"),
-                                                            p("5. Time point interrogations"),
-                                                            p("6. Further prioritize based on function: relative to whole data set, relative to specific time points,relative to a specific group and or sample"),
-                                                            p("7. Need to create a small ontology based on genes present: FindMarker genes,Expressed genes (e.g., CD8, CD4)"),
-                                                            p("8. Multiple chains per cell for testing  BAA (CD8 ab T cells) or ABB (NKT?) - 2 different member of a dual beta (Dex binding)")
+                                                 tabsetPanel(id = "PriorTBMods",
+                                                             tabPanel("Analysis steps", value = "ModstoConsid",
+                                                                      p("Preliminary rules for decision tree"),
+                                                                      p("1. dataset size, one or more conditions, TCR-seq coverage"),
+                                                                      p("2. Total clonal expansion phenotype vs immunodominant clones?"),
+                                                                      p("3. TCR clustering single chain"),
+                                                                      p("4. TCRex predicted TCR - distinct TCR seuqences with same predicted epitope"),
+                                                                      p("5. Time point interrogations"),
+                                                                      p("6. Further prioritize based on function: relative to whole data set, relative to specific time points,relative to a specific group and or sample"),
+                                                                      p("7. Need to create a small ontology based on genes present: FindMarker genes,Expressed genes (e.g., CD8, CD4)"),
+                                                                      p("8. Multiple chains per cell for testing  BAA (CD8 ab T cells) or ABB (NKT?) - 2 different member of a dual beta (Dex binding)")
 
-                                                   ),
+                                                             ),
 
 
-                                                   ### modules of priority ------
-                                                   tabPanel("Modules",
-                                                            # actionButton("Run_TCR_check_group_check","TCR/Group check"),
-                                                            verbatimTextOutput("Simple_workflow_step1"),
-                                                            # div(DT::dataTableOutput("colors.top_dt")),
-                                                            uiOutput("Module_case_statements"),
-                                                   )
+                                                             ### modules of priority ------
+                                                             # tabPanel("things to consider", value = "PriorRepTB",
+                                                             #
+                                                             #          # actionButton("Run_TCR_check_group_check","TCR/Group check"),
+                                                             #
+                                                             #            ),
+                                                             tabPanel("Clonotype",value = "PriorRepertoireTB",
+                                                                      add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "purple"),
+                                                                      verbatimTextOutput("Simple_workflow_step1"),
+
+                                                                      add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "purple"),
+                                                                      uiOutput("Module_case_statements"),
+
+                                                             ),
+                                                             tabPanel("Cluster",value = "PriorClustTB",
+                                                                      fluidRow(
+                                                                        column(3,uiOutput("Default_priority_cutoffAG")),
+                                                                        column(3,uiOutput("Default_priority_cutoffBD")),
+                                                                      ),
+                                                                      verbatimTextOutput("number_clusters_to_analyse_AG"),
+                                                                      verbatimTextOutput("number_clusters_to_analyse_BD"),
+
+                                                                      add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "purple"),
+                                                                      div(DT::dataTableOutput("PriorClustTB_Tab")),
+                                                                      add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "purple"),
+                                                                      uiOutput("Cluster_dowload_button_prior"),
+                                                             ),
+                                                             tabPanel("Epitope",value = "PriorEpiTB"),
+                                                             # add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "purple")
                                                  )
                                         ),
 
                                         ### UMAP -> TCR -----
                                         tabPanel("Overview", value = 'up2',
                                                  fluidRow(
-
+                                                   add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
                                                    column(12,selectInput("ID_Column_factor","Order of graph",choices = "", multiple = T, width = "1200px")),
                                                  ),
                                                  fluidRow(
@@ -1545,7 +1578,6 @@ runSTEGO <- function(){
                                                                       tabsetPanel(id = "Panel_class",
                                                                                   tabPanel("Percentage",value = 16,
                                                                                            add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
-                                                                                           # div(DT::dataTableOutput("Percent_tab")),
                                                                                            verbatimTextOutput("Percent_tab"),
                                                                                            downloadButton('downloaddf_Percent_tab','Download table')
                                                                                   ),
@@ -1555,7 +1587,6 @@ runSTEGO <- function(){
                                                                                            ),
 
                                                                                            fluidRow(
-                                                                                             # column(4,selectizeInput("Var_to_col_marker","Marker col","")),
                                                                                              column(2,numericInput("Filter_lower_UMAP1_marker_GEX","UMAP_1 >",value = -20)),
                                                                                              column(2,numericInput("Filter_lower_UMAP1_marker2_GEX","UMAP_1 <",value = 20)),
                                                                                              column(2,numericInput("Filter_lower_UMAP2_marker_GEX","UMAP_2 >",value = -20)),
@@ -1650,20 +1681,16 @@ runSTEGO <- function(){
                                                              #          )
                                                  )
                                         ),
-                                        ### UMAP with TCR expression end -----
-
                                         ### end of differential expression -----
                                         ### TCR and GEX analysis section-----
-                                        tabPanel("TCR and GEX",
+                                        tabPanel("TCR and GEX", value = "TCR_and_GEX_tb",
                                                  #### User interface above the TCR with GEx
 
                                                  fluidRow(column(3, conditionalPanel( condition="input.Panel_TCRUMAP == 'ClusTCR2'",
                                                                                       selectInput("Samp_col_cluster","Column name",choices = ""))
                                                  ),
 
-                                                 column(3, conditionalPanel( condition="input.Panel_TCRUMAP == 'ClusTCR2'",
-                                                                             selectInput("Clusters_to_dis_PIE","Clusters to display",choices = "",multiple = F))
-                                                 ),
+
                                                  ),
 
                                                  # column(3, selectInput("V_gene_sc","Select V with/without CDR3",choices ="")),
@@ -1681,10 +1708,7 @@ runSTEGO <- function(){
                                                    ),
                                                  ),
                                                  fluidRow(
-                                                   column(3,
-                                                          conditionalPanel(
-                                                            condition="input.Panel_TCRUMAP!='Expanded' || input.Panel_TCRUMAP !='ClusTCR2'",
-                                                            selectInput("Split_group_by_","Split graph by:",choices =""))),
+
 
                                                    # column(2,conditionalPanel(condition="input.Panel_TCRUMAP=='top_clone' || input.Panel_TCRUMAP=='Epitope'",
                                                    # selectInput("Split_by_group2","Split by Function?",choices=c("no","yes")))),
@@ -1695,25 +1719,7 @@ runSTEGO <- function(){
                                                    ),
                                                  ),
 
-                                                 conditionalPanel(condition="input.Panel_TCRUMAP=='ClusTCR2'",
-                                                                  fluidRow(
-                                                                    column(2,selectInput("chain_TCR","Chains included",choices = c("TRAG","TRBD","IgH","IgKL"))),
-                                                                    column(2,
-                                                                           selectInput("V_call_clust_sc","V gene",choices = "")
-                                                                           # conditionalPanel(condition="input.chain_TCR=='TRAG'",selectInput("V_call_clust_sc","V gene",choices = "")),
-                                                                    ),
-                                                                    column(2,
-                                                                           # conditionalPanel(condition="input.chain_TCR=='TRAG'",
-                                                                           selectInput("junction_clust_sc","Junction",choices = "")
-                                                                           # ),
-                                                                           # conditionalPanel(condition="input.chain_TCR=='TRBD'",selectInput("junction_clust_sc_BD","Junction",choices = "")),
-                                                                           # # conditionalPanel(condition="input.chain_TCR=='IgH'",selectInput("junction_clust_sc_IgH","Junction",choices = "")),
-                                                                           # # conditionalPanel(condition="input.chain_TCR=='IgKL'",selectInput("junction_clust_sc_IgK","Junction",choices = ""))
-                                                                    ),
-                                                                    # column(2,selectInput("V_gene_clust","V gene",choices = c("v_gene_AG","v_gene_BD","v_gene_IgL","v_gene_IgH")),),
-                                                                    # column(2, selectInput("cdr3_clust","CDR3",choices = c("cdr3_AG","cdr3_BD","cdr3_IgL","cdr3_IgH")),)
-                                                                  ),
-                                                 ),
+
 
                                                  conditionalPanel(condition="input.Panel_TCRUMAP=='Epitope'",
                                                                   fluidRow(
@@ -1880,15 +1886,15 @@ runSTEGO <- function(){
 
                                                                       fluidRow(
                                                                         # column(3,actionButton("update_Expansion_run","Upate expansion")),
-                                                                        column(3,numericInput("cut.off_expanded","Cut off greater than", value = 1, step = 1, min = 1)),
-                                                                        column(3,uiOutput("classification_to_add2")),
+
+
                                                                       ),
                                                                       tabsetPanel(id = "ExPan",
                                                                                   tabPanel("Table",
                                                                                            add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
                                                                                            div(DT::dataTableOutput("Expansion_check")),
                                                                                   ),
-                                                                                  tabPanel("UMAP",value = "ExPan_UMAP",
+                                                                                  tabPanel("ex.UMAP",value = "ExPan_UMAP",
                                                                                            fluidRow(
                                                                                              add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
                                                                                              column(3,
@@ -1920,8 +1926,7 @@ runSTEGO <- function(){
                                                                                              column(2,colourInput("low.dotplot.ex","Lower color:","darkblue")),
                                                                                              column(2,colourInput("middle.dotplot.ex","Middle color:","white")),
                                                                                              column(2,colourInput("high.dotplot.ex","High color:","darkred")),
-                                                                                             column(2,selectInput("restrict.dotpot","Restrict to top list",choices = c("no","yes"))),
-                                                                                             column(2,numericInput("restrict.dotpot.num","Total genes to display:", value = 10))
+
                                                                                            ),
                                                                                            add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
                                                                                            plotOutput("relative_expression_dotplot_ex",height="600px"),
@@ -2080,18 +2085,18 @@ runSTEGO <- function(){
                                                              # ClusTCR2 Analysis -----
                                                              tabPanel("ClusTCR2",value = "ClusTCR2",
                                                                       tabsetPanel(
-                                                                        tabPanel("Table",
+                                                                        tabPanel("Table.Clust",
                                                                                  add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
                                                                                  div(DT::dataTableOutput("Tb_ClusTCR_selected")),
+                                                                                 downloadButton('downloadtb_Tb_ClusTCR_selected','Download table')
                                                                         ),
                                                                         tabPanel("UMAP",
-                                                                                 fluidRow(
-                                                                                   column(3,selectInput("ClusTCR_display","Colour by:",choices = c("all","Selected"))),
-                                                                                   column(3,numericInput("lower_cluster","Lower range",value = 1, min = 1)),
-                                                                                   column(3,numericInput("upper_cluster","Upper range",value = 50, min = 1)),
-                                                                                   column(3,conditionalPanel(condition="input.ClusTCR_display=='Selected'",
-                                                                                                             selectizeInput("Clusters_to_dis","Clusters to display", choices = "",multiple = T))),
-                                                                                 ),
+                                                                                 # fluidRow(
+                                                                                 #   column(3,selectInput("ClusTCR_display","Colour by:",choices = c("all","Selected"))),
+                                                                                 #
+                                                                                 #   column(3,conditionalPanel(condition="input.ClusTCR_display=='Selected'",
+                                                                                 #                             selectizeInput("Clusters_to_dis","Clusters to display", choices = "",multiple = T))),
+                                                                                 # ),
                                                                                  fluidRow(
                                                                                    column(3,
                                                                                           wellPanel(id = "tPanel23",style = "overflow-y:scroll; max-height: 600px",
@@ -2111,25 +2116,22 @@ runSTEGO <- function(){
                                                                         tabPanel("motif",
                                                                                  plotOutput("Motif_ClusTCR2_cluster",height="300px"),
                                                                                  verbatimTextOutput("print_unique_cases"),
-                                                                                 div(DT::dataTableOutput("Tb_motif_cluster")),
+                                                                                 # div(DT::dataTableOutput("Tb_motif_cluster")),
 
                                                                                  fluidRow(
                                                                                    column(1,numericInput("width_Motif_ClusTCR2_cluster", "Width of PDF", value=10)),
                                                                                    column(1,numericInput("height_Motif_ClusTCR2_cluster", "Height of PDF", value=4)),
                                                                                    column(2,style = "margin-top: 25px;",downloadButton('downloadPlot_Motif_ClusTCR2_cluster','Download PDF')),
-                                                                                   column(2,numericInput("width_png_Motif_ClusTCR2_cluster","Width of PNG", value = 1200)),
-                                                                                   column(2,numericInput("height_png_Motif_ClusTCR2_cluster","Height of PNG", value = 400)),
+                                                                                   column(2,numericInput("width_png_Motif_ClusTCR2_cluster","Width of PNG", value = 2400)),
+                                                                                   column(2,numericInput("height_png_Motif_ClusTCR2_cluster","Height of PNG", value = 1000)),
                                                                                    column(2,numericInput("resolution_PNG_Motif_ClusTCR2_cluster","Resolution of PNG", value = 144)),
                                                                                    column(2,style = "margin-top: 25px;",downloadButton('downloadPlotPNG_Motif_ClusTCR2_cluster','Download PNG'))),
 
                                                                         ),
                                                                         tabPanel("Pie (Expression)", value = "ClusPie",
                                                                                  fluidRow(
-
                                                                                    column(3,uiOutput("colour_by_this_clusters")),
-
                                                                                  ),
-                                                                                 # div(DT::dataTableOutput("testing_pie_cluster_DT")),
                                                                                  fluidRow(
                                                                                    column(3,
                                                                                           wellPanel(id = "tPanel23",style = "overflow-y:scroll; max-height: 600px",
@@ -2194,11 +2196,12 @@ runSTEGO <- function(){
                                                              ),
                                                              # marker specific TCR analysis --------
                                                              tabPanel("Marker",value = "Marker",
-
+                                                                      actionButton("load_marker_genes","Load genes"),
                                                                       # actionButton("Marker_analysis", "Imput markers"),
 
                                                                       tabsetPanel(id = "Marker_Panel",
                                                                                   tabPanel("Single marker",
+
                                                                                            fluidRow(
                                                                                              column(4,selectizeInput("Var_to_col_marker","Marker col","")),
                                                                                              column(2,numericInput("Filter_lower_UMAP1_marker","UMAP_1 >",value = -20)),
@@ -2459,7 +2462,6 @@ runSTEGO <- function(){
       df3.meta <- merge(df3.meta,epi,by="CDR3_beta")
       selectInput("epitope_umap_selected","Colour Pie by (hm = y-axis):",choices = names(df3.meta),selected="beta")
     })
-
     output$classification_to_add_epitope2 <- renderUI({
       sc <- UMAP_metadata_with_labs()
       epi <- input.data_sc_TCRex()
@@ -2484,10 +2486,6 @@ runSTEGO <- function(){
       selectInput("epitope_umap_selected2","Split Pie by (hm = x-axis):",choices = names(df3.meta),selected="epitope")
 
     })
-
-
-
-
 
     # user interface parameters-----
     output$feature_input <- renderUI({
@@ -8428,6 +8426,23 @@ runSTEGO <- function(){
       }
     })
 
+
+    input.data_sc_clusTCR_IgH <- reactive({
+      inFile_cluster_fileIgH <- input$file_cluster_file_IgH
+      if (is.null(inFile_cluster_fileIgH)) return(NULL)
+      else {
+        dataframe = read.csv(inFile_cluster_fileIgH$datapath)
+      }
+    })
+
+    input.data_sc_clusTCR_IgKL <- reactive({
+      inFile_cluster_fileIgKL <- input$file_cluster_file_IgKL
+      if (is.null(inFile_cluster_fileIgKL)) return(NULL)
+      else {
+        dataframe = read.csv(inFile_cluster_fileIgH$datapath)
+      }
+    })
+
     ## Add in additional sample identifers - matched to Sample_Name or Orig.indent
     input.data_sc_Labels_to_add <- reactive({
       inFile_Labels_to_add <- input$file_Labels_to_add
@@ -8529,7 +8544,6 @@ runSTEGO <- function(){
     output$Tb_ClusTCR_test <- DT::renderDataTable(escape = FALSE, options = list(autoWidth = FALSE, lengthMenu = c(2,5,10,20,50,100), pageLength = 2, scrollX = TRUE),{
       AG_calls <- input.data_sc_clusTCR_AG()
       BD_calls <- input.data_sc_clusTCR_BD()
-
       validate(
         need(nrow(AG_calls)>0 & nrow(BD_calls)>0,
              "Upload clusTCR table, which is needed for TCR -> UMAP section")
@@ -9157,9 +9171,6 @@ runSTEGO <- function(){
     output$cols_UMAP_clonal_plot <- renderUI({cols_UMAP_clonal_plot()})
     colors_UMAP_clonal_plot <- reactive({
       UMAP.wt.clonality <- UMAP.TCRclonalit()
-
-
-
       UMAP.wt.clonality <-  UMAP.wt.clonality[order( UMAP.wt.clonality$TYPE.clonality),]
       UMAP.wt.clonality$TYPE.clonality <- factor(UMAP.wt.clonality$TYPE.clonality,levels = unique(UMAP.wt.clonality$TYPE.clonality))
       # UMAP.wt.clonality <- UMAP.wt.clonality[order(UMAP.wt.clonality$TYPE.clonality),]
@@ -9521,6 +9532,7 @@ runSTEGO <- function(){
       names(df2) <- "V1"
       df2
       df2 <- subset(df2,df2$V1 != "NA")
+
       updateSelectInput(
         session,
         "selected_Indiv",
@@ -10077,11 +10089,23 @@ runSTEGO <- function(){
              error_message_val1)
       )
       meta.data <- sc@meta.data
+
+      # if(names(meta.data) %in% "T_cells") {
+      #   updateSelectInput(
+      #     session,
+      #     "Split_group_by_",
+      #     choices=names(meta.data),
+      #     selected = "T_cells")
+      # } else {
+
       updateSelectInput(
         session,
         "Split_group_by_",
         choices=names(meta.data),
-        selected = "T_cells")
+        selected = "orig.ident")
+      # }
+
+
     })
     # pie colouring  ----
     cols_pie <- reactive({
@@ -10987,6 +11011,7 @@ runSTEGO <- function(){
       )
 
       df <- sc@meta.data
+      df
       unique.df <- (df[,names(df) %in% c(input$Samp_col,input$V_gene_sc) ])
       names(unique.df) <- c("group","chain")
 
@@ -10995,27 +11020,29 @@ runSTEGO <- function(){
       unique.df <- subset(unique.df,unique.df$chain != "NA")
       unique.df <- subset(unique.df,unique.df$group != "NA")
       unique.df$cloneCount <- 1
-
+      unique.df
       df_unique_sum <- ddply(unique.df,names(unique.df)[-c(3)] ,numcolwise(sum))
       df_unique_sum <- df_unique_sum[order(df_unique_sum$cloneCount, decreasing = T),]
 
       sc@meta.data$Vgene <- sc@meta.data[,names(sc@meta.data) %in% input$V_gene_sc]
 
       name.clone <- input$Selected_clonotype
-
       sc@meta.data$Gene_select <- ifelse(sc@meta.data$Vgene %in% name.clone,name.clone,"unselected")
+      sc@meta.data
       unique(sc@meta.data$Gene_select)
       Idents(object = sc) <- sc@meta.data$Gene_select
-
-      min.pct.expression<- input$min_point_top #standard setting: 0.25
-      min.logfc<-  input$LogFC_top #0.25 is standard
-      # p.val.cutoff <-  input$pval_top #(1/10^3) is standard, use (1/10^0) to ignore
+      as.data.frame(Idents(object = sc))
+      min.pct.expression<- input$min_point_ #standard setting: 0.25§
+      min.logfc<-  input$LogFC_ #0.25 is standard
+      p.val.cutoff <-  input$pval_top #(1/10^3) is standard, use (1/10^0) to ignore
 
       cluster.names <- unique(Idents(sc))[order(unique(Idents(sc)))]
-      # print(paste0("calculating markers for cluster ",name.clone,". Total: ",length(cluster.names)," clusters"))
+      as.data.frame(cluster.names)
+      # # print(paste0("calculating markers for cluster ",name.clone,". Total: ",length(cluster.names)," clusters"))
       markers.fm.list <- FindMarkers(sc, ident.1 = name.clone, min.pct = min.pct.expression,  logfc.threshold = min.logfc, only.pos=TRUE)
-      markers.fm.list2 <- subset(markers.fm.list,markers.fm.list$p_val_adj < input$pval.ex.filter_original)
-      as.data.frame(markers.fm.list2)
+      markers.fm.list
+      # markers.fm.list2 <- subset(markers.fm.list,markers.fm.list$p_val_adj < input$pval.ex.filter)
+      # as.data.frame(markers.fm.list2)
 
 
     })
@@ -11399,7 +11426,9 @@ runSTEGO <- function(){
           legend.text = element_text(colour="black", size=size_legend,family=input$font_type),
           legend.position = input$legend_position,
         ) +
-        scale_colour_gradient2(low = input$low.dotplot, mid = input$middle.dotplot, high = input$high.dotplot)
+        scale_colour_gradient2(low = input$low.dotplot, mid = input$middle.dotplot, high = input$high.dotplot)+
+        scale_x_discrete(labels = label_wrap(20)) +
+        scale_y_discrete(labels = label_wrap(20))
 
 
     })
@@ -11476,7 +11505,7 @@ runSTEGO <- function(){
 
       for (i in 1:dim(geneSet)[1]) {
         # listed GeneSet
-        message(paste("Sample: ", i))
+        message(paste("GeneSet: ", i))
         Gene.set.testing <- as.data.frame(strsplit(geneSet$GeneSet,";")[i])
         names(Gene.set.testing) <- "V1"
         Gene.set.testing2 <- as.data.frame(unique(Gene.set.testing$V1))
@@ -11635,6 +11664,11 @@ runSTEGO <- function(){
 
     select_group_metadata_ex <- reactive ({
       df <- Expansion_check_table()
+
+      validate(
+        need(nrow(df)>0,
+             error_message_val1)
+      )
       req(df)
       # req(input$Samp_col_expanded,input$ID_Column_factor_expanded)
       df <- Expansion_check_table()
@@ -11644,13 +11678,14 @@ runSTEGO <- function(){
 
     })
 
-    observeEvent(input$run_Expanded_stats,{
+    observe({
       df2 <- select_group_metadata_ex()
 
       validate(
         need(nrow(df2)>0,
              error_message_val1)
       )
+      req(df2)
 
       df2 <- as.data.frame(df2)
       names(df2) <- "V1"
@@ -11658,34 +11693,33 @@ runSTEGO <- function(){
       names(df2) <- "V1"
       df2
       df2 <- subset(df2,df2$V1 != "NA")
+      df3 <- unique(df2$V1)
       updateSelectizeInput(
         session,
         "selected_Indiv_Ex_1",
-        choices=df2$V1,
-        selected = df2$V1[1]
+        choices=df3,
+        selected = df3[1]
       )
     })
 
-    observeEvent(input$run_Expanded_stats,{
+    observe({
       df2 <- select_group_metadata_ex()
-
       validate(
         need(nrow(df2)>0,
              error_message_val1)
       )
-
       df2 <- as.data.frame(df2)
       names(df2) <- "V1"
       df2 <- as.data.frame(df2[order(df2$V1),])
       names(df2) <- "V1"
       df2
       df2 <- subset(df2,df2$V1 != "NA")
-
+      df3 <- unique(df2$V1)
       updateSelectizeInput(
         session,
         "selected_Indiv_Ex_2",
-        choices=df2$V1,
-        selected = df2$V1[2]
+        choices=df3,
+        selected = df3[2]
       )
     })
 
@@ -11763,10 +11797,20 @@ runSTEGO <- function(){
         need(nrow(sc)>0,
              error_message_val_UMAP)
       )
-
+      req(Expansion_check_table())
       df3.meta <- c(names(Expansion_check_table()))
+
       # df3.meta <- df3.meta[!grepl("RNA",df3.meta) & !grepl("BCR",df3.meta) & !grepl("TCR",df3.meta)& !grepl("_gene",df3.meta) & !grepl("allele",df3.meta) & !grepl("percent",df3.meta) & !grepl("cdr3",df3.meta)]
-      selectInput("Colour_By_this_Expanded","Expanded Colour by: ",choices = df3.meta,selected="expand.singlets")
+
+
+      if(length(df3.meta)>0) {
+        selectInput("Colour_By_this_Expanded","Expanded Colour by: ",choices = df3.meta,selected="expand.singlets")
+      }
+
+      else {
+        selectInput("Colour_By_this_Expanded","Expanded Colour by: ",choices = "expand.singlets",selected="expand.singlets")
+      }
+
 
     })
 
@@ -11921,7 +11965,41 @@ runSTEGO <- function(){
       names(col.file) <- "V1"
 
       col.file$col <- unlist(colors_Expanded())
-      col.file
+
+      colorblind_vector <-as.data.frame(unlist(colors_Expanded()))
+
+      if (dim(colorblind_vector)[1]==0) {
+        num <- as.data.frame(unique(top_BD_cluster$Selected_function))
+
+        if (input$colourtype == "default") {
+          colorblind_vector <- c(gg_fill_hue(dim(num)[1]))
+        } else if (input$colourtype == "hcl.colors") {
+          colorblind_vector <- c(hcl.colors(dim(num)[1], palette = "viridis"))
+        } else if (input$colourtype == "topo.colors") {
+          colorblind_vector <- c(topo.colors(dim(num)[1]))
+        } else if (input$colourtype == "heat.colors") {
+          colorblind_vector <- c(heat.colors(dim(num)[1]))
+        } else if (input$colourtype == "terrain.colors") {
+          colorblind_vector <- c(terrain.colors(dim(num)[1]))
+        } else if (input$colourtype == "rainbow") {
+          colorblind_vector <- c(rainbow(dim(num)[1]))
+        } else if (input$colourtype == "random") {
+          colorblind_vector <- distinctColorPalette(dim(num)[1])
+
+        }  else {
+
+        }
+
+      }
+
+      if (input$Colour_By_this_Expanded == "expand.singlets") {
+        colorblind_vector[2] <- "grey90"
+      }
+
+
+      colorblind_vector <- as.data.frame(colorblind_vector)
+
+      names(colorblind_vector) <- "cols"
 
       names(top_BD_cluster)[names(top_BD_cluster) %in% input$Samp_col_expanded] <- "ID_Column"
       top_BD_cluster <- top_BD_cluster[top_BD_cluster$ID_Column %in% input$ID_Column_factor_expanded,]
@@ -11940,7 +12018,7 @@ runSTEGO <- function(){
       # }
 
 
-      df <- df + scale_color_manual(labels = ~ stringr::str_wrap(.x, width = 20),values = col.file$col, na.value=input$NA_col_analysis)+
+      df <- df + scale_color_manual(labels = ~ stringr::str_wrap(.x, width = 20),values = colorblind_vector$col, na.value=input$NA_col_analysis)+
         scale_alpha_manual(labels = ~ stringr::str_wrap(.x, width = 20),values = rep(1,length(unique(top_BD_cluster$Selected_function))), na.value=0.1) +
         theme_bw() +
         theme(
@@ -12051,8 +12129,8 @@ runSTEGO <- function(){
       message("Updating Ident")
       Idents(object = sc) <- sc@meta.data$expansion.status
 
-      min.pct.expression<- input$min_point_top_Ex #standard setting: 0.25
-      min.logfc <-  input$LogFC_top_Ex #0.25 is standard
+      min.pct.expression<- input$min_point_ #standard setting: 0.25
+      min.logfc <-  input$LogFC_ #0.25 is standard
       message(paste0(" Calculating markers for cluster ",input$selected_Indiv_Ex_1," vs ",c(input$selected_Indiv_Ex_2)))
 
       markers.fm.list <- FindMarkers(sc, ident.1 = input$selected_Indiv_Ex_1, ident.2 = c(input$selected_Indiv_Ex_2), min.pct = min.pct.expression,  logfc.threshold = min.logfc, only.pos=TRUE)
@@ -12108,7 +12186,9 @@ runSTEGO <- function(){
           legend.text = element_text(colour="black", size=size_legend,family=input$font_type),
           legend.position = input$legend_position,
         ) +
-        scale_colour_gradient2(low = input$low.dotplot.ex, mid = input$middle.dotplot.ex, high = input$high.dotplot.ex)
+        scale_colour_gradient2(low = input$low.dotplot.ex, mid = input$middle.dotplot.ex, high = input$high.dotplot.ex)+
+        scale_x_discrete(labels = label_wrap(20)) +
+        scale_y_discrete(labels = label_wrap(20))
     })
 
     output$relative_expression_dotplot_ex <- renderPlot({
@@ -12208,13 +12288,11 @@ runSTEGO <- function(){
 
       for (i in 1:dim(geneSet)[1]) {
         # listed GeneSet
-        message(paste("Sample: ", i))
+        message(paste("GeneSet: ", i))
         Gene.set.testing <- as.data.frame(strsplit(geneSet$GeneSet,";")[i])
         names(Gene.set.testing) <- "V1"
         Gene.set.testing2 <- as.data.frame(unique(Gene.set.testing$V1))
         names(Gene.set.testing2) <- "V1"
-        # message(paste(dim(Gene.set.testing2)[1],"GeneSet total"))
-        # background genes
         background.overlap <- merge(Gene.set.testing2,background.genes.name,by= "V1")
         # message(paste(dim(background.overlap)[1],"in Background"))
         geneSet$background.geneset[i] <- length(background.overlap$V1)
@@ -12278,9 +12356,10 @@ runSTEGO <- function(){
       geneSet2$FDR <- p.adjust(geneSet2$p.val, method = "fdr")
       geneSet2$Bonferroni <- p.adjust(geneSet2$p.val, method = "bonferroni")
       geneSet2 <- subset(geneSet2,geneSet2$p.val<=input$p.val_cutoff_Exp)
-      name.list <- c("Geneset_ID","p.val","FDR","Bonferroni","OR","lowerCI","upperCI","in.geneset.name","in.geneset","background.geneset","total.sig","background.genes","background.geneset.name")
-      geneSet2 <- geneSet2 %>%
-        select(all_of(name.list), everything())
+      # name.list <- c("Geneset_ID","p.val","FDR","Bonferroni","OR","lowerCI","upperCI","in.geneset.name","in.geneset","background.geneset","total.sig","background.genes","background.geneset.name")
+      # geneSet2 <- geneSet2 %>%
+      #   select(all_of(name.list), everything())
+      geneSet2
     })
     output$Over_rep_Exp_Tab <- DT::renderDataTable(escape = FALSE, filter = list(position = 'top', clear = FALSE), options = list(autoWidth = FALSE, lengthMenu = c(1,2,5,10,20,50,100), pageLength = 20, scrollX = TRUE),{
       Over_rep_Exp()
@@ -12931,13 +13010,13 @@ runSTEGO <- function(){
       sc@meta.data <- checking
       Idents(object = sc) <- sc@meta.data$epi_selected
 
-      min.pct.expression<- input$min_point_Epi #standard setting: 0.25
-      min.logfc<-  input$LogFC_Epi #0.25 is standard
+      min.pct.expression<- input$min_point_ #standard setting: 0.25
+      min.logfc<-  input$LogFC_ #0.25 is standard
 
       cluster.names <- unique(Idents(sc))[order(unique(Idents(sc)))]
 
       markers.fm.list <- FindMarkers(sc, ident.1 = name.check.epi, min.pct = min.pct.expression,  logfc.threshold = min.logfc, only.pos=TRUE)
-      markers.fm.list2 <- subset(markers.fm.list,markers.fm.list$p_val_adj < input$pval.ex.filter_Epi)
+      markers.fm.list2 <- subset(markers.fm.list,markers.fm.list$p_val_adj < input$pval.ex.filter)
       as.data.frame(markers.fm.list2)
 
     })
@@ -13015,7 +13094,9 @@ runSTEGO <- function(){
           legend.text = element_text(colour="black", size=size_legend,family=input$font_type),
           legend.position = input$legend_position,
         ) +
-        scale_colour_gradient2(low = input$low.dotplot.epi, mid = input$middle.dotplot.epi, high = input$high.dotplot.epi)
+        scale_colour_gradient2(low = input$low.dotplot.epi, mid = input$middle.dotplot.epi, high = input$high.dotplot.epi)+
+        scale_x_discrete(labels = label_wrap(20)) +
+        scale_y_discrete(labels = label_wrap(20))
     })
 
     output$checking_epi_dot_issue <- DT::renderDataTable(escape = FALSE, filter = list(position = 'top', clear = FALSE), options = list(autoWidth = FALSE, lengthMenu = c(1,2,5,10,20,50,100), pageLength = 20, scrollX = TRUE),{
@@ -13071,7 +13152,7 @@ runSTEGO <- function(){
 
     })
 
-
+    # add in percentage - default to 10%
 
     output$all_expression_dotplot_epi <- renderPlot({
       all_expression_plot_epi()
@@ -13142,7 +13223,6 @@ runSTEGO <- function(){
       Idents(object = sc) <- sc@meta.data$epi_selected
 
       geneSet <- read.csv(system.file("OverRep","GeneSets.csv",package = "STEGO.R"),header = T)
-
       background.genes.name <- as.data.frame(rownames(sc@assays$RNA@scale.data))
       names(background.genes.name) <- "V1"
       background.genes <- length(rownames(sc@assays$RNA@scale.data))
@@ -13172,7 +13252,7 @@ runSTEGO <- function(){
 
       for (i in 1:dim(geneSet)[1]) {
         # listed GeneSet
-        message(paste("Sample: ", i))
+        message(paste("GeneSet: ", i))
         Gene.set.testing <- as.data.frame(strsplit(geneSet$GeneSet,";")[i])
         names(Gene.set.testing) <- "V1"
         Gene.set.testing2 <- as.data.frame(unique(Gene.set.testing$V1))
@@ -13366,17 +13446,13 @@ runSTEGO <- function(){
 
         updateSelectInput(
           session,
-          "V_call_clust_sc",
+          "junction_clust_sc",
           choices=names(df3.meta),
           selected = "")
 
       }
 
     })
-
-
-
-
     observe({
       sc <- input.data_sc_pro()
       validate(
@@ -13440,7 +13516,6 @@ runSTEGO <- function(){
       }
 
     })
-
     observe({
       sc <- input.data_sc_pro()
       validate(
@@ -13543,12 +13618,12 @@ runSTEGO <- function(){
           need(nrow(clust)>0,
                "Upload File")
         )
+        req(clust)
         names(md)[names(md) %in% input$V_call_clust_sc] <- "Selected_V_AG"
         names(md)[names(md) %in% input$junction_clust_sc] <- "AminoAcid_AG"
         md$CDR3_Vgene <- paste(md$AminoAcid_AG,md$Selected_V_AG,sep="_")
         df <- merge(md,clust,by = "CDR3_Vgene")
       }
-
       else if (input$chain_TCR == "TRBD") {
 
         clust <- input.data_sc_clusTCR_BD()
@@ -13556,25 +13631,24 @@ runSTEGO <- function(){
           need(nrow(clust)>0,
                "Upload File")
         )
+        req(clust)
         names(md)[names(md) %in% input$V_call_clust_sc] <- "Selected_V_BD"
         names(md)[names(md) %in% input$junction_clust_sc] <- "AminoAcid_BD"
         md$CDR3_Vgene <- paste(md$AminoAcid_BD,md$Selected_V_BD,sep="_")
         df <- merge(md,clust,by = "CDR3_Vgene")
       }
-
       else if (input$chain_TCR == "IgLK") {
-
         clust <- input.data_sc_clusTCR_IgLK()
         validate(
           need(nrow(clust)>0,
                "Upload File")
         )
+        req(clust)
         names(md)[names(md) %in% input$V_call_clust_sc] <- "Selected_V_IgLK"
         names(md)[names(md) %in% input$junction_clust_sc] <- "AminoAcid_IgLK"
         md$CDR3_Vgene <- paste(md$AminoAcid_IgLK,md$Selected_V_IgLK,sep="_")
         df <- merge(md,clust,by = "CDR3_Vgene")
       }
-
       else if (input$chain_TCR == "IgH") {
 
         clust <- input.data_sc_clusTCR_IgH()
@@ -13582,23 +13656,58 @@ runSTEGO <- function(){
           need(nrow(clust)>0,
                "Upload File")
         )
+        req(clust)
         names(md)[names(md) %in% input$V_call_clust_sc] <- "Selected_V_IgH"
         names(md)[names(md) %in% input$junction_clust_sc] <- "AminoAcid_IgH"
         md$CDR3_Vgene <- paste(md$AminoAcid_IgLK,md$Selected_V_IgLK,sep="_")
         df <- merge(md,clust,by = "CDR3_Vgene")
       }
-
-      else { # BCR repertiore
+      else { # BCR repertoire
 
       }
+      req(df)
+      df2 <- as.data.frame(df$CDR3_Vgene)
+      names(df2) <- "CDR3_Vgene"
+      df2$CDR3_Vgene_count <- 1
+      df3 <- as.data.frame(ddply(df2,"CDR3_Vgene",numcolwise(sum)))
+      df4 <- merge(df3,df,by = "CDR3_Vgene")
 
-      cluster <- df[order(df$Clust_size_order),]
+      df5 <- as.data.frame(df4$Clust_size_order)
+      names(df5) <- c("Clust_size_order")
+      df5$count <- df4$count
+      df5$Total_cloneCount <- 1
+      df6 <- as.data.frame(ddply(df5,c("Clust_size_order","count"),numcolwise(sum)))
+
+      df6 <- subset(df6,df6$Total_cloneCount>1)
+      df6$priority <- 1/(df6$Total_cloneCount * df6$count)
+      df6 <- df6[order(df6$priority,decreasing = F),]
+
+      df6$Updated_order <- 1:dim(df6)[1]
+      df7 <- merge(df6,df4,by = c("Clust_size_order","count"))
+      cluster <- df7[order(df7$Updated_order),]
       cluster
     })
 
     output$Tb_ClusTCR_selected <- DT::renderDataTable(escape = FALSE, options = list(autoWidth = FALSE, lengthMenu = c(2,5,10,20,50,100), pageLength = 5, scrollX = TRUE),{
-      clusTCR2_df()
+      sc <- clusTCR2_df()
+      validate(
+        need(nrow(sc)>0,
+             "Upload File")
+      )
+
+      sc
+
+
     })
+
+    output$downloadtb_Tb_ClusTCR_selected <- downloadHandler(
+      filename = function(){
+        paste0(input$Clusters_to_dis_PIE,"_Cluster_",today(),"_over_rep.csv")
+      },
+      content = function(file){
+        df <- as.data.frame(clusTCR2_df())
+        write.csv(df,file, row.names = F)
+      })
 
     # umap ClusTCR -----
     observe({
@@ -13607,20 +13716,19 @@ runSTEGO <- function(){
         need(nrow(clust)>0,
              error_message_val_sc)
       )
-      clust <- clust[order(clust$Clust_size_order),]
-      validate(
-        need(nrow(clust)>0,
-             "Upload clusTCR table, which is needed for TCR -> UMAP section")
-      )
+      clust <- clust[order(clust$Updated_order),]
+      req(clust)
       updateSelectizeInput(
         session,
         "Clusters_to_dis",
-        choices=unique(clust$Clust_size_order),
-        selected = unique(clust$Clust_size_order)[1]
+        choices=unique(clust$Updated_order),
+        selected = unique(clust$Updated_order)[1]
       )
     }) # junction sequence
 
     # colouring the plot clusTCR2 -----
+
+    # change to colouring by chain for one cluster.
 
     observe({
       sc <- UMAP_metadata_with_labs()
@@ -13639,17 +13747,20 @@ runSTEGO <- function(){
 
     cols_clust_UMAP <- reactive({
       cluster <- clusTCR2_df()
-
       validate(
         need(nrow(cluster)>0,
              "Upload clusTCR table, which is needed for TCR -> UMAP section")
       )
-      req(input$upper_cluster,input$lower_cluster)
+      req(cluster,input$Clusters_to_dis_PIE,input$Colour_By_this)
 
-      cluster <- cluster[order(cluster$Clust_size_order),]
-      cluster <- cluster[cluster$Clust_size_order %in% input$lower_cluster:input$upper_cluster,]
-      cluster$Clust_size_order <- factor(cluster$Clust_size_order, levels = unique(cluster$Clust_size_order))
-      num <- as.data.frame(unique(cluster$Clust_size_order))
+      names(cluster)[names(cluster) %in% input$Samp_col_cluster] <- "ID_Column"
+
+      cluster <- cluster[cluster$Updated_order %in% input$Clusters_to_dis_PIE,]
+      cluster$colour <- cluster[,names(cluster) %in% input$Colour_By_this]
+      cluster$colour <- gsub("_"," ",cluster$colour)
+      cluster$colour <- factor(cluster$colour, levels = unique(cluster$colour))
+
+      num <- as.data.frame(unique(cluster$colour))
       num <- as.data.frame(num[complete.cases(num)==T,])
 
       col.gg <- gg_fill_hue(dim(num)[1])
@@ -13708,17 +13819,19 @@ runSTEGO <- function(){
     output$myPanel_cols_clust_UMAP <- renderUI({cols_clust_UMAP()})
     colors_cols_cols_clust_UMAP <- reactive({
       cluster <- clusTCR2_df()
-      req(input$upper_cluster,input$lower_cluster)
-      cluster <- cluster[cluster$Clust_size_order %in% input$lower_cluster:input$upper_cluster,]
-      md <- UMAP_metadata_with_labs()
       validate(
-        need(nrow(cluster)>0 & nrow(md)>0,
-             "Upload clusTCR table")
+        need(nrow(cluster)>0,
+             "Upload clusTCR table, which is needed for TCR -> UMAP section")
       )
+      # req(cluster,input$Clusters_to_dis_PIE,input$Colour_By_this)
 
-      cluster <- cluster[order(cluster$Clust_size_order),]
-      cluster$Clust_size_order <- factor(cluster$Clust_size_order, levels = unique(cluster$Clust_size_order))
-      num <- as.data.frame(unique(cluster$Clust_size_order))
+      names(cluster)[names(cluster) %in% input$Samp_col_cluster] <- "ID_Column"
+
+      cluster <- cluster[cluster$Updated_order %in% input$Clusters_to_dis_PIE,]
+      cluster$colour <- cluster[,names(cluster) %in% input$Colour_By_this]
+      cluster$colour <- gsub("_"," ",cluster$colour)
+
+      num <- as.data.frame(unique(cluster$colour))
       num <- as.data.frame(num[complete.cases(num)==T,])
 
       lapply(1:dim(num)[1], function(i) {
@@ -13728,56 +13841,38 @@ runSTEGO <- function(){
 
     UMAP_ClusTCR2 <- reactive({
       cluster <- clusTCR2_df()
+      validate(
+        need(nrow(cluster)>0,
+             "Upload clusTCR table, which is needed for TCR -> UMAP section")
+      )
+      req(cluster,input$Clusters_to_dis_PIE,input$Colour_By_this)
+
       names(cluster)[names(cluster) %in% input$Samp_col_cluster] <- "ID_Column"
-      req(input$upper_cluster,input$lower_cluster)
-      cluster <- cluster[cluster$Clust_size_order %in% input$lower_cluster:input$upper_cluster,]
 
-      if (input$ClusTCR_display == "all" ) {
-        cluster <- cluster[order(cluster$Clust_size_order),]
-        cluster$Clust_size_order <- factor(cluster$Clust_size_order, levels = unique(cluster$Clust_size_order))
-        col.df <- as.data.frame(unique(cluster$Clust_size_order))
-        names(col.df) <- "V1"
-        col.df$col <- unlist(colors_cols_cols_clust_UMAP())
-        col.df2 <- col.df
-        figure <- ggplot(data=cluster,aes(x=UMAP_1,UMAP_2,colour=Clust_size_order))+
-          geom_point()+
-          scale_color_manual(na.value="grey", values = c(col.df2$col),breaks = c(unique(col.df2$V1)))+
-          # scale_size_manual(na.value=0.25,values = rep(3,dim(num)[1]))+
-          theme_bw()+
-          # labs(color=NULL,size = 12)+
-          theme(
-            legend.text = element_text(colour="black", size=24,family=input$font_type),
-            legend.title = element_blank(),
-            legend.position = "right",
-          )
+      cluster <- cluster[cluster$Updated_order %in% input$Clusters_to_dis_PIE,]
+      cluster$colour <- cluster[,names(cluster) %in% input$Colour_By_this]
+      cluster$colour <- gsub("_"," ",cluster$colour)
+      cluster$colour <- factor(cluster$colour, levels = unique(cluster$colour))
 
-      }
+      len.colour <- length(unique(cluster$colour))
+      col.df <- as.data.frame(unique(cluster$colour))
+      col.df$col <- unlist(colors_cols_cols_clust_UMAP())
 
-      else {
+      figure <- ggplot(data=cluster,aes(x=UMAP_1,UMAP_2,colour=colour))+
+        geom_point(size = input$size.dot.umap)+
+        scale_color_manual(labels = ~ stringr::str_wrap(.x, width = 20),values = col.df$col,na.value=input$NA_col_analysis) +
+        theme_bw()+
+        theme(
+          legend.text = element_text(colour="black", size=input$Bar_legend_size,family=input$font_type),
+          legend.title = element_blank(),
+          legend.position = input$legend_position,
+          # strip.text = element_text(size = input$Strip_text_size, family = input$font_type),
+          axis.title.y = element_text(colour="black",family=input$font_type,size = input$title.text.sizer2),
+          axis.text.y = element_text(colour="black",family=input$font_type,size = input$text_size),
+          axis.text.x = element_text(colour="black",family=input$font_type,size = input$text_size,angle=0),
+          axis.title.x = element_text(colour="black",family=input$font_type,size = input$title.text.sizer2),
 
-        cluster <- cluster[order(cluster$Clust_size_order),]
-        cluster$Clust_size_order <- factor(cluster$Clust_size_order, levels = unique(cluster$Clust_size_order))
-
-        col.df <- as.data.frame(unique(cluster$Clust_size_order))
-        names(col.df) <- "V1"
-        col.df$col <- unlist(colors_cols_cols_clust_UMAP())
-        col.df2 <- col.df[col.df$V1 %in% input$Clusters_to_dis,]
-        cluster <- cluster[cluster$Clust_size_order %in% input$Clusters_to_dis,]
-
-        figure <- ggplot(data=cluster,aes(x=UMAP_1,UMAP_2,colour=Clust_size_order))+
-          # geom_point(data=md,aes(x=UMAP_1,UMAP_2,color = Clust_size_order))+
-          geom_point()+
-          scale_color_manual(na.value="grey", values = c(col.df2$col),breaks = c(unique(col.df2$V1)))+
-          # scale_size_manual(na.value=0.25,values = rep(3,dim(num)[1]))+
-          theme_bw()+
-          # labs(color=NULL,size = 12)+
-          theme(
-            legend.text = element_text(colour="black", size=24,family=input$font_type),
-            legend.title = element_blank(),
-            legend.position = "right",
-          )
-      }
-
+        )
 
       if (input$Split_by_group=="no") {
         figure
@@ -13822,195 +13917,57 @@ runSTEGO <- function(){
         need(nrow(cluster)>0,
              "upload clustering")
       )
-      req(input$upper_cluster,input$lower_cluster)
-
       names(cluster)[names(cluster) %in% input$Samp_col_cluster] <- "ID_Column"
-      cluster <- cluster[cluster$Clust_size_order %in% input$lower_cluster:input$upper_cluster,]
+
+      # cluster <- cluster[cluster$Clust_size_order %in% input$lower_cluster:input$upper_cluster,]
       updateSelectInput(
         session,
         "Clusters_to_dis_PIE",
-        choices=unique(cluster$Clust_size_order),
-        selected = unique(cluster$Clust_size_order)[1]
+        choices=unique(cluster$Updated_order),
+        selected = unique(cluster$Updated_order)[1]
       )
     }) # cluster to display
-    observe({
-      cluster <- clusTCR2_df()
 
-      validate(
-        need(nrow(cluster)>0,
-             "upload clustering")
-      )
-      req(input$upper_cluster,input$lower_cluster)
-      names(cluster)[names(cluster) %in% input$Samp_col_cluster] <- "ID_Column"
-      cluster <- cluster[cluster$Clust_size_order %in% input$lower_cluster:input$upper_cluster,]
-      updateSelectInput(
-        session,
-        "Clusters_to_dis_PIE",
-        choices=unique(cluster$Clust_size_order),
-        selected = unique(cluster$Clust_size_order)[1]
-      )
-    }) # cluster to display
 
     motif_plot_sc <- reactive({
-
-      sc <- UMAP_metadata_with_labs()
+      cluster <- clusTCR2_df()
       validate(
-        need(nrow(sc)>0,
-             "Upload file")
+        need(nrow(cluster)>0,
+             "Upload clusTCR table, which is needed for TCR -> UMAP section")
       )
-      req(input$V_call_clust_sc,input$junction_clust_sc,input$Clusters_to_dis_PIE)
-      req(input$upper_cluster,input$lower_cluster)
-      md  <- sc@meta.data
+      names(cluster)[names(cluster) %in% input$Samp_col_cluster] <- "ID_Column"
+      Network_df <- cluster[order(cluster$Updated_order),]
 
-      if (input$chain_TCR == "TRAG") {
-        clust <- input.data_sc_clusTCR_AG()
-
-        validate(
-          need(nrow(clust)>0,
-               "Upload File")
-        )
-        req(input$upper_cluster,input$lower_cluster)
-        clust <- clust[clust$Clust_size_order %in% input$lower_cluster:input$upper_cluster,]
-        names(md)[names(md) %in% input$V_call_clust_sc] <- "Selected_V_AG"
-        names(md)[names(md) %in% input$junction_clust_sc] <- "AminoAcid_AG"
-        md$CDR3_Vgene <- paste(md$AminoAcid_AG,md$Selected_V_AG,sep="_")
-
-        df <-clust[clust$CDR3_Vgene %in% unique(md$CDR3_Vgene),]
-      }
-
-      else if (input$chain_TCR == "TRBD") {
-        clust <- input.data_sc_clusTCR_BD()
-
-        validate(
-          need(nrow(clust)>0,
-               "Upload File")
-        )
-        req(input$upper_cluster,input$lower_cluster)
-        clust <- clust[clust$Clust_size_order %in% input$lower_cluster:input$upper_cluster,]
-        names(md)[names(md) %in% input$V_call_clust_sc] <- "Selected_V_BD"
-        names(md)[names(md) %in% input$junction_clust_sc] <- "AminoAcid_BD"
-        md$CDR3_Vgene <- paste(md$AminoAcid_BD,md$Selected_V_BD,sep="_")
-        df <-clust[clust$CDR3_Vgene %in% unique(md$CDR3_Vgene),]
-      }
-
-      else { # BCR repertiore
-
-      }
-
-      Network_df <- df[order(df$Clust_size_order),]
-      Motif_from_cluster_file(Network_df,Clust_selected = input$Clusters_to_dis_PIE)
+      Motif_from_cluster_file(Network_df,Clust_selected = input$Clusters_to_dis_PIE,selected_cluster_column = "Updated_order")
+      # ?Motif_from_cluster_file
     })
     output$Motif_ClusTCR2_cluster <- renderPlot({
       motif_plot_sc()
     })
 
     # motif table output ------
-    output$Tb_motif_cluster <- DT::renderDataTable(escape = FALSE, options = list(autoWidth = FALSE, lengthMenu = c(2,5,10,20,50,100), pageLength = 2, scrollX = TRUE),class = 'nowrap',{
-
-      sc <- UMAP_metadata_with_labs()
-      validate(
-        need(nrow(sc)>0,
-             "Upload clusTCR table, which is needed for TCR -> UMAP section")
-      )
-
-      req(input$V_call_clust_sc,input$junction_clust_sc)
-
-
-      md <- sc@meta.data
-
-      if (input$chain_TCR == "TRAG") {
-        clust <- input.data_sc_clusTCR_AG()
-
-        validate(
-          need(nrow(clust)>0,
-               "Upload File")
-        )
-        req(input$upper_cluster,input$lower_cluster)
-        clust <- clust[clust$Clust_size_order %in% input$lower_cluster:input$upper_cluster,]
-
-        names(md)[names(md) %in% input$V_call_clust_sc] <- "Selected_V_AG"
-        names(md)[names(md) %in% input$junction_clust_sc] <- "AminoAcid_AG"
-        md$CDR3_Vgene <- paste(md$AminoAcid_AG,md$Selected_V_AG,sep="_")
-        df <-merge(md, clust, by = "CDR3_Vgene")
-        df <- df[df$Clust_size_order  %in% input$Clusters_to_dis_PIE,]
-      }
-
-      else if (input$chain_TCR == "TRBD") {
-        clust <- input.data_sc_clusTCR_BD()
-
-        validate(
-          need(nrow(clust)>0,
-               "Upload File")
-        )
-        req(input$upper_cluster,input$lower_cluster)
-        clust <- clust[clust$Clust_size_order %in% input$lower_cluster:input$upper_cluster,]
-
-        names(md)[names(md) %in% input$V_call_clust_sc] <- "Selected_V_BD"
-        names(md)[names(md) %in% input$junction_clust_sc] <- "AminoAcid_BD"
-        md$CDR3_Vgene <- paste(md$AminoAcid_BD,md$Selected_V_BD,sep="_")
-        df <-merge(md, clust, by = "CDR3_Vgene")
-        df <- df[df$Clust_size_order  %in% input$Clusters_to_dis_PIE,]
-      }
-
-      else { # BCR repertiore
-
-      }
-
-      cluster <- df[order(df$Clust_size_order),]
-      cluster
-    })
 
     # render which cases were contributing to the cluster
     output$print_unique_cases <- renderPrint({
-      sc <- UMAP_metadata_with_labs()
+
+      cluster <- clusTCR2_df()
       validate(
-        need(nrow(sc)>0,
+        need(nrow(cluster)>0,
              "Upload clusTCR table, which is needed for TCR -> UMAP section")
       )
-      md <- sc@meta.data
+      names(cluster)[names(cluster) %in% input$Samp_col_cluster] <- "ID_Column"
       req(input$V_call_clust_sc,input$junction_clust_sc,input$Clusters_to_dis_PIE)
+      df <- cluster[cluster$Updated_order  %in% input$Clusters_to_dis_PIE,]
+
 
       if (input$chain_TCR == "TRAG") {
-
-        clust <- input.data_sc_clusTCR_AG()
-
-        validate(
-          need(nrow(clust)>0,
-               "Upload File")
-        )
-        req(input$upper_cluster,input$lower_cluster)
-        clust <- clust[clust$Clust_size_order %in% input$lower_cluster:input$upper_cluster,]
-        names(md)[names(md) %in% input$V_call_clust_sc] <- "Selected_V_AG"
-        names(md)[names(md) %in% input$junction_clust_sc] <- "AminoAcid_AG"
-        md$CDR3_Vgene <- paste(md$AminoAcid_AG,md$Selected_V_AG,sep="_")
-        df <-merge(md, clust, by = "CDR3_Vgene")
-        df <- df[df$Clust_size_order  %in% input$Clusters_to_dis_PIE,]
-        names(df)[names(df) %in% input$Samp_col_cluster] <- "ID_Column"
         cat("This Motif if from: ",noquote(unique(df$ID_Column)),"; the TCR is:",noquote(unique(df$Selected_V_AG)),noquote(unique(df$j_gene_AG)))
-
       }
       else if (input$chain_TCR == "TRBD") {
-
-        clust <- input.data_sc_clusTCR_BD()
-
-        validate(
-          need(nrow(clust)>0,
-               "Upload File")
-        )
-        req(input$upper_cluster,input$lower_cluster)
-        clust <- clust[clust$Clust_size_order %in% input$lower_cluster:input$upper_cluster,]
-
-        names(md)[names(md) %in% input$V_call_clust_sc] <- "Selected_V_BD"
-        names(md)[names(md) %in% input$junction_clust_sc] <- "AminoAcid_BD"
-        md$CDR3_Vgene <- paste(md$AminoAcid_BD,md$Selected_V_BD,sep="_")
-        df <-merge(md, clust, by = "CDR3_Vgene")
-        df <- df[df$Clust_size_order  %in% input$Clusters_to_dis_PIE,]
-        names(df)[names(df) %in% input$Samp_col_cluster] <- "ID_Column"
         cat("This Motif if from:",noquote(unique(df$ID_Column)),"; the TCR is:",noquote(unique(df$Selected_V_BD)),noquote(unique(df$d_gene_BD)),noquote(unique(df$j_gene_BD)))
-
       }
 
-      else { # BCR repertiore
+      else { # BCR repertoire
 
       }
 
@@ -14041,112 +13998,20 @@ runSTEGO <- function(){
         dev.off()},   contentType = "application/png" # MIME type of the image
     )
     #### cluster pie chart function -----
-    testing_pie_cluster <- reactive({
-      sc <- UMAP_metadata_with_labs()
-      validate(
-        need(nrow(sc)>0,
-             "Upload file")
-      )
-      req(input$V_call_clust_sc,input$junction_clust_sc,input$Clusters_to_dis_PIE)
-
-      md  <- sc@meta.data
-
-      if (input$chain_TCR == "TRAG") {
-        clust <- input.data_sc_clusTCR_AG()
-
-        validate(
-          need(nrow(clust)>0,
-               "Upload File")
-        )
-        req(input$upper_cluster,input$lower_cluster,input$Colour_By_this_Cluster)
-        # clust <- clust[clust$Clust_size_order %in% input$lower_cluster:input$upper_cluster,]
-        names(md)[names(md) %in% input$V_call_clust_sc] <- "Selected_V_AG"
-        names(md)[names(md) %in% input$junction_clust_sc] <- "AminoAcid_AG"
-        md$CDR3_Vgene <- paste(md$AminoAcid_AG,md$Selected_V_AG,sep="_")
-
-        df <-merge(md, clust, by = "CDR3_Vgene")
-      }
-
-      else if (input$chain_TCR == "TRBD") {
-        clust <- input.data_sc_clusTCR_BD()
-
-        validate(
-          need(nrow(clust)>0,
-               "Upload File")
-        )
-        # clust <- clust[clust$Clust_size_order %in% input$lower_cluster:input$upper_cluster,]
-        names(md)[names(md) %in% input$V_call_clust_sc] <- "Selected_V_BD"
-        names(md)[names(md) %in% input$junction_clust_sc] <- "AminoAcid_BD"
-        md$CDR3_Vgene <- paste(md$AminoAcid_BD,md$Selected_V_BD,sep="_")
-        df <-merge(md, clust, by = "CDR3_Vgene")
-      }
-
-      else { # BCR repertiore
-
-      }
-
-      Network_df <- df[order(df$Clust_size_order),]
-      Network_df <- df[df$Clust_size_order %in% input$Clusters_to_dis_PIE,]
-      Network_df$selected <- Network_df[,names(Network_df) %in% input$Colour_By_this_Cluster]
-      Network_df
-
-    })
-
-    output$testing_pie_cluster_DT <- DT::renderDataTable(escape = FALSE, filter = list(position = 'top', clear = FALSE), options = list(autoWidth = FALSE, lengthMenu = c(1,2,5,10,20,50,100), pageLength = 2, scrollX = TRUE),{
-      testing_pie_cluster()
-    })
 
     cols_clusTCR2_pie <- reactive({
-      sc <- UMAP_metadata_with_labs()
+      cluster <- clusTCR2_df()
       validate(
-        need(nrow(sc)>0,
-             "Upload file")
+        need(nrow(cluster)>0,
+             "Upload clusTCR table, which is needed for TCR -> UMAP section")
       )
+      names(cluster)[names(cluster) %in% input$Samp_col_cluster] <- "ID_Column"
       req(input$V_call_clust_sc,input$junction_clust_sc,input$Clusters_to_dis_PIE)
 
-      md  <- sc@meta.data
-
-      if (input$chain_TCR == "TRAG") {
-        clust <- input.data_sc_clusTCR_AG()
-
-        validate(
-          need(nrow(clust)>0,
-               "Upload File")
-        )
-        req(input$upper_cluster,input$lower_cluster,input$Colour_By_this_Cluster)
-        # clust <- clust[clust$Clust_size_order %in% input$lower_cluster:input$upper_cluster,]
-        names(md)[names(md) %in% input$V_call_clust_sc] <- "Selected_V_AG"
-        names(md)[names(md) %in% input$junction_clust_sc] <- "AminoAcid_AG"
-        md$CDR3_Vgene <- paste(md$AminoAcid_AG,md$Selected_V_AG,sep="_")
-
-        df <-merge(md, clust, by = "CDR3_Vgene")
-      }
-
-      else if (input$chain_TCR == "TRBD") {
-        clust <- input.data_sc_clusTCR_BD()
-
-        validate(
-          need(nrow(clust)>0,
-               "Upload File")
-        )
-        req(input$upper_cluster,input$lower_cluster,input$Colour_By_this_Cluster)
-        # clust <- clust[clust$Clust_size_order %in% input$lower_cluster:input$upper_cluster,]
-        names(md)[names(md) %in% input$V_call_clust_sc] <- "Selected_V_BD"
-        names(md)[names(md) %in% input$junction_clust_sc] <- "AminoAcid_BD"
-        md$CDR3_Vgene <- paste(md$AminoAcid_BD,md$Selected_V_BD,sep="_")
-        df <-merge(md, clust, by = "CDR3_Vgene")
-      }
-
-      else { # BCR repertiore
-
-      }
-
-      Network_df <- df[order(df$Clust_size_order),]
-      Network_df <- df[df$Clust_size_order %in% input$Clusters_to_dis_PIE,]
-      Network_df
+      Network_df <- cluster[order(cluster$Updated_order),]
+      Network_df <- Network_df[Network_df$Updated_order  %in% input$Clusters_to_dis_PIE,]
       Network_df$selected <- Network_df[,names(Network_df) %in% input$Colour_By_this_Cluster]
       num <- as.data.frame(unique(Network_df$selected))
-
 
       col.gg <- gg_fill_hue(dim(num)[1])
       palette_rainbow <- rainbow(dim(num)[1])
@@ -14205,51 +14070,15 @@ runSTEGO <- function(){
     output$myPanel_cols_clusTCR2_pie <- renderUI({cols_clusTCR2_pie()})
 
     colors_cols_clusTCR2_pie <- reactive({
-      sc <- UMAP_metadata_with_labs()
+      cluster <- clusTCR2_df()
       validate(
-        need(nrow(sc)>0,
-             "Upload file")
+        need(nrow(cluster)>0,
+             "Upload clusTCR table, which is needed for TCR -> UMAP section")
       )
       req(input$V_call_clust_sc,input$junction_clust_sc,input$Clusters_to_dis_PIE)
-      req(input$upper_cluster,input$lower_cluster,input$Colour_By_this_Cluster)
-      md  <- sc@meta.data
-
-      if (input$chain_TCR == "TRAG") {
-        clust <- input.data_sc_clusTCR_AG()
-
-        validate(
-          need(nrow(clust)>0,
-               "Upload File")
-        )
-        # clust <- clust[clust$Clust_size_order %in% input$lower_cluster:input$upper_cluster,]
-        names(md)[names(md) %in% input$V_call_clust_sc] <- "Selected_V_AG"
-        names(md)[names(md) %in% input$junction_clust_sc] <- "AminoAcid_AG"
-        md$CDR3_Vgene <- paste(md$AminoAcid_AG,md$Selected_V_AG,sep="_")
-
-        df <-merge(md, clust, by = "CDR3_Vgene")
-      }
-
-      else if (input$chain_TCR == "TRBD") {
-        clust <- input.data_sc_clusTCR_BD()
-
-        validate(
-          need(nrow(clust)>0,
-               "Upload File")
-        )
-        # clust <- clust[clust$Clust_size_order %in% input$lower_cluster:input$upper_cluster,]
-        names(md)[names(md) %in% input$V_call_clust_sc] <- "Selected_V_BD"
-        names(md)[names(md) %in% input$junction_clust_sc] <- "AminoAcid_BD"
-        md$CDR3_Vgene <- paste(md$AminoAcid_BD,md$Selected_V_BD,sep="_")
-        df <-merge(md, clust, by = "CDR3_Vgene")
-      }
-
-      else { # BCR repertiore
-
-      }
-
-      Network_df <- df[order(df$Clust_size_order),]
-      Network_df <- df[df$Clust_size_order %in% input$Clusters_to_dis_PIE,]
-      Network_df
+      names(cluster)[names(cluster) %in% input$Samp_col_cluster] <- "ID_Column"
+      Network_df <- cluster[order(cluster$Updated_order),]
+      Network_df <- Network_df[Network_df$Updated_order  %in% input$Clusters_to_dis_PIE,]
       Network_df$selected <- Network_df[,names(Network_df) %in% input$Colour_By_this_Cluster]
       num <- as.data.frame(unique(Network_df$selected))
 
@@ -14260,16 +14089,18 @@ runSTEGO <- function(){
 
     Pie_chart_ClusTCR2 <- reactive({
       cluster <- clusTCR2_df()
-      cluster <- cluster[order(cluster$Clust_size_order),]
-      # sample name
+      validate(
+        need(nrow(cluster)>0,
+             "Upload clusTCR table, which is needed for TCR -> UMAP section")
+      )
+      req(input$V_call_clust_sc,input$junction_clust_sc,input$Clusters_to_dis_PIE)
       names(cluster)[names(cluster) %in% input$Samp_col_cluster] <- "ID_Column"
+      Network_df <- cluster[order(cluster$Updated_order),]
+      Network_df <- Network_df[Network_df$Updated_order  %in% input$Clusters_to_dis_PIE,]
+      Network_df$selected <- Network_df[,names(Network_df) %in% input$Colour_By_this_Cluster]
+      names(Network_df)[names(Network_df) %in% input$Colour_By_this_Cluster] <- "Selected"
 
-      #subset to the cluster of interest
-      cluster <- cluster[cluster$Clust_size_order == input$Clusters_to_dis_PIE,]
-
-      names(cluster)[names(cluster) %in% input$Colour_By_this_Cluster] <- "Selected"
-
-      df3.meta3 <-  as.data.frame(table(cluster$ID_Column,cluster$Selected))
+      df3.meta3 <-  as.data.frame(table(Network_df$ID_Column,Network_df$Selected))
       total.condition <- as.data.frame(ddply(df3.meta3,"Var1",numcolwise(sum)))
       dim(total.condition)[1]
       dim(df3.meta3)[1]
@@ -14327,62 +14158,47 @@ runSTEGO <- function(){
         dev.off()},   contentType = "application/png" # MIME type of the image
     )
 
-    # Ridge ClusTCR -----
+    # Ridge ClusTCR (Yet to add?) -----
     Ridge_clusTCR2 <- reactive({
       cluster <- clusTCR2_df()
+      validate(
+        need(nrow(cluster)>0,
+             "Upload clusTCR table, which is needed for TCR -> UMAP section")
+      )
+
+
       md <- UMAP_metadata_with_labs()
-      if (input$ClusTCR_display == "all" ) {
-        cluster <- cluster[order(cluster$Clust_size_order),]
-        cluster$Clust_size_order <- factor(cluster$Clust_size_order, levels = unique(cluster$Clust_size_order))
-        # cluster <- cluster[cluster$Clust_size_order %in% input$Clusters_to_dis,]
-        col.df <- as.data.frame(unique(cluster$Clust_size_order))
-        names(col.df) <- "V1"
-        col.df$palette_rainbow <- rainbow(length(unique(cluster$Clust_size_order)))
-        col.df2 <- col.df
-        md$Clust_size_order <- NA
-        md$Clust_size_order <- factor(md$Clust_size_order, levels = unique(cluster$Clust_size_order))
+      validate(
+        need(nrow(cluster)>0,
+             "Upload clusTCR table, which is needed for TCR -> UMAP section")
+      )
+      # ClusTCR_display
 
-        figure <- ggplot()+
-          geom_point(data=md,aes(x=UMAP_1,UMAP_2,color = Clust_size_order))+
-          geom_point(data=cluster,aes(x=UMAP_1,UMAP_2,colour=Clust_size_order))+
-          scale_color_manual(na.value="grey", values = c(col.df2$palette_rainbow),breaks = c(unique(col.df2$V1)))+
-          # scale_size_manual(na.value=0.25,values = rep(3,dim(num)[1]))+
-          theme_bw()+
-          # labs(color=NULL,size = 12)+
-          theme(
-            legend.text = element_text(colour="black", size=24,family=input$font_type),
-            legend.title = element_blank(),
-            legend.position = "right",
-          )
+      # clust <- clust[clust$Updated_order %in% input$Clusters_to_dis_PIE,]
+      cluster <- cluster[order(cluster$Updated_order),]
+      cluster$Updated_order <- factor(cluster$Updated_order, levels = unique(cluster$Updated_order))
+      # cluster <- cluster[cluster$Clust_size_order %in% input$Clusters_to_dis,]
+      col.df <- as.data.frame(unique(cluster$Updated_order))
+      names(col.df) <- "V1"
+      col.df$palette_rainbow <- rainbow(length(unique(cluster$Updated_order)))
+      col.df2 <- col.df
+      md$Updated_order <- NA
+      md$Updated_order <- factor(md$Updated_order, levels = unique(cluster$Updated_order))
 
-      }
-      else {
+      figure <- ggplot()+
+        geom_point(data=md,aes(x=UMAP_1,UMAP_2,color = Clust_size_order))+
+        geom_point(data=cluster,aes(x=UMAP_1,UMAP_2,colour=Clust_size_order))+
+        scale_color_manual(na.value="grey", values = c(col.df2$palette_rainbow),breaks = c(unique(col.df2$V1)))+
+        # scale_size_manual(na.value=0.25,values = rep(3,dim(num)[1]))+
+        theme_bw()+
+        # labs(color=NULL,size = 12)+
+        theme(
+          legend.text = element_text(colour="black", size=24,family=input$font_type),
+          legend.title = element_blank(),
+          legend.position = "right",
+        )
 
-        cluster <- cluster[order(cluster$Clust_size_order),]
-        cluster$Clust_size_order <- factor(cluster$Clust_size_order, levels = unique(cluster$Clust_size_order))
 
-        col.df <- as.data.frame(unique(cluster$Clust_size_order))
-        names(col.df) <- "V1"
-        col.df$palette_rainbow <- rainbow(length(unique(cluster$Clust_size_order)))
-        col.df2 <- col.df[col.df$V1 %in% input$Clusters_to_dis,]
-
-        md$Clust_size_order <- NA
-        md$Clust_size_order <- factor(md$Clust_size_order, levels = unique(cluster$Clust_size_order))
-        cluster <- cluster[cluster$Clust_size_order %in% input$Clusters_to_dis,]
-
-        figure <- ggplot()+
-          geom_point(data=md,aes(x=UMAP_1,UMAP_2,color = Clust_size_order))+
-          geom_point(data=cluster,aes(x=UMAP_1,UMAP_2,colour=Clust_size_order))+
-          scale_color_manual(na.value="grey", values = c(col.df2$palette_rainbow),breaks = c(unique(col.df2$V1)))+
-          # scale_size_manual(na.value=0.25,values = rep(3,dim(num)[1]))+
-          theme_bw()+
-          # labs(color=NULL,size = 12)+
-          theme(
-            legend.text = element_text(colour="black", size=24,family=input$font_type),
-            legend.title = element_blank(),
-            legend.position = "right",
-          )
-      }
 
       figure
 
@@ -14398,50 +14214,22 @@ runSTEGO <- function(){
     # Cluster stats   -----
 
     Cluster_of_interest <- reactive ({
-      sc <- UMAP_metadata_with_labs()
+      cluster <- clusTCR2_df()
       validate(
-        need(nrow(sc)>0,
-             "Upload File")
+        need(nrow(cluster)>0,
+             "Upload clusTCR table, which is needed for TCR -> UMAP section")
       )
+      req(input$V_call_clust_sc,input$junction_clust_sc,input$Clusters_to_dis_PIE)
+      names(cluster)[names(cluster) %in% input$Samp_col_cluster] <- "ID_Column"
+      cluster <- cluster[order(cluster$Updated_order),]
+      # Network_df <- Network_df[Network_df$Updated_order  %in% input$Clusters_to_dis_PIE,]
+      # Network_df$selected <- Network_df[,names(Network_df) %in% input$Colour_By_this_Cluster]
 
-      req(input$V_call_clust_sc,input$junction_clust_sc)
-      md <- sc@meta.data
-      if (input$chain_TCR == "TRAG") {
+      rownames(cluster) <- cluster$Cell_Index
 
-        clust <- input.data_sc_clusTCR_AG()
-        validate(
-          need(nrow(clust)>0,
-               "Upload File")
-        )
-        names(md)[names(md) %in% input$V_call_clust_sc] <- "Selected_V_AG"
-        names(md)[names(md) %in% input$junction_clust_sc] <- "AminoAcid_AG"
-        md$CDR3_Vgene <- paste(md$AminoAcid_AG,md$Selected_V_AG,sep="_")
-        df <- merge(md,clust,by = "CDR3_Vgene",all.x = T, sort = F)
-      }
-
-      else if (input$chain_TCR == "TRBD") {
-
-        clust <- input.data_sc_clusTCR_BD()
-        validate(
-          need(nrow(clust)>0,
-               "Upload File")
-        )
-        names(md)[names(md) %in% input$V_call_clust_sc] <- "Selected_V_BD"
-        names(md)[names(md) %in% input$junction_clust_sc] <- "AminoAcid_BD"
-        md$CDR3_Vgene <- paste(md$AminoAcid_BD,md$Selected_V_BD,sep="_")
-        df <- merge(md,clust,by = "CDR3_Vgene",all.x = T, sort = F)
-
-      }
-
-      else { # BCR repertiore
-
-      }
-
-      rownames(df) <- df$Cell_Index
-      Network_df <- df[df$Clust_size_order %in% input$Clusters_to_dis_PIE,]
-      df$Clust_selected <- ifelse(df$Clust_size_order == input$Clusters_to_dis_PIE,input$Clusters_to_dis_PIE,"NS")
-      df$Clust_selected[is.na(df$Clust_selected)] <- "NS"
-      df[order(df$order.x),]
+      cluster$Clust_selected <- ifelse(cluster$Updated_order == input$Clusters_to_dis_PIE,input$Clusters_to_dis_PIE,"NS")
+      cluster$Clust_selected[is.na(cluster$Clust_selected)] <- "NS"
+      cluster[order(cluster$order.x),]
 
     })
 
@@ -14457,11 +14245,11 @@ runSTEGO <- function(){
       Idents(object = sc) <- sc@meta.data$Clust_selected
 
       name.check.clust <- input$Clusters_to_dis_PIE
-      min.pct.expression<- input$min_point_Clust #standard setting: 0.25
-      min.logfc<-  input$LogFC_Clust #0.25 is standard
+      min.pct.expression<- input$min_point_ #standard setting: 0.25
+      min.logfc<-  input$LogFC_ #0.25 is standard
 
       markers.fm.list <- FindMarkers(sc, ident.1 = name.check.clust, min.pct = min.pct.expression,  logfc.threshold = min.logfc, only.pos=TRUE)
-      markers.fm.list2 <- subset(markers.fm.list,markers.fm.list$p_val_adj < input$pval.ex.filter_Clust)
+      markers.fm.list2 <- subset(markers.fm.list,markers.fm.list$p_val_adj < input$pval.ex.filter)
       as.data.frame(markers.fm.list2)
 
     })
@@ -14495,19 +14283,7 @@ runSTEGO <- function(){
       )
       checking <- Cluster_of_interest()
       checking
-      # sc@meta.data <- checking
-      # Idents(object = sc) <- sc@meta.data$Clust_selected
-      #
-      #
-      #
-      # if (input$restrict.dotpot.clust == F ) {
-      #   list.names <- rownames(compare.stat_Cluster())
-      # }
-      #
-      # else {
-      #   list.names <- rownames(compare.stat_Cluster())
-      #   list.names <- list.names[1:input$restrict.dotpot.num.clust]
-      # }
+
 
     })
 
@@ -14544,7 +14320,9 @@ runSTEGO <- function(){
           legend.text = element_text(colour="black", size=size_legend,family=input$font_type),
           legend.position = input$legend_position,
         ) +
-        scale_colour_gradient2(low = input$low.dotplot.clust, mid = input$middle.dotplot.clust, high = input$high.dotplot.clust)
+        scale_colour_gradient2(low = input$low.dotplot.clust, mid = input$middle.dotplot.clust, high = input$high.dotplot.clust)+
+        scale_x_discrete(labels = label_wrap(20)) +
+        scale_y_discrete(labels = label_wrap(20))
 
 
     })
@@ -14619,7 +14397,7 @@ runSTEGO <- function(){
 
       for (i in 1:dim(geneSet)[1]) {
         # listed GeneSet
-        message(paste("Sample: ", i))
+        message(paste("GeneSet: ", i))
         Gene.set.testing <- as.data.frame(strsplit(geneSet$GeneSet,";")[i])
         names(Gene.set.testing) <- "V1"
         Gene.set.testing2 <- as.data.frame(unique(Gene.set.testing$V1))
@@ -14952,7 +14730,7 @@ runSTEGO <- function(){
 
       for (i in 1:dim(geneSet)[1]) {
         # listed GeneSet
-        message(paste("Sample: ", i))
+        message(paste("GeneSet: ", i))
         Gene.set.testing <- as.data.frame(strsplit(geneSet$GeneSet,";")[i])
         names(Gene.set.testing) <- "V1"
         Gene.set.testing2 <- as.data.frame(unique(Gene.set.testing$V1))
@@ -15065,7 +14843,7 @@ runSTEGO <- function(){
       df
     })
 
-    observe({
+    observeEvent(input$load_marker_genes,{
       sc <- (MainTcell_counts_names())
       validate(
         need(nrow(sc)>0,
@@ -15454,7 +15232,7 @@ runSTEGO <- function(){
 
       }
 
-      min.pct.expression<- input$min_point_Marker #standard setting: 0.25
+      min.pct.expression<- input$min_point_ #standard setting: 0.25
       min.logfc<-  input$LogFC_Marker #0.25 is standard
       # p.val.cutoff <-  input$pval_top #(1/10^3) is standard, use (1/10^0) to ignore
 
@@ -15469,7 +15247,7 @@ runSTEGO <- function(){
         markers.fm.list <- FindMarkers(sc, ident.1 = "pos", min.pct = min.pct.expression,  logfc.threshold = min.logfc, only.pos=TRUE)
       }
 
-      markers.fm.list2 <- subset(markers.fm.list,markers.fm.list$p_val_adj < input$pval.ex.filter_Marker)
+      markers.fm.list2 <- subset(markers.fm.list,markers.fm.list$p_val_adj < input$pval.ex.filter)
       as.data.frame(markers.fm.list2)
 
     })
@@ -15512,7 +15290,7 @@ runSTEGO <- function(){
 
     # Dual marker analysis -----
 
-    observe({
+    observeEvent(input$load_marker_genes,{
       sc <- (MainTcell_counts_names())
       validate(
         need(nrow(sc)>0,
@@ -15528,7 +15306,7 @@ runSTEGO <- function(){
       )
     })
 
-    observe({
+    observeEvent(input$load_marker_genes,{
       sc <- (MainTcell_counts_names())
       validate(
         need(nrow(sc)>0,
@@ -15868,24 +15646,108 @@ runSTEGO <- function(){
     # updating the UI -------
     output$Top_clone_number <- renderUI({
       sc <- UMAP_metadata_with_labs()
+
       validate(
         need(nrow(sc)>0,
              "upload file")
       )
       TCR_Expanded_Df <- TCR_Expanded_fun(sc,(input$Samp_col),(input$V_gene_sc))
       TCR_Expanded_Df$obs <- 1
-      Frequency_expanded_df <- ddply(TCR_Expanded_Df,c("Frequency_expanded"),numcolwise(sum))
-      observations <-  Frequency_expanded_df$obs[Frequency_expanded_df$percent>10 & Frequency_expanded_df$Frequency_expanded %in% "5. Gigantic (0.1 > X <= 0.5)"]
+      TCR_Expanded_Df2 <-  subset(TCR_Expanded_Df,TCR_Expanded_Df$percent>input$cut.off_percent_rep)
+      observations <- sum(TCR_Expanded_Df2$obs)
 
-      if (observations <=4 ){
+      if (length(observations)>0){
         column(6,numericInput("top_no_clonotypes","Top clonotypes per group",value = observations,step = 1, min = 0, max = 20))
       } else {
-        message("No immunodom present")
-        column(6,numericInput("top_no_clonotypes","Top clonotypes per group",value = 1,step = 1, min = 0, max = 20))
+        # message("No immunodom present")
+        observations <- 1
+        column(6,numericInput("top_no_clonotypes","Top clonotypes per group",value = observations,step = 1, min = 0, max = 20))
       }
+
+    })
+    output$cut.off_expanded2 <- renderUI({
+      sc <- UMAP_metadata_with_labs()
+      validate(
+        need(nrow(sc)>0,
+             error_message_val_UMAP)
+      )
+
+      req(input$Samp_col,input$V_gene_sc)
+      TCR_Expanded_Df <- TCR_Expanded_fun(sc,(input$Samp_col),(input$V_gene_sc))
+      TCR_Expanded_Df$obs <- 1
+
+      total.condition <- ddply(TCR_Expanded_Df,c("samp.count"),numcolwise(sum))
+      total.condition$count_total <- total.condition$samp.count * total.condition$obs
+      total.condition$frequency <- total.condition$count_total/sum(total.condition$count_total)
+      total.condition <- total.condition %>% mutate(cum_freq = cumsum(frequency))
+      total.condition <- subset(total.condition,total.condition$cum_freq>input$cutoff.expanded)
+      num.cut.off <- total.condition$samp.count[1]
+
+      # df3.meta <- df3.meta[!grepl("RNA",df3.meta) & !grepl("BCR",df3.meta) & !grepl("TCR",df3.meta)& !grepl("_gene",df3.meta) & !grepl("allele",df3.meta) & !grepl("percent",df3.meta) & !grepl("cdr3",df3.meta)]
+      numericInput("cut.off_expanded","Cut off greater than", value = num.cut.off, step = 1, min = 1)
+
+    })
+    output$Expanded.dotplot.cutoffs <- renderUI({
+
+      sc <- UMAP_metadata_with_labs()
+      validate(
+        need(nrow(sc)>0,
+             "upload file")
+      )
+
+      TCR_Expanded_Df <- TCR_Expanded_fun(sc,(input$Samp_col),(input$V_gene_sc))
+      TCR_Expanded_Df$obs <- 1
+      TCR_Expanded_Df2 <-  subset(TCR_Expanded_Df,TCR_Expanded_Df$percent>input$cut.off_percent_rep)
+      observations <- sum(TCR_Expanded_Df2$obs)
+      percentage <- sum(TCR_Expanded_Df2$percent)
+      length.samp.ID <- length(unique(TCR_Expanded_Df$ID_Column))
+      # print(length.samp.ID)
+      mat <- mat_sum(sc,input$Samp_col,input$V_gene_sc)
+
+      if(observations>0) {
+        fluidRow(
+          column(6,selectInput("restrict.dotpot","Restrict to top list",choices = c("no","yes"),selected = "no")),
+          column(6,numericInput("restrict.dotpot.num","Total genes to display:", value = 40)),
+
+        )
+      } else {
+
+        sc <- UMAP_metadata_with_labs()
+        validate(
+          need(nrow(sc)>0,
+               error_message_val_UMAP)
+        )
+
+        markers.fm.list2 <- Vals_expanded.stats()
+        req(markers.fm.list2)
+        if (length(rownames(markers.fm.list2))>40) {
+          selected.restrict.dotpot <- "yes"
+          value.restrict.dotpot.num <- 40
+
+          fluidRow(
+            column(6,selectInput("restrict.dotpot","Restrict to top list",choices = c("no","yes"),selected = selected.restrict.dotpot)),
+            column(6,numericInput("restrict.dotpot.num","Total genes to display:", value = value.restrict.dotpot.num)),
+
+          )
+
+        }
+
+        else {
+          fluidRow(
+            column(6,selectInput("restrict.dotpot","Restrict to top list",choices = c("no","yes"),selected = "no")),
+            column(6,numericInput("restrict.dotpot.num","Total genes to display:", value = 40)),
+          )
+        }
+
+      }
+
+      # df3.meta <- df3.meta[!grepl("RNA",df3.meta) & !grepl("BCR",df3.meta) & !grepl("TCR",df3.meta)& !grepl("_gene",df3.meta) & !grepl("allele",df3.meta) & !grepl("percent",df3.meta) & !grepl("cdr3",df3.meta)]
+
+
+
     })
 
-    ## prioritizing and automating the analysis --- one sample with immunodom ------
+    ## prioritizing and automating the analysis ------
 
     output$Simple_workflow_step1 <- renderPrint({
       sc <- UMAP_metadata_with_labs()
@@ -15897,27 +15759,27 @@ runSTEGO <- function(){
       TCR_Expanded_Df <- TCR_Expanded_fun(sc,(input$Samp_col),(input$V_gene_sc))
       TCR_Expanded_Df$obs <- 1
       length.samp.ID <- length(unique(TCR_Expanded_Df$ID_Column))
-      print(length.samp.ID)
-
+      # print(length.samp.ID)
       mat <- mat_sum(sc,input$Samp_col,input$V_gene_sc)
-
-
       if(max(mat$No.TimePoints)==1 && length.samp.ID ==1) {
         print("one individual and one sample")
-        Frequency_expanded_df <- ddply(TCR_Expanded_Df,c("Frequency_expanded"),numcolwise(sum))
 
-        if(dim(Frequency_expanded_df[Frequency_expanded_df$percent>10 & Frequency_expanded_df$Frequency_expanded=="5. Gigantic (0.1 > X <= 0.5)",])[1]==1) {
+        TCR_Expanded_Df <- TCR_Expanded_fun(sc,(input$Samp_col),(input$V_gene_sc))
+        TCR_Expanded_Df$obs <- 1
+        TCR_Expanded_Df2 <-  subset(TCR_Expanded_Df,TCR_Expanded_Df$percent>input$cut.off_percent_rep)
+        observations <- sum(TCR_Expanded_Df2$obs)
+        percentage <- sum(TCR_Expanded_Df2$percent)
+        if(observations>0) {
+          print("ImmunoDom")
+          # observations <-  Frequency_expanded_df$obs[Frequency_expanded_df$percent>10 & Frequency_expanded_df$Frequency_expanded %in% "5. Gigantic (0.1 > X <= 0.5)"]
+          # percent <-  Frequency_expanded_df$percent[Frequency_expanded_df$percent>10 & Frequency_expanded_df$Frequency_expanded %in% "5. Gigantic (0.1 > X <= 0.5)"]
 
-          observations <-  Frequency_expanded_df$obs[Frequency_expanded_df$percent>10 & Frequency_expanded_df$Frequency_expanded %in% "5. Gigantic (0.1 > X <= 0.5)"]
-          percent <-  Frequency_expanded_df$percent[Frequency_expanded_df$percent>10 & Frequency_expanded_df$Frequency_expanded %in% "5. Gigantic (0.1 > X <= 0.5)"]
-
-          print(paste0("There are ",print(observations)," immuno dominant clonotype(s) that account for ",round(percent,2),"% of the repertiore"))
-          print(paste0("This process will download (1) UMAP count and top plots, bar plot of immunodominat (>10% of repertiore)"))
+          print(paste0("There are ",print(observations)," immuno dominant clonotype(s) that account for ",round(percentage,2),"% of the repertoire"))
+          # print(paste0("This process will download (1) UMAP count and top plots, bar plot of immunodominat (>10% of repertoire)"))
 
           # cat("test")
         } else {
-          print("Polyclonal likely")
-
+          print("Polyclonal")
         }
 
       } else if (max(mat$No.TimePoints)==1 && length.samp.ID >1) {
@@ -15930,7 +15792,6 @@ runSTEGO <- function(){
       }
 
     })
-
     output$Module_case_statements <- renderUI({
       sc <- UMAP_metadata_with_labs()
       validate(
@@ -15939,64 +15800,147 @@ runSTEGO <- function(){
       )
 
       TCR_Expanded_Df <- TCR_Expanded_fun(sc,(input$Samp_col),(input$V_gene_sc))
-      mat <- mat_sum(sc,input$Samp_col,input$V_gene_sc)
-      if(max(mat$No.TimePoints)==1) { # one sample
-        Frequency_expanded_df <- ddply(TCR_Expanded_Df,c("Frequency_expanded"),numcolwise(sum))
-        if(dim(Frequency_expanded_df[Frequency_expanded_df$percent>10 & Frequency_expanded_df$Frequency_expanded=="5. Gigantic (0.1 > X <= 0.5)",])[1]==1) {
-
-
-        } else {
-          fluidRow(
-            # column(12,selectInput("AnalysisType","Preset parameters for",values = c("Poly"))),
-            column(12,actionButton("Poly_downlaod_button","Download preliminary polyclonal analysis"))
-          )
-        }
-      } else {
-        print("multiple groups")
-      }
-
-      sc <- UMAP_metadata_with_labs()
-      validate(
-        need(nrow(sc)>0,
-             "upload file")
-      )
-
-      TCR_Expanded_Df <- TCR_Expanded_fun(sc,(input$Samp_col),(input$V_gene_sc))
       TCR_Expanded_Df$obs <- 1
+      TCR_Expanded_Df2 <-  subset(TCR_Expanded_Df,TCR_Expanded_Df$percent>input$cut.off_percent_rep)
+      observations <- sum(TCR_Expanded_Df2$obs)
       length.samp.ID <- length(unique(TCR_Expanded_Df$ID_Column))
       print(length.samp.ID)
 
       mat <- mat_sum(sc,input$Samp_col,input$V_gene_sc)
 
-
       if(max(mat$No.TimePoints)==1 && length.samp.ID ==1) {
         print("one individual and one sample")
-        Frequency_expanded_df <- ddply(TCR_Expanded_Df,c("Frequency_expanded"),numcolwise(sum))
-
-        if(dim(Frequency_expanded_df[Frequency_expanded_df$percent>10 & Frequency_expanded_df$Frequency_expanded=="5. Gigantic (0.1 > X <= 0.5)",])[1]==1) {
-
+        if(observations>0) {
+          fluidRow(
+            column(12,actionButton("ImmDom_download_buttonOneOne","Download ImmunoDom (1 & 1) analysis"))
+          )
+        } else {
           fluidRow(
             # column(12,selectInput("AnalysisType","Preset parameters for", = c("ImmunoDom"))),
-            column(12,actionButton("ImmDom_downlaod_button","Download preliminary ImmunoDom analysis"))
+            column(12,actionButton("Poly_download_buttonOneOne","Download Polyclonal (1 & 1) analysis"))
           )
-
-          # cat("test")
         }
+      } else if (max(mat$No.TimePoints)>1 || length.samp.ID >1) {
+        print("either multiple individual or multiple sample")
 
-      } else if (max(mat$No.TimePoints)==1 && length.samp.ID >1) {
-        print("one individual and multiple sample")
-      } else if (max(mat$No.TimePoints)>1 && length.samp.ID ==1){
-        print("multiple individuals and one sample")
       } else {
-
         print("multiple individuals and multiple samples")
       }
+    })
 
+    output$Default_priority_cutoffAG <- renderUI({
+      sc <- UMAP_metadata_with_labs()
+      validate(
+        need(nrow(sc)>0,
+             "Upload File")
+      )
+      md <- sc@meta.data
+      x = today()
+      if (length(input.data_sc_clusTCR_AG())>0) {
+        clust <- input.data_sc_clusTCR_AG()
+        names(md)[names(md) %in% "v_gene_AG"] <- "Selected_V_AG"
+        names(md)[names(md) %in% "cdr3_AG"] <- "AminoAcid_AG"
+        md$CDR3_Vgene <- paste(md$AminoAcid_AG,md$Selected_V_AG,sep="_")
+        df <- merge(md,clust,by = "CDR3_Vgene")
+        df2 <- as.data.frame(df$CDR3_Vgene)
+        names(df2) <- "CDR3_Vgene"
+        df2$CDR3_Vgene_count <- 1
+        df3 <- as.data.frame(ddply(df2,"CDR3_Vgene",numcolwise(sum)))
+        df4 <- merge(df3,df,by = "CDR3_Vgene")
+
+        # change the cluster priority based on
+        df5 <- df4[,names(df4) %in% c("Clust_size_order",input$Samp_col)]
+        df5$clusterCount <- df4$count
+        df5$Total_cloneCount <- 1
+        df6 <- as.data.frame(ddply(df5,c("Clust_size_order","clusterCount"),numcolwise(sum)))
+        df6 <- subset(df6,df6$Total_cloneCount>1)
+
+        df8 <- df4[,names(df4) %in% c("Clust_size_order",input$Samp_col)]
+        df8 <- df8[!duplicated(df8), ]
+        df8
+        df8$Sample_count <- 1
+        df9 <- as.data.frame(ddply(df8,c("Clust_size_order"),numcolwise(sum)))
+        df10 <- merge(df6,df9,by = "Clust_size_order")
+
+        df10$priority <- 1/(df10$Total_cloneCount * df10$clusterCount * df10$Sample_count)
+        df10 <- df10[order(df10$priority,decreasing = F),]
+        df10$Updated_order <- 1:dim(df10)[1]
+        df10$priority[is.na(df10$priority)] <- 0
+        df10 <- subset(df10,df10$priority>0)
+        # remove clusters with only 1 finding after QC process
+        df7 <- merge(df10,df4,by = c("Clust_size_order"))
+
+        df7 <- df7[order(df7$priority,decreasing = F),]
+        prior <- subset(df7,df7$Updated_order > 9)
+        numericInput("priority_cutoff","Priority cut-off (AG)",value = min(prior$priority),step = 0.01, min = 0,max = 0.26)
+      }
+
+      else {
+        # numericInput("priority_cutoff","Priority cut-off (AG)",value = 1,step = 0.01, min = 0)
+      }
+
+      # df3.meta <- df3.meta[!grepl("RNA",df3.meta) & !grepl("BCR",df3.meta) & !grepl("TCR",df3.meta)& !grepl("_gene",df3.meta) & !grepl("allele",df3.meta) & !grepl("percent",df3.meta) & !grepl("cdr3",df3.meta)]
 
 
     })
+    output$Default_priority_cutoffBD <- renderUI({
+      sc <- UMAP_metadata_with_labs()
+      validate(
+        need(nrow(sc)>0,
+             "Upload File")
+      )
+      md <- sc@meta.data
+      x = today()
+      if (length(input.data_sc_clusTCR_BD())>0) {
+        clust <- input.data_sc_clusTCR_BD()
+        names(md)[names(md) %in% "v_gene_BD"] <- "Selected_V_BD"
+        names(md)[names(md) %in% "cdr3_BD"] <- "AminoAcid_BD"
+        md$CDR3_Vgene <- paste(md$AminoAcid_BD,md$Selected_V_BD,sep="_")
 
-    observeEvent(input$ImmDom_downlaod_button,{
+        df <- merge(md,clust,by = "CDR3_Vgene",all.x = T)
+        df2 <- as.data.frame(df$CDR3_Vgene)
+        names(df2) <- "CDR3_Vgene"
+        df2$CDR3_Vgene_count <- 1
+        df3 <- as.data.frame(ddply(df2,"CDR3_Vgene",numcolwise(sum)))
+        df4 <- merge(df3,df,by = "CDR3_Vgene",all.y = T)
+
+        # change the cluster priority based on
+        df5 <- df4[,names(df4) %in% c("Clust_size_order",input$Samp_col)]
+        df5$clusterCount <- df4$count
+        df5$Total_cloneCount <- 1
+        df6 <- as.data.frame(ddply(df5,c("Clust_size_order","clusterCount"),numcolwise(sum)))
+        df6 <- subset(df6,df6$Total_cloneCount>1)
+
+        df8 <- df4[,names(df4) %in% c("Clust_size_order",input$Samp_col)]
+        df8 <- df8[!duplicated(df8), ]
+        df8$Sample_count <- 1
+        df9 <- as.data.frame(ddply(df8,c("Clust_size_order"),numcolwise(sum)))
+        df10 <- merge(df6,df9,by = "Clust_size_order")
+
+        df10$priority <- 1/(df10$Total_cloneCount * df10$clusterCount * df10$Sample_count)
+        df10 <- df10[order(df10$priority,decreasing = F),]
+        df10$Updated_order <- 1:dim(df10)[1]
+        df10$priority[is.na(df10$priority)] <- 0
+        df10 <- subset(df10,df10$priority>0)
+        # remove clusters with only 1 finding after QC process
+        df7 <- merge(df10,df4,by = c("Clust_size_order"))
+
+        df7 <- df7[order(df7$priority,decreasing = F),]
+        prior <- subset(df7,df7$Updated_order > 10)
+        numericInput("priority_cutoffBD","Priority cut-off (BD)",value = min(prior$priority),step = 0.01, min = 0)
+        # numericInput("","Priority cut-off",value = unique(prior$priority),step = 0.01, min = 0)
+      }
+
+      else {
+        # numericInput("priority_cutoffBD","Priority cut-off",value = 1,step = 0.01, min = 0)
+      }
+
+      # df3.meta <- df3.meta[!grepl("RNA",df3.meta) & !grepl("BCR",df3.meta) & !grepl("TCR",df3.meta)& !grepl("_gene",df3.meta) & !grepl("allele",df3.meta) & !grepl("percent",df3.meta) & !grepl("cdr3",df3.meta)]
+
+
+    })
+    # one sample one indiv ImmunoDom -----
+    observeEvent(input$ImmDom_download_buttonOneOne,{
       sc <- UMAP_metadata_with_labs()
       validate(
         need(nrow(sc)>0,
@@ -16036,6 +15980,13 @@ runSTEGO <- function(){
 
       top_clone_FindMaker_looped()
 
+      message("Downloading AG cluster table")
+
+      top.name.clonotypes <- paste("Prioritisation/1_OneIndivOneSamp/ImmunoDom/Cluster_summary_table_AG",x,".csv",sep="")
+      write.csv(clusTCR2_df(),top.name.clonotypes, row.names = F)
+
+
+
 
 
       # }
@@ -16068,91 +16019,93 @@ runSTEGO <- function(){
         need(nrow(sc)>0,
              "Upload")
       )
+
+      req(input$Samp_col,input$V_gene_sc)
       df3.meta <- sc@meta.data
       df3.meta$cluster_name <- df3.meta[,names(df3.meta) %in% input$V_gene_sc]
 
       BD_sum <- Top_clonotype_df2()
       BD_sum <- subset(BD_sum,BD_sum$Total_count>1)
+
       TCR_Expanded_Df <- TCR_Expanded_fun(sc,(input$Samp_col),(input$V_gene_sc))
       TCR_Expanded_Df$obs <- 1
-      Frequency_expanded_df <- ddply(TCR_Expanded_Df,c("Frequency_expanded"),numcolwise(sum))
-      observations <-  Frequency_expanded_df$obs[Frequency_expanded_df$percent>10 & Frequency_expanded_df$Frequency_expanded %in% "5. Gigantic (0.1 > X <= 0.5)"]
+      TCR_Expanded_Df2 <-  subset(TCR_Expanded_Df,TCR_Expanded_Df$percent>input$cut.off_percent_rep)
+      observations <- sum(TCR_Expanded_Df2$obs)
+      percentage <- sum(TCR_Expanded_Df2$percent)
 
-      for (i in 1:observations) {
-        name.clone <- BD_sum$cluster_name[i]
-        top_BD_clonotype <- df3.meta[df3.meta$cluster_name %in% name.clone,]
-        top_BD_clonotype
+      withProgress(message = 'Performing ImmDom Analysis', value = 0, {
+        for (i in 1:observations) {
 
-        dtop_clonotype_bar_code <- top_BD_clonotype
+          incProgress(1/observations, detail = paste("Clone", i,"of",observations))
+          message(BD_sum$cluster_name[i])
+          name.clone <- BD_sum$cluster_name[i]
+          top_BD_clonotype <- df3.meta[df3.meta$cluster_name %in% name.clone,]
+          # print(top_BD_clonotype)
 
-        req(input$Graph_split_order)
+          dtop_clonotype_bar_code <- top_BD_clonotype
 
-        dtop_clonotype_bar_code$Selected_group <- dtop_clonotype_bar_code[,names(dtop_clonotype_bar_code) %in% input$Split_group_by_]
-        num <- 1
-        # num <- as.data.frame(num[complete.cases(num)==T,])
-        as.data.frame(length(num))
-        if (input$colourtype == "default") {
-          colorblind_vector <- gg_fill_hue(num)
-        } else if (input$colourtype == "hcl.colors") {
-          colorblind_vector <- c(hcl.colors(num, palette = "viridis"))
-        } else if (input$colourtype == "topo.colors") {
-          colorblind_vector <- c(topo.colors(num))
-        } else if (input$colourtype == "heat.colors") {
-          colorblind_vector <- c(heat.colors(num))
-        } else if (input$colourtype == "terrain.colors") {
-          colorblind_vector <- c(terrain.colors(num))
-        } else if (input$colourtype == "rainbow") {
-          colorblind_vector <- c(rainbow((num)))
-        } else if (input$colourtype == "random") {
-          colorblind_vector <- distinctColorPalette(num)
+          # req(input$Graph_split_order)
 
-        }  else {
+          dtop_clonotype_bar_code$Selected_group <- dtop_clonotype_bar_code[,names(dtop_clonotype_bar_code) %in% input$Split_group_by_]
+          num <- 1
+          # num <- as.data.frame(num[complete.cases(num)==T,])
+          as.data.frame(length(num))
+          if (input$colourtype == "default") {
+            colorblind_vector <- gg_fill_hue(num)
+          } else if (input$colourtype == "hcl.colors") {
+            colorblind_vector <- c(hcl.colors(num, palette = "viridis"))
+          } else if (input$colourtype == "topo.colors") {
+            colorblind_vector <- c(topo.colors(num))
+          } else if (input$colourtype == "heat.colors") {
+            colorblind_vector <- c(heat.colors(num))
+          } else if (input$colourtype == "terrain.colors") {
+            colorblind_vector <- c(terrain.colors(num))
+          } else if (input$colourtype == "rainbow") {
+            colorblind_vector <- c(rainbow((num)))
+          } else if (input$colourtype == "random") {
+            colorblind_vector <- distinctColorPalette(num)
+
+          }  else {
+
+          }
+
+
+          colorblind_vector <- as.data.frame(colorblind_vector)
+          names(colorblind_vector) <- "cols"
+
+          dtop_clonotype_bar_code$Selected_chain2 <- dtop_clonotype_bar_code[,names(dtop_clonotype_bar_code) %in% input$V_gene_sc]
+          dtop_clonotype_bar_code$Selected_chain3 <- gsub("_"," ",dtop_clonotype_bar_code$Selected_chain2)
+          dtop_clonotype_bar_code$Selected_chain3 <- gsub("[.]"," ",dtop_clonotype_bar_code$Selected_chain3)
+
+          dtop_clonotype_bar_code <- dtop_clonotype_bar_code[dtop_clonotype_bar_code$Selected_group %in% input$Graph_split_order,]
+          dtop_clonotype_bar_code$Selected_group <- factor(dtop_clonotype_bar_code$Selected_group,levels = input$Graph_split_order)
+
+          ggplot_plot <- ggplot(dtop_clonotype_bar_code, aes(x=Selected_group, fill=Selected_chain3,colour = Selected_chain3, label = Selected_chain3)) +
+            geom_bar() +
+            theme_bw()+
+            scale_color_manual(labels = ~ stringr::str_wrap(.x, width = 10), values = colorblind_vector$cols, na.value=input$NA_col_analysis)+
+            scale_fill_manual(labels = ~ stringr::str_wrap(.x, width = 10), values = colorblind_vector$cols, na.value=input$NA_col_analysis)+
+            # scale_alpha_manual(values = rep(1,length(unique(dtop_clonotype_bar_code$Selected_chain))), na.value=0.5)+
+            theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank())+
+            theme(
+              axis.title.y = element_text(colour="black",family=input$font_type,size = input$title.text.sizer2),
+              axis.text.y = element_text(colour="black",family=input$font_type,size = input$text_size),
+              axis.text.x = element_text(colour="black",family=input$font_type,size = input$text_size,angle=90),
+              axis.title.x = element_blank(),
+              legend.text = element_text(colour="black", size=input$Bar_legend_size,family=input$font_type),
+              legend.position = input$legend_position,
+              legend.title = element_blank()
+            ) +
+            guides(color = "none", size = "none")
+
+          x = today()
+          top.name.clonotypes.top_png <- paste("Prioritisation/1_OneIndivOneSamp/ImmunoDom/",i,"_top_clone_",gsub("[/]","",gsub("&","",name.clone)),"_",x,".png",sep="")
+          png(top.name.clonotypes.top_png, width = input$width_png_TCR.UMAP,height = input$height_png_TCR.UMAP,res = input$resolution_PNG_TCR.UMAP)
+          plot(ggplot_plot)
+          dev.off()
 
         }
-
-
-        colorblind_vector <- as.data.frame(colorblind_vector)
-        names(colorblind_vector) <- "cols"
-
-        dtop_clonotype_bar_code$Selected_chain2 <- dtop_clonotype_bar_code[,names(dtop_clonotype_bar_code) %in% input$V_gene_sc]
-        dtop_clonotype_bar_code$Selected_chain3 <- gsub("_"," ",dtop_clonotype_bar_code$Selected_chain2)
-        dtop_clonotype_bar_code$Selected_chain3 <- gsub("[.]"," ",dtop_clonotype_bar_code$Selected_chain3)
-
-        dtop_clonotype_bar_code <- dtop_clonotype_bar_code[dtop_clonotype_bar_code$Selected_group %in% input$Graph_split_order,]
-        dtop_clonotype_bar_code$Selected_group <- factor(dtop_clonotype_bar_code$Selected_group,levels = input$Graph_split_order)
-
-        ggplot_plot <- ggplot(dtop_clonotype_bar_code, aes(x=Selected_group, fill=Selected_chain3,colour = Selected_chain3, label = Selected_chain3)) +
-          geom_bar() +
-          theme_bw()+
-          scale_color_manual(labels = ~ stringr::str_wrap(.x, width = 10), values = colorblind_vector$cols, na.value=input$NA_col_analysis)+
-          scale_fill_manual(labels = ~ stringr::str_wrap(.x, width = 10), values = colorblind_vector$cols, na.value=input$NA_col_analysis)+
-          # scale_alpha_manual(values = rep(1,length(unique(dtop_clonotype_bar_code$Selected_chain))), na.value=0.5)+
-          theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank())+
-          theme(
-            axis.title.y = element_text(colour="black",family=input$font_type,size = input$title.text.sizer2),
-            axis.text.y = element_text(colour="black",family=input$font_type,size = input$text_size),
-            axis.text.x = element_text(colour="black",family=input$font_type,size = input$text_size,angle=90),
-            axis.title.x = element_blank(),
-            legend.text = element_text(colour="black", size=input$Bar_legend_size,family=input$font_type),
-            legend.position = input$legend_position,
-            legend.title = element_blank()
-          ) +
-          guides(color = "none", size = "none")
-
-        x = today()
-        top.name.clonotypes.top_png <- paste("Prioritisation/1_OneIndivOneSamp/ImmunoDom/",i,"_top_clone_",gsub("[/]","",gsub("&","",name.clone)),"_",x,".png",sep="")
-        png(top.name.clonotypes.top_png, width = input$width_png_TCR.UMAP,height = input$height_png_TCR.UMAP,res = input$resolution_PNG_TCR.UMAP)
-        plot(ggplot_plot)
-        dev.off()
-
-
-
-
-
-
-
-      }
-
+      })
     })
     top_clone_FindMaker_looped <- reactive({
 
@@ -16169,170 +16122,905 @@ runSTEGO <- function(){
       BD_sum <- subset(BD_sum,BD_sum$Total_count>1)
       TCR_Expanded_Df <- TCR_Expanded_fun(sc,(input$Samp_col),(input$V_gene_sc))
       TCR_Expanded_Df$obs <- 1
-      Frequency_expanded_df <- ddply(TCR_Expanded_Df,c("Frequency_expanded"),numcolwise(sum))
-      observations <-  Frequency_expanded_df$obs[Frequency_expanded_df$percent>10 & Frequency_expanded_df$Frequency_expanded %in% "5. Gigantic (0.1 > X <= 0.5)"]
+      TCR_Expanded_Df2 <-  subset(TCR_Expanded_Df,TCR_Expanded_Df$percent>input$cut.off_percent_rep)
+      observations <- sum(TCR_Expanded_Df2$obs)
+      percentage <- sum(TCR_Expanded_Df2$percent)
 
-      for (i in 1:observations) {
+      withProgress(message = 'Performing FindMarker ImmDom Analysis', value = 0, {
 
-        name.clone <- BD_sum$cluster_name[i]
 
-        message(paste0("Downloading Dom stats files and dot plot...",name.clone))
+        for (i in 1:observations) {
+          incProgress(1/observations, detail = paste("Clone", i,"of",observations))
+          name.clone <- BD_sum$cluster_name[i]
 
-        sc@meta.data$Gene_select <- ifelse(sc@meta.data$Vgene %in% name.clone,name.clone,"other")
-        sc@meta.data
-        Idents(object = sc) <- sc@meta.data$Gene_select
+          message(paste0("Downloading Dom stats files and dot plot...",name.clone))
 
-        min.pct.expression<- input$min_point_top #standard setting: 0.25
-        min.logfc<-  input$LogFC_top #0.25 is standard
-        # p.val.cutoff <-  input$pval_top #(1/10^3) is standard, use (1/10^0) to ignore
+          sc@meta.data$Gene_select <- ifelse(sc@meta.data$Vgene %in% name.clone,name.clone,"other")
+          sc@meta.data
+          Idents(object = sc) <- sc@meta.data$Gene_select
 
-        cluster.names <- unique(Idents(sc))[order(unique(Idents(sc)))]
-        # print(paste0("calculating markers for cluster ",name.clone,". Total: ",length(cluster.names)," clusters"))
-        markers.fm.list <- FindMarkers(sc, ident.1 = name.clone, min.pct = min.pct.expression,  logfc.threshold = min.logfc, only.pos=TRUE)
-        markers.fm.list2 <- subset(markers.fm.list,markers.fm.list$p_val_adj < input$pval.ex.filter_original)
+          min.pct.expression<- input$min_point_ #standard setting: 0.25
+          min.logfc<-  input$LogFC_ #0.25 is standard
+          # p.val.cutoff <-  input$pval_top #(1/10^3) is standard, use (1/10^0) to ignore
 
-        x=today()
-        clonotype.name.stats <- paste("Prioritisation/1_OneIndivOneSamp/ImmunoDom/",i,"_stats_table","_",today(), ".csv", sep = "")
-        write.csv(markers.fm.list2,clonotype.name.stats,row.names = F)
+          cluster.names <- unique(Idents(sc))[order(unique(Idents(sc)))]
+          # print(paste0("calculating markers for cluster ",name.clone,". Total: ",length(cluster.names)," clusters"))
+          markers.fm.list <- FindMarkers(sc, ident.1 = name.clone, min.pct = min.pct.expression,  logfc.threshold = min.logfc, only.pos=TRUE)
+          markers.fm.list2 <- subset(markers.fm.list,markers.fm.list$p_val_adj < input$pval.ex.filter)
 
-        message(paste0("Saved csv",name.clone))
-        list.names <- rownames(markers.fm.list2)
+          x=today()
+          clonotype.name.stats <- paste("Prioritisation/1_OneIndivOneSamp/ImmunoDom/",i,"_",gsub("[/]","",gsub("&","",name.clone)),"_stats_table","_",today(), ".csv", sep = "")
+          write.csv(markers.fm.list2,clonotype.name.stats,row.names = F)
 
-        if (length(rownames(markers.fm.list2))>30) {
-          list.names <- list.names[1:30]
-        }
-
-        else {
+          message(paste0("Saved csv",name.clone))
           list.names <- rownames(markers.fm.list2)
-        }
 
-        size_legend = input$Bar_legend_size-2
-
-
-
-        plotdotplot <- DotPlot(sc, features = list.names) +
-          RotatedAxis() +
-          theme(
-            axis.title.y = element_blank(),
-            axis.text.y = element_text(colour="black",family=input$font_type,size = input$text_size),
-            axis.text.x = element_text(colour="black",family=input$font_type,size = input$text_size, angle = 90),
-            axis.title.x = element_blank(),
-            legend.title = element_text(colour="black", size=input$Bar_legend_size,family=input$font_type),
-            legend.text = element_text(colour="black", size=size_legend,family=input$font_type),
-            legend.position = input$legend_position,
-          ) +
-          scale_colour_gradient2(low = input$low.dotplot, mid = input$middle.dotplot, high = input$high.dotplot)
-
-
-        file.name.clone <- paste("Prioritisation/1_OneIndivOneSamp/ImmunoDom/",i,"_",gsub("[/]","",gsub("&","",name.clone)),"_dotplot_plot","_",today(), ".png", sep = "")
-
-        ### download the dot plot -------
-        png(file.name.clone, width = input$width_png_all_expression_dotplot_top, height = input$height_png_all_expression_dotplot_top,res = input$resolution_PNG_all_expression_dotplot_top)
-        plot(plotdotplot)
-        dev.off()
-
-
-        ##### download the OverRep ------
-
-        df <- sc@meta.data
-        # require()
-
-        geneSet <- read.csv(system.file("OverRep","GeneSets.csv",package = "STEGO.R"),header = T)
-        background.genes.name <- as.data.frame(rownames(sc@assays$RNA@scale.data))
-        names(background.genes.name) <- "V1"
-        background.genes <- length(rownames(sc@assays$RNA@scale.data))
-
-        geneSet$background.genes <- background.genes
-
-        DEx.genes <- as.data.frame(rownames(markers.fm.list2))
-        names(DEx.genes) <- "V1"
-
-        total.sig <- length(DEx.genes$V1)
-        geneSet$total.sig <- length(DEx.genes$V1)
-
-        geneSet$background.geneset <- NA
-        geneSet$background.geneset.name <- NA
-        geneSet$in.geneset <- NA
-        geneSet$in.geneset.name <- NA
-
-        if(input$datasource == "BD_Rhapsody_Paired" || input$datasource == "BD_Rhapsody_AIRR") { # selectInput("datasource", "Data source",choices=c("10x_Genomics","BD_Rhapsody_Paired","BD_Rhapsody_AIRR")),
-          geneSet$GeneSet <- gsub("-",".",geneSet$GeneSet)
-        }
-
-        if(input$species_analysis == "mm") { # selectInput("datasource", "Data source",choices=c("10x_Genomics","BD_Rhapsody_Paired","BD_Rhapsody_AIRR")),
-          require(stringr)
-          geneSet$GeneSet <- str_to_title(geneSet$GeneSet)
-        }
-
-        for (j in 1:dim(geneSet)[1]) {
-          # listed GeneSet
-          message(paste("GeneSet: ", j))
-          Gene.set.testing <- as.data.frame(strsplit(geneSet$GeneSet,";")[j])
-          names(Gene.set.testing) <- "V1"
-          Gene.set.testing2 <- as.data.frame(unique(Gene.set.testing$V1))
-          names(Gene.set.testing2) <- "V1"
-          background.overlap <- merge(Gene.set.testing2,background.genes.name,by= "V1")
-          geneSet$background.geneset[j] <- length(background.overlap$V1)
-          geneSet$background.geneset.name[j] <- as.character(paste(unlist(background.overlap[1]), collapse=';'))
-          # in sig gene list
-          overlap <- merge(background.overlap,DEx.genes,by= "V1")
-
-          geneSet$in.geneset[j] <- length(overlap$V1)
-          geneSet$in.geneset.name[j] <- as.character(paste(unlist(overlap[1]), collapse=';'))
-
-        }
-
-        geneSet2 <- subset(geneSet,geneSet$in.geneset>0)
-
-        for (k in 1:dim(geneSet2)[1]) {
-          tota.gene.set <- geneSet2$background.geneset[k] # genes that are identified in background
-          tota.gene.set
-          in.geneset <-  geneSet2$in.geneset[k]# DEx in geneset
-
-          background.genes
-          not.in.total <- background.genes - tota.gene.set
-          not.in.geneset.sig <- total.sig - in.geneset
-          d <- data.frame( gene.in.interest=c( in.geneset, not.in.geneset.sig),gene.not.interest=c( tota.gene.set, not.in.total))
-          row.names(d) <- c("In_category", "not_in_category")
-
-          if (in.geneset>0) {
-            geneSet2$p.val[k] <- unlist(fisher.test(d, alternative = "greater")$p.value)[1]
-            geneSet2$lowerCI[k] <-  unlist(fisher.test(d, alternative = "greater")$conf.int)[1]
-            geneSet2$upperCI[k] <-unlist(fisher.test(d)$conf.int)[2]
-            geneSet2$OR[k] <- round(unlist(fisher.test(d, alternative = "greater")$estimate)[1],3)
+          if (length(rownames(markers.fm.list2))>40) {
+            list.names <- list.names[1:40]
           }
 
           else {
-            geneSet2$p.value[k] <- "-"
-            geneSet2$lowerCI[k] <-  "-"
-            geneSet2$upperCI[k] <- "-"
-            geneSet2$OR[k] <- "-"
+            list.names <- rownames(markers.fm.list2)
           }
+
+          size_legend = input$Bar_legend_size-2
+
+
+
+          plotdotplot <- DotPlot(sc, features = list.names) +
+            RotatedAxis() +
+            theme(
+              axis.title.y = element_blank(),
+              axis.text.y = element_text(colour="black",family=input$font_type,size = input$text_size),
+              axis.text.x = element_text(colour="black",family=input$font_type,size = input$text_size, angle = 90),
+              axis.title.x = element_blank(),
+              legend.title = element_text(colour="black", size=input$Bar_legend_size,family=input$font_type),
+              legend.text = element_text(colour="black", size=size_legend,family=input$font_type),
+              legend.position = input$legend_position,
+            ) +
+            scale_colour_gradient2(low = input$low.dotplot, mid = input$middle.dotplot, high = input$high.dotplot) +
+            scale_x_discrete(labels = label_wrap(20)) +
+            scale_y_discrete(labels = label_wrap(20))
+
+
+          file.name.clone <- paste("Prioritisation/1_OneIndivOneSamp/ImmunoDom/",i,"_",gsub("[/]","",gsub("&","",name.clone)),"_dotplot_plot","_",today(), ".png", sep = "")
+
+          ### download the dot plot -------
+          png(file.name.clone, width = input$width_png_all_expression_dotplot_top, height = input$height_png_all_expression_dotplot_top,res = input$resolution_PNG_all_expression_dotplot_top)
+          plot(plotdotplot)
+          dev.off()
+
+
+          ##### download the OverRep ------
+
+          df <- sc@meta.data
+          # require()
+
+          geneSet <- read.csv(system.file("OverRep","GeneSets.csv",package = "STEGO.R"),header = T)
+          background.genes.name <- as.data.frame(rownames(sc@assays$RNA@scale.data))
+          names(background.genes.name) <- "V1"
+          background.genes <- length(rownames(sc@assays$RNA@scale.data))
+
+          geneSet$background.genes <- background.genes
+
+          DEx.genes <- as.data.frame(rownames(markers.fm.list2))
+          names(DEx.genes) <- "V1"
+
+          total.sig <- length(DEx.genes$V1)
+          geneSet$total.sig <- length(DEx.genes$V1)
+
+          geneSet$background.geneset <- NA
+          geneSet$background.geneset.name <- NA
+          geneSet$in.geneset <- NA
+          geneSet$in.geneset.name <- NA
+
+          if(input$datasource == "BD_Rhapsody_Paired" || input$datasource == "BD_Rhapsody_AIRR") { # selectInput("datasource", "Data source",choices=c("10x_Genomics","BD_Rhapsody_Paired","BD_Rhapsody_AIRR")),
+            geneSet$GeneSet <- gsub("-",".",geneSet$GeneSet)
+          }
+
+          if(input$species_analysis == "mm") { # selectInput("datasource", "Data source",choices=c("10x_Genomics","BD_Rhapsody_Paired","BD_Rhapsody_AIRR")),
+            require(stringr)
+            geneSet$GeneSet <- str_to_title(geneSet$GeneSet)
+          }
+
+          for (j in 1:dim(geneSet)[1]) {
+            # listed GeneSet
+            message(paste("GeneSet: ", j))
+            Gene.set.testing <- as.data.frame(strsplit(geneSet$GeneSet,";")[j])
+            names(Gene.set.testing) <- "V1"
+            Gene.set.testing2 <- as.data.frame(unique(Gene.set.testing$V1))
+            names(Gene.set.testing2) <- "V1"
+            background.overlap <- merge(Gene.set.testing2,background.genes.name,by= "V1")
+            geneSet$background.geneset[j] <- length(background.overlap$V1)
+            geneSet$background.geneset.name[j] <- as.character(paste(unlist(background.overlap[1]), collapse=';'))
+            # in sig gene list
+            overlap <- merge(background.overlap,DEx.genes,by= "V1")
+
+            geneSet$in.geneset[j] <- length(overlap$V1)
+            geneSet$in.geneset.name[j] <- as.character(paste(unlist(overlap[1]), collapse=';'))
+
+          }
+
+          geneSet2 <- subset(geneSet,geneSet$in.geneset>0)
+
+          for (k in 1:dim(geneSet2)[1]) {
+            tota.gene.set <- geneSet2$background.geneset[k] # genes that are identified in background
+            tota.gene.set
+            in.geneset <-  geneSet2$in.geneset[k]# DEx in geneset
+
+            background.genes
+            not.in.total <- background.genes - tota.gene.set
+            not.in.geneset.sig <- total.sig - in.geneset
+            d <- data.frame( gene.in.interest=c( in.geneset, not.in.geneset.sig),gene.not.interest=c( tota.gene.set, not.in.total))
+            row.names(d) <- c("In_category", "not_in_category")
+
+            if (in.geneset>0) {
+              geneSet2$p.val[k] <- unlist(fisher.test(d, alternative = "greater")$p.value)[1]
+              geneSet2$lowerCI[k] <-  unlist(fisher.test(d, alternative = "greater")$conf.int)[1]
+              geneSet2$upperCI[k] <-unlist(fisher.test(d)$conf.int)[2]
+              geneSet2$OR[k] <- round(unlist(fisher.test(d, alternative = "greater")$estimate)[1],3)
+            }
+
+            else {
+              geneSet2$p.value[k] <- "-"
+              geneSet2$lowerCI[k] <-  "-"
+              geneSet2$upperCI[k] <- "-"
+              geneSet2$OR[k] <- "-"
+            }
+          }
+
+          geneSet2 <- geneSet2[order(geneSet2$p.val,decreasing = F),]
+          geneSet2 <- subset(geneSet2,geneSet2$in.geneset>=input$in.geneset.cutoff_top)
+          geneSet2 <- subset(geneSet2,geneSet2$p.val<=input$p.val_cutoff_top)
+          geneSet2$FDR <- p.adjust(geneSet2$p.val, method = "fdr")
+          geneSet2$Bonferroni <- p.adjust(geneSet2$p.val, method = "bonferroni")
+
+          file.name.clone <- paste("Prioritisation/1_OneIndivOneSamp/ImmunoDom/",i,"_",gsub("[/]","",gsub("&","",name.clone)),"_dotplot_plot","_",today(), ".png", sep = "")
+          top.name.overrep <- paste("Prioritisation/1_OneIndivOneSamp/ImmunoDom/",i,"_",gsub("[/]","",gsub("&","",name.clone)),"_OverRep","_",today(), ".csv", sep = "")
+          write.csv(geneSet2,top.name.overrep, row.names = F)
+
+
+
         }
 
-        geneSet2 <- geneSet2[order(geneSet2$p.val,decreasing = F),]
-        geneSet2 <- subset(geneSet2,geneSet2$in.geneset>=input$in.geneset.cutoff_top)
-        geneSet2 <- subset(geneSet2,geneSet2$p.val<=input$p.val_cutoff_top)
-        geneSet2$FDR <- p.adjust(geneSet2$p.val, method = "fdr")
-        geneSet2$Bonferroni <- p.adjust(geneSet2$p.val, method = "bonferroni")
+      })
+    })
 
-        file.name.clone <- paste("Prioritisation/1_OneIndivOneSamp/ImmunoDom/",i,"_",gsub("[/]","",gsub("&","",name.clone)),"_dotplot_plot","_",today(), ".png", sep = "")
-        top.name.overrep <- paste("Prioritisation/1_OneIndivOneSamp/ImmunoDom/",i,"_",gsub("[/]","",gsub("&","",name.clone)),"_OverRep","_",today(), ".csv", sep = "")
-        write.csv(geneSet2,top.name.overrep, row.names = F)
+    # one sample one indiv Polyclonal -----
+    observeEvent(input$Poly_download_buttonOneOne,{
+      sc <- UMAP_metadata_with_labs()
+      validate(
+        need(nrow(sc)>0,
+             "upload file")
+      )
+
+      TCR_Expanded_Df <- TCR_Expanded_fun(sc,(input$Samp_col),(input$V_gene_sc))
+      TCR_Expanded_Df$obs <- 1
+      TCR_Expanded_Df2 <-  subset(TCR_Expanded_Df,TCR_Expanded_Df$percent>input$cut.off_percent_rep)
+      observations <- sum(TCR_Expanded_Df2$obs)
+
+      x = today()
+      message("Downloading contig summary table...")
+      top.name.clonotypes <- paste("Prioritisation/1_OneIndivOneSamp/PolyClonal/Expansion_summary_table_",x,".csv",sep="")
+      write.csv(Top_clonotype_df2(),top.name.clonotypes, row.names = F)
+
+      message("Downloading the count UMAP...")
+      top.name.clonotypes.top_png <- paste("Prioritisation/1_OneIndivOneSamp/PolyClonal/Expansion_UMAP_count_",x,".png",sep="")
+      png(top.name.clonotypes.top_png, width = input$width_png_TCR.UMAP,height = input$height_png_TCR.UMAP,res = input$resolution_PNG_TCR.UMAP)
+      plot(UMAP.TCRclonalit2())
+      dev.off()
+
+      message("Downloading the expansion UMAP...")
+      top.name.clonotypes.top_png <- paste("Prioritisation/1_OneIndivOneSamp/PolyClonal/Exp_UMAP_cutoff_count.",input$cut.off_expanded,".and.freq",input$cutoff.expanded,"_",x,".png",sep="")
+      # png(top.name.clonotypes.top_png, width = input$width_png_TCR.UMAP,height = input$height_png_TCR.UMAP,res = input$resolution_PNG_TCR.UMAP)
+      png(top.name.clonotypes.top_png, width = input$width_png_UMAP_Expanded,
+          height = input$height_png_UMAP_Expanded ,
+          res = input$resolution_PNG_UMAP_Expanded )
+      plot(UMAP_Expanded_plot())
+      dev.off()
+
+      message("Downloading stats table...")
+      Exp_stats_cutoff_count.name <- paste("Prioritisation/1_OneIndivOneSamp/PolyClonal/Exp_stats_cutoff_count.",input$cut.off_expanded,".and.freq",input$cutoff.expanded,"_",x,".csv",sep="")
+      write.csv(Vals_expanded.stats(),Exp_stats_cutoff_count.name, row.names = T)
+
+      message("Downloading the expansion stats dotplot...")
+      top.name.clonotypes.top_png <- paste("Prioritisation/1_OneIndivOneSamp/PolyClonal/Exp_dotplot.",input$cut.off_expanded,".and.freq",input$cutoff.expanded,"_",x,".png",sep="")
+      png(top.name.clonotypes.top_png, width = input$width_png_all_expression_dotplot_ex,
+          height = input$height_png_all_expression_dotplot_ex,
+          res = input$resolution_PNG_all_expression_dotplot_ex)
+      plot(relative_expression_plot_ex())
+      dev.off()
+
+      message("Downloading overrep table...")
+      Exp_stats_cutoff_count.name <- paste("Prioritisation/1_OneIndivOneSamp/PolyClonal/Exp_OverRep_cutoff_count.",input$cut.off_expanded,".and.freq",input$cutoff.expanded,"_",x,".csv",sep="")
+      write.csv(Over_rep_Exp(),Exp_stats_cutoff_count.name, row.names = F)
 
 
+    })
+
+
+    # multiple samples (either individuals or samples) ------
+    # add in upset plot and table to show clonal expansion -> then make expansion overall with consideration to the sample. Also add in count, not just percentage.
+
+
+    # Clustering priority with individual counts -----
+    observeEvent(input$ClusterDownload_download_buttonOneOne,{
+      x = today()
+
+      if (length(AG_cluster())>0) {
+        message("Downloading AG cluster table...")
+        Exp_stats_cutoff_count.name <- paste("Prioritisation/1_OneIndivOneSamp/Clustering/Cluster_summary_table_AG_",x,".csv",sep="")
+        AG_cluster <- AG_cluster()
+        # AG_cluster <- subset(AG_cluster,AG_cluster$priority<input$priority_cutoff)
+        write.csv(AG_cluster,Exp_stats_cutoff_count.name, row.names = F)
+        message("Downloading AG cluster analysis...")
+        ggPlotUMAPClusterAG()
+
+
+      } else {
 
       }
 
     })
 
-    output$colors.top_dt <- DT::renderDataTable(escape = FALSE, options = list(autoWidth = FALSE, lengthMenu = c(2,5,10,20,50,100), pageLength = 2, scrollX = TRUE),{
+    observeEvent(input$ClusterDownload_download_buttonOneOne,{
+      x = today()
 
-      geneSet2 <- Over_rep_Top_clones_old()
-      geneSet2
+      if (length(BD_cluster())>0) {
+        message("Downloading BD cluster table...")
+        Exp_stats_cutoff_count.name <- paste("Prioritisation/1_OneIndivOneSamp/Clustering/Cluster_summary_table_BD_",x,".csv",sep="")
+        AG_cluster <- BD_cluster()
+        # AG_cluster <- subset(AG_cluster,AG_cluster$priority<input$priority_cutoff)
+        write.csv(AG_cluster,Exp_stats_cutoff_count.name, row.names = F)
+        message("Downloading BD cluster analysis...")
+        ggPlotUMAPClusterBD()
+      } else {
+      }
 
     })
 
+    AG_cluster <- reactive({
+
+      sc <- UMAP_metadata_with_labs()
+      validate(
+        need(nrow(sc)>0,
+             "Upload File")
+      )
+      md <- sc@meta.data
+      x = today()
+      req(input$priority_cutoff)
+
+      if (length(input.data_sc_clusTCR_AG())>0) {
+        clust <- input.data_sc_clusTCR_AG()
+        names(md)[names(md) %in% "v_gene_AG"] <- "Selected_V_AG"
+        names(md)[names(md) %in% "cdr3_AG"] <- "AminoAcid_AG"
+        md$CDR3_Vgene <- paste(md$AminoAcid_AG,md$Selected_V_AG,sep="_")
+        df <- merge(md,clust,by = "CDR3_Vgene")
+        df2 <- as.data.frame(df$CDR3_Vgene)
+        names(df2) <- "CDR3_Vgene"
+        df2$CDR3_Vgene_count <- 1
+        df3 <- as.data.frame(ddply(df2,"CDR3_Vgene",numcolwise(sum)))
+        df4 <- merge(df3,df,by = "CDR3_Vgene",all.y = T)
+
+        # change the cluster priority based on
+        df5 <- df4[,names(df4) %in% c("Clust_size_order",input$Samp_col)]
+        df5$clusterCount <- df4$count
+        df5$Total_cloneCount <- 1
+        df6 <- as.data.frame(ddply(df5,c("Clust_size_order","clusterCount"),numcolwise(sum)))
+        df6 <- subset(df6,df6$Total_cloneCount>1)
+
+        df8 <- df4[,names(df4) %in% c("Clust_size_order",input$Samp_col)]
+        df8 <- df8[!duplicated(df8), ]
+        df8$Sample_count <- 1
+        df9 <- as.data.frame(ddply(df8,c("Clust_size_order"),numcolwise(sum)))
+        df10 <- merge(df6,df9,by = "Clust_size_order")
+
+        df10$priority <- 1/(df10$Total_cloneCount * df10$clusterCount * df10$Sample_count)
+        df10 <- df10[order(df10$priority,decreasing = F),]
+        df10$Updated_order <- 1:dim(df10)[1]
+        df10$priority[is.na(df10$priority)] <- 0
+        df10 <- subset(df10,df10$priority>0)
+        # remove clusters with only 1 finding after QC process
+        df7 <- merge(df10,df4,by = c("Clust_size_order"))
+
+        df7 <- df7[order(df7$priority,decreasing = F),]
+        clusterAG <- subset(df7,df7$priority < input$priority_cutoff)
+
+        clusterAG <- clusterAG %>%
+          select(all_of(c(input$Samp_col,"Sample_count","Total_cloneCount","clusterCount","priority")), everything())
+      } else {
+
+      }
+    })
+    output$number_clusters_to_analyse_AG <- renderPrint({
+      df1 <- AG_cluster()
+      validate(
+        need(nrow(df1)>0,
+             "Upload ClusTCR file")
+      )
+      paste("The analysis will be limited to the top", max(df1$Updated_order),"AG cluster(s)")
+    })
+    BD_cluster <- reactive({
+      sc <- UMAP_metadata_with_labs()
+      validate(
+        need(nrow(sc)>0,
+             "Upload File")
+      )
+      md <- sc@meta.data
+      x = today()
+      req(input$priority_cutoffBD)
+      if (length(input.data_sc_clusTCR_BD())>0) {
+        clust <- input.data_sc_clusTCR_BD()
+        names(md)[names(md) %in% "v_gene_BD"] <- "Selected_V_BD"
+        names(md)[names(md) %in% "cdr3_BD"] <- "AminoAcid_BD"
+        md$CDR3_Vgene <- paste(md$AminoAcid_BD,md$Selected_V_BD,sep="_")
+
+        df <- merge(md,clust,by = "CDR3_Vgene",all.x = T)
+        df2 <- as.data.frame(df$CDR3_Vgene)
+        names(df2) <- "CDR3_Vgene"
+        df2$CDR3_Vgene_count <- 1
+        df3 <- as.data.frame(ddply(df2,"CDR3_Vgene",numcolwise(sum)))
+        df4 <- merge(df3,df,by = "CDR3_Vgene",all.y = T)
+
+        # change the cluster priority based on
+        df5 <- df4[,names(df4) %in% c("Clust_size_order",input$Samp_col)]
+        df5$clusterCount <- df4$count
+        df5$Total_cloneCount <- 1
+        df6 <- as.data.frame(ddply(df5,c("Clust_size_order","clusterCount"),numcolwise(sum)))
+        df6 <- subset(df6,df6$Total_cloneCount>1)
+
+        df8 <- df4[,names(df4) %in% c("Clust_size_order",input$Samp_col)]
+        df8 <- df8[!duplicated(df8), ]
+        df8$Sample_count <- 1
+        df9 <- as.data.frame(ddply(df8,c("Clust_size_order"),numcolwise(sum)))
+        df10 <- merge(df6,df9,by = "Clust_size_order")
+
+        df10$priority <- 1/(df10$Total_cloneCount * df10$clusterCount * df10$Sample_count)
+        df10 <- df10[order(df10$priority,decreasing = F),]
+        df10$Updated_order <- 1:dim(df10)[1]
+        df10$priority[is.na(df10$priority)] <- 0
+        df10 <- subset(df10,df10$priority>0)
+        # remove clusters with only 1 finding after QC process
+        df7 <- merge(df10,df4,by = c("Clust_size_order"))
+
+        df7 <- df7[order(df7$priority,decreasing = F),]
+        clusterBD <- subset(df7,df7$priority < input$priority_cutoffBD)
+        clusterBD <- clusterBD %>%
+          select(all_of(c(input$Samp_col,"Sample_count","Total_cloneCount","clusterCount","priority")), everything())
+      } else {
+
+      }
+    })
+    output$number_clusters_to_analyse_BD <- renderPrint({
+      df1 <- BD_cluster()
+      validate(
+        need(nrow(df1)>0,
+             "Upload ClusTCR file")
+      )
+      paste("The analysis will be limited to the top", max(df1$Updated_order),"BD cluster(s)")
+    })
+
+    ggPlotUMAPClusterAG <- reactive({
+      sc <- UMAP_metadata_with_labs()
+      validate(
+        need(nrow(sc)>0,
+             "Upload Files")
+      )
+      md <- sc@meta.data
+      clusterAG <- AG_cluster()
+      validate(
+        need(nrow(clusterAG)>0,
+             "Upload clusTCR table, which is needed for TCR -> UMAP section")
+      )
+      req(clusterAG,input$Clusters_to_dis_PIE,input$Colour_By_this,input$priority_cutoff)
+      len.order <- length(unique(clusterAG$Updated_order))
+      # clusterAG <- subset(cluster,cluster$priority<input$priority_cutoff)
+      withProgress(message = 'Performing AG cluster analysis', value = 0, {
+
+        for (i in 1:len.order) {
+          incProgress(1/len.order, detail = paste("AG cluster", i,"of",len.order))
+          ## ggplot UMAP -----
+          cluster <- clusterAG
+          names(cluster)[names(cluster) %in% input$Samp_col_cluster] <- "ID_Column"
+
+          cluster <- cluster[cluster$Updated_order %in% i,]
+          cluster$colour <- cluster[,names(cluster) %in% input$Colour_By_this]
+          cluster$colour <- gsub("_"," ",cluster$colour)
+          cluster$colour <- factor(cluster$colour, levels = unique(cluster$colour))
+
+          len.colour <- length(unique(cluster$colour))
+          col.df <- as.data.frame(unique(cluster$colour))
+          colorblind_vector <-as.data.frame(unlist(colors_cols_cols_clust_UMAP()))
+
+          if (dim(colorblind_vector)[1]==0) {
+            num <- (length(unlist(col.df)))
+
+            if (input$colourtype == "default") {
+              colorblind_vector <- c(gg_fill_hue(num))
+            } else if (input$colourtype == "hcl.colors") {
+              colorblind_vector <- c(hcl.colors(num, palette = "viridis"))
+            } else if (input$colourtype == "topo.colors") {
+              colorblind_vector <- c(topo.colors(num))
+            } else if (input$colourtype == "heat.colors") {
+              colorblind_vector <- c(heat.colors(num))
+            } else if (input$colourtype == "terrain.colors") {
+              colorblind_vector <- c(terrain.colors(num))
+            } else if (input$colourtype == "rainbow") {
+              colorblind_vector <- c(rainbow(num))
+            } else if (input$colourtype == "random") {
+              colorblind_vector <- distinctColorPalette(num)
+
+            }  else {
+
+            }
+
+          }
+          col.df$col <- colorblind_vector
+
+          figure <- ggplot(data=cluster,aes(x=UMAP_1,UMAP_2,colour=colour))+
+            geom_point(size = input$size.dot.umap)+
+            scale_color_manual(labels = ~ stringr::str_wrap(.x, width = 20),values = col.df$col,na.value=input$NA_col_analysis) +
+            theme_bw()+
+            theme(
+              legend.text = element_text(colour="black", size=input$Bar_legend_size,family=input$font_type),
+              legend.title = element_blank(),
+              legend.position = input$legend_position,
+              # strip.text = element_text(size = input$Strip_text_size, family = input$font_type),
+              axis.title.y = element_text(colour="black",family=input$font_type,size = input$title.text.sizer2),
+              axis.text.y = element_text(colour="black",family=input$font_type,size = input$text_size),
+              axis.text.x = element_text(colour="black",family=input$font_type,size = input$text_size,angle=0),
+              axis.title.x = element_text(colour="black",family=input$font_type,size = input$title.text.sizer2),
+            )
+
+          message(paste(i," Downloading the count UMAP"))
+          x = today()
+          top.name.clonotypes.top_png <- paste("Prioritisation/1_OneIndivOneSamp/Clustering/",i,"_AG_cluster_UMAP_",x,".png",sep="")
+          png(top.name.clonotypes.top_png, width = input$width_png_TCR.UMAP,height = input$height_png_TCR.UMAP,res = input$resolution_PNG_TCR.UMAP)
+          plot(figure)
+          dev.off()
+          ## Motif plot -----
+
+          Network_df <- cluster[order(cluster$Updated_order),]
+
+          motifplot <- Motif_from_cluster_file(Network_df,Clust_selected = i,selected_cluster_column = "Updated_order")
+
+          message(paste(i," Downloading motif plot"))
+          top.name.clonotypes.top_png <- paste("Prioritisation/1_OneIndivOneSamp/Clustering/",i,"_AG_motif_",x,".png",sep="")
+          png(top.name.clonotypes.top_png, width = input$width_png_Motif_ClusTCR2_cluster,
+              height = input$height_png_Motif_ClusTCR2_cluster,
+              res = input$resolution_PNG_Motif_ClusTCR2_cluster)
+          plot(motifplot)
+          dev.off()
+
+          # Stats table ------
+          cluster <- clusterAG
+
+          names(cluster)[names(cluster) %in% input$Samp_col_cluster] <- "ID_Column"
+          cluster <- cluster[order(cluster$Updated_order),]
+
+          rownames(cluster) <- cluster$Cell_Index
+
+          checking <- cluster[,names(cluster) %in% c("Updated_order","Cell_Index")]
+          md.checking <- merge(md,checking,by="Cell_Index",all.x=T)
+          md.checking <- md.checking[order(md.checking$order),]
+          rownames(md.checking) <- md.checking$Cell_Index
+
+          md.checking$Clust_selected <- ifelse(md.checking$Updated_order == i,i,"NS")
+          md.checking$Clust_selected[is.na(md.checking$Clust_selected)] <- "NS"
+          md.checking <- md.checking[order(md.checking$order),]
+
+          sc@meta.data <- md.checking
+          Idents(object = sc) <- sc@meta.data$Clust_selected
+
+          name.check.clust <- i
+          min.pct.expression<- input$min_point_ #standard setting: 0.25
+          min.logfc<-  input$LogFC_ #0.25 is standard
+
+          markers.fm.list <- FindMarkers(sc, ident.1 = name.check.clust, min.pct = min.pct.expression,  logfc.threshold = min.logfc, only.pos=TRUE)
+          markers.fm.list2 <- subset(markers.fm.list,markers.fm.list$p_val_adj < input$pval.ex.filter)
+          message(paste(i," Downloading stats table"))
+          Exp_stats_cutoff_count.name <- paste("Prioritisation/1_OneIndivOneSamp/Clustering/",i,"_AG_cluster_statsTab_",x,".csv",sep="")
+          # AG_cluster <- subset(AG_cluster,AG_cluster$priority<input$priority_cutoff)
+          write.csv(markers.fm.list2,Exp_stats_cutoff_count.name, row.names = T)
+
+          # stats dotplot ----
+
+          if (length(rownames(markers.fm.list2))<40) {
+            list.names <- rownames(markers.fm.list2)
+          } else {
+            list.names <- rownames(markers.fm.list2)
+            list.names <- list.names[1:40]
+          }
+
+          size_legend = input$Bar_legend_size-2
+
+          dotplotClust <- DotPlot(sc, features = list.names) +
+            RotatedAxis() +
+            theme(
+              axis.title.y = element_blank(),
+              axis.text.y = element_text(colour="black",family=input$font_type,size = input$text_size),
+              axis.text.x = element_text(colour="black",family=input$font_type,size = input$text_size, angle = 90),
+              axis.title.x = element_blank(),
+              legend.title = element_text(colour="black", size=input$Bar_legend_size,family=input$font_type),
+              legend.text = element_text(colour="black", size=size_legend,family=input$font_type),
+              legend.position = input$legend_position,
+            ) +
+            scale_colour_gradient2(low = input$low.dotplot.clust, mid = input$middle.dotplot.clust, high = input$high.dotplot.clust)+
+            scale_x_discrete(labels = label_wrap(20)) +
+            scale_y_discrete(labels = label_wrap(20))
+
+          top.name.clonotypes.top_png <- paste("Prioritisation/1_OneIndivOneSamp/Clustering/",i,"_AG_dot.plot_",x,".png",sep="")
+          png(top.name.clonotypes.top_png, width = input$width_png_Motif_ClusTCR2_cluster,
+              height = input$height_png_Motif_ClusTCR2_cluster,
+              res = input$resolution_PNG_Motif_ClusTCR2_cluster)
+          plot(dotplotClust)
+          dev.off()
+
+          # stats OverRep analysis ----
+          geneSet <- read.csv(system.file("OverRep","GeneSets.csv",package = "STEGO.R"),header = T)
+          geneSet
+          background.genes.name <- as.data.frame(rownames(sc@assays$RNA@scale.data))
+          names(background.genes.name) <- "V1"
+          background.genes <- length(rownames(sc@assays$RNA@scale.data))
+          #
+          geneSet$background.genes <- background.genes
+
+          DEx.genes <- as.data.frame(rownames(markers.fm.list2))
+          names(DEx.genes) <- "V1"
+          total.sig <- length(DEx.genes$V1)
+          geneSet$total.sig <- length(DEx.genes$V1)
+          # geneSet
+          geneSet$background.geneset <- NA
+          geneSet$background.geneset.name <- NA
+          geneSet$in.geneset <- NA
+          geneSet$in.geneset.name <- NA
+
+          if(input$datasource == "BD_Rhapsody_Paired" || input$datasource == "BD_Rhapsody_AIRR") { # selectInput("datasource", "Data source",choices=c("10x_Genomics","BD_Rhapsody_Paired","BD_Rhapsody_AIRR")),
+            geneSet$GeneSet <- gsub("-",".",geneSet$GeneSet)
+          }
+
+          if(input$species_analysis == "mm") { # selectInput("datasource", "Data source",choices=c("10x_Genomics","BD_Rhapsody_Paired","BD_Rhapsody_AIRR")),
+            require(stringr)
+            geneSet$GeneSet <- str_to_title(geneSet$GeneSet)
+          }
+
+          for (j in 1:dim(geneSet)[1]) {
+            # listed GeneSet
+            message(paste("GeneSet: ", j))
+            Gene.set.testing <- as.data.frame(strsplit(geneSet$GeneSet,";")[j])
+            names(Gene.set.testing) <- "V1"
+            Gene.set.testing2 <- as.data.frame(unique(Gene.set.testing$V1))
+            names(Gene.set.testing2) <- "V1"
+            background.overlap <- merge(Gene.set.testing2,background.genes.name,by= "V1")
+            geneSet$background.geneset[j] <- length(background.overlap$V1)
+            geneSet$background.geneset.name[j] <- as.character(paste(unlist(background.overlap[1]), collapse=';'))
+            # in sig gene list
+            overlap <- merge(background.overlap,DEx.genes,by= "V1")
+
+            geneSet$in.geneset[j] <- length(overlap$V1)
+            geneSet$in.geneset.name[j] <- as.character(paste(unlist(overlap[1]), collapse=';'))
+
+          }
+
+          geneSet
+          geneSet2 <- subset(geneSet,geneSet$in.geneset>0)
+          for (j in 1:dim(geneSet2)[1]) {
+            tota.gene.set <- geneSet2$background.geneset[j] # genes that are identified in background
+            in.geneset <-  geneSet2$in.geneset[j]# DEx in geneset
+            not.in.total <- background.genes - tota.gene.set
+            not.in.geneset.sig <- total.sig - in.geneset
+            d <- data.frame( gene.in.interest=c( in.geneset, not.in.geneset.sig),gene.not.interest=c(tota.gene.set, not.in.total))
+            row.names(d) <- c("In_category", "not_in_category")
+
+            if (in.geneset>0) {
+              geneSet2$p.val[j] <- unlist(fisher.test(d, alternative = "greater")$p.value)[1]
+              geneSet2$lowerCI[j] <-  unlist(fisher.test(d, alternative = "greater")$conf.int)[1]
+              geneSet2$upperCI[j] <-unlist(fisher.test(d)$conf.int)[2]
+              geneSet2$OR[j] <- round(unlist(fisher.test(d, alternative = "greater")$estimate)[1],3)
+            } else {
+              geneSet2$p.value[j] <- "-"
+              geneSet2$lowerCI[j] <-  "-"
+              geneSet2$upperCI[j] <- "-"
+              geneSet2$OR[j] <- "-"
+            }
+          }
+          geneSet2 <- geneSet2[order(geneSet2$p.val,decreasing = F),]
+          # geneSet2 <- subset(geneSet2,geneSet2$in.geneset>=input$in.geneset.cutoff_Clust)
+          # geneSet2 <- subset(geneSet2,geneSet2$p.val<=input$p.val_cutoff_Clust)
+          geneSet2$FDR <- p.adjust(geneSet2$p.val, method = "fdr")
+          geneSet2$Bonferroni <- p.adjust(geneSet2$p.val, method = "bonferroni")
+          print(head(geneSet2))
+
+          message("Downloading the Summary table...")
+          top.name.clonotypes <- paste("Prioritisation/1_OneIndivOneSamp/Clustering/",i,"_AG_OverRep_",x,".csv",sep="")
+          write.csv(geneSet2,top.name.clonotypes, row.names = F)
+
+        }
+      })
+
+    })
+    ggPlotUMAPClusterBD <- reactive({
+      sc <- UMAP_metadata_with_labs()
+      validate(
+        need(nrow(sc)>0,
+             "Upload Files")
+      )
+      clusterBD <- BD_cluster()
+      validate(
+        need(nrow(clusterBD)>0,
+             "Upload clusTCR table, which is needed for TCR -> UMAP section")
+      )
+      req(clusterBD,input$Clusters_to_dis_PIE,input$Colour_By_this,input$priority_cutoffBD)
+      len.order <- length(unique(clusterBD$Updated_order))
+      # clusterAG <- subset(cluster,cluster$priority<input$priority_cutoff)
+      withProgress(message = 'Performing BD cluster analysis', value = 0, {
+        for (i in 1:len.order) {
+          incProgress(1/len.order, detail = paste("BD cluster", i,"of",len.order))
+          ## ggplot UMAP -----
+          cluster <- clusterBD
+          names(cluster)[names(cluster) %in% input$Samp_col_cluster] <- "ID_Column"
+
+          cluster <- cluster[cluster$Updated_order %in% i,]
+          cluster$colour <- cluster[,names(cluster) %in% input$Colour_By_this]
+          cluster$colour <- gsub("_"," ",cluster$colour)
+          cluster$colour <- factor(cluster$colour, levels = unique(cluster$colour))
+
+          len.colour <- length(unique(cluster$colour))
+          col.df <- as.data.frame(unique(cluster$colour))
+          # col.df$col <- unlist(colors_cols_cols_clust_UMAP())
+
+          colorblind_vector <-as.data.frame(unlist(colors_cols_cols_clust_UMAP()))
+
+          if (dim(colorblind_vector)[1]==0) {
+            num <- (length(unlist(col.df)))
+
+            if (input$colourtype == "default") {
+              colorblind_vector <- c(gg_fill_hue(num))
+            } else if (input$colourtype == "hcl.colors") {
+              colorblind_vector <- c(hcl.colors(num, palette = "viridis"))
+            } else if (input$colourtype == "topo.colors") {
+              colorblind_vector <- c(topo.colors(num))
+            } else if (input$colourtype == "heat.colors") {
+              colorblind_vector <- c(heat.colors(num))
+            } else if (input$colourtype == "terrain.colors") {
+              colorblind_vector <- c(terrain.colors(num))
+            } else if (input$colourtype == "rainbow") {
+              colorblind_vector <- c(rainbow(num))
+            } else if (input$colourtype == "random") {
+              colorblind_vector <- distinctColorPalette(num)
+
+            }  else {
+
+            }
+
+          }
+          col.df$col <- colorblind_vector
+          col.df
+
+          figure <- ggplot(data=cluster,aes(x=UMAP_1,UMAP_2,colour=colour))+
+            geom_point(size = input$size.dot.umap)+
+            scale_color_manual(labels = ~ stringr::str_wrap(.x, width = 20),values = col.df$col,na.value=input$NA_col_analysis) +
+            theme_bw()+
+            theme(
+              legend.text = element_text(colour="black", size=input$Bar_legend_size,family=input$font_type),
+              legend.title = element_blank(),
+              legend.position = input$legend_position,
+              # strip.text = element_text(size = input$Strip_text_size, family = input$font_type),
+              axis.title.y = element_text(colour="black",family=input$font_type,size = input$title.text.sizer2),
+              axis.text.y = element_text(colour="black",family=input$font_type,size = input$text_size),
+              axis.text.x = element_text(colour="black",family=input$font_type,size = input$text_size,angle=0),
+              axis.title.x = element_text(colour="black",family=input$font_type,size = input$title.text.sizer2),
+
+            )
+
+          message(paste(i," Downloading the count UMAP"))
+          x = today()
+          top.name.clonotypes.top_png <- paste("Prioritisation/1_OneIndivOneSamp/Clustering/",i,"_BD_cluster_UMAP_",x,".png",sep="")
+          png(top.name.clonotypes.top_png, width = input$width_png_TCR.UMAP,height = input$height_png_TCR.UMAP,res = input$resolution_PNG_TCR.UMAP)
+          plot(figure)
+          dev.off()
+          ## Motif plot -----
+
+          Network_df <- cluster[order(cluster$Updated_order),]
+
+          motifplot <- Motif_from_cluster_file(Network_df,Clust_selected = i,selected_cluster_column = "Updated_order")
+
+          message(paste(i," Downloading motif plot"))
+          top.name.clonotypes.top_png <- paste("Prioritisation/1_OneIndivOneSamp/Clustering/",i,"_BD_motif_",x,".png",sep="")
+          png(top.name.clonotypes.top_png, width = input$width_png_Motif_ClusTCR2_cluster,
+              height = input$height_png_Motif_ClusTCR2_cluster,
+              res = input$resolution_PNG_Motif_ClusTCR2_cluster)
+          plot(motifplot)
+          dev.off()
+
+          # Stats table ------
+          cluster <- clusterBD
+          rownames(cluster) <- cluster$Cell_Index
+
+          cluster$Clust_selected <- ifelse(cluster$Updated_order == i,i,"NS")
+          cluster$Clust_selected[is.na(cluster$Clust_selected)] <- "NS"
+          cluster <- cluster[order(cluster$order.x),]
+
+          sc@meta.data <- cluster
+          Idents(object = sc) <- sc@meta.data$Clust_selected
+
+          name.check.clust <- i
+          min.pct.expression<- input$min_point_ #standard setting: 0.25
+          min.logfc<-  input$LogFC_ #0.25 is standard
+
+          markers.fm.list <- FindMarkers(sc, ident.1 = name.check.clust, min.pct = min.pct.expression,  logfc.threshold = min.logfc, only.pos=TRUE)
+          markers.fm.list2 <- subset(markers.fm.list,markers.fm.list$p_val_adj < input$pval.ex.filter)
+          message(paste(i," Downloading stats table"))
+          Exp_stats_cutoff_count.name <- paste("Prioritisation/1_OneIndivOneSamp/Clustering/",i,"_BD_cluster_statsTab_",x,".csv",sep="")
+          # AG_cluster <- subset(AG_cluster,AG_cluster$priority<input$priority_cutoff)
+          write.csv(markers.fm.list2,Exp_stats_cutoff_count.name, row.names = T)
+
+          # stats dotplot ----
+
+          # stats OverRep analysis ----
+
+        }
+      })
+    })
+
+    output$Cluster_dowload_button_prior <- renderUI({
+      sc <- UMAP_metadata_with_labs()
+      validate(
+        need(nrow(sc)>0,
+             "upload file")
+      )
+
+      TCR_Expanded_Df <- TCR_Expanded_fun(sc,(input$Samp_col),(input$V_gene_sc))
+      TCR_Expanded_Df$obs <- 1
+      TCR_Expanded_Df2 <-  subset(TCR_Expanded_Df,TCR_Expanded_Df$percent>input$cut.off_percent_rep)
+      observations <- sum(TCR_Expanded_Df2$obs)
+      length.samp.ID <- length(unique(TCR_Expanded_Df$ID_Column))
+
+      fluidRow(
+        # column(12,selectInput("AnalysisType","Preset parameters for", = c("ImmunoDom"))),
+        column(12,actionButton("ClusterDownload_download_buttonOneOne","Download cluster analysis",style = "color: white; background-color:#4682b4"))
+      )
+    })
+
+    ### clustering table -----
+    output$PriorClustTB_Tab <- DT::renderDataTable(escape = FALSE, options = list(autoWidth = FALSE, lengthMenu = c(2,5,10,20,50,100), pageLength = 2, scrollX = TRUE),{
+      sc <- UMAP_metadata_with_labs()
+      validate(
+        need(nrow(sc)>0,
+             "Upload Files")
+      )
+      cluster <- AG_cluster()
+      validate(
+        need(nrow(cluster)>0,
+             "Upload clusTCR table, which is needed for TCR -> UMAP section")
+      )
+      AG_cluster()
+    })
+
+
+    ### test table -----
+    output$colors.top_dt <- DT::renderDataTable(escape = FALSE, options = list(autoWidth = FALSE, lengthMenu = c(2,5,10,20,50,100), pageLength = 10, scrollX = TRUE),{
+      sc <- UMAP_metadata_with_labs()
+      validate(
+        need(nrow(sc)>0,
+             "Upload Files")
+      )
+      md <- sc@meta.data
+      clusterAG <- AG_cluster()
+      validate(
+        need(nrow(clusterAG)>0,
+             "Upload clusTCR table, which is needed for TCR -> UMAP section")
+      )
+      req(clusterAG,input$Clusters_to_dis_PIE,input$Colour_By_this,input$priority_cutoff)
+
+      cluster <- clusterAG
+
+      names(cluster)[names(cluster) %in% input$Samp_col_cluster] <- "ID_Column"
+      cluster <- cluster[order(cluster$Updated_order),]
+
+      rownames(cluster) <- cluster$Cell_Index
+
+      checking <- cluster[,names(cluster) %in% c("Updated_order","Cell_Index")]
+      checking
+      md.checking <- merge(md,checking,by="Cell_Index",all.x=T)
+      md.checking$Clust_selected <- ifelse(md.checking$Updated_order == 1,1,"NS")
+      md.checking$Clust_selected[is.na(md.checking$Clust_selected)] <- "NS"
+      md.checking <- md.checking[order(md.checking$order),]
+
+      sc@meta.data <- md.checking
+      Idents(object = sc) <- sc@meta.data$Clust_selected
+
+
+      md.checking <- md.checking[order(md.checking$order),]
+      rownames(md.checking) <- md.checking$Cell_Index
+
+      #####
+      sc@meta.data <- md.checking
+      Idents(object = sc) <- sc@meta.data$Clust_selected
+
+      name.check.clust <- 1
+      min.pct.expression<- input$min_point_ #standard setting: 0.25
+      min.logfc<-  input$LogFC_ #0.25 is standard
+
+      markers.fm.list <- FindMarkers(sc, ident.1 = name.check.clust, min.pct = min.pct.expression,  logfc.threshold = min.logfc, only.pos=TRUE)
+      markers.fm.list2 <- subset(markers.fm.list,markers.fm.list$p_val_adj < input$pval.ex.filter)
+      markers.fm.list2
+
+      geneSet <- read.csv(system.file("OverRep","GeneSets.csv",package = "STEGO.R"),header = T)
+      geneSet
+      background.genes.name <- as.data.frame(rownames(sc@assays$RNA@scale.data))
+      names(background.genes.name) <- "V1"
+      background.genes <- length(rownames(sc@assays$RNA@scale.data))
+      #
+      geneSet$background.genes <- background.genes
+
+      DEx.genes <- as.data.frame(rownames(markers.fm.list2))
+      names(DEx.genes) <- "V1"
+      total.sig <- length(DEx.genes$V1)
+      geneSet$total.sig <- length(DEx.genes$V1)
+      # geneSet
+      geneSet$background.geneset <- NA
+      geneSet$background.geneset.name <- NA
+      geneSet$in.geneset <- NA
+      geneSet$in.geneset.name <- NA
+
+      if(input$datasource == "BD_Rhapsody_Paired" || input$datasource == "BD_Rhapsody_AIRR") { # selectInput("datasource", "Data source",choices=c("10x_Genomics","BD_Rhapsody_Paired","BD_Rhapsody_AIRR")),
+        geneSet$GeneSet <- gsub("-",".",geneSet$GeneSet)
+      }
+
+      if(input$species_analysis == "mm") { # selectInput("datasource", "Data source",choices=c("10x_Genomics","BD_Rhapsody_Paired","BD_Rhapsody_AIRR")),
+        require(stringr)
+        geneSet$GeneSet <- str_to_title(geneSet$GeneSet)
+      }
+
+      for (j in 1:dim(geneSet)[1]) {
+        # listed GeneSet
+        message(paste("GeneSet: ", j))
+        Gene.set.testing <- as.data.frame(strsplit(geneSet$GeneSet,";")[j])
+        names(Gene.set.testing) <- "V1"
+        Gene.set.testing2 <- as.data.frame(unique(Gene.set.testing$V1))
+        names(Gene.set.testing2) <- "V1"
+        background.overlap <- merge(Gene.set.testing2,background.genes.name,by= "V1")
+        geneSet$background.geneset[j] <- length(background.overlap$V1)
+        geneSet$background.geneset.name[j] <- as.character(paste(unlist(background.overlap[1]), collapse=';'))
+        # in sig gene list
+        overlap <- merge(background.overlap,DEx.genes,by= "V1")
+
+        geneSet$in.geneset[j] <- length(overlap$V1)
+        geneSet$in.geneset.name[j] <- as.character(paste(unlist(overlap[1]), collapse=';'))
+
+      }
+
+      geneSet
+      geneSet2 <- subset(geneSet,geneSet$in.geneset>0)
+      for (j in 1:dim(geneSet2)[1]) {
+        tota.gene.set <- geneSet2$background.geneset[j] # genes that are identified in background
+        in.geneset <-  geneSet2$in.geneset[j]# DEx in geneset
+        not.in.total <- background.genes - tota.gene.set
+        not.in.geneset.sig <- total.sig - in.geneset
+        d <- data.frame( gene.in.interest=c( in.geneset, not.in.geneset.sig),gene.not.interest=c(tota.gene.set, not.in.total))
+        row.names(d) <- c("In_category", "not_in_category")
+
+        if (in.geneset>0) {
+          geneSet2$p.val[j] <- unlist(fisher.test(d, alternative = "greater")$p.value)[1]
+          geneSet2$lowerCI[j] <-  unlist(fisher.test(d, alternative = "greater")$conf.int)[1]
+          geneSet2$upperCI[j] <-unlist(fisher.test(d)$conf.int)[2]
+          geneSet2$OR[j] <- round(unlist(fisher.test(d, alternative = "greater")$estimate)[1],3)
+        } else {
+          geneSet2$p.value[j] <- "-"
+          geneSet2$lowerCI[j] <-  "-"
+          geneSet2$upperCI[j] <- "-"
+          geneSet2$OR[j] <- "-"
+        }
+      }
+      geneSet2 <- geneSet2[order(geneSet2$p.val,decreasing = F),]
+      # geneSet2 <- subset(geneSet2,geneSet2$in.geneset>=input$in.geneset.cutoff_Clust)
+      # geneSet2 <- subset(geneSet2,geneSet2$p.val<=input$p.val_cutoff_Clust)
+      geneSet2$FDR <- p.adjust(geneSet2$p.val, method = "fdr")
+      geneSet2$Bonferroni <- p.adjust(geneSet2$p.val, method = "bonferroni")
+      geneSet2
+
+    })
 
 
     # for(i in 1:length(lst)){ ======
