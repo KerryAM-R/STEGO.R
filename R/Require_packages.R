@@ -43,6 +43,7 @@ Load_required_packages <- function() {
   suppressMessages(require("Rcpp"))
   suppressMessages(require("readr"))
   suppressMessages(require("reshape2")) # acast function
+  suppressMessages(require("scales"))
   suppressMessages(require("scGate"))
   suppressMessages(require("Seurat"))
   suppressMessages(require("SeuratObject"))
