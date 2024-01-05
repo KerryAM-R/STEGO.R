@@ -1020,7 +1020,7 @@ runSTEGO <- function(){
                                                           column(3,checkboxInput("Interlukin_scGATE","Interleukins markers (Human)", value = F))),
                                        ),
 
-                                       ### BD rhapsody human immune panel -----
+                                       # BD rhapsody human immune panel -----
                                        conditionalPanel("input.Data_types == 'BD_HS.Immune.Panel'",
                                                         add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
                                                         fluidRow(
@@ -1044,7 +1044,7 @@ runSTEGO <- function(){
 
                                        ),
 
-                                       ### BD rhapsody MM full panel ----
+                                       # BD rhapsody MM full panel ----
                                        conditionalPanel("input.Data_types == 'BD_MM_Full.Panel' || input.Data_types =='10x_MM'",
                                                         h5("Under development"),
                                                         add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
@@ -1064,7 +1064,7 @@ runSTEGO <- function(){
                                                         ),
 
                                        ),
-                                       ### BD rhapsody MM immune panel ----
+                                       # BD rhapsody MM immune panel ----
                                        conditionalPanel("input.Data_types == 'BD_MM_Immune.Panel'",
                                                         h5("Under development")
 
@@ -1081,7 +1081,7 @@ runSTEGO <- function(){
                                                         verbatimTextOutput("scGATE_verbatum_GeneSet9"),
 
                                        ),
-                                       ### human 10x annotations Verbatium -----
+                                       # human 10x annotations Verbatium -----
                                        conditionalPanel(condition="input.Data_types == '10x_HS' || input.Data_types == 'BD_HS.Full.Panel'",
                                                         add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
                                                         verbatimTextOutput("scGATE_verbatum_Generic"),
@@ -1498,6 +1498,8 @@ runSTEGO <- function(){
                                                                       div(DT::dataTableOutput("PriorClustTB_Tab")),
                                                                       add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "purple"),
                                                                       uiOutput("Cluster_dowload_button_prior"),
+                                                                      div(DT::dataTableOutput("colors.top_dt")),
+
                                                              ),
                                                              tabPanel("Epitope",value = "PriorEpiTB"),
                                                              # add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "purple")
@@ -6564,9 +6566,6 @@ runSTEGO <- function(){
       sc
     }) # need to do...
     # BD rhapsody gates HS immune panel -----
-
-
-
     scGATE_anno_BD_rhapsody <- reactive({
       sc <- getData_2()
       validate(
@@ -14013,8 +14012,13 @@ runSTEGO <- function(){
                "Upload File")
         )
         req(clust)
-        names(md)[names(md) %in% input$V_call_clust_sc] <- "Selected_V_AG"
-        names(md)[names(md) %in% input$junction_clust_sc] <- "AminoAcid_AG"
+        if(input$datasource == "BD_Rhapsody_Paired" || input$datasource == "BD_Rhapsody_AIRR") {
+          names(md)[names(md) %in% "v_gene_AG"] <- "Selected_V_AG"
+          names(md)[names(md) %in% "junction_aa_AG"] <- "AminoAcid_AG"
+        } else {
+          names(md)[names(md) %in% "v_gene_AG"] <- "Selected_V_AG"
+          names(md)[names(md) %in% "cdr3_AG"] <- "AminoAcid_AG"
+        }
         md$CDR3_Vgene <- paste(md$AminoAcid_AG,md$Selected_V_AG,sep="_")
         df <- merge(md,clust,by = "CDR3_Vgene")
       }
@@ -16272,8 +16276,13 @@ runSTEGO <- function(){
       x = today()
       if (length(input.data_sc_clusTCR_AG())>0) {
         clust <- input.data_sc_clusTCR_AG()
-        names(md)[names(md) %in% "v_gene_AG"] <- "Selected_V_AG"
-        names(md)[names(md) %in% "cdr3_AG"] <- "AminoAcid_AG"
+        if(input$datasource == "BD_Rhapsody_Paired" || input$datasource == "BD_Rhapsody_AIRR") {
+          names(md)[names(md) %in% "v_gene_AG"] <- "Selected_V_AG"
+          names(md)[names(md) %in% "junction_aa_AG"] <- "AminoAcid_AG"
+        } else {
+          names(md)[names(md) %in% "v_gene_AG"] <- "Selected_V_AG"
+          names(md)[names(md) %in% "cdr3_AG"] <- "AminoAcid_AG"
+        }
         md$CDR3_Vgene <- paste(md$AminoAcid_AG,md$Selected_V_AG,sep="_")
         df <- merge(md,clust,by = "CDR3_Vgene")
         df2 <- as.data.frame(df$CDR3_Vgene)
@@ -16327,8 +16336,14 @@ runSTEGO <- function(){
       x = today()
       if (length(input.data_sc_clusTCR_BD())>0) {
         clust <- input.data_sc_clusTCR_BD()
-        names(md)[names(md) %in% "v_gene_BD"] <- "Selected_V_BD"
-        names(md)[names(md) %in% "cdr3_BD"] <- "AminoAcid_BD"
+        if(input$datasource == "BD_Rhapsody_Paired" || input$datasource == "BD_Rhapsody_AIRR") {
+          names(md)[names(md) %in% "v_gene_BD"] <- "Selected_V_BD"
+          names(md)[names(md) %in% "junction_aa_BD"] <- "AminoAcid_BD"
+        } else {
+          names(md)[names(md) %in% "v_gene_BD"] <- "Selected_V_BD"
+          names(md)[names(md) %in% "cdr3_BD"] <- "AminoAcid_BD"
+        }
+
         md$CDR3_Vgene <- paste(md$AminoAcid_BD,md$Selected_V_BD,sep="_")
 
         df <- merge(md,clust,by = "CDR3_Vgene",all.x = T)
@@ -16373,6 +16388,7 @@ runSTEGO <- function(){
 
 
     })
+
     # one sample one indiv ImmunoDom -----
     observeEvent(input$ImmDom_download_buttonOneOne,{
       sc <- UMAP_metadata_with_labs()
@@ -16813,9 +16829,6 @@ runSTEGO <- function(){
       mat <- mat[order(mat$No.TimePoints, decreasing = T),]
       mat
     })
-
-
-
     Upset_plot_multi <- reactive({
       sc <- UMAP_metadata_with_labs()
       validate(
@@ -16859,7 +16872,6 @@ runSTEGO <- function(){
       ), padding = unit(c(20, 20, 20, 20), "mm"))
       ht
     })
-
     clonal_plot_multi <- reactive({
       df4 <- TCR_Expanded()
       df4
@@ -17042,7 +17054,6 @@ runSTEGO <- function(){
       })
 
     })
-
     top_clone_FindMaker_looped_Multi <- reactive({
 
       sc <- UMAP_metadata_with_labs()
@@ -17338,8 +17349,16 @@ runSTEGO <- function(){
 
       if (length(input.data_sc_clusTCR_AG())>0) {
         clust <- input.data_sc_clusTCR_AG()
-        names(md)[names(md) %in% "v_gene_AG"] <- "Selected_V_AG"
-        names(md)[names(md) %in% "cdr3_AG"] <- "AminoAcid_AG"
+
+        if(input$datasource == "BD_Rhapsody_Paired" || input$datasource == "BD_Rhapsody_AIRR") {
+          names(md)[names(md) %in% "v_gene_AG"] <- "Selected_V_AG"
+          names(md)[names(md) %in% "junction_aa_AG"] <- "AminoAcid_AG"
+        } else {
+          names(md)[names(md) %in% "v_gene_AG"] <- "Selected_V_AG"
+          names(md)[names(md) %in% "cdr3_AG"] <- "AminoAcid_AG"
+        }
+
+
         md$CDR3_Vgene <- paste(md$AminoAcid_AG,md$Selected_V_AG,sep="_")
         df <- merge(md,clust,by = "CDR3_Vgene")
         df2 <- as.data.frame(df$CDR3_Vgene)
@@ -17386,6 +17405,7 @@ runSTEGO <- function(){
       )
       paste("The analysis will be limited to the top", max(df1$Updated_order),"AG cluster(s)")
     })
+
     BD_cluster <- reactive({
       sc <- UMAP_metadata_with_labs()
       validate(
@@ -17397,8 +17417,15 @@ runSTEGO <- function(){
       req(input$priority_cutoffBD)
       if (length(input.data_sc_clusTCR_BD())>0) {
         clust <- input.data_sc_clusTCR_BD()
-        names(md)[names(md) %in% "v_gene_BD"] <- "Selected_V_BD"
-        names(md)[names(md) %in% "cdr3_BD"] <- "AminoAcid_BD"
+
+        if(input$datasource == "BD_Rhapsody_Paired" || input$datasource == "BD_Rhapsody_AIRR") {
+          names(md)[names(md) %in% "v_gene_BD"] <- "Selected_V_BD"
+          names(md)[names(md) %in% "junction_aa_BD"] <- "AminoAcid_BD"
+        } else {
+          names(md)[names(md) %in% "v_gene_BD"] <- "Selected_V_BD"
+          names(md)[names(md) %in% "cdr3_BD"] <- "AminoAcid_BD"
+        }
+
         md$CDR3_Vgene <- paste(md$AminoAcid_BD,md$Selected_V_BD,sep="_")
 
         df <- merge(md,clust,by = "CDR3_Vgene",all.x = T)
@@ -17969,128 +17996,134 @@ runSTEGO <- function(){
       sc <- UMAP_metadata_with_labs()
       validate(
         need(nrow(sc)>0,
-             "Upload Files")
+             "Upload File")
       )
       md <- sc@meta.data
-      clusterAG <- AG_cluster()
-      validate(
-        need(nrow(clusterAG)>0,
-             "Upload clusTCR table, which is needed for TCR -> UMAP section")
-      )
-      req(clusterAG,input$Clusters_to_dis_PIE,input$Colour_By_this,input$priority_cutoff)
+      x = today()
 
-      cluster <- clusterAG
+      if (length(input.data_sc_clusTCR_BD())>0) {
+        clust <- input.data_sc_clusTCR_BD()
 
-      names(cluster)[names(cluster) %in% input$Samp_col_cluster] <- "ID_Column"
-      cluster <- cluster[order(cluster$Updated_order),]
-
-      rownames(cluster) <- cluster$Cell_Index
-
-      checking <- cluster[,names(cluster) %in% c("Updated_order","Cell_Index")]
-      checking
-      md.checking <- merge(md,checking,by="Cell_Index",all.x=T)
-      md.checking$Clust_selected <- ifelse(md.checking$Updated_order == 1,1,"NS")
-      md.checking$Clust_selected[is.na(md.checking$Clust_selected)] <- "NS"
-      md.checking <- md.checking[order(md.checking$order),]
-
-      sc@meta.data <- md.checking
-      Idents(object = sc) <- sc@meta.data$Clust_selected
-
-
-      md.checking <- md.checking[order(md.checking$order),]
-      rownames(md.checking) <- md.checking$Cell_Index
-
-      #####
-      sc@meta.data <- md.checking
-      Idents(object = sc) <- sc@meta.data$Clust_selected
-
-      name.check.clust <- 1
-      min.pct.expression<- input$min_point_ #standard setting: 0.25
-      min.logfc<-  input$LogFC_ #0.25 is standard
-
-      markers.fm.list <- FindMarkers(sc, ident.1 = name.check.clust, min.pct = min.pct.expression,  logfc.threshold = min.logfc, only.pos=TRUE)
-      markers.fm.list2 <- subset(markers.fm.list,markers.fm.list$p_val_adj < input$pval.ex.filter)
-      markers.fm.list2
-
-      geneSet <- read.csv(system.file("OverRep","GeneSets.csv",package = "STEGO.R"),header = T)
-      if(input$SeuratVersion == "Version 4") {
-        background.genes.name <- as.data.frame(rownames(sc@assays$RNA@scale.data))
-        names(background.genes.name) <- "V1"
-        background.genes <- length(rownames(sc@assays$RNA@scale.data))
-      } else {
-        background.genes.name <- as.data.frame(rownames(sc@assays$RNA$scale.data))
-        names(background.genes.name) <- "V1"
-        background.genes <- length(rownames(sc@assays$RNA$scale.data))
-      }
-
-      #
-      geneSet$background.genes <- background.genes
-
-      DEx.genes <- as.data.frame(rownames(markers.fm.list2))
-      names(DEx.genes) <- "V1"
-      total.sig <- length(DEx.genes$V1)
-      geneSet$total.sig <- length(DEx.genes$V1)
-      # geneSet
-      geneSet$background.geneset <- NA
-      geneSet$background.geneset.name <- NA
-      geneSet$in.geneset <- NA
-      geneSet$in.geneset.name <- NA
-
-      if(input$datasource == "BD_Rhapsody_Paired" || input$datasource == "BD_Rhapsody_AIRR") { # selectInput("datasource", "Data source",choices=c("10x_Genomics","BD_Rhapsody_Paired","BD_Rhapsody_AIRR")),
-        geneSet$GeneSet <- gsub("-",".",geneSet$GeneSet)
-      }
-
-      if(input$species_analysis == "mm") { # selectInput("datasource", "Data source",choices=c("10x_Genomics","BD_Rhapsody_Paired","BD_Rhapsody_AIRR")),
-        require(stringr)
-        geneSet$GeneSet <- str_to_title(geneSet$GeneSet)
-      }
-
-      for (j in 1:dim(geneSet)[1]) {
-        # listed GeneSet
-        message(paste("GeneSet: ", j))
-        Gene.set.testing <- as.data.frame(strsplit(geneSet$GeneSet,";")[j])
-        names(Gene.set.testing) <- "V1"
-        Gene.set.testing2 <- as.data.frame(unique(Gene.set.testing$V1))
-        names(Gene.set.testing2) <- "V1"
-        background.overlap <- merge(Gene.set.testing2,background.genes.name,by= "V1")
-        geneSet$background.geneset[j] <- length(background.overlap$V1)
-        geneSet$background.geneset.name[j] <- as.character(paste(unlist(background.overlap[1]), collapse=';'))
-        # in sig gene list
-        overlap <- merge(background.overlap,DEx.genes,by= "V1")
-
-        geneSet$in.geneset[j] <- length(overlap$V1)
-        geneSet$in.geneset.name[j] <- as.character(paste(unlist(overlap[1]), collapse=';'))
-
-      }
-
-      geneSet
-      geneSet2 <- subset(geneSet,geneSet$in.geneset>0)
-      for (j in 1:dim(geneSet2)[1]) {
-        tota.gene.set <- geneSet2$background.geneset[j] # genes that are identified in background
-        in.geneset <-  geneSet2$in.geneset[j]# DEx in geneset
-        not.in.total <- background.genes - tota.gene.set
-        not.in.geneset.sig <- total.sig - in.geneset
-        d <- data.frame( gene.in.interest=c( in.geneset, not.in.geneset.sig),gene.not.interest=c(tota.gene.set, not.in.total))
-        row.names(d) <- c("In_category", "not_in_category")
-
-        if (in.geneset>0) {
-          geneSet2$p.val[j] <- unlist(fisher.test(d, alternative = "greater")$p.value)[1]
-          geneSet2$lowerCI[j] <-  unlist(fisher.test(d, alternative = "greater")$conf.int)[1]
-          geneSet2$upperCI[j] <-unlist(fisher.test(d)$conf.int)[2]
-          geneSet2$OR[j] <- round(unlist(fisher.test(d, alternative = "greater")$estimate)[1],3)
+        if(input$datasource == "BD_Rhapsody_Paired" || input$datasource == "BD_Rhapsody_AIRR") {
+          names(md)[names(md) %in% "v_gene_BD"] <- "Selected_V_BD"
+          names(md)[names(md) %in% "junction_aa_BD"] <- "AminoAcid_BD"
         } else {
-          geneSet2$p.value[j] <- "-"
-          geneSet2$lowerCI[j] <-  "-"
-          geneSet2$upperCI[j] <- "-"
-          geneSet2$OR[j] <- "-"
+          names(md)[names(md) %in% "v_gene_BD"] <- "Selected_V_BD"
+          names(md)[names(md) %in% "cdr3_BD"] <- "AminoAcid_BD"
         }
       }
-      geneSet2 <- geneSet2[order(geneSet2$p.val,decreasing = F),]
-      # geneSet2 <- subset(geneSet2,geneSet2$in.geneset>=input$in.geneset.cutoff_Clust)
-      # geneSet2 <- subset(geneSet2,geneSet2$p.val<=input$p.val_cutoff_Clust)
-      geneSet2$FDR <- p.adjust(geneSet2$p.val, method = "fdr")
-      geneSet2$Bonferroni <- p.adjust(geneSet2$p.val, method = "bonferroni")
-      geneSet2
+      md
+
+      # names(cluster)[names(cluster) %in% input$Samp_col_cluster] <- "ID_Column"
+      # cluster <- cluster[order(cluster$Updated_order),]
+      #
+      # rownames(cluster) <- cluster$Cell_Index
+      #
+      # checking <- cluster[,names(cluster) %in% c("Updated_order","Cell_Index")]
+      # checking
+      # md.checking <- merge(md,checking,by="Cell_Index",all.x=T)
+      # md.checking$Clust_selected <- ifelse(md.checking$Updated_order == 1,1,"NS")
+      # md.checking$Clust_selected[is.na(md.checking$Clust_selected)] <- "NS"
+      # md.checking <- md.checking[order(md.checking$order),]
+      #
+      # sc@meta.data <- md.checking
+      # Idents(object = sc) <- sc@meta.data$Clust_selected
+      #
+      #
+      # md.checking <- md.checking[order(md.checking$order),]
+      # rownames(md.checking) <- md.checking$Cell_Index
+      #
+      # #####
+      # sc@meta.data <- md.checking
+      # Idents(object = sc) <- sc@meta.data$Clust_selected
+      #
+      # name.check.clust <- 1
+      # min.pct.expression<- input$min_point_ #standard setting: 0.25
+      # min.logfc<-  input$LogFC_ #0.25 is standard
+      #
+      # markers.fm.list <- FindMarkers(sc, ident.1 = name.check.clust, min.pct = min.pct.expression,  logfc.threshold = min.logfc, only.pos=TRUE)
+      # markers.fm.list2 <- subset(markers.fm.list,markers.fm.list$p_val_adj < input$pval.ex.filter)
+      # markers.fm.list2
+      #
+      # geneSet <- read.csv(system.file("OverRep","GeneSets.csv",package = "STEGO.R"),header = T)
+      # if(input$SeuratVersion == "Version 4") {
+      #   background.genes.name <- as.data.frame(rownames(sc@assays$RNA@scale.data))
+      #   names(background.genes.name) <- "V1"
+      #   background.genes <- length(rownames(sc@assays$RNA@scale.data))
+      # } else {
+      #   background.genes.name <- as.data.frame(rownames(sc@assays$RNA$scale.data))
+      #   names(background.genes.name) <- "V1"
+      #   background.genes <- length(rownames(sc@assays$RNA$scale.data))
+      # }
+      #
+      # #
+      # geneSet$background.genes <- background.genes
+      #
+      # DEx.genes <- as.data.frame(rownames(markers.fm.list2))
+      # names(DEx.genes) <- "V1"
+      # total.sig <- length(DEx.genes$V1)
+      # geneSet$total.sig <- length(DEx.genes$V1)
+      # # geneSet
+      # geneSet$background.geneset <- NA
+      # geneSet$background.geneset.name <- NA
+      # geneSet$in.geneset <- NA
+      # geneSet$in.geneset.name <- NA
+      #
+      # if(input$datasource == "BD_Rhapsody_Paired" || input$datasource == "BD_Rhapsody_AIRR") { # selectInput("datasource", "Data source",choices=c("10x_Genomics","BD_Rhapsody_Paired","BD_Rhapsody_AIRR")),
+      #   geneSet$GeneSet <- gsub("-",".",geneSet$GeneSet)
+      # }
+      #
+      # if(input$species_analysis == "mm") { # selectInput("datasource", "Data source",choices=c("10x_Genomics","BD_Rhapsody_Paired","BD_Rhapsody_AIRR")),
+      #   require(stringr)
+      #   geneSet$GeneSet <- str_to_title(geneSet$GeneSet)
+      # }
+      #
+      # for (j in 1:dim(geneSet)[1]) {
+      #   # listed GeneSet
+      #   message(paste("GeneSet: ", j))
+      #   Gene.set.testing <- as.data.frame(strsplit(geneSet$GeneSet,";")[j])
+      #   names(Gene.set.testing) <- "V1"
+      #   Gene.set.testing2 <- as.data.frame(unique(Gene.set.testing$V1))
+      #   names(Gene.set.testing2) <- "V1"
+      #   background.overlap <- merge(Gene.set.testing2,background.genes.name,by= "V1")
+      #   geneSet$background.geneset[j] <- length(background.overlap$V1)
+      #   geneSet$background.geneset.name[j] <- as.character(paste(unlist(background.overlap[1]), collapse=';'))
+      #   # in sig gene list
+      #   overlap <- merge(background.overlap,DEx.genes,by= "V1")
+      #
+      #   geneSet$in.geneset[j] <- length(overlap$V1)
+      #   geneSet$in.geneset.name[j] <- as.character(paste(unlist(overlap[1]), collapse=';'))
+      #
+      # }
+      #
+      # geneSet
+      # geneSet2 <- subset(geneSet,geneSet$in.geneset>0)
+      # for (j in 1:dim(geneSet2)[1]) {
+      #   tota.gene.set <- geneSet2$background.geneset[j] # genes that are identified in background
+      #   in.geneset <-  geneSet2$in.geneset[j]# DEx in geneset
+      #   not.in.total <- background.genes - tota.gene.set
+      #   not.in.geneset.sig <- total.sig - in.geneset
+      #   d <- data.frame( gene.in.interest=c( in.geneset, not.in.geneset.sig),gene.not.interest=c(tota.gene.set, not.in.total))
+      #   row.names(d) <- c("In_category", "not_in_category")
+      #
+      #   if (in.geneset>0) {
+      #     geneSet2$p.val[j] <- unlist(fisher.test(d, alternative = "greater")$p.value)[1]
+      #     geneSet2$lowerCI[j] <-  unlist(fisher.test(d, alternative = "greater")$conf.int)[1]
+      #     geneSet2$upperCI[j] <-unlist(fisher.test(d)$conf.int)[2]
+      #     geneSet2$OR[j] <- round(unlist(fisher.test(d, alternative = "greater")$estimate)[1],3)
+      #   } else {
+      #     geneSet2$p.value[j] <- "-"
+      #     geneSet2$lowerCI[j] <-  "-"
+      #     geneSet2$upperCI[j] <- "-"
+      #     geneSet2$OR[j] <- "-"
+      #   }
+      # }
+      # geneSet2 <- geneSet2[order(geneSet2$p.val,decreasing = F),]
+      # # geneSet2 <- subset(geneSet2,geneSet2$in.geneset>=input$in.geneset.cutoff_Clust)
+      # # geneSet2 <- subset(geneSet2,geneSet2$p.val<=input$p.val_cutoff_Clust)
+      # geneSet2$FDR <- p.adjust(geneSet2$p.val, method = "fdr")
+      # geneSet2$Bonferroni <- p.adjust(geneSet2$p.val, method = "bonferroni")
+      # geneSet2
 
     })
 
@@ -18200,7 +18233,29 @@ runSTEGO <- function(){
 
       # num_width <- length(unique(dtop_clonotype_bar_code$Selected_group))
     })
+
+
+    # for(i in 1:length(lst)){ ======
+    #   png(filename = paste(lst[i], ".png"), width = 1280, height = 688, units = "px")
+    #   #
+    #   #...all plotting code...
+    #   #
+    #   dev.off()
+    # }
+
+    # output$download_ClusTCR_labels <- downloadHandler(
+    #   filename = function(){
+    #     x = today()
+    #     paste(input$Clust_lab_tab_output,"_ClusTCR2_output_",x,".csv", sep = "")
+    #   },
+    #   content = function(file){
+    #     df <- as.data.frame(ClusTCR2_lab_df())
+    #     write.csv(df,file, row.names = F)
+    #   } )
+
+
     ### end -----
   }
   shinyApp(ui, server)
+
 }
