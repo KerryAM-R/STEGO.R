@@ -13,3 +13,4 @@ n
 # Run the application
 # STEGO.R::Load_required_packages()
 STEGO.R::runSTEGO()
+remotes::install_github("KerryAM-R/STEGO.R", ref = "beta-version", force = T)
