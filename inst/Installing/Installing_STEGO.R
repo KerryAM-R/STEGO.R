@@ -11,5 +11,5 @@ n
 .rs.restartR()
 
 # Run the application
-STEGO.R::Load_required_packages()
+# STEGO.R::Load_required_packages()
 STEGO.R::runSTEGO()
