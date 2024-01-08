@@ -119,24 +119,6 @@ runSTEGO <- function(){
     hcl(h = hues, l = 65, c = 100)[1:n]
   }
 
-  PercentageFeatureSet2 <- function (sc = sc, assay = 'RNA', pattern = "Mt", col.name = "mtDNA") {
-    features <- grep(pattern = pattern, x = rownames(sc[[assay]][]), value = TRUE)
-    features
-    counts_of_selected <- colSums(x = GetAssayData(object = sc,
-                                                   assay = assay, slot = "counts")[features, , drop = FALSE])
-    counts_of_selected
-    total_of_object <- colSums(x = GetAssayData(object = sc,
-                                                assay = assay, slot = "counts"))
-    percent_of_set <- counts_of_selected/total_of_object*100
-    percent_of_set
-    col.name2 = paste0(col.name,"_percent")
-    col.name2
-    sc <- AddMetaData(object = sc, metadata = percent_of_set,
-                      col.name = col.name2)
-    #
-    sc
-  }
-
   TCR_Expanded_fun <- function (sc,Samp_col,V_gene_sc) {
     sc <- sc
     req(V_gene_sc, Samp_col)
@@ -193,6 +175,7 @@ runSTEGO <- function(){
         TRUE ~ "6. Hyperexpanded (>500)"))
     df4
   }
+
   mat_sum <- function(sc,Samp_col,V_gene_sc) {
     sc <- sc
     df <- sc@meta.data
@@ -221,9 +204,6 @@ runSTEGO <- function(){
     mat$CloneTotal <-sum_data$V1
     mat
   }
-
-
-
 
   # UI page -----
   ui <- fluidPage(
@@ -1502,12 +1482,13 @@ runSTEGO <- function(){
                                                                         column(3,uiOutput("Default_priority_cutoffAG")),
                                                                         column(3,uiOutput("Default_priority_cutoffBD")),
                                                                       ),
+                                                                      add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "purple"),
                                                                       verbatimTextOutput("number_clusters_to_analyse_AG"),
+                                                                      add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "purple"),
                                                                       verbatimTextOutput("number_clusters_to_analyse_BD"),
 
                                                                       add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "purple"),
-                                                                      div(DT::dataTableOutput("PriorClustTB_Tab")),
-                                                                      add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "purple"),
+
                                                                       uiOutput("Cluster_dowload_button_prior"),
                                                                       # div(DT::dataTableOutput("colors.top_dt")),
 
@@ -16156,7 +16137,7 @@ runSTEGO <- function(){
           numericInput("priority_cutoffBD","Priority cut-off (BD)",value = min(prior$priority),step = 0.01, min = 0,max = 1)
         } else {
           prior <- df7
-          numericInput("priority_cutoffBD","Priority cut-off (BD)",value = 0.25,step = 0.01, min = 0,max = 1)
+          numericInput("priority_cutoffBD","Priority cut-off (BD)",value = 1,step = 0.01, min = 0,max = 1)
         }
       } else {
       }
@@ -16312,6 +16293,7 @@ runSTEGO <- function(){
         need(nrow(sc)>0,
              "Upload")
       )
+      x=today()
       df3.meta <- sc@meta.data
       df3.meta$cluster_name <- df3.meta[,names(df3.meta) %in% input$V_gene_sc]
       sc@meta.data$Vgene <- sc@meta.data[,names(sc@meta.data) %in% input$V_gene_sc]
@@ -16346,143 +16328,143 @@ runSTEGO <- function(){
           markers.fm.list <- FindMarkers(sc, ident.1 = name.clone, min.pct = min.pct.expression,  logfc.threshold = min.logfc, only.pos=TRUE)
           markers.fm.list2 <- subset(markers.fm.list,markers.fm.list$p_val_adj < input$pval.ex.filter)
 
-          x=today()
-          clonotype.name.stats <- paste("Prioritisation/ImmunoDom/",i,"_",gsub("[/]","",gsub("&","",name.clone)),"_stats_table","_",today(), ".csv", sep = "")
-          write.csv(markers.fm.list2,clonotype.name.stats,row.names = T)
 
-          message(paste0("Saved csv",name.clone))
-          list.names <- rownames(markers.fm.list2)
 
-          if (length(rownames(markers.fm.list2))>40) {
-            list.names <- list.names[1:40]
-          }
+          if(length(markers.fm.list2$p_val_adj)>0) {
+            ### download the dot plot -------
 
-          else {
+            clonotype.name.stats <- paste("Prioritisation/ImmunoDom/",i,"_",gsub("[/]","",gsub("&","",name.clone)),"_stats_table","_",today(), ".csv", sep = "")
+            write.csv(markers.fm.list2,clonotype.name.stats,row.names = T)
+
+            message(paste0("Saved csv",name.clone))
             list.names <- rownames(markers.fm.list2)
-          }
 
-          size_legend = input$Bar_legend_size-2
-
-
-
-          plotdotplot <- DotPlot(sc, features = list.names) +
-            RotatedAxis() +
-            theme(
-              axis.title.y = element_blank(),
-              axis.text.y = element_text(colour="black",family=input$font_type,size = input$text_size),
-              axis.text.x = element_text(colour="black",family=input$font_type,size = input$text_size, angle = 90),
-              axis.title.x = element_blank(),
-              legend.title = element_text(colour="black", size=input$Bar_legend_size,family=input$font_type),
-              legend.text = element_text(colour="black", size=size_legend,family=input$font_type),
-              legend.position = input$legend_position,
-            ) +
-            scale_colour_gradient2(low = input$low.dotplot, mid = input$middle.dotplot, high = input$high.dotplot) +
-            scale_x_discrete(labels = label_wrap(20)) +
-            scale_y_discrete(labels = label_wrap(20))
-
-
-          file.name.clone <- paste("Prioritisation/ImmunoDom/",i,"_",gsub("[/]","",gsub("&","",name.clone)),"_dotplot_plot","_",today(), ".png", sep = "")
-
-          ### download the dot plot -------
-          png(file.name.clone, width = input$width_png_all_expression_dotplot_top, height = input$height_png_all_expression_dotplot_top,res = input$resolution_PNG_all_expression_dotplot_top)
-          plot(plotdotplot)
-          dev.off()
-
-
-          ##### download the OverRep ------
-
-          df <- sc@meta.data
-          # require()
-
-          geneSet <- read.csv(system.file("OverRep","GeneSets.csv",package = "STEGO.R"),header = T)
-
-          background.genes.name <- as.data.frame(rownames(sc@assays$RNA$scale.data))
-          names(background.genes.name) <- "V1"
-          background.genes <- length(rownames(sc@assays$RNA$scale.data))
-
-
-          geneSet$background.genes <- background.genes
-
-          DEx.genes <- as.data.frame(rownames(markers.fm.list2))
-          names(DEx.genes) <- "V1"
-
-          total.sig <- length(DEx.genes$V1)
-          geneSet$total.sig <- length(DEx.genes$V1)
-
-          geneSet$background.geneset <- NA
-          geneSet$background.geneset.name <- NA
-          geneSet$in.geneset <- NA
-          geneSet$in.geneset.name <- NA
-
-          if(input$datasource == "BD_Rhapsody_Paired" || input$datasource == "BD_Rhapsody_AIRR") { # selectInput("datasource", "Data source",choices=c("10x_Genomics","BD_Rhapsody_Paired","BD_Rhapsody_AIRR")),
-            geneSet$GeneSet <- gsub("-",".",geneSet$GeneSet)
-          }
-
-          if(input$species_analysis == "mm") { # selectInput("datasource", "Data source",choices=c("10x_Genomics","BD_Rhapsody_Paired","BD_Rhapsody_AIRR")),
-            require(stringr)
-            geneSet$GeneSet <- str_to_title(geneSet$GeneSet)
-          }
-
-          for (j in 1:dim(geneSet)[1]) {
-            # listed GeneSet
-            message(paste("GeneSet: ", j))
-            Gene.set.testing <- as.data.frame(strsplit(geneSet$GeneSet,";")[j])
-            names(Gene.set.testing) <- "V1"
-            Gene.set.testing2 <- as.data.frame(unique(Gene.set.testing$V1))
-            names(Gene.set.testing2) <- "V1"
-            background.overlap <- merge(Gene.set.testing2,background.genes.name,by= "V1")
-            geneSet$background.geneset[j] <- length(background.overlap$V1)
-            geneSet$background.geneset.name[j] <- as.character(paste(unlist(background.overlap[1]), collapse=';'))
-            # in sig gene list
-            overlap <- merge(background.overlap,DEx.genes,by= "V1")
-
-            geneSet$in.geneset[j] <- length(overlap$V1)
-            geneSet$in.geneset.name[j] <- as.character(paste(unlist(overlap[1]), collapse=';'))
-
-          }
-
-          geneSet2 <- subset(geneSet,geneSet$in.geneset>0)
-
-          for (k in 1:dim(geneSet2)[1]) {
-            tota.gene.set <- geneSet2$background.geneset[k] # genes that are identified in background
-            tota.gene.set
-            in.geneset <-  geneSet2$in.geneset[k]# DEx in geneset
-
-            background.genes
-            not.in.total <- background.genes - tota.gene.set
-            not.in.geneset.sig <- total.sig - in.geneset
-            d <- data.frame( gene.in.interest=c( in.geneset, not.in.geneset.sig),gene.not.interest=c( tota.gene.set, not.in.total))
-            row.names(d) <- c("In_category", "not_in_category")
-
-            if (in.geneset>0) {
-              geneSet2$p.val[k] <- unlist(fisher.test(d, alternative = "greater")$p.value)[1]
-              geneSet2$lowerCI[k] <-  unlist(fisher.test(d, alternative = "greater")$conf.int)[1]
-              geneSet2$upperCI[k] <-unlist(fisher.test(d)$conf.int)[2]
-              geneSet2$OR[k] <- round(unlist(fisher.test(d, alternative = "greater")$estimate)[1],3)
+            if (length(rownames(markers.fm.list2))>40) {
+              list.names <- list.names[1:40]
+            } else {
+              list.names <- rownames(markers.fm.list2)
             }
 
-            else {
-              geneSet2$p.value[k] <- "-"
-              geneSet2$lowerCI[k] <-  "-"
-              geneSet2$upperCI[k] <- "-"
-              geneSet2$OR[k] <- "-"
+            size_legend = input$Bar_legend_size-2
+
+            plotdotplot <- DotPlot(sc, features = list.names) +
+              RotatedAxis() +
+              theme(
+                axis.title.y = element_blank(),
+                axis.text.y = element_text(colour="black",family=input$font_type,size = input$text_size),
+                axis.text.x = element_text(colour="black",family=input$font_type,size = input$text_size, angle = 90),
+                axis.title.x = element_blank(),
+                legend.title = element_text(colour="black", size=input$Bar_legend_size,family=input$font_type),
+                legend.text = element_text(colour="black", size=size_legend,family=input$font_type),
+                legend.position = input$legend_position,
+              ) +
+              scale_colour_gradient2(low = input$low.dotplot, mid = input$middle.dotplot, high = input$high.dotplot) +
+              scale_x_discrete(labels = label_wrap(20)) +
+              scale_y_discrete(labels = label_wrap(20))
+
+
+            file.name.clone <- paste("Prioritisation/ImmunoDom/",i,"_",gsub("[/]","",gsub("&","",name.clone)),"_dotplot_plot","_",today(), ".png", sep = "")
+
+
+            png(file.name.clone, width = input$width_png_all_expression_dotplot_top, height = input$height_png_all_expression_dotplot_top,res = input$resolution_PNG_all_expression_dotplot_top)
+            plot(plotdotplot)
+            dev.off()
+
+
+            ##### download the OverRep ------
+
+            df <- sc@meta.data
+            # require()
+
+            geneSet <- read.csv(system.file("OverRep","GeneSets.csv",package = "STEGO.R"),header = T)
+
+            background.genes.name <- as.data.frame(rownames(sc@assays$RNA$scale.data))
+            names(background.genes.name) <- "V1"
+            background.genes <- length(rownames(sc@assays$RNA$scale.data))
+
+
+            geneSet$background.genes <- background.genes
+
+            DEx.genes <- as.data.frame(rownames(markers.fm.list2))
+            names(DEx.genes) <- "V1"
+
+            total.sig <- length(DEx.genes$V1)
+            geneSet$total.sig <- length(DEx.genes$V1)
+
+            geneSet$background.geneset <- NA
+            geneSet$background.geneset.name <- NA
+            geneSet$in.geneset <- NA
+            geneSet$in.geneset.name <- NA
+
+            if(input$datasource == "BD_Rhapsody_Paired" || input$datasource == "BD_Rhapsody_AIRR") { # selectInput("datasource", "Data source",choices=c("10x_Genomics","BD_Rhapsody_Paired","BD_Rhapsody_AIRR")),
+              geneSet$GeneSet <- gsub("-",".",geneSet$GeneSet)
             }
+
+            if(input$species_analysis == "mm") { # selectInput("datasource", "Data source",choices=c("10x_Genomics","BD_Rhapsody_Paired","BD_Rhapsody_AIRR")),
+              require(stringr)
+              geneSet$GeneSet <- str_to_title(geneSet$GeneSet)
+            }
+
+            for (j in 1:dim(geneSet)[1]) {
+              # listed GeneSet
+              message(paste("GeneSet: ", j))
+              Gene.set.testing <- as.data.frame(strsplit(geneSet$GeneSet,";")[j])
+              names(Gene.set.testing) <- "V1"
+              Gene.set.testing2 <- as.data.frame(unique(Gene.set.testing$V1))
+              names(Gene.set.testing2) <- "V1"
+              background.overlap <- merge(Gene.set.testing2,background.genes.name,by= "V1")
+              geneSet$background.geneset[j] <- length(background.overlap$V1)
+              geneSet$background.geneset.name[j] <- as.character(paste(unlist(background.overlap[1]), collapse=';'))
+              # in sig gene list
+              overlap <- merge(background.overlap,DEx.genes,by= "V1")
+
+              geneSet$in.geneset[j] <- length(overlap$V1)
+              geneSet$in.geneset.name[j] <- as.character(paste(unlist(overlap[1]), collapse=';'))
+
+            }
+
+            geneSet2 <- subset(geneSet,geneSet$in.geneset>0)
+
+            for (k in 1:dim(geneSet2)[1]) {
+              tota.gene.set <- geneSet2$background.geneset[k] # genes that are identified in background
+              tota.gene.set
+              in.geneset <-  geneSet2$in.geneset[k]# DEx in geneset
+
+              background.genes
+              not.in.total <- background.genes - tota.gene.set
+              not.in.geneset.sig <- total.sig - in.geneset
+              d <- data.frame( gene.in.interest=c( in.geneset, not.in.geneset.sig),gene.not.interest=c( tota.gene.set, not.in.total))
+              row.names(d) <- c("In_category", "not_in_category")
+
+              if (in.geneset>0) {
+                geneSet2$p.val[k] <- unlist(fisher.test(d, alternative = "greater")$p.value)[1]
+                geneSet2$lowerCI[k] <-  unlist(fisher.test(d, alternative = "greater")$conf.int)[1]
+                geneSet2$upperCI[k] <-unlist(fisher.test(d)$conf.int)[2]
+                geneSet2$OR[k] <- round(unlist(fisher.test(d, alternative = "greater")$estimate)[1],3)
+              }
+
+              else {
+                geneSet2$p.value[k] <- "-"
+                geneSet2$lowerCI[k] <-  "-"
+                geneSet2$upperCI[k] <- "-"
+                geneSet2$OR[k] <- "-"
+              }
+            }
+
+            geneSet2 <- geneSet2[order(geneSet2$p.val,decreasing = F),]
+            geneSet2 <- subset(geneSet2,geneSet2$in.geneset>=input$in.geneset.cutoff_top)
+            geneSet2 <- subset(geneSet2,geneSet2$p.val<=input$p.val_cutoff_top)
+            geneSet2$FDR <- p.adjust(geneSet2$p.val, method = "fdr")
+            geneSet2$Bonferroni <- p.adjust(geneSet2$p.val, method = "bonferroni")
+
+            file.name.clone <- paste("Prioritisation/ImmunoDom/",i,"_",gsub("[/]","",gsub("&","",name.clone)),"_dotplot_plot","_",today(), ".png", sep = "")
+            top.name.overrep <- paste("Prioritisation/ImmunoDom/",i,"_",gsub("[/]","",gsub("&","",name.clone)),"_OverRep","_",today(), ".csv", sep = "")
+            write.csv(geneSet2,top.name.overrep, row.names = F)
+
+
+
           }
-
-          geneSet2 <- geneSet2[order(geneSet2$p.val,decreasing = F),]
-          geneSet2 <- subset(geneSet2,geneSet2$in.geneset>=input$in.geneset.cutoff_top)
-          geneSet2 <- subset(geneSet2,geneSet2$p.val<=input$p.val_cutoff_top)
-          geneSet2$FDR <- p.adjust(geneSet2$p.val, method = "fdr")
-          geneSet2$Bonferroni <- p.adjust(geneSet2$p.val, method = "bonferroni")
-
-          file.name.clone <- paste("Prioritisation/ImmunoDom/",i,"_",gsub("[/]","",gsub("&","",name.clone)),"_dotplot_plot","_",today(), ".png", sep = "")
-          top.name.overrep <- paste("Prioritisation/ImmunoDom/",i,"_",gsub("[/]","",gsub("&","",name.clone)),"_OverRep","_",today(), ".csv", sep = "")
-          write.csv(geneSet2,top.name.overrep, row.names = F)
-
-
-
         }
-
       })
     })
 
@@ -16618,6 +16600,7 @@ runSTEGO <- function(){
       ), padding = unit(c(20, 20, 20, 20), "mm"))
       ht
     })
+
     clonal_plot_multi <- reactive({
       df4 <- TCR_Expanded()
       df4
@@ -16632,40 +16615,28 @@ runSTEGO <- function(){
       col.df <- as.data.frame(unique(df4[,names(df4) %in% input$Graph_type_bar]))
       names(col.df) <- "V1"
 
-      colorblind_vector <-as.data.frame(unlist(colors_clonal_plot()))
+      num <- length(col.df$V1)
 
-      if (dim(colorblind_vector)[1]==0) {
-        num <- length(col.df$V1)
+      if (input$colourtype == "default") {
+        colorblind_vector <- c(gg_fill_hue(num))
+      } else if (input$colourtype == "hcl.colors") {
+        colorblind_vector <- c(hcl.colors(num, palette = "viridis"))
+      } else if (input$colourtype == "topo.colors") {
+        colorblind_vector <- c(topo.colors(num))
+      } else if (input$colourtype == "heat.colors") {
+        colorblind_vector <- c(heat.colors(num))
+      } else if (input$colourtype == "terrain.colors") {
+        colorblind_vector <- c(terrain.colors(num))
+      } else if (input$colourtype == "rainbow") {
+        colorblind_vector <- c(rainbow(num))
+      } else if (input$colourtype == "random") {
+        colorblind_vector <- distinctColorPalette(num)
 
-        if (input$colourtype == "default") {
-          colorblind_vector <- c(gg_fill_hue(num))
-        } else if (input$colourtype == "hcl.colors") {
-          colorblind_vector <- c(hcl.colors(num, palette = "viridis"))
-        } else if (input$colourtype == "topo.colors") {
-          colorblind_vector <- c(topo.colors(num))
-        } else if (input$colourtype == "heat.colors") {
-          colorblind_vector <- c(heat.colors(num))
-        } else if (input$colourtype == "terrain.colors") {
-          colorblind_vector <- c(terrain.colors(num))
-        } else if (input$colourtype == "rainbow") {
-          colorblind_vector <- c(rainbow(num))
-        } else if (input$colourtype == "random") {
-          colorblind_vector <- distinctColorPalette(num)
-
-        }  else {
-
-        }
+      }  else {
 
       }
+
       col.df$col <- colorblind_vector
-      col.df
-
-
-      # ggplot(df4, aes(y = frequency, x = Sample_Name, fill=Clonality, label = Clonality)) +
-      #   # ggplot(df4,aes(x=Sample_Name,y=frequency,fill=Clonality))+
-      #   geom_bar(stat="identity")+
-      #   theme_bw() +
-      #   scale_fill_manual(labels = ~ stringr::str_wrap(.x, width = 20),values=alpha(heat.colors(5), 1))
 
       ggplot(df4,aes(x=ID_Column,y=frequency,fill=get(input$Graph_type_bar),colour= get(input$Graph_type_bar),label=get(input$Graph_type_bar)))+
         geom_bar(stat="identity")+
@@ -16702,7 +16673,6 @@ runSTEGO <- function(){
       BD_sum
 
     })
-
 
     Top_clonotypes_multiCounts_barplot <- reactive({
       sc <- UMAP_metadata_with_labs()
@@ -16806,6 +16776,8 @@ runSTEGO <- function(){
     top_clone_FindMaker_looped_Multi <- reactive({
 
       sc <- UMAP_metadata_with_labs()
+      x=today()
+
       validate(
         need(nrow(sc)>0,
              "Upload")
@@ -16819,10 +16791,7 @@ runSTEGO <- function(){
       BD_sum$obs <- 1
       observations <- sum(BD_sum$obs)
 
-
       withProgress(message = 'Performing Multi Analysis (FindMarkers, Dotplot, OverRep)', value = 0, {
-
-
         for (i in 1:observations) {
           incProgress(1/observations, detail = paste("Clone", i,"of",observations))
           name.clone <- BD_sum$cluster_name[i]
@@ -16841,135 +16810,135 @@ runSTEGO <- function(){
           # print(paste0("calculating markers for cluster ",name.clone,". Total: ",length(cluster.names)," clusters"))
           markers.fm.list <- FindMarkers(sc, ident.1 = name.clone, min.pct = min.pct.expression,  logfc.threshold = min.logfc, only.pos=TRUE)
           markers.fm.list2 <- subset(markers.fm.list,markers.fm.list$p_val_adj < input$pval.ex.filter)
+          message(paste(length(markers.fm.list2$p_val_adj),"total markers for cluster",i))
+          if(length(markers.fm.list2$p_val_adj)>0) {
+            clonotype.name.stats <- paste("Prioritisation/Multi/PublicLike/",i,"_",gsub("[/]","",gsub("&","",name.clone)),"_stats_table","_",today(), ".csv", sep = "")
+            write.csv(markers.fm.list2,clonotype.name.stats,row.names = T)
 
-          x=today()
-          clonotype.name.stats <- paste("Prioritisation/Multi/PublicLike/",i,"_",gsub("[/]","",gsub("&","",name.clone)),"_stats_table","_",today(), ".csv", sep = "")
-          write.csv(markers.fm.list2,clonotype.name.stats,row.names = T)
-
-          message(paste0("Saved csv ",name.clone))
-          list.names <- rownames(markers.fm.list2)
-
-          if (length(rownames(markers.fm.list2))>40) {
-            list.names <- list.names[1:40]
-          }
-
-          else {
+            message(paste0("Saved csv ",name.clone))
             list.names <- rownames(markers.fm.list2)
-          }
 
-          size_legend = input$Bar_legend_size-2
-
-
-          plotdotplot <- DotPlot(sc, features = list.names) +
-            RotatedAxis() +
-            theme(
-              axis.title.y = element_blank(),
-              axis.text.y = element_text(colour="black",family=input$font_type,size = input$text_size),
-              axis.text.x = element_text(colour="black",family=input$font_type,size = input$text_size, angle = 90),
-              axis.title.x = element_blank(),
-              legend.title = element_text(colour="black", size=input$Bar_legend_size,family=input$font_type),
-              legend.text = element_text(colour="black", size=size_legend,family=input$font_type),
-              legend.position = input$legend_position,
-            ) +
-            scale_colour_gradient2(low = input$low.dotplot, mid = input$middle.dotplot, high = input$high.dotplot) +
-            scale_x_discrete(labels = label_wrap(20)) +
-            scale_y_discrete(labels = label_wrap(20))
-
-
-          file.name.clone <- paste("Prioritisation/Multi/PublicLike/",i,"_",gsub("[/]","",gsub("&","",name.clone)),"_dotplot_plot","_",today(), ".png", sep = "")
-
-          ### download the dot plot -------
-          png(file.name.clone, width = input$width_png_all_expression_dotplot_top, height = input$height_png_all_expression_dotplot_top,res = input$resolution_PNG_all_expression_dotplot_top)
-          plot(plotdotplot)
-          dev.off()
-
-
-          ##### download the OverRep ------
-          geneSet <- read.csv(system.file("OverRep","GeneSets.csv",package = "STEGO.R"),header = T)
-
-          background.genes.name <- as.data.frame(rownames(sc@assays$RNA$scale.data))
-          names(background.genes.name) <- "V1"
-          background.genes <- length(rownames(sc@assays$RNA$scale.data))
-
-
-          geneSet$background.genes <- background.genes
-
-          DEx.genes <- as.data.frame(rownames(markers.fm.list2))
-          names(DEx.genes) <- "V1"
-
-          total.sig <- length(DEx.genes$V1)
-          geneSet$total.sig <- length(DEx.genes$V1)
-
-          geneSet$background.geneset <- NA
-          geneSet$background.geneset.name <- NA
-          geneSet$in.geneset <- NA
-          geneSet$in.geneset.name <- NA
-
-          if(input$datasource == "BD_Rhapsody_Paired" || input$datasource == "BD_Rhapsody_AIRR") { # selectInput("datasource", "Data source",choices=c("10x_Genomics","BD_Rhapsody_Paired","BD_Rhapsody_AIRR")),
-            geneSet$GeneSet <- gsub("-",".",geneSet$GeneSet)
-          }
-
-          if(input$species_analysis == "mm") { # selectInput("datasource", "Data source",choices=c("10x_Genomics","BD_Rhapsody_Paired","BD_Rhapsody_AIRR")),
-            require(stringr)
-            geneSet$GeneSet <- str_to_title(geneSet$GeneSet)
-          }
-          message(paste(i, "Performing Over rep analysis"))
-          for (j in 1:dim(geneSet)[1]) {
-            # listed GeneSet
-
-            Gene.set.testing <- as.data.frame(strsplit(geneSet$GeneSet,";")[j])
-            names(Gene.set.testing) <- "V1"
-            Gene.set.testing2 <- as.data.frame(unique(Gene.set.testing$V1))
-            names(Gene.set.testing2) <- "V1"
-            background.overlap <- merge(Gene.set.testing2,background.genes.name,by= "V1")
-            geneSet$background.geneset[j] <- length(background.overlap$V1)
-            geneSet$background.geneset.name[j] <- as.character(paste(unlist(background.overlap[1]), collapse=';'))
-            # in sig gene list
-            overlap <- merge(background.overlap,DEx.genes,by= "V1")
-
-            geneSet$in.geneset[j] <- length(overlap$V1)
-            geneSet$in.geneset.name[j] <- as.character(paste(unlist(overlap[1]), collapse=';'))
-
-          }
-
-          geneSet2 <- subset(geneSet,geneSet$in.geneset>0)
-
-          for (k in 1:dim(geneSet2)[1]) {
-            tota.gene.set <- geneSet2$background.geneset[k] # genes that are identified in background
-            tota.gene.set
-            in.geneset <-  geneSet2$in.geneset[k]# DEx in geneset
-
-            background.genes
-            not.in.total <- background.genes - tota.gene.set
-            not.in.geneset.sig <- total.sig - in.geneset
-            d <- data.frame( gene.in.interest=c( in.geneset, not.in.geneset.sig),gene.not.interest=c( tota.gene.set, not.in.total))
-            row.names(d) <- c("In_category", "not_in_category")
-
-            if (in.geneset>0) {
-              geneSet2$p.val[k] <- unlist(fisher.test(d, alternative = "greater")$p.value)[1]
-              geneSet2$lowerCI[k] <-  unlist(fisher.test(d, alternative = "greater")$conf.int)[1]
-              geneSet2$upperCI[k] <-unlist(fisher.test(d)$conf.int)[2]
-              geneSet2$OR[k] <- round(unlist(fisher.test(d, alternative = "greater")$estimate)[1],3)
+            if (length(rownames(markers.fm.list2))>40) {
+              list.names <- list.names[1:40]
             }
 
             else {
-              geneSet2$p.value[k] <- "-"
-              geneSet2$lowerCI[k] <-  "-"
-              geneSet2$upperCI[k] <- "-"
-              geneSet2$OR[k] <- "-"
+              list.names <- rownames(markers.fm.list2)
             }
-          }
 
-          geneSet2 <- geneSet2[order(geneSet2$p.val,decreasing = F),]
-          geneSet2 <- subset(geneSet2,geneSet2$in.geneset>=input$in.geneset.cutoff_top)
-          geneSet2 <- subset(geneSet2,geneSet2$p.val<=input$p.val_cutoff_top)
-          geneSet2$FDR <- p.adjust(geneSet2$p.val, method = "fdr")
-          geneSet2$Bonferroni <- p.adjust(geneSet2$p.val, method = "bonferroni")
+            size_legend = input$Bar_legend_size-2
 
-          top.name.overrep <- paste("Prioritisation/Multi/PublicLike/",i,"_",gsub("[/]","",gsub("&","",name.clone)),"_OverRep","_",today(), ".csv", sep = "")
-          write.csv(geneSet2,top.name.overrep, row.names = F)
 
-        }
+            plotdotplot <- DotPlot(sc, features = list.names) +
+              RotatedAxis() +
+              theme(
+                axis.title.y = element_blank(),
+                axis.text.y = element_text(colour="black",family=input$font_type,size = input$text_size),
+                axis.text.x = element_text(colour="black",family=input$font_type,size = input$text_size, angle = 90),
+                axis.title.x = element_blank(),
+                legend.title = element_text(colour="black", size=input$Bar_legend_size,family=input$font_type),
+                legend.text = element_text(colour="black", size=size_legend,family=input$font_type),
+                legend.position = input$legend_position,
+              ) +
+              scale_colour_gradient2(low = input$low.dotplot, mid = input$middle.dotplot, high = input$high.dotplot) +
+              scale_x_discrete(labels = label_wrap(20)) +
+              scale_y_discrete(labels = label_wrap(20))
+
+
+            file.name.clone <- paste("Prioritisation/Multi/PublicLike/",i,"_",gsub("[/]","",gsub("&","",name.clone)),"_dotplot_plot","_",today(), ".png", sep = "")
+
+            ### download the dot plot -------
+            png(file.name.clone, width = input$width_png_all_expression_dotplot_top, height = input$height_png_all_expression_dotplot_top,res = input$resolution_PNG_all_expression_dotplot_top)
+            plot(plotdotplot)
+            dev.off()
+
+
+            ##### download the OverRep ------
+            geneSet <- read.csv(system.file("OverRep","GeneSets.csv",package = "STEGO.R"),header = T)
+
+            background.genes.name <- as.data.frame(rownames(sc@assays$RNA$scale.data))
+            names(background.genes.name) <- "V1"
+            background.genes <- length(rownames(sc@assays$RNA$scale.data))
+
+
+            geneSet$background.genes <- background.genes
+
+            DEx.genes <- as.data.frame(rownames(markers.fm.list2))
+            names(DEx.genes) <- "V1"
+
+            total.sig <- length(DEx.genes$V1)
+            geneSet$total.sig <- length(DEx.genes$V1)
+
+            geneSet$background.geneset <- NA
+            geneSet$background.geneset.name <- NA
+            geneSet$in.geneset <- NA
+            geneSet$in.geneset.name <- NA
+
+            if(input$datasource == "BD_Rhapsody_Paired" || input$datasource == "BD_Rhapsody_AIRR") { # selectInput("datasource", "Data source",choices=c("10x_Genomics","BD_Rhapsody_Paired","BD_Rhapsody_AIRR")),
+              geneSet$GeneSet <- gsub("-",".",geneSet$GeneSet)
+            }
+
+            if(input$species_analysis == "mm") { # selectInput("datasource", "Data source",choices=c("10x_Genomics","BD_Rhapsody_Paired","BD_Rhapsody_AIRR")),
+              require(stringr)
+              geneSet$GeneSet <- str_to_title(geneSet$GeneSet)
+            }
+            message(paste(i, "Performing Over rep analysis"))
+            for (j in 1:dim(geneSet)[1]) {
+              # listed GeneSet
+
+              Gene.set.testing <- as.data.frame(strsplit(geneSet$GeneSet,";")[j])
+              names(Gene.set.testing) <- "V1"
+              Gene.set.testing2 <- as.data.frame(unique(Gene.set.testing$V1))
+              names(Gene.set.testing2) <- "V1"
+              background.overlap <- merge(Gene.set.testing2,background.genes.name,by= "V1")
+              geneSet$background.geneset[j] <- length(background.overlap$V1)
+              geneSet$background.geneset.name[j] <- as.character(paste(unlist(background.overlap[1]), collapse=';'))
+              # in sig gene list
+              overlap <- merge(background.overlap,DEx.genes,by= "V1")
+
+              geneSet$in.geneset[j] <- length(overlap$V1)
+              geneSet$in.geneset.name[j] <- as.character(paste(unlist(overlap[1]), collapse=';'))
+
+            }
+
+            geneSet2 <- subset(geneSet,geneSet$in.geneset>0)
+
+            for (k in 1:dim(geneSet2)[1]) {
+              tota.gene.set <- geneSet2$background.geneset[k] # genes that are identified in background
+              tota.gene.set
+              in.geneset <-  geneSet2$in.geneset[k]# DEx in geneset
+
+              background.genes
+              not.in.total <- background.genes - tota.gene.set
+              not.in.geneset.sig <- total.sig - in.geneset
+              d <- data.frame( gene.in.interest=c( in.geneset, not.in.geneset.sig),gene.not.interest=c( tota.gene.set, not.in.total))
+              row.names(d) <- c("In_category", "not_in_category")
+
+              if (in.geneset>0) {
+                geneSet2$p.val[k] <- unlist(fisher.test(d, alternative = "greater")$p.value)[1]
+                geneSet2$lowerCI[k] <-  unlist(fisher.test(d, alternative = "greater")$conf.int)[1]
+                geneSet2$upperCI[k] <-unlist(fisher.test(d)$conf.int)[2]
+                geneSet2$OR[k] <- round(unlist(fisher.test(d, alternative = "greater")$estimate)[1],3)
+              }
+
+              else {
+                geneSet2$p.value[k] <- "-"
+                geneSet2$lowerCI[k] <-  "-"
+                geneSet2$upperCI[k] <- "-"
+                geneSet2$OR[k] <- "-"
+              }
+            }
+
+            geneSet2 <- geneSet2[order(geneSet2$p.val,decreasing = F),]
+            geneSet2 <- subset(geneSet2,geneSet2$in.geneset>=input$in.geneset.cutoff_top)
+            geneSet2 <- subset(geneSet2,geneSet2$p.val<=input$p.val_cutoff_top)
+            geneSet2$FDR <- p.adjust(geneSet2$p.val, method = "fdr")
+            geneSet2$Bonferroni <- p.adjust(geneSet2$p.val, method = "bonferroni")
+
+            top.name.overrep <- paste("Prioritisation/Multi/PublicLike/",i,"_",gsub("[/]","",gsub("&","",name.clone)),"_OverRep","_",today(), ".csv", sep = "")
+            write.csv(geneSet2,top.name.overrep, row.names = F)
+
+          } }
 
       })
     })
@@ -16988,8 +16957,6 @@ runSTEGO <- function(){
       BD_sum
 
     })
-
-
     top_clone_FindMaker_looped_Private <- reactive({
 
       sc <- UMAP_metadata_with_labs()
@@ -17025,134 +16992,136 @@ runSTEGO <- function(){
           # print(paste0("calculating markers for cluster ",name.clone,". Total: ",length(cluster.names)," clusters"))
           markers.fm.list <- FindMarkers(sc, ident.1 = name.clone, min.pct = min.pct.expression,  logfc.threshold = min.logfc, only.pos=TRUE)
           markers.fm.list2 <- subset(markers.fm.list,markers.fm.list$p_val_adj < input$pval.ex.filter)
-
           x=today()
-          clonotype.name.stats <- paste("Prioritisation/Multi/Unique/",i,"_",gsub("[/]","",gsub("&","",name.clone)),"_stats_table","_",today(), ".csv", sep = "")
-          write.csv(markers.fm.list2,clonotype.name.stats,row.names = T)
 
-          message(paste0("Saved csv ",name.clone))
-          list.names <- rownames(markers.fm.list2)
+          message(paste(length(markers.fm.list2$p_val_adj),"total markers for cluster",i))
 
-          if (length(rownames(markers.fm.list2))>40) {
-            list.names <- list.names[1:40]
-          }
+          if(length(markers.fm.list2$p_val_adj)>0) {
+            clonotype.name.stats <- paste("Prioritisation/Multi/Unique/",i,"_",gsub("[/]","",gsub("&","",name.clone)),"_stats_table","_",today(), ".csv", sep = "")
+            write.csv(markers.fm.list2,clonotype.name.stats,row.names = T)
 
-          else {
+            message(paste0("Saved csv ",name.clone))
             list.names <- rownames(markers.fm.list2)
-          }
 
-          size_legend = input$Bar_legend_size-2
-
-
-          plotdotplot <- DotPlot(sc, features = list.names) +
-            RotatedAxis() +
-            theme(
-              axis.title.y = element_blank(),
-              axis.text.y = element_text(colour="black",family=input$font_type,size = input$text_size),
-              axis.text.x = element_text(colour="black",family=input$font_type,size = input$text_size, angle = 90),
-              axis.title.x = element_blank(),
-              legend.title = element_text(colour="black", size=input$Bar_legend_size,family=input$font_type),
-              legend.text = element_text(colour="black", size=size_legend,family=input$font_type),
-              legend.position = input$legend_position,
-            ) +
-            scale_colour_gradient2(low = input$low.dotplot, mid = input$middle.dotplot, high = input$high.dotplot) +
-            scale_x_discrete(labels = label_wrap(20)) +
-            scale_y_discrete(labels = label_wrap(20))
-
-
-          file.name.clone <- paste("Prioritisation/Multi/Unique/",i,"_",gsub("[/]","",gsub("&","",name.clone)),"_dotplot_plot","_",today(), ".png", sep = "")
-
-          ### download the dot plot -------
-          png(file.name.clone, width = input$width_png_all_expression_dotplot_top, height = input$height_png_all_expression_dotplot_top,res = input$resolution_PNG_all_expression_dotplot_top)
-          plot(plotdotplot)
-          dev.off()
-
-
-          ##### download the OverRep ------
-          geneSet <- read.csv(system.file("OverRep","GeneSets.csv",package = "STEGO.R"),header = T)
-
-          background.genes.name <- as.data.frame(rownames(sc@assays$RNA$scale.data))
-          names(background.genes.name) <- "V1"
-          background.genes <- length(rownames(sc@assays$RNA$scale.data))
-
-
-          geneSet$background.genes <- background.genes
-
-          DEx.genes <- as.data.frame(rownames(markers.fm.list2))
-          names(DEx.genes) <- "V1"
-
-          total.sig <- length(DEx.genes$V1)
-          geneSet$total.sig <- length(DEx.genes$V1)
-
-          geneSet$background.geneset <- NA
-          geneSet$background.geneset.name <- NA
-          geneSet$in.geneset <- NA
-          geneSet$in.geneset.name <- NA
-
-          if(input$datasource == "BD_Rhapsody_Paired" || input$datasource == "BD_Rhapsody_AIRR") { # selectInput("datasource", "Data source",choices=c("10x_Genomics","BD_Rhapsody_Paired","BD_Rhapsody_AIRR")),
-            geneSet$GeneSet <- gsub("-",".",geneSet$GeneSet)
-          }
-
-          if(input$species_analysis == "mm") { # selectInput("datasource", "Data source",choices=c("10x_Genomics","BD_Rhapsody_Paired","BD_Rhapsody_AIRR")),
-            require(stringr)
-            geneSet$GeneSet <- str_to_title(geneSet$GeneSet)
-          }
-          message(paste(i, "Performing Over rep analysis"))
-          for (j in 1:dim(geneSet)[1]) {
-            # listed GeneSet
-
-            Gene.set.testing <- as.data.frame(strsplit(geneSet$GeneSet,";")[j])
-            names(Gene.set.testing) <- "V1"
-            Gene.set.testing2 <- as.data.frame(unique(Gene.set.testing$V1))
-            names(Gene.set.testing2) <- "V1"
-            background.overlap <- merge(Gene.set.testing2,background.genes.name,by= "V1")
-            geneSet$background.geneset[j] <- length(background.overlap$V1)
-            geneSet$background.geneset.name[j] <- as.character(paste(unlist(background.overlap[1]), collapse=';'))
-            # in sig gene list
-            overlap <- merge(background.overlap,DEx.genes,by= "V1")
-
-            geneSet$in.geneset[j] <- length(overlap$V1)
-            geneSet$in.geneset.name[j] <- as.character(paste(unlist(overlap[1]), collapse=';'))
-
-          }
-
-          geneSet2 <- subset(geneSet,geneSet$in.geneset>0)
-
-          for (k in 1:dim(geneSet2)[1]) {
-            tota.gene.set <- geneSet2$background.geneset[k] # genes that are identified in background
-            tota.gene.set
-            in.geneset <-  geneSet2$in.geneset[k]# DEx in geneset
-
-            background.genes
-            not.in.total <- background.genes - tota.gene.set
-            not.in.geneset.sig <- total.sig - in.geneset
-            d <- data.frame( gene.in.interest=c( in.geneset, not.in.geneset.sig),gene.not.interest=c( tota.gene.set, not.in.total))
-            row.names(d) <- c("In_category", "not_in_category")
-
-            if (in.geneset>0) {
-              geneSet2$p.val[k] <- unlist(fisher.test(d, alternative = "greater")$p.value)[1]
-              geneSet2$lowerCI[k] <-  unlist(fisher.test(d, alternative = "greater")$conf.int)[1]
-              geneSet2$upperCI[k] <-unlist(fisher.test(d)$conf.int)[2]
-              geneSet2$OR[k] <- round(unlist(fisher.test(d, alternative = "greater")$estimate)[1],3)
+            if (length(rownames(markers.fm.list2))>40) {
+              list.names <- list.names[1:40]
+            } else {
+              list.names <- rownames(markers.fm.list2)
             }
 
-            else {
-              geneSet2$p.value[k] <- "-"
-              geneSet2$lowerCI[k] <-  "-"
-              geneSet2$upperCI[k] <- "-"
-              geneSet2$OR[k] <- "-"
+            size_legend = input$Bar_legend_size-2
+
+
+            plotdotplot <- DotPlot(sc, features = list.names) +
+              RotatedAxis() +
+              theme(
+                axis.title.y = element_blank(),
+                axis.text.y = element_text(colour="black",family=input$font_type,size = input$text_size),
+                axis.text.x = element_text(colour="black",family=input$font_type,size = input$text_size, angle = 90),
+                axis.title.x = element_blank(),
+                legend.title = element_text(colour="black", size=input$Bar_legend_size,family=input$font_type),
+                legend.text = element_text(colour="black", size=size_legend,family=input$font_type),
+                legend.position = input$legend_position,
+              ) +
+              scale_colour_gradient2(low = input$low.dotplot, mid = input$middle.dotplot, high = input$high.dotplot) +
+              scale_x_discrete(labels = label_wrap(20)) +
+              scale_y_discrete(labels = label_wrap(20))
+
+
+            file.name.clone <- paste("Prioritisation/Multi/Unique/",i,"_",gsub("[/]","",gsub("&","",name.clone)),"_dotplot_plot","_",today(), ".png", sep = "")
+
+            ### download the dot plot -------
+            png(file.name.clone, width = input$width_png_all_expression_dotplot_top, height = input$height_png_all_expression_dotplot_top,res = input$resolution_PNG_all_expression_dotplot_top)
+            plot(plotdotplot)
+            dev.off()
+
+
+            ##### download the OverRep ------
+            geneSet <- read.csv(system.file("OverRep","GeneSets.csv",package = "STEGO.R"),header = T)
+
+            background.genes.name <- as.data.frame(rownames(sc@assays$RNA$scale.data))
+            names(background.genes.name) <- "V1"
+            background.genes <- length(rownames(sc@assays$RNA$scale.data))
+
+
+            geneSet$background.genes <- background.genes
+
+            DEx.genes <- as.data.frame(rownames(markers.fm.list2))
+            names(DEx.genes) <- "V1"
+
+            total.sig <- length(DEx.genes$V1)
+            geneSet$total.sig <- length(DEx.genes$V1)
+
+            geneSet$background.geneset <- NA
+            geneSet$background.geneset.name <- NA
+            geneSet$in.geneset <- NA
+            geneSet$in.geneset.name <- NA
+
+            if(input$datasource == "BD_Rhapsody_Paired" || input$datasource == "BD_Rhapsody_AIRR") { # selectInput("datasource", "Data source",choices=c("10x_Genomics","BD_Rhapsody_Paired","BD_Rhapsody_AIRR")),
+              geneSet$GeneSet <- gsub("-",".",geneSet$GeneSet)
             }
+
+            if(input$species_analysis == "mm") { # selectInput("datasource", "Data source",choices=c("10x_Genomics","BD_Rhapsody_Paired","BD_Rhapsody_AIRR")),
+              require(stringr)
+              geneSet$GeneSet <- str_to_title(geneSet$GeneSet)
+            }
+            message(paste(i, "Performing Over rep analysis"))
+            for (j in 1:dim(geneSet)[1]) {
+              # listed GeneSet
+
+              Gene.set.testing <- as.data.frame(strsplit(geneSet$GeneSet,";")[j])
+              names(Gene.set.testing) <- "V1"
+              Gene.set.testing2 <- as.data.frame(unique(Gene.set.testing$V1))
+              names(Gene.set.testing2) <- "V1"
+              background.overlap <- merge(Gene.set.testing2,background.genes.name,by= "V1")
+              geneSet$background.geneset[j] <- length(background.overlap$V1)
+              geneSet$background.geneset.name[j] <- as.character(paste(unlist(background.overlap[1]), collapse=';'))
+              # in sig gene list
+              overlap <- merge(background.overlap,DEx.genes,by= "V1")
+
+              geneSet$in.geneset[j] <- length(overlap$V1)
+              geneSet$in.geneset.name[j] <- as.character(paste(unlist(overlap[1]), collapse=';'))
+
+            }
+
+            geneSet2 <- subset(geneSet,geneSet$in.geneset>0)
+
+            for (k in 1:dim(geneSet2)[1]) {
+              tota.gene.set <- geneSet2$background.geneset[k] # genes that are identified in background
+              tota.gene.set
+              in.geneset <-  geneSet2$in.geneset[k]# DEx in geneset
+
+              background.genes
+              not.in.total <- background.genes - tota.gene.set
+              not.in.geneset.sig <- total.sig - in.geneset
+              d <- data.frame( gene.in.interest=c( in.geneset, not.in.geneset.sig),gene.not.interest=c( tota.gene.set, not.in.total))
+              row.names(d) <- c("In_category", "not_in_category")
+
+              if (in.geneset>0) {
+                geneSet2$p.val[k] <- unlist(fisher.test(d, alternative = "greater")$p.value)[1]
+                geneSet2$lowerCI[k] <-  unlist(fisher.test(d, alternative = "greater")$conf.int)[1]
+                geneSet2$upperCI[k] <-unlist(fisher.test(d)$conf.int)[2]
+                geneSet2$OR[k] <- round(unlist(fisher.test(d, alternative = "greater")$estimate)[1],3)
+              }
+
+              else {
+                geneSet2$p.value[k] <- "-"
+                geneSet2$lowerCI[k] <-  "-"
+                geneSet2$upperCI[k] <- "-"
+                geneSet2$OR[k] <- "-"
+              }
+            }
+
+            geneSet2 <- geneSet2[order(geneSet2$p.val,decreasing = F),]
+            geneSet2 <- subset(geneSet2,geneSet2$in.geneset>=input$in.geneset.cutoff_top)
+            geneSet2 <- subset(geneSet2,geneSet2$p.val<=input$p.val_cutoff_top)
+            geneSet2$FDR <- p.adjust(geneSet2$p.val, method = "fdr")
+            geneSet2$Bonferroni <- p.adjust(geneSet2$p.val, method = "bonferroni")
+
+            top.name.overrep <- paste("Prioritisation/Multi/Unique/",i,"_",gsub("[/]","",gsub("&","",name.clone)),"_OverRep","_",today(), ".csv", sep = "")
+            write.csv(geneSet2,top.name.overrep, row.names = F)
+
           }
-
-          geneSet2 <- geneSet2[order(geneSet2$p.val,decreasing = F),]
-          geneSet2 <- subset(geneSet2,geneSet2$in.geneset>=input$in.geneset.cutoff_top)
-          geneSet2 <- subset(geneSet2,geneSet2$p.val<=input$p.val_cutoff_top)
-          geneSet2$FDR <- p.adjust(geneSet2$p.val, method = "fdr")
-          geneSet2$Bonferroni <- p.adjust(geneSet2$p.val, method = "bonferroni")
-
-          top.name.overrep <- paste("Prioritisation/Multi/Unique/",i,"_",gsub("[/]","",gsub("&","",name.clone)),"_OverRep","_",today(), ".csv", sep = "")
-          write.csv(geneSet2,top.name.overrep, row.names = F)
-
         }
 
       })
@@ -17437,125 +17406,129 @@ runSTEGO <- function(){
 
           markers.fm.list <- FindMarkers(sc, ident.1 = name.check.clust, min.pct = min.pct.expression,  logfc.threshold = min.logfc, only.pos=TRUE)
           markers.fm.list2 <- subset(markers.fm.list,markers.fm.list$p_val_adj < input$pval.ex.filter)
-          message(paste(i," Downloading stats table"))
-          Exp_stats_cutoff_count.name <- paste("Prioritisation/Clustering/",i,"_AG_cluster_statsTab_",x,".csv",sep="")
 
-          write.csv(markers.fm.list2,Exp_stats_cutoff_count.name, row.names = T)
+          message(paste(length(markers.fm.list2$p_val_adj),"total markers for AG cluster",i))
 
-          # stats dotplot ----
+          if(length(markers.fm.list2$p_val_adj)>0) {
+            message(paste(i," Downloading stats table"))
+            Exp_stats_cutoff_count.name <- paste("Prioritisation/Clustering/",i,"_AG_cluster_statsTab_",x,".csv",sep="")
 
-          if (length(rownames(markers.fm.list2))<40) {
-            list.names <- rownames(markers.fm.list2)
-          } else {
-            list.names <- rownames(markers.fm.list2)
-            list.names <- list.names[1:40]
-          }
+            write.csv(markers.fm.list2,Exp_stats_cutoff_count.name, row.names = T)
 
-          size_legend = input$Bar_legend_size-2
+            # stats dotplot ----
 
-          dotplotClust <- DotPlot(sc, features = list.names) +
-            RotatedAxis() +
-            theme(
-              axis.title.y = element_blank(),
-              axis.text.y = element_text(colour="black",family=input$font_type,size = input$text_size),
-              axis.text.x = element_text(colour="black",family=input$font_type,size = input$text_size, angle = 90),
-              axis.title.x = element_blank(),
-              legend.title = element_text(colour="black", size=input$Bar_legend_size,family=input$font_type),
-              legend.text = element_text(colour="black", size=size_legend,family=input$font_type),
-              legend.position = input$legend_position,
-            ) +
-            scale_colour_gradient2(low = input$low.dotplot.clust, mid = input$middle.dotplot.clust, high = input$high.dotplot.clust)+
-            scale_x_discrete(labels = label_wrap(20)) +
-            scale_y_discrete(labels = label_wrap(20))
-
-          top.name.clonotypes.top_png <- paste("Prioritisation/Clustering/",i,"_AG_dot.plot_",x,".png",sep="")
-          png(top.name.clonotypes.top_png, width = input$width_png_all_expression_dotplot_clust,
-              height = input$height_png_all_expression_dotplot_clust,
-              res = input$resolution_PNG_all_expression_dotplot_clust)
-          plot(dotplotClust)
-          dev.off()
-
-          # column(2,style = "margin-top: 25px;",downloadButton('downloadPlot_all_expression_dotplot_clust','Download PDF')),
-          # column(2,numericInput("width_png_all_expression_dotplot_clust","Width of PNG", value = 2400)),
-          # column(2,numericInput("height_png_all_expression_dotplot_clust","Height of PNG", value = 700)),
-          # column(2,numericInput("resolution_PNG_all_expression_dotplot_clust","Resolution of PNG", value = 144)),
-          # column(2,style = "margin-top: 25px;",downloadButton('downloadPlotPNG_all_expression_dotplot_clust','Download PNG'))
-
-          # stats OverRep analysis ----
-          geneSet <- read.csv(system.file("OverRep","GeneSets.csv",package = "STEGO.R"),header = T)
-
-          background.genes.name <- as.data.frame(rownames(sc@assays$RNA$scale.data))
-          names(background.genes.name) <- "V1"
-          background.genes <- length(rownames(sc@assays$RNA$scale.data))
-
-          #
-          geneSet$background.genes <- background.genes
-
-          DEx.genes <- as.data.frame(rownames(markers.fm.list2))
-          names(DEx.genes) <- "V1"
-          total.sig <- length(DEx.genes$V1)
-          geneSet$total.sig <- length(DEx.genes$V1)
-          # geneSet
-          geneSet$background.geneset <- NA
-          geneSet$background.geneset.name <- NA
-          geneSet$in.geneset <- NA
-          geneSet$in.geneset.name <- NA
-
-          if(input$datasource == "BD_Rhapsody_Paired" || input$datasource == "BD_Rhapsody_AIRR") { # selectInput("datasource", "Data source",choices=c("10x_Genomics","BD_Rhapsody_Paired","BD_Rhapsody_AIRR")),
-            geneSet$GeneSet <- gsub("-",".",geneSet$GeneSet)
-          }
-
-          if(input$species_analysis == "mm") { # selectInput("datasource", "Data source",choices=c("10x_Genomics","BD_Rhapsody_Paired","BD_Rhapsody_AIRR")),
-            require(stringr)
-            geneSet$GeneSet <- str_to_title(geneSet$GeneSet)
-          }
-          message(paste("Starting OverRep analysis of cluster ", i))
-          for (j in 1:dim(geneSet)[1]) {
-            # listed GeneSet
-
-            Gene.set.testing <- as.data.frame(strsplit(geneSet$GeneSet,";")[j])
-            names(Gene.set.testing) <- "V1"
-            Gene.set.testing2 <- as.data.frame(unique(Gene.set.testing$V1))
-            names(Gene.set.testing2) <- "V1"
-            background.overlap <- merge(Gene.set.testing2,background.genes.name,by= "V1")
-            geneSet$background.geneset[j] <- length(background.overlap$V1)
-            geneSet$background.geneset.name[j] <- as.character(paste(unlist(background.overlap[1]), collapse=';'))
-            # in sig gene list
-            overlap <- merge(background.overlap,DEx.genes,by= "V1")
-
-            geneSet$in.geneset[j] <- length(overlap$V1)
-            geneSet$in.geneset.name[j] <- as.character(paste(unlist(overlap[1]), collapse=';'))
-
-          }
-          geneSet2 <- subset(geneSet,geneSet$in.geneset>0)
-          for (j in 1:dim(geneSet2)[1]) {
-            tota.gene.set <- geneSet2$background.geneset[j] # genes that are identified in background
-            in.geneset <-  geneSet2$in.geneset[j]# DEx in geneset
-            not.in.total <- background.genes - tota.gene.set
-            not.in.geneset.sig <- total.sig - in.geneset
-            d <- data.frame( gene.in.interest=c( in.geneset, not.in.geneset.sig),gene.not.interest=c(tota.gene.set, not.in.total))
-            row.names(d) <- c("In_category", "not_in_category")
-
-            if (in.geneset>0) {
-              geneSet2$p.val[j] <- unlist(fisher.test(d, alternative = "greater")$p.value)[1]
-              geneSet2$lowerCI[j] <-  unlist(fisher.test(d, alternative = "greater")$conf.int)[1]
-              geneSet2$upperCI[j] <-unlist(fisher.test(d)$conf.int)[2]
-              geneSet2$OR[j] <- round(unlist(fisher.test(d, alternative = "greater")$estimate)[1],3)
+            if (length(rownames(markers.fm.list2))<40) {
+              list.names <- rownames(markers.fm.list2)
             } else {
-              geneSet2$p.value[j] <- "-"
-              geneSet2$lowerCI[j] <-  "-"
-              geneSet2$upperCI[j] <- "-"
-              geneSet2$OR[j] <- "-"
+              list.names <- rownames(markers.fm.list2)
+              list.names <- list.names[1:40]
             }
-          }
-          geneSet2 <- geneSet2[order(geneSet2$p.val,decreasing = F),]
-          geneSet2$FDR <- p.adjust(geneSet2$p.val, method = "fdr")
-          geneSet2$Bonferroni <- p.adjust(geneSet2$p.val, method = "bonferroni")
-          message("Downloading the Summary table...")
-          top.name.clonotypes <- paste("Prioritisation/Clustering/",i,"_AG_OverRep_",x,".csv",sep="")
-          write.csv(geneSet2,top.name.clonotypes, row.names = F)
 
-        }
+            size_legend = input$Bar_legend_size-2
+
+            dotplotClust <- DotPlot(sc, features = list.names) +
+              RotatedAxis() +
+              theme(
+                axis.title.y = element_blank(),
+                axis.text.y = element_text(colour="black",family=input$font_type,size = input$text_size),
+                axis.text.x = element_text(colour="black",family=input$font_type,size = input$text_size, angle = 90),
+                axis.title.x = element_blank(),
+                legend.title = element_text(colour="black", size=input$Bar_legend_size,family=input$font_type),
+                legend.text = element_text(colour="black", size=size_legend,family=input$font_type),
+                legend.position = input$legend_position,
+              ) +
+              scale_colour_gradient2(low = input$low.dotplot.clust, mid = input$middle.dotplot.clust, high = input$high.dotplot.clust)+
+              scale_x_discrete(labels = label_wrap(20)) +
+              scale_y_discrete(labels = label_wrap(20))
+
+            top.name.clonotypes.top_png <- paste("Prioritisation/Clustering/",i,"_AG_dot.plot_",x,".png",sep="")
+            png(top.name.clonotypes.top_png, width = input$width_png_all_expression_dotplot_clust,
+                height = input$height_png_all_expression_dotplot_clust,
+                res = input$resolution_PNG_all_expression_dotplot_clust)
+            plot(dotplotClust)
+            dev.off()
+
+            # column(2,style = "margin-top: 25px;",downloadButton('downloadPlot_all_expression_dotplot_clust','Download PDF')),
+            # column(2,numericInput("width_png_all_expression_dotplot_clust","Width of PNG", value = 2400)),
+            # column(2,numericInput("height_png_all_expression_dotplot_clust","Height of PNG", value = 700)),
+            # column(2,numericInput("resolution_PNG_all_expression_dotplot_clust","Resolution of PNG", value = 144)),
+            # column(2,style = "margin-top: 25px;",downloadButton('downloadPlotPNG_all_expression_dotplot_clust','Download PNG'))
+
+            # stats OverRep analysis ----
+            geneSet <- read.csv(system.file("OverRep","GeneSets.csv",package = "STEGO.R"),header = T)
+
+            background.genes.name <- as.data.frame(rownames(sc@assays$RNA$scale.data))
+            names(background.genes.name) <- "V1"
+            background.genes <- length(rownames(sc@assays$RNA$scale.data))
+
+            #
+            geneSet$background.genes <- background.genes
+
+            DEx.genes <- as.data.frame(rownames(markers.fm.list2))
+            names(DEx.genes) <- "V1"
+            total.sig <- length(DEx.genes$V1)
+            geneSet$total.sig <- length(DEx.genes$V1)
+            # geneSet
+            geneSet$background.geneset <- NA
+            geneSet$background.geneset.name <- NA
+            geneSet$in.geneset <- NA
+            geneSet$in.geneset.name <- NA
+
+            if(input$datasource == "BD_Rhapsody_Paired" || input$datasource == "BD_Rhapsody_AIRR") { # selectInput("datasource", "Data source",choices=c("10x_Genomics","BD_Rhapsody_Paired","BD_Rhapsody_AIRR")),
+              geneSet$GeneSet <- gsub("-",".",geneSet$GeneSet)
+            }
+
+            if(input$species_analysis == "mm") { # selectInput("datasource", "Data source",choices=c("10x_Genomics","BD_Rhapsody_Paired","BD_Rhapsody_AIRR")),
+              require(stringr)
+              geneSet$GeneSet <- str_to_title(geneSet$GeneSet)
+            }
+            message(paste("Starting OverRep analysis of cluster ", i))
+            for (j in 1:dim(geneSet)[1]) {
+              # listed GeneSet
+
+              Gene.set.testing <- as.data.frame(strsplit(geneSet$GeneSet,";")[j])
+              names(Gene.set.testing) <- "V1"
+              Gene.set.testing2 <- as.data.frame(unique(Gene.set.testing$V1))
+              names(Gene.set.testing2) <- "V1"
+              background.overlap <- merge(Gene.set.testing2,background.genes.name,by= "V1")
+              geneSet$background.geneset[j] <- length(background.overlap$V1)
+              geneSet$background.geneset.name[j] <- as.character(paste(unlist(background.overlap[1]), collapse=';'))
+              # in sig gene list
+              overlap <- merge(background.overlap,DEx.genes,by= "V1")
+
+              geneSet$in.geneset[j] <- length(overlap$V1)
+              geneSet$in.geneset.name[j] <- as.character(paste(unlist(overlap[1]), collapse=';'))
+
+            }
+            geneSet2 <- subset(geneSet,geneSet$in.geneset>0)
+            for (j in 1:dim(geneSet2)[1]) {
+              tota.gene.set <- geneSet2$background.geneset[j] # genes that are identified in background
+              in.geneset <-  geneSet2$in.geneset[j]# DEx in geneset
+              not.in.total <- background.genes - tota.gene.set
+              not.in.geneset.sig <- total.sig - in.geneset
+              d <- data.frame( gene.in.interest=c( in.geneset, not.in.geneset.sig),gene.not.interest=c(tota.gene.set, not.in.total))
+              row.names(d) <- c("In_category", "not_in_category")
+
+              if (in.geneset>0) {
+                geneSet2$p.val[j] <- unlist(fisher.test(d, alternative = "greater")$p.value)[1]
+                geneSet2$lowerCI[j] <-  unlist(fisher.test(d, alternative = "greater")$conf.int)[1]
+                geneSet2$upperCI[j] <-unlist(fisher.test(d)$conf.int)[2]
+                geneSet2$OR[j] <- round(unlist(fisher.test(d, alternative = "greater")$estimate)[1],3)
+              } else {
+                geneSet2$p.value[j] <- "-"
+                geneSet2$lowerCI[j] <-  "-"
+                geneSet2$upperCI[j] <- "-"
+                geneSet2$OR[j] <- "-"
+              }
+            }
+            geneSet2 <- geneSet2[order(geneSet2$p.val,decreasing = F),]
+            geneSet2$FDR <- p.adjust(geneSet2$p.val, method = "fdr")
+            geneSet2$Bonferroni <- p.adjust(geneSet2$p.val, method = "bonferroni")
+            message("Downloading the Summary table...")
+            top.name.clonotypes <- paste("Prioritisation/Clustering/",i,"_AG_OverRep_",x,".csv",sep="")
+            write.csv(geneSet2,top.name.clonotypes, row.names = F)
+
+          }}
       })
 
     })
@@ -17677,124 +17650,128 @@ runSTEGO <- function(){
 
           markers.fm.list <- FindMarkers(sc, ident.1 = name.check.clust, min.pct = min.pct.expression,  logfc.threshold = min.logfc, only.pos=TRUE)
           markers.fm.list2 <- subset(markers.fm.list,markers.fm.list$p_val_adj < input$pval.ex.filter)
-          message(paste(i," Downloading stats table"))
-          Exp_stats_cutoff_count.name <- paste("Prioritisation/Clustering/",i,"_BD_cluster_statsTab_",x,".csv",sep="")
-          write.csv(markers.fm.list2,Exp_stats_cutoff_count.name, row.names = T)
 
-          # stats dotplot ----
+          message(paste(length(markers.fm.list2$p_val_adj),"total markers for BD cluster",i))
 
-          if (length(rownames(markers.fm.list2))<40) {
-            list.names <- rownames(markers.fm.list2)
-          } else {
-            list.names <- rownames(markers.fm.list2)
-            list.names <- list.names[1:40]
-          }
+          if(length(markers.fm.list2$p_val_adj)>0) {
+            message(paste(i," Downloading stats table"))
+            Exp_stats_cutoff_count.name <- paste("Prioritisation/Clustering/",i,"_BD_cluster_statsTab_",x,".csv",sep="")
+            write.csv(markers.fm.list2,Exp_stats_cutoff_count.name, row.names = T)
 
-          size_legend = input$Bar_legend_size-2
+            # stats dotplot ----
 
-          dotplotClust <- DotPlot(sc, features = list.names) +
-            RotatedAxis() +
-            theme(
-              axis.title.y = element_blank(),
-              axis.text.y = element_text(colour="black",family=input$font_type,size = input$text_size),
-              axis.text.x = element_text(colour="black",family=input$font_type,size = input$text_size, angle = 90),
-              axis.title.x = element_blank(),
-              legend.title = element_text(colour="black", size=input$Bar_legend_size,family=input$font_type),
-              legend.text = element_text(colour="black", size=size_legend,family=input$font_type),
-              legend.position = input$legend_position,
-            ) +
-            scale_colour_gradient2(low = input$low.dotplot.clust, mid = input$middle.dotplot.clust, high = input$high.dotplot.clust)+
-            scale_x_discrete(labels = label_wrap(20)) +
-            scale_y_discrete(labels = label_wrap(20))
-
-          top.name.clonotypes.top_png <- paste("Prioritisation/Clustering/",i,"_BD_dot.plot_",x,".png",sep="")
-          png(top.name.clonotypes.top_png, width = input$width_png_all_expression_dotplot_clust,
-              height = input$height_png_all_expression_dotplot_clust,
-              res = input$resolution_PNG_all_expression_dotplot_clust)
-          plot(dotplotClust)
-          dev.off()
-
-          # stats OverRep analysis ----
-
-          if(dim(markers.fm.list2)[1]>0) {
-
-            geneSet <- read.csv(system.file("OverRep","GeneSets.csv",package = "STEGO.R"),header = T)
-
-            background.genes.name <- as.data.frame(rownames(sc@assays$RNA$scale.data))
-            names(background.genes.name) <- "V1"
-            background.genes <- length(rownames(sc@assays$RNA$scale.data))
-
-            #
-            geneSet$background.genes <- background.genes
-
-            DEx.genes <- as.data.frame(rownames(markers.fm.list2))
-            names(DEx.genes) <- "V1"
-            total.sig <- length(DEx.genes$V1)
-            geneSet$total.sig <- length(DEx.genes$V1)
-            # geneSet
-            geneSet$background.geneset <- NA
-            geneSet$background.geneset.name <- NA
-            geneSet$in.geneset <- NA
-            geneSet$in.geneset.name <- NA
-
-            if(input$datasource == "BD_Rhapsody_Paired" || input$datasource == "BD_Rhapsody_AIRR") { # selectInput("datasource", "Data source",choices=c("10x_Genomics","BD_Rhapsody_Paired","BD_Rhapsody_AIRR")),
-              geneSet$GeneSet <- gsub("-",".",geneSet$GeneSet)
+            if (length(rownames(markers.fm.list2))<40) {
+              list.names <- rownames(markers.fm.list2)
+            } else {
+              list.names <- rownames(markers.fm.list2)
+              list.names <- list.names[1:40]
             }
 
-            if(input$species_analysis == "mm") { # selectInput("datasource", "Data source",choices=c("10x_Genomics","BD_Rhapsody_Paired","BD_Rhapsody_AIRR")),
-              require(stringr)
-              geneSet$GeneSet <- str_to_title(geneSet$GeneSet)
-            }
-            message(paste("Starting OverRep analysis of cluster ", i))
-            for (j in 1:dim(geneSet)[1]) {
-              # listed GeneSet
+            size_legend = input$Bar_legend_size-2
 
-              Gene.set.testing <- as.data.frame(strsplit(geneSet$GeneSet,";")[j])
-              names(Gene.set.testing) <- "V1"
-              Gene.set.testing2 <- as.data.frame(unique(Gene.set.testing$V1))
-              names(Gene.set.testing2) <- "V1"
-              background.overlap <- merge(Gene.set.testing2,background.genes.name,by= "V1")
-              geneSet$background.geneset[j] <- length(background.overlap$V1)
-              geneSet$background.geneset.name[j] <- as.character(paste(unlist(background.overlap[1]), collapse=';'))
-              # in sig gene list
-              overlap <- merge(background.overlap,DEx.genes,by= "V1")
+            dotplotClust <- DotPlot(sc, features = list.names) +
+              RotatedAxis() +
+              theme(
+                axis.title.y = element_blank(),
+                axis.text.y = element_text(colour="black",family=input$font_type,size = input$text_size),
+                axis.text.x = element_text(colour="black",family=input$font_type,size = input$text_size, angle = 90),
+                axis.title.x = element_blank(),
+                legend.title = element_text(colour="black", size=input$Bar_legend_size,family=input$font_type),
+                legend.text = element_text(colour="black", size=size_legend,family=input$font_type),
+                legend.position = input$legend_position,
+              ) +
+              scale_colour_gradient2(low = input$low.dotplot.clust, mid = input$middle.dotplot.clust, high = input$high.dotplot.clust)+
+              scale_x_discrete(labels = label_wrap(20)) +
+              scale_y_discrete(labels = label_wrap(20))
 
-              geneSet$in.geneset[j] <- length(overlap$V1)
-              geneSet$in.geneset.name[j] <- as.character(paste(unlist(overlap[1]), collapse=';'))
+            top.name.clonotypes.top_png <- paste("Prioritisation/Clustering/",i,"_BD_dot.plot_",x,".png",sep="")
+            png(top.name.clonotypes.top_png, width = input$width_png_all_expression_dotplot_clust,
+                height = input$height_png_all_expression_dotplot_clust,
+                res = input$resolution_PNG_all_expression_dotplot_clust)
+            plot(dotplotClust)
+            dev.off()
 
-            }
+            # stats OverRep analysis ----
 
-            geneSet
-            geneSet2 <- subset(geneSet,geneSet$in.geneset>0)
-            for (j in 1:dim(geneSet2)[1]) {
-              tota.gene.set <- geneSet2$background.geneset[j] # genes that are identified in background
-              in.geneset <-  geneSet2$in.geneset[j]# DEx in geneset
-              not.in.total <- background.genes - tota.gene.set
-              not.in.geneset.sig <- total.sig - in.geneset
-              d <- data.frame( gene.in.interest=c( in.geneset, not.in.geneset.sig),gene.not.interest=c(tota.gene.set, not.in.total))
-              row.names(d) <- c("In_category", "not_in_category")
+            if(dim(markers.fm.list2)[1]>0) {
 
-              if (in.geneset>0) {
-                geneSet2$p.val[j] <- unlist(fisher.test(d, alternative = "greater")$p.value)[1]
-                geneSet2$lowerCI[j] <-  unlist(fisher.test(d, alternative = "greater")$conf.int)[1]
-                geneSet2$upperCI[j] <-unlist(fisher.test(d)$conf.int)[2]
-                geneSet2$OR[j] <- round(unlist(fisher.test(d, alternative = "greater")$estimate)[1],3)
-              } else {
-                geneSet2$p.value[j] <- "-"
-                geneSet2$lowerCI[j] <-  "-"
-                geneSet2$upperCI[j] <- "-"
-                geneSet2$OR[j] <- "-"
+              geneSet <- read.csv(system.file("OverRep","GeneSets.csv",package = "STEGO.R"),header = T)
+
+              background.genes.name <- as.data.frame(rownames(sc@assays$RNA$scale.data))
+              names(background.genes.name) <- "V1"
+              background.genes <- length(rownames(sc@assays$RNA$scale.data))
+
+              #
+              geneSet$background.genes <- background.genes
+
+              DEx.genes <- as.data.frame(rownames(markers.fm.list2))
+              names(DEx.genes) <- "V1"
+              total.sig <- length(DEx.genes$V1)
+              geneSet$total.sig <- length(DEx.genes$V1)
+              # geneSet
+              geneSet$background.geneset <- NA
+              geneSet$background.geneset.name <- NA
+              geneSet$in.geneset <- NA
+              geneSet$in.geneset.name <- NA
+
+              if(input$datasource == "BD_Rhapsody_Paired" || input$datasource == "BD_Rhapsody_AIRR") { # selectInput("datasource", "Data source",choices=c("10x_Genomics","BD_Rhapsody_Paired","BD_Rhapsody_AIRR")),
+                geneSet$GeneSet <- gsub("-",".",geneSet$GeneSet)
               }
-            }
-            geneSet2 <- geneSet2[order(geneSet2$p.val,decreasing = F),]
-            geneSet2$FDR <- p.adjust(geneSet2$p.val, method = "fdr")
-            geneSet2$Bonferroni <- p.adjust(geneSet2$p.val, method = "bonferroni")
-            message("Downloading the Summary table...")
-            top.name.clonotypes <- paste("Prioritisation/Clustering/",i,"_BD_OverRep_",x,".csv",sep="")
-            write.csv(geneSet2,top.name.clonotypes, row.names = F)
 
-          }
-        }
+              if(input$species_analysis == "mm") { # selectInput("datasource", "Data source",choices=c("10x_Genomics","BD_Rhapsody_Paired","BD_Rhapsody_AIRR")),
+                require(stringr)
+                geneSet$GeneSet <- str_to_title(geneSet$GeneSet)
+              }
+              message(paste("Starting OverRep analysis of cluster ", i))
+              for (j in 1:dim(geneSet)[1]) {
+                # listed GeneSet
+
+                Gene.set.testing <- as.data.frame(strsplit(geneSet$GeneSet,";")[j])
+                names(Gene.set.testing) <- "V1"
+                Gene.set.testing2 <- as.data.frame(unique(Gene.set.testing$V1))
+                names(Gene.set.testing2) <- "V1"
+                background.overlap <- merge(Gene.set.testing2,background.genes.name,by= "V1")
+                geneSet$background.geneset[j] <- length(background.overlap$V1)
+                geneSet$background.geneset.name[j] <- as.character(paste(unlist(background.overlap[1]), collapse=';'))
+                # in sig gene list
+                overlap <- merge(background.overlap,DEx.genes,by= "V1")
+
+                geneSet$in.geneset[j] <- length(overlap$V1)
+                geneSet$in.geneset.name[j] <- as.character(paste(unlist(overlap[1]), collapse=';'))
+
+              }
+
+              geneSet2 <- subset(geneSet,geneSet$in.geneset>0)
+              for (j in 1:dim(geneSet2)[1]) {
+                tota.gene.set <- geneSet2$background.geneset[j] # genes that are identified in background
+                in.geneset <-  geneSet2$in.geneset[j]# DEx in geneset
+                not.in.total <- background.genes - tota.gene.set
+                not.in.geneset.sig <- total.sig - in.geneset
+                d <- data.frame( gene.in.interest=c( in.geneset, not.in.geneset.sig),gene.not.interest=c(tota.gene.set, not.in.total))
+                row.names(d) <- c("In_category", "not_in_category")
+
+                if (in.geneset>0) {
+                  geneSet2$p.val[j] <- unlist(fisher.test(d, alternative = "greater")$p.value)[1]
+                  geneSet2$lowerCI[j] <-  unlist(fisher.test(d, alternative = "greater")$conf.int)[1]
+                  geneSet2$upperCI[j] <-unlist(fisher.test(d)$conf.int)[2]
+                  geneSet2$OR[j] <- round(unlist(fisher.test(d, alternative = "greater")$estimate)[1],3)
+                } else {
+                  geneSet2$p.value[j] <- "-"
+                  geneSet2$lowerCI[j] <-  "-"
+                  geneSet2$upperCI[j] <- "-"
+                  geneSet2$OR[j] <- "-"
+                }
+              }
+              geneSet2 <- geneSet2[order(geneSet2$p.val,decreasing = F),]
+              geneSet2$FDR <- p.adjust(geneSet2$p.val, method = "fdr")
+              geneSet2$Bonferroni <- p.adjust(geneSet2$p.val, method = "bonferroni")
+              message("Downloading the Summary table...")
+              top.name.clonotypes <- paste("Prioritisation/Clustering/",i,"_BD_OverRep_",x,".csv",sep="")
+              write.csv(geneSet2,top.name.clonotypes, row.names = F)
+
+            }
+          } }
+
       })
     })
 
@@ -17835,26 +17812,46 @@ runSTEGO <- function(){
       sc <- UMAP_metadata_with_labs()
       validate(
         need(nrow(sc)>0,
-             "Upload File")
+             "Upload Files")
       )
       md <- sc@meta.data
-      x = today()
+      clusterBD2 <- BD_cluster()
+      validate(
+        need(nrow(clusterBD2)>0,
+             "Upload clusTCR BD table")
+      )
+      clusterBD2
+      cluster <- clusterBD2
 
-      if (length(input.data_sc_clusTCR_BD())>0) {
-        clust <- input.data_sc_clusTCR_BD()
+      names(cluster)[names(cluster) %in% input$Samp_col] <- "ID_Column"
+      cluster <- cluster[order(cluster$Updated_order),]
+      rownames(cluster) <- cluster$Cell_Index
 
-        if(input$datasource == "BD_Rhapsody_Paired" || input$datasource == "BD_Rhapsody_AIRR") {
-          names(md)[names(md) %in% "v_gene_BD"] <- "Selected_V_BD"
-          names(md)[names(md) %in% "junction_aa_BD"] <- "AminoAcid_BD"
-        } else {
-          names(md)[names(md) %in% "v_gene_BD"] <- "Selected_V_BD"
-          names(md)[names(md) %in% "cdr3_BD"] <- "AminoAcid_BD"
-        }
-      }
-      md
+      checking <- cluster[,names(cluster) %in% c("Updated_order","Cell_Index")]
+      checking
+      md.checking <- merge(md,checking,by="Cell_Index",all.x=T)
+      md.checking <- md.checking[order(md.checking$order),]
+      rownames(md.checking) <- md.checking$Cell_Index
+
+      md.checking$Clust_selected <- ifelse(md.checking$Updated_order == 10,10,"NS")
+      md.checking$Clust_selected[is.na(md.checking$Clust_selected)] <- "NS"
+      md.checking <- md.checking[order(md.checking$order),]
+      md.checking
+      sc@meta.data <- md.checking
+      Idents(object = sc) <- sc@meta.data$Clust_selected
+
+      name.check.clust <- 10
+      min.pct.expression<- input$min_point_ #standard setting: 0.25
+      min.logfc<-  input$LogFC_ #0.25 is standard
+
+      markers.fm.list <- FindMarkers(sc, ident.1 = name.check.clust, min.pct = min.pct.expression,  logfc.threshold = min.logfc, only.pos=TRUE)
+      markers.fm.list2 <- subset(markers.fm.list,markers.fm.list$p_val_adj < input$pval.ex.filter)
+      as.data.frame(length(markers.fm.list2$p_val_adj))
     })
+
     ### end -----
   }
   shinyApp(ui, server)
+
 
 }
