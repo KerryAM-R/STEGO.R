@@ -73,5 +73,6 @@ Remotes:
   github::briatte/ggnet,
   github::omarwagih/ggseqlogo,
   github::MarioniLab/DropletUtils,
-  github::jokergoo/ComplexHeatmap
+  github::jokergoo/ComplexHeatmap,
+  gitHub::immunogenomics/presto
 biocViews: SummarizedExperiment, SingleCellExperiment
