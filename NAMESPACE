@@ -2,3 +2,6 @@
 
 export(runSTEGO)
 export(Load_required_packages)
+export(gg_fill_hue)
+export(TCR_Expanded_fun)
+export(mat_sum)
