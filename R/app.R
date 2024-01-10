@@ -207,6 +207,24 @@ runSTEGO <- function(){
 
   # UI page -----
   ui <- fluidPage(
+    tags$head(tags$style(HTML('.progress-bar {background-color: darkblue;}'))),
+    tags$head(
+      tags$style(
+        HTML(".shiny-notification {
+              height: 200px;
+              width: 800px;
+              position:fixed;
+              top: calc(50% - 50px);;
+              left: calc(50% - 400px);;
+              font-size: 150%;
+              text-align: center;
+              background-color: grey90;
+             color: black;
+            }
+           "
+        )
+      )
+    ),
     # shinythemes::themeSelector(),
     tags$style(HTML("
                     .tabbable > .nav > li > a {background-color: #808080;  color:white}
@@ -17708,7 +17726,7 @@ runSTEGO <- function(){
       withProgress(message = 'Performing BD cluster analysis', value = 0, {
 
         for (i in 1:len.order) {
-          incProgress(1/len.order, detail = paste("AG cluster", i,"of",len.order))
+          incProgress(1/len.order, detail = paste("BD cluster", i,"of",len.order))
           cluster <- clusterBD
           names(cluster)[names(cluster) %in% input$Samp_col_cluster] <- "ID_Column"
           cluster <- cluster[cluster$Updated_order %in% i,]
@@ -17998,7 +18016,6 @@ runSTEGO <- function(){
     })
 
     # epitope code for automated analysis ------
-
     df_tcrex2 <- reactive({
       epi <- input.data_sc_TCRex()
       req(epi)
