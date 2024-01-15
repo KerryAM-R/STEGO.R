@@ -205,6 +205,7 @@ runSTEGO <- function(){
     mat
   }
 
+  ###################
   # UI page -----
   ui <- fluidPage(
     tags$head(tags$style(HTML('.progress-bar {background-color: darkblue;}'))),
@@ -960,11 +961,8 @@ runSTEGO <- function(){
                tabPanel("Annotations",
                         sidebarLayout(
                           sidebarPanel(id = "tPanel4",style = "overflow-y:scroll; max-height: 800px; position:relative;", width=3,
-                                       uiOutput("Detect_version"),
-
-
-                                       selectInput("Data_types","Source",choices = c("10x_HS","BD_HS.Immune.Panel","BD_HS.Full.Panel","10x_MM","BD_MM_Full.Panel","BD_MM_Immune.Panel",
-                                                                                     "TCR-seq")),
+                                       # uiOutput("Detect_version"),
+                                       selectInput("Data_types","Source",choices = c("10x_HS","BD_HS.Immune.Panel","BD_HS.Full.Panel","10x_MM","BD_MM_Full.Panel","BD_MM_Immune.Panel", "TCR-seq")),
                                        selectInput("sample.type.source.markers","Species",choices = ""),
                                        fileInput("file1_rds.file2",
                                                  "Choose merged or single .rds files from directory",
@@ -1299,7 +1297,7 @@ runSTEGO <- function(){
                                        ),
                                        selectInput("datasource", "Data source",choices=""),
                                        selectInput("species_analysis","Species",choices = ""),
-                                       selectInput("Samp_col","Column name",choices = ""),
+                                       selectInput("Samp_col","Selected Individual",choices = ""),
                                        selectInput("V_gene_sc","V gene with/without CDR3",choices = ""),
                                        selectInput("colourtype","Type of colouring",choices = c("default","rainbow","random","heat.colors","terrain.colors","topo.colors","hcl.colors","one colour")),
                                        conditionalPanel( condition="input.check_up_files != 'up'",
@@ -1323,10 +1321,6 @@ runSTEGO <- function(){
                                                            column(6,uiOutput("cut.off_expanded2")),
                                                            column(6,uiOutput("classification_to_add2")),
                                                          ),
-
-                                                         conditionalPanel( condition="input.PriorTBMods == 'PriorClustTB' || input.Panel_TCRUMAP == 'ClusTCR2'",
-                                                                           selectInput("Clusters_to_dis_PIE","Clusters to display",choices = "",multiple = F)
-                                                         ),
                                                          fluidRow(
 
                                                            column(6,numericInput("cut.off_percent_rep","Percent of Repertoire", value = 1, step = 1, min = 1,max = 100)),
@@ -1345,9 +1339,11 @@ runSTEGO <- function(){
 
                                                          )
                                        ),
-
+                                       conditionalPanel( condition="input.PriorTBMods == 'PriorClustTB' || input.Panel_TCRUMAP == 'ClusTCR2'",
+                                                         selectInput("Clusters_to_dis_PIE","Clusters to display",choices = "",multiple = F)
+                                       ),
                                        conditionalPanel(condition="input.Panel_TCRUMAP=='ClusTCR2'",
-                                                        selectInput("chain_TCR","Chains included",choices = c("TRAG","TRBD","IgH","IgKL")),
+                                                        selectInput("chain_TCR","Chain to display",choices = c("TRAG","TRBD","IgH","IgKL")),
                                        ),
                                        #
                                        # Expanded stat cut-offs -----
@@ -1451,13 +1447,17 @@ runSTEGO <- function(){
                                                                       verbatimTextOutput("Simple_workflow_step1"),
                                                                       verbatimTextOutput("Number_of_clonotypes_to_"),
                                                                       add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "purple"),
-                                                                      uiOutput("Module_case_statements")
+                                                                      div(DT::dataTableOutput("PriorClono_Tab")),
+                                                                      uiOutput("Module_case_statements"),
+
+
                                                              ),
                                                              # modules of priority cluster ------
                                                              tabPanel("Cluster",value = "PriorClustTB",
                                                                       fluidRow(
                                                                         column(3,uiOutput("Default_priority_cutoffAG")),
                                                                         column(3,uiOutput("Default_priority_cutoffBD")),
+                                                                        # column(3,numericInput("CloneTotal_input","Select clones > ",value = 2, min = 2)),
                                                                       ),
                                                                       add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "purple"),
                                                                       verbatimTextOutput("number_clusters_to_analyse_AG"),
@@ -1481,6 +1481,18 @@ runSTEGO <- function(){
                                                                       div(DT::dataTableOutput("Test_table_1")),
 
                                                              ),
+                                                             # modules of priority Annotations ------
+                                                             tabPanel("Annotation",value = "PrioAnnoTB",
+                                                                      add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "purple"),
+                                                                      fluidRow(
+                                                                        column(3,uiOutput("AddInAnnoUI_1")),
+                                                                        column(3,uiOutput("AddInAnnoUI_2")),
+                                                                      ),
+                                                                      # actionButton("AnnoPrior_Download_Bt","Automated Annotation analysis"),
+                                                                      div(DT::dataTableOutput("Prior_Test_annoTb")),
+
+                                                             ),
+                                                             ### end priority
                                                  )
                                         ),
 
@@ -6253,22 +6265,22 @@ runSTEGO <- function(){
 
     })
 
-    output$Detect_version <- renderUI({
-      sc <- getData_2()
-      validate(
-        need(nrow(sc)>0,
-             "Upload files")
-      )
-      VersionControl <- sc@version
-      if(length(grep("4.",VersionControl))>0) {
-        selectInput("SeuratVersion2","Seurat Version", choices = c("Version 4","Version 5"), selected = "Version 4")
-      } else if (length(grep("5.",VersionControl))>0) {
-        selectInput("SeuratVersion2","Seurat Version", choices = c("Version 4","Version 5"), selected = "Version 5")
-      } else {
-        selectInput("SeuratVersion2","Seurat Version", choices = c("Version 4","Version 5"), selected = "")
-      }
-
-    })
+    # output$Detect_version <- renderUI({
+    #   sc <- getData_2()
+    #   validate(
+    #     need(nrow(sc)>0,
+    #          "Upload files")
+    #   )
+    #   VersionControl <- sc@version
+    #   if(length(grep("4.",VersionControl))>0) {
+    #     selectInput("SeuratVersion2","Seurat Version", choices = c("Version 4","Version 5"), selected = "Version 4")
+    #   } else if (length(grep("5.",VersionControl))>0) {
+    #     selectInput("SeuratVersion2","Seurat Version", choices = c("Version 4","Version 5"), selected = "Version 5")
+    #   } else {
+    #     selectInput("SeuratVersion2","Seurat Version", choices = c("Version 4","Version 5"), selected = "")
+    #   }
+    #
+    # })
 
 
     observe({
@@ -8671,14 +8683,14 @@ runSTEGO <- function(){
 
 
     list_of_genes <- reactive({
-      df.test <- getData_2()
+      sc <- getData_2()
       validate(
-        need(nrow(df.test)>0,
+        need(nrow(sc)>0,
              error_message_val_sc)
       )
 
       kmeans <- read.csv(system.file("Kmean","Kmeans.requires.annotation.csv",package = "STEGO.R"))
-      var.genes <- as.data.frame(unique(df.test@assays$RNA@var.features))
+      var.genes <- as.data.frame(unique(rownames(sc@assays$RNA$scale.data)))
       names(var.genes) <- "V1"
 
       if (input$sample.type.source.markers == 'hs') {
@@ -8865,6 +8877,8 @@ runSTEGO <- function(){
       )
 
       meta.data <- sc@meta.data
+
+
       if("junction_aa_BD" %in% names(sc@meta.data)) {
         updateSelectInput(
           session,
@@ -16266,13 +16280,9 @@ runSTEGO <- function(){
 
         BD_sum <- Top_clonotypes_multiCounts()
 
-        if(dim(BD_sum)[1]>10) {
-          BD_sum <- BD_sum[1:11,]
-        }
-
-
         fluidRow(
-          column(6,numericInput("cut.off_percent_repMulti","Priority cut-off",value = 1,step = 0.001, min = 0, max = 1)),
+          column(3,numericInput("cut.off_percent_repMulti","Priority cut-off",value = 1,step = 0.001, min = 0, max = 1)),
+          column(3,numericInput("CloneTotal_input_top2","Select clones > (Private)",value = 2, min = 2)),
           column(12,actionButton("Multi_download_button","Download multi analysis"))
         )
       } else {
@@ -17143,7 +17153,8 @@ runSTEGO <- function(){
              "upload file")
       )
       BD_sum <- Upset_plot_overlap_Multi()
-      BD_sum <- subset(BD_sum,BD_sum$CloneTotal>2)
+      # BD_sum <- subset(BD_sum,BD_sum$CloneTotal>2)
+      BD_sum <- subset(BD_sum,BD_sum$CloneTotal>input$CloneTotal_input_top2)
       BD_sum <- subset(BD_sum,BD_sum$TotalSamps==1)
       BD_sum$cluster_name <- rownames(BD_sum)
       BD_sum
@@ -17385,6 +17396,7 @@ runSTEGO <- function(){
       )
       x = today()
       req(input$Samp_col,input$V_gene_sc,input$cut.off_percent_repMulti)
+
       df3.meta <- sc@meta.data
       df3.meta$cluster_name <- df3.meta[,names(df3.meta) %in% input$V_gene_sc]
 
@@ -17392,8 +17404,6 @@ runSTEGO <- function(){
       BD_sum$obs <- 1
       BD_sum <-  subset(BD_sum,BD_sum$priority<input$cut.off_percent_repMulti)
       observations <- sum(BD_sum$obs)
-
-
 
       BD_sum <- Top_clonotypes_Private()
       BD_sum$obs <- 1
@@ -17404,6 +17414,27 @@ runSTEGO <- function(){
       rownames(df3) <- c(1,2)
       df3
       # paste()
+    })
+
+    output$PriorClono_Tab <- DT::renderDataTable(escape = FALSE, options = list(autoWidth = FALSE, lengthMenu = c(2,5,10,20,50,100), pageLength = 2, scrollX = TRUE),{
+      sc <- UMAP_metadata_with_labs()
+      validate(
+        need(nrow(sc)>0,
+             "Upload")
+      )
+      x = today()
+      req(input$Samp_col,input$V_gene_sc,input$cut.off_percent_repMulti)
+
+      df3.meta <- sc@meta.data
+      df3.meta$cluster_name <- df3.meta[,names(df3.meta) %in% input$V_gene_sc]
+
+      BD_sum <- Top_clonotypes_multiCounts()
+      BD_sum$obs <- 1
+
+      BD_sum2 <- BD_sum[,names(BD_sum) %in% c("priority","obs")]
+      total.condition <- as.data.frame(ddply(BD_sum2,"priority",numcolwise(sum)))
+      total.condition <- total.condition %>% mutate(cum_freq = cumsum(obs))
+      total.condition
     })
 
     # Clustering priority  -----
@@ -18117,7 +18148,7 @@ runSTEGO <- function(){
       top_BD_cluster2 <- top_BD_cluster2 %>%
         select(cloneCount, everything())
       df2 <- as.data.frame(ddply(top_BD_cluster2,names(top_BD_cluster2)[-c(1)],numcolwise(sum)))
-
+      df2 <- df2[complete.cases(df2)==T,]
       df2$fraction <- df2$cloneCount/sum(df2$cloneCount)
       df2$Percent <- round(df2$cloneCount/sum(df2$cloneCount)*100,2)
       df2$Selected_function <- ifelse(grepl("NA", df2$Selected_function),"-",df2$Selected_function)
@@ -18127,8 +18158,12 @@ runSTEGO <- function(){
     Prior_heatmap_epitope <- reactive({
       df3.meta <- Common_Epitope_code()
       req(df3.meta)
+      # df3.meta$Selected_function <- df3.meta[,names(df3.meta) %in% input$Prior_AddInEpiUI_1]
+      # top_BD_cluster$Selected_group <- top_BD_cluster[,names(top_BD_cluster) %in% input$Prior_AddInEpiUI_2]
+      df3.meta2 <- df3.meta[!is.na(df3.meta$Selected_function),]
+      df3.meta3 <- df3.meta2[!is.na(df3.meta2$Selected_group),]
 
-      df.1 <- acast(df3.meta, Selected_function~Selected_group, value.var="cloneCount")
+      df.1 <- acast(df3.meta3, Selected_function~Selected_group, value.var="cloneCount")
       df.1
       head(df.1)
       df.1[is.na(df.1)] <- 0
@@ -18228,222 +18263,227 @@ runSTEGO <- function(){
       df2$Selected_function <- ifelse(grepl("NA", df2$Selected_function),"-",df2$Selected_function)
       df2 <- subset(df2,df2$cloneCount>2)
       df2 <- df2[order(df2$Percent,decreasing = T),]
-      # df2
 
       Selected_group <- (df2$Selected_group)
       len.order <- length(Selected_group)
+      if(length(df2$Percent)>0) {
+        withProgress(message = 'Peforming stats on selected Epitope', value = 0, {
 
-      withProgress(message = 'Peforming stats on selected Epitope', value = 0, {
+          for (i in 1:len.order) {
+            ##### UMAP ------
+            incProgress(1/len.order, detail = paste("Epitope", i,"of",len.order))
 
-        for (i in 1:len.order) {
-          ##### UMAP ------
-          incProgress(1/len.order, detail = paste("Epitope", i,"of",len.order))
+            Epi.selected <- subset(md,md$Selected_group==df2$Selected_group[i])
+            Epi.selected
 
-          Epi.selected <- subset(md,md$Selected_group==df2$Selected_group[i])
-          Epi.selected
+            selected.epitope.name <- df2$Selected_group[i]
 
-          selected.epitope.name <- df2$Selected_group[i]
+            num <- as.data.frame(unique(Epi.selected$colouring_col))
+            num <- as.data.frame(num[complete.cases(num)==T,])
 
-          num <- as.data.frame(unique(Epi.selected$colouring_col))
-          num <- as.data.frame(num[complete.cases(num)==T,])
+            col.df <- num
 
-          col.df <- num
+            num <- (length(unlist(col.df)))
+            num <- num[!is.na(num)]
 
-          num <- (length(unlist(col.df)))
-          num <- num[!is.na(num)]
+            if (input$colourtype == "default") {
+              colorblind_vector <- c(gg_fill_hue(num))
+            } else if (input$colourtype == "hcl.colors") {
+              colorblind_vector <- c(hcl.colors(num, palette = "viridis"))
+            } else if (input$colourtype == "topo.colors") {
+              colorblind_vector <- c(topo.colors(num))
+            } else if (input$colourtype == "heat.colors") {
+              colorblind_vector <- c(heat.colors(num))
+            } else if (input$colourtype == "terrain.colors") {
+              colorblind_vector <- c(terrain.colors(num))
+            } else if (input$colourtype == "rainbow") {
+              colorblind_vector <- c(rainbow(num))
+            } else if (input$colourtype == "random") {
+              colorblind_vector <- distinctColorPalette(num)
 
-          if (input$colourtype == "default") {
-            colorblind_vector <- c(gg_fill_hue(num))
-          } else if (input$colourtype == "hcl.colors") {
-            colorblind_vector <- c(hcl.colors(num, palette = "viridis"))
-          } else if (input$colourtype == "topo.colors") {
-            colorblind_vector <- c(topo.colors(num))
-          } else if (input$colourtype == "heat.colors") {
-            colorblind_vector <- c(heat.colors(num))
-          } else if (input$colourtype == "terrain.colors") {
-            colorblind_vector <- c(terrain.colors(num))
-          } else if (input$colourtype == "rainbow") {
-            colorblind_vector <- c(rainbow(num))
-          } else if (input$colourtype == "random") {
-            colorblind_vector <- distinctColorPalette(num)
+            }  else {
 
-          }  else {
+            }
 
+
+            col.df$col <- colorblind_vector
+
+            df <- ggplot(data=Epi.selected,aes(x=UMAP_1,UMAP_2,colour=colouring_col,size= colouring_col,alpha = colouring_col))+
+              geom_point()+
+              scale_color_manual(na.value=input$NA_col_analysis, values = col.df$col)+
+              scale_size_manual(na.value=0.25,values = rep(2,num))+
+              scale_alpha_manual(na.value=0.25,values = rep(1,num))+
+              theme(
+                legend.text = element_text(colour="black", size=input$Bar_legend_size,family=input$font_type),
+                legend.title = element_blank(),
+                legend.position = input$legend_position,
+              )+
+              theme_bw()
+
+            message(paste(i," Downloading the count UMAP"))
+            x = today()
+            top.name.clonotypes.top_png <- paste("Prioritisation/EpitopePred/",i,"_",selected.epitope.name,"_Epitope_UMAP_",x,".png",sep="")
+            png(top.name.clonotypes.top_png, width = input$width_png_TCR.UMAP,height = input$height_png_TCR.UMAP,res = input$resolution_PNG_TCR.UMAP)
+            plot(df)
+            dev.off()
+
+            # Stats table ------
+            md.checking <- Common_Epitope_code()
+            md.checking <- md.checking[order(md.checking$order),]
+            rownames(md.checking) <- md.checking$Cell_Index
+
+            md.checking$selected <- ifelse(md.checking$Selected_group == df2$Selected_group[i],df2$Selected_group[i],"NS")
+            md.checking$selected[is.na(md.checking$selected)] <- "NS"
+            md.checking <- md.checking[order(md.checking$order),]
+            md.checking
+            sc@meta.data <- md.checking
+            Idents(object = sc) <- sc@meta.data$selected
+
+            name.check.epi <- df2$Selected_group[i]
+            min.pct.expression<- input$min_point_ #standard setting: 0.25
+            min.logfc<-  input$LogFC_ #0.25 is standard
+
+            markers.fm.list <- FindMarkers(sc, ident.1 = name.check.epi, min.pct = min.pct.expression,  logfc.threshold = min.logfc, only.pos=TRUE)
+            markers.fm.list2 <- subset(markers.fm.list,markers.fm.list$p_val_adj < input$pval.ex.filter)
+
+            message(paste(i,selected.epitope.name,"Epitope has",length(markers.fm.list2$p_val_adj),"total markers"))
+
+            if(length(markers.fm.list2$p_val_adj)>0) {
+              message(paste(i," Downloading stats table"))
+              Exp_stats_cutoff_count.name <-paste("Prioritisation/EpitopePred/",i,"_",selected.epitope.name,"_Epitope_statsTab_",x,".csv",sep="")
+              write.csv(markers.fm.list2,Exp_stats_cutoff_count.name, row.names = T)
+
+              #   # stats dotplot ----
+              if (length(rownames(markers.fm.list2))<40) {
+                list.names <- rownames(markers.fm.list2)
+              } else {
+                list.names <- rownames(markers.fm.list2)
+                list.names <- list.names[1:40]
+              }
+
+              size_legend = input$Bar_legend_size-2
+
+              dotplotClust <- DotPlot(sc, features = list.names) +
+                RotatedAxis() +
+                theme(
+                  axis.title.y = element_blank(),
+                  axis.text.y = element_text(colour="black",family=input$font_type,size = input$text_size),
+                  axis.text.x = element_text(colour="black",family=input$font_type,size = input$text_size, angle = 90),
+                  axis.title.x = element_blank(),
+                  legend.title = element_text(colour="black", size=input$Bar_legend_size,family=input$font_type),
+                  legend.text = element_text(colour="black", size=size_legend,family=input$font_type),
+                  legend.position = input$legend_position,
+                ) +
+                scale_colour_gradient2(low = input$low.dotplot.clust, mid = input$middle.dotplot.clust, high = input$high.dotplot.clust)+
+                scale_x_discrete(labels = label_wrap(20)) +
+                scale_y_discrete(labels = label_wrap(20))
+
+              top.name.clonotypes.top_png <- paste("Prioritisation/EpitopePred/",i,"_",selected.epitope.name,"_dot.plot_",x,".png",sep="")
+              png(top.name.clonotypes.top_png, width = input$width_png_all_expression_dotplot_clust,
+                  height = input$height_png_all_expression_dotplot_clust,
+                  res = input$resolution_PNG_all_expression_dotplot_clust)
+              plot(dotplotClust)
+              dev.off()
+              # stats OverRep analysis ----
+              if(dim(markers.fm.list2)[1]>0) {
+
+                geneSet <- read.csv(system.file("OverRep","GeneSets.csv",package = "STEGO.R"),header = T)
+
+                background.genes.name <- as.data.frame(rownames(sc@assays$RNA$scale.data))
+                names(background.genes.name) <- "V1"
+                background.genes <- length(rownames(sc@assays$RNA$scale.data))
+
+                #
+                geneSet$background.genes <- background.genes
+
+                DEx.genes <- as.data.frame(rownames(markers.fm.list2))
+                names(DEx.genes) <- "V1"
+                total.sig <- length(DEx.genes$V1)
+                geneSet$total.sig <- length(DEx.genes$V1)
+                # geneSet
+                geneSet$background.geneset <- NA
+                geneSet$background.geneset.name <- NA
+                geneSet$in.geneset <- NA
+                geneSet$in.geneset.name <- NA
+
+                if(input$datasource == "BD_Rhapsody_Paired" || input$datasource == "BD_Rhapsody_AIRR") { # selectInput("datasource", "Data source",choices=c("10x_Genomics","BD_Rhapsody_Paired","BD_Rhapsody_AIRR")),
+                  geneSet$GeneSet <- gsub("-",".",geneSet$GeneSet)
+                }
+
+                if(input$species_analysis == "mm") { # selectInput("datasource", "Data source",choices=c("10x_Genomics","BD_Rhapsody_Paired","BD_Rhapsody_AIRR")),
+                  require(stringr)
+                  geneSet$GeneSet <- str_to_title(geneSet$GeneSet)
+                }
+                message(paste("Starting OverRep analysis of cluster ", i))
+                for (j in 1:dim(geneSet)[1]) {
+                  # listed GeneSet
+
+                  Gene.set.testing <- as.data.frame(strsplit(geneSet$GeneSet,";")[j])
+                  names(Gene.set.testing) <- "V1"
+                  Gene.set.testing2 <- as.data.frame(unique(Gene.set.testing$V1))
+                  names(Gene.set.testing2) <- "V1"
+                  background.overlap <- merge(Gene.set.testing2,background.genes.name,by= "V1")
+                  geneSet$background.geneset[j] <- length(background.overlap$V1)
+                  geneSet$background.geneset.name[j] <- as.character(paste(unlist(background.overlap[1]), collapse=';'))
+                  # in sig gene list
+                  overlap <- merge(background.overlap,DEx.genes,by= "V1")
+
+                  geneSet$in.geneset[j] <- length(overlap$V1)
+                  geneSet$in.geneset.name[j] <- as.character(paste(unlist(overlap[1]), collapse=';'))
+
+                }
+
+                geneSet2 <- subset(geneSet,geneSet$in.geneset>0)
+                message(paste("there are", length(geneSet2$in.geneset),"GeneSets in Epitope",i))
+
+                if(length(geneSet2$in.geneset)>0) {
+                  for (j in 1:dim(geneSet2)[1]) {
+                    tota.gene.set <- geneSet2$background.geneset[j] # genes that are identified in background
+                    in.geneset <-  geneSet2$in.geneset[j]# DEx in geneset
+                    not.in.total <- background.genes - tota.gene.set
+                    not.in.geneset.sig <- total.sig - in.geneset
+                    d <- data.frame( gene.in.interest=c( in.geneset, not.in.geneset.sig),gene.not.interest=c(tota.gene.set, not.in.total))
+                    row.names(d) <- c("In_category", "not_in_category")
+
+                    if (in.geneset>0) {
+                      geneSet2$p.val[j] <- unlist(fisher.test(d, alternative = "greater")$p.value)[1]
+                      geneSet2$lowerCI[j] <-  unlist(fisher.test(d, alternative = "greater")$conf.int)[1]
+                      geneSet2$upperCI[j] <-unlist(fisher.test(d)$conf.int)[2]
+                      geneSet2$OR[j] <- round(unlist(fisher.test(d, alternative = "greater")$estimate)[1],3)
+                    } else {
+                      geneSet2$p.value[j] <- "-"
+                      geneSet2$lowerCI[j] <-  "-"
+                      geneSet2$upperCI[j] <- "-"
+                      geneSet2$OR[j] <- "-"
+                    }
+                  }
+                  geneSet2 <- geneSet2[order(geneSet2$p.val,decreasing = F),]
+                  geneSet2$FDR <- p.adjust(geneSet2$p.val, method = "fdr")
+                  geneSet2$Bonferroni <- p.adjust(geneSet2$p.val, method = "bonferroni")
+                  message("Downloading the Summary table...")
+                  # top.name.clonotypes.top_png <- paste("Prioritisation/EpitopePred/",i,"_",selected.epitope.name,"_dot.plot_",x,".png",sep="")
+                  top.name.clonotypes <- paste("Prioritisation/EpitopePred/",i,"_",selected.epitope.name,"_OverRep_",x,".csv",sep="")
+                  write.csv(geneSet2,top.name.clonotypes, row.names = F)
+                }
+              }
+            } # loop to find
+            ######
           }
 
+        })} else {
+          message("No epitopes to analyse")
 
-          col.df$col <- colorblind_vector
-
-          df <- ggplot(data=Epi.selected,aes(x=UMAP_1,UMAP_2,colour=colouring_col,size= colouring_col,alpha = colouring_col))+
-            geom_point()+
-            scale_color_manual(na.value=input$NA_col_analysis, values = col.df$col)+
-            scale_size_manual(na.value=0.25,values = rep(2,num))+
-            scale_alpha_manual(na.value=0.25,values = rep(1,num))+
-            theme(
-              legend.text = element_text(colour="black", size=input$Bar_legend_size,family=input$font_type),
-              legend.title = element_blank(),
-              legend.position = input$legend_position,
-            )+
-            theme_bw()
-
-          message(paste(i," Downloading the count UMAP"))
-          x = today()
-          top.name.clonotypes.top_png <- paste("Prioritisation/EpitopePred/",i,"_",selected.epitope.name,"_Epitope_UMAP_",x,".png",sep="")
-          png(top.name.clonotypes.top_png, width = input$width_png_TCR.UMAP,height = input$height_png_TCR.UMAP,res = input$resolution_PNG_TCR.UMAP)
-          plot(df)
-          dev.off()
-
-          # Stats table ------
-          md.checking <- Common_Epitope_code()
-          md.checking <- md.checking[order(md.checking$order),]
-          rownames(md.checking) <- md.checking$Cell_Index
-
-          md.checking$selected <- ifelse(md.checking$Selected_group == df2$Selected_group[i],df2$Selected_group[i],"NS")
-          md.checking$selected[is.na(md.checking$selected)] <- "NS"
-          md.checking <- md.checking[order(md.checking$order),]
-          md.checking
-          sc@meta.data <- md.checking
-          Idents(object = sc) <- sc@meta.data$selected
-
-          name.check.epi <- df2$Selected_group[i]
-          min.pct.expression<- input$min_point_ #standard setting: 0.25
-          min.logfc<-  input$LogFC_ #0.25 is standard
-
-          markers.fm.list <- FindMarkers(sc, ident.1 = name.check.epi, min.pct = min.pct.expression,  logfc.threshold = min.logfc, only.pos=TRUE)
-          markers.fm.list2 <- subset(markers.fm.list,markers.fm.list$p_val_adj < input$pval.ex.filter)
-
-          message(paste(i,selected.epitope.name,"Epitope has",length(markers.fm.list2$p_val_adj),"total markers"))
-
-          if(length(markers.fm.list2$p_val_adj)>0) {
-            message(paste(i," Downloading stats table"))
-            Exp_stats_cutoff_count.name <-paste("Prioritisation/EpitopePred/",i,"_",selected.epitope.name,"_Epitope_statsTab_",x,".csv",sep="")
-            write.csv(markers.fm.list2,Exp_stats_cutoff_count.name, row.names = T)
-
-            #   # stats dotplot ----
-            if (length(rownames(markers.fm.list2))<40) {
-              list.names <- rownames(markers.fm.list2)
-            } else {
-              list.names <- rownames(markers.fm.list2)
-              list.names <- list.names[1:40]
-            }
-
-            size_legend = input$Bar_legend_size-2
-
-            dotplotClust <- DotPlot(sc, features = list.names) +
-              RotatedAxis() +
-              theme(
-                axis.title.y = element_blank(),
-                axis.text.y = element_text(colour="black",family=input$font_type,size = input$text_size),
-                axis.text.x = element_text(colour="black",family=input$font_type,size = input$text_size, angle = 90),
-                axis.title.x = element_blank(),
-                legend.title = element_text(colour="black", size=input$Bar_legend_size,family=input$font_type),
-                legend.text = element_text(colour="black", size=size_legend,family=input$font_type),
-                legend.position = input$legend_position,
-              ) +
-              scale_colour_gradient2(low = input$low.dotplot.clust, mid = input$middle.dotplot.clust, high = input$high.dotplot.clust)+
-              scale_x_discrete(labels = label_wrap(20)) +
-              scale_y_discrete(labels = label_wrap(20))
-
-            top.name.clonotypes.top_png <- paste("Prioritisation/EpitopePred/",i,"_",selected.epitope.name,"_dot.plot_",x,".png",sep="")
-            png(top.name.clonotypes.top_png, width = input$width_png_all_expression_dotplot_clust,
-                height = input$height_png_all_expression_dotplot_clust,
-                res = input$resolution_PNG_all_expression_dotplot_clust)
-            plot(dotplotClust)
-            dev.off()
-            # stats OverRep analysis ----
-            if(dim(markers.fm.list2)[1]>0) {
-
-              geneSet <- read.csv(system.file("OverRep","GeneSets.csv",package = "STEGO.R"),header = T)
-
-              background.genes.name <- as.data.frame(rownames(sc@assays$RNA$scale.data))
-              names(background.genes.name) <- "V1"
-              background.genes <- length(rownames(sc@assays$RNA$scale.data))
-
-              #
-              geneSet$background.genes <- background.genes
-
-              DEx.genes <- as.data.frame(rownames(markers.fm.list2))
-              names(DEx.genes) <- "V1"
-              total.sig <- length(DEx.genes$V1)
-              geneSet$total.sig <- length(DEx.genes$V1)
-              # geneSet
-              geneSet$background.geneset <- NA
-              geneSet$background.geneset.name <- NA
-              geneSet$in.geneset <- NA
-              geneSet$in.geneset.name <- NA
-
-              if(input$datasource == "BD_Rhapsody_Paired" || input$datasource == "BD_Rhapsody_AIRR") { # selectInput("datasource", "Data source",choices=c("10x_Genomics","BD_Rhapsody_Paired","BD_Rhapsody_AIRR")),
-                geneSet$GeneSet <- gsub("-",".",geneSet$GeneSet)
-              }
-
-              if(input$species_analysis == "mm") { # selectInput("datasource", "Data source",choices=c("10x_Genomics","BD_Rhapsody_Paired","BD_Rhapsody_AIRR")),
-                require(stringr)
-                geneSet$GeneSet <- str_to_title(geneSet$GeneSet)
-              }
-              message(paste("Starting OverRep analysis of cluster ", i))
-              for (j in 1:dim(geneSet)[1]) {
-                # listed GeneSet
-
-                Gene.set.testing <- as.data.frame(strsplit(geneSet$GeneSet,";")[j])
-                names(Gene.set.testing) <- "V1"
-                Gene.set.testing2 <- as.data.frame(unique(Gene.set.testing$V1))
-                names(Gene.set.testing2) <- "V1"
-                background.overlap <- merge(Gene.set.testing2,background.genes.name,by= "V1")
-                geneSet$background.geneset[j] <- length(background.overlap$V1)
-                geneSet$background.geneset.name[j] <- as.character(paste(unlist(background.overlap[1]), collapse=';'))
-                # in sig gene list
-                overlap <- merge(background.overlap,DEx.genes,by= "V1")
-
-                geneSet$in.geneset[j] <- length(overlap$V1)
-                geneSet$in.geneset.name[j] <- as.character(paste(unlist(overlap[1]), collapse=';'))
-
-              }
-
-              geneSet2 <- subset(geneSet,geneSet$in.geneset>0)
-              message(paste("there are", length(geneSet2$in.geneset),"GeneSets in Epitope",i))
-
-              if(length(geneSet2$in.geneset)>0) {
-                for (j in 1:dim(geneSet2)[1]) {
-                  tota.gene.set <- geneSet2$background.geneset[j] # genes that are identified in background
-                  in.geneset <-  geneSet2$in.geneset[j]# DEx in geneset
-                  not.in.total <- background.genes - tota.gene.set
-                  not.in.geneset.sig <- total.sig - in.geneset
-                  d <- data.frame( gene.in.interest=c( in.geneset, not.in.geneset.sig),gene.not.interest=c(tota.gene.set, not.in.total))
-                  row.names(d) <- c("In_category", "not_in_category")
-
-                  if (in.geneset>0) {
-                    geneSet2$p.val[j] <- unlist(fisher.test(d, alternative = "greater")$p.value)[1]
-                    geneSet2$lowerCI[j] <-  unlist(fisher.test(d, alternative = "greater")$conf.int)[1]
-                    geneSet2$upperCI[j] <-unlist(fisher.test(d)$conf.int)[2]
-                    geneSet2$OR[j] <- round(unlist(fisher.test(d, alternative = "greater")$estimate)[1],3)
-                  } else {
-                    geneSet2$p.value[j] <- "-"
-                    geneSet2$lowerCI[j] <-  "-"
-                    geneSet2$upperCI[j] <- "-"
-                    geneSet2$OR[j] <- "-"
-                  }
-                }
-                geneSet2 <- geneSet2[order(geneSet2$p.val,decreasing = F),]
-                geneSet2$FDR <- p.adjust(geneSet2$p.val, method = "fdr")
-                geneSet2$Bonferroni <- p.adjust(geneSet2$p.val, method = "bonferroni")
-                message("Downloading the Summary table...")
-                # top.name.clonotypes.top_png <- paste("Prioritisation/EpitopePred/",i,"_",selected.epitope.name,"_dot.plot_",x,".png",sep="")
-                top.name.clonotypes <- paste("Prioritisation/EpitopePred/",i,"_",selected.epitope.name,"_OverRep_",x,".csv",sep="")
-                write.csv(geneSet2,top.name.clonotypes, row.names = F)
-              }
-            }
-          } # loop to find
-          ######
         }
-
-      })
     })
 
-
     output$Test_table_1 <- DT::renderDataTable(escape = FALSE, options = list(autoWidth = FALSE, lengthMenu = c(2,5,10,20,50,100), pageLength = 10, scrollX = TRUE),{
+      sc <- UMAP_metadata_with_labs()
+      validate(
+        need(nrow(sc)>0,
+             "Upload Files")
+      )
       md <- Common_Epitope_code()
       req(md)
-
       top_BD_cluster2 <-  md[,names(md) %in% c("cloneCount","Selected_function","Selected_group")]
       top_BD_cluster2 <- top_BD_cluster2 %>% select(cloneCount, everything())
       df2 <- as.data.frame(ddply(top_BD_cluster2,c("Selected_function","Selected_group"),numcolwise(sum)))
@@ -18454,6 +18494,430 @@ runSTEGO <- function(){
       df2 <- subset(df2,df2$cloneCount>2)
       df2 <- df2[order(df2$Percent,decreasing = T),]
       df2
+    })
+    # epitope prioritisation ------
+    observeEvent(input$EpitopePrior_Download_Bt,{
+      x = today()
+      message(paste("Downloading sumamry table of",input$Prior_AddInEpiUI_1,"vs",input$Prior_AddInEpiUI_2))
+      Exp_stats_cutoff_count.name <- paste("Prioritisation/EpitopePred/Epitope_summary_table_",input$Prior_AddInEpiUI_1,"vs",input$Prior_AddInEpiUI_2,"_",x,".csv",sep="")
+      write.csv(Prior_Epitope_dt_process(),Exp_stats_cutoff_count.name, row.names = F)
+
+      message(paste("Downloading heatmap",input$Prior_AddInEpiUI_1," vs ",input$Prior_AddInEpiUI_2))
+
+      name.epitope <- paste("Prioritisation/EpitopePred/",input$Prior_AddInEpiUI_1,"_",input$Prior_AddInEpiUI_2,"_Heatmap_", x, ".png", sep = "")
+
+      Common_Epitope_code <- Common_Epitope_code()
+      total_X <- length(unique(Common_Epitope_code$Selected_function))
+      total_Y <- length(unique(Common_Epitope_code$Selected_group))
+
+      png(name.epitope, width = 20*total_Y+400,height = 20*total_X+400,res = 144)
+      plot(Prior_heatmap_epitope())
+      dev.off()
+
+      message(paste("Downloading UMAP",input$Prior_AddInEpiUI_1," vs ",input$Prior_AddInEpiUI_2))
+      name.epitope.UMAP <-   paste("Prioritisation/EpitopePred/","Epitope_UMAP_coloredby.",input$Prior_AddInEpiUI_1,"_", x, ".png", sep = "")
+
+      len.colour <- length(unique(Common_Epitope_code$ID_Column))
+      nCol <- round(sqrt(len.colour),0)
+
+      png(name.epitope.UMAP, width = 400*nCol+400,height = 400*nCol,res = 144)
+      plot(Prior_UMAP_Epitope())
+      dev.off()
+
+      message(paste("Starting Stats download..."))
+      Prior_Stats_Epitope()
+
+    })
+    # annotation modelling prioritization -----
+    # epitope prioritisation ------
+    observeEvent(input$AnnoPrior_Download_Bt,{
+      x = today()
+      message(paste("Downloading sumamry table of",input$Prior_AddInEpiUI_1,"vs",input$Prior_AddInEpiUI_2))
+      Exp_stats_cutoff_count.name <- paste("Prioritisation/Annotation/Annotation_summary_table_",input$Prior_AddInAnnoUI_1,"_vs_",input$Prior_AddInAnnoUI_2,"_",x,".csv",sep="")
+      write.csv(Prior_Epitope_dt_process(),Exp_stats_cutoff_count.name, row.names = F)
+
+      message(paste("Downloading heatmap",input$Prior_AddInEpiUI_1," vs ",input$Prior_AddInEpiUI_2))
+
+      name.epitope <- paste("Prioritisation/EpitopePred/",input$Prior_AddInEpiUI_1,"_",input$Prior_AddInEpiUI_2,"_Heatmap_", x, ".png", sep = "")
+
+      Common_Epitope_code <- Common_Epitope_code()
+      total_X <- length(unique(Common_Epitope_code$Selected_function))
+      total_Y <- length(unique(Common_Epitope_code$Selected_group))
+
+      png(name.epitope, width = 20*total_Y+400,height = 20*total_X+400,res = 144)
+      plot(Prior_heatmap_epitope())
+      dev.off()
+
+      message(paste("Downloading UMAP",input$Prior_AddInEpiUI_1," vs ",input$Prior_AddInEpiUI_2))
+      name.epitope.UMAP <-   paste("Prioritisation/EpitopePred/","Epitope_UMAP_coloredby.",input$Prior_AddInEpiUI_1,"_", x, ".png", sep = "")
+
+      len.colour <- length(unique(Common_Epitope_code$ID_Column))
+      nCol <- round(sqrt(len.colour),0)
+
+      png(name.epitope.UMAP, width = 400*nCol+400,height = 400*nCol,res = 144)
+      plot(Prior_UMAP_Epitope())
+      dev.off()
+
+      message(paste("Starting Stats download..."))
+      Prior_Stats_Epitope()
+
+    })
+
+    # Code for automated Annotation-based analysis ------
+
+    output$AddInAnnoUI_1 <- renderUI({
+      sc <- UMAP_metadata_with_labs()
+      validate(
+        need(nrow(sc)>0,
+             "Upload Files")
+      )
+      req(sc)
+      df3.meta <- sc@meta.data
+      selectInput("Prior_AddInAnnoUI_1","Selected Function",choices = names(df3.meta),selected="T_cells")
+    })
+
+    output$AddInAnnoUI_2 <- renderUI({
+      sc <- UMAP_metadata_with_labs()
+      validate(
+        need(nrow(sc)>0,
+             "Upload Files")
+      )
+      req(sc)
+      df3.meta <- sc@meta.data
+      selectInput("Prior_AddInAnnoUI_2","Selected group",choices = names(df3.meta),selected="Sample_Name")
+
+    })
+
+    Common_Annotation_code <- reactive({
+      sc <- UMAP_metadata_with_labs()
+
+      validate(
+        need(nrow(sc)>0,
+             "Upload Files")
+      )
+      req(sc, input$Prior_AddInAnnoUI_1,input$Prior_AddInAnnoUI_2,input$Samp_col,input$V_gene_sc)
+      top_BD_cluster <- sc@meta.data
+      top_BD_cluster$Selected_function <- top_BD_cluster[,names(top_BD_cluster) %in% input$Prior_AddInAnnoUI_1]
+      top_BD_cluster$Selected_group <- top_BD_cluster[,names(top_BD_cluster) %in% input$Prior_AddInAnnoUI_2]
+      top_BD_cluster$Selected_TCR <- top_BD_cluster[,names(top_BD_cluster) %in% input$V_gene_sc]
+      top_BD_cluster$Selected_indiv <- top_BD_cluster[,names(top_BD_cluster) %in% input$Samp_col]
+      top_BD_cluster$colouring_col <-  top_BD_cluster[,names(top_BD_cluster) %in% input$Colour_By_this]
+      top_BD_cluster$ID_Column <- top_BD_cluster[,names(top_BD_cluster) %in% input$Split_group_by_]
+
+      top_BD_cluster$cloneCount <- 1
+      rownames(top_BD_cluster) <- top_BD_cluster$Cell_Index
+      top_BD_cluster
+    })
+    Prior_Anno_dt_process <- reactive({
+      top_BD_cluster <- Common_Annotation_code()
+      top_BD_cluster2 <-  top_BD_cluster[,names(top_BD_cluster) %in% c("cloneCount","Selected_function","Selected_group","Selected_indiv","Selected_TCR")]
+      top_BD_cluster2 <- top_BD_cluster2 %>%
+        select(cloneCount, everything())
+      df2 <- as.data.frame(ddply(top_BD_cluster2,names(top_BD_cluster2)[-c(1)],numcolwise(sum)))
+      df2 <- df2[complete.cases(df2)==T,]
+      df2$fraction <- df2$cloneCount/sum(df2$cloneCount)
+      df2$Percent <- round(df2$cloneCount/sum(df2$cloneCount)*100,2)
+      df2$Selected_function <- ifelse(grepl("NA", df2$Selected_function),"-",df2$Selected_function)
+      df2[order(df2$Percent,decreasing = T),]
+    })
+    Prior_UMAP_Annotation <- reactive({
+      df3.meta <- Common_Annotation_code()
+      req(df3.meta)
+      df3.meta$selected <- df3.meta$Selected_function
+      df3.meta <- df3.meta[order(df3.meta$selected,decreasing = F),]
+      df3.meta$selected <- factor(df3.meta$selected,levels = unique(df3.meta$selected))
+      df3.meta$ID_Column <- factor(df3.meta$ID_Column,levels = unique(df3.meta$ID_Column))
+
+      num <- as.data.frame(unique(df3.meta$selected))
+      num <- as.data.frame(num[complete.cases(num)==T,])
+
+      col.df <- as.data.frame(unique(df3.meta$selected))
+
+      num <- (length(unlist(col.df)))
+      num <- num[!is.na(num)]
+
+      if (input$colourtype == "default") {
+        colorblind_vector <- c(gg_fill_hue(num))
+      } else if (input$colourtype == "hcl.colors") {
+        colorblind_vector <- c(hcl.colors(num, palette = "viridis"))
+      } else if (input$colourtype == "topo.colors") {
+        colorblind_vector <- c(topo.colors(num))
+      } else if (input$colourtype == "heat.colors") {
+        colorblind_vector <- c(heat.colors(num))
+      } else if (input$colourtype == "terrain.colors") {
+        colorblind_vector <- c(terrain.colors(num))
+      } else if (input$colourtype == "rainbow") {
+        colorblind_vector <- c(rainbow(num))
+      } else if (input$colourtype == "random") {
+        colorblind_vector <- distinctColorPalette(num)
+
+      }  else {
+
+      }
+
+
+      col.df$col <- colorblind_vector
+
+      df <- ggplot(data=df3.meta,aes(x=UMAP_1,UMAP_2,colour=selected,size= selected,alpha = selected))+
+        geom_point()+
+        scale_color_manual(na.value=input$NA_col_analysis, values = col.df$col)+
+        scale_size_manual(na.value=0.25,values = rep(2,num))+
+        scale_alpha_manual(na.value=0.25,values = rep(1,num))+
+        theme(
+          legend.text = element_text(colour="black", size=input$Bar_legend_size,family=input$font_type),
+          legend.title = element_blank(),
+          legend.position = input$legend_position,
+        )+
+        theme_bw()
+
+      len.colour <- length(unique(df3.meta$ID_Column))
+      nCol <- round(sqrt(len.colour),0)
+
+      df <- df + facet_wrap(~ID_Column, ncol = nCol)
+
+      df
+    })
+    Prior_Stats_Annotation <- reactive({
+      sc <- UMAP_metadata_with_labs()
+      validate(
+        need(nrow(sc)>0,
+             "Upload Files")
+      )
+      md <- Common_Annotation_code()
+      req(md)
+      top_BD_cluster2 <-  md[,names(md) %in% c("cloneCount","Selected_function","Selected_group")]
+      top_BD_cluster2 <- top_BD_cluster2 %>% select(cloneCount, everything())
+      df2 <- as.data.frame(ddply(top_BD_cluster2,c("Selected_function","Selected_group"),numcolwise(sum)))
+      df2 <- df2[complete.cases(df2)==T,]
+      df2$fraction <- df2$cloneCount/sum(df2$cloneCount)
+      df2$Percent <- round(df2$cloneCount/sum(df2$cloneCount)*100,2)
+      df2$Selected_function <- ifelse(grepl("NA", df2$Selected_function),"-",df2$Selected_function)
+      df2 <- subset(df2,df2$cloneCount>2)
+      df2 <- df2[order(df2$Percent,decreasing = T),]
+
+      Selected_group <- (df2$Selected_group)
+      len.order <- length(Selected_group)
+      if(length(df2$Percent)>0) {
+        withProgress(message = 'Peforming stats on selected Annotations', value = 0, {
+
+          for (i in 1:len.order) {
+            ##### UMAP ------
+            incProgress(1/len.order, detail = paste("Annotation", i,"of",len.order))
+
+            Anno.selected <- subset(md,md$Selected_group==df2$Selected_group[i])
+            Anno.selected
+
+            selected.Anno.name <- df2$Selected_group[i]
+
+            num <- as.data.frame(unique(Anno.selected$colouring_col))
+            num <- as.data.frame(num[complete.cases(num)==T,])
+
+            col.df <- num
+
+            num <- (length(unlist(col.df)))
+            num <- num[!is.na(num)]
+
+            if (input$colourtype == "default") {
+              colorblind_vector <- c(gg_fill_hue(num))
+            } else if (input$colourtype == "hcl.colors") {
+              colorblind_vector <- c(hcl.colors(num, palette = "viridis"))
+            } else if (input$colourtype == "topo.colors") {
+              colorblind_vector <- c(topo.colors(num))
+            } else if (input$colourtype == "heat.colors") {
+              colorblind_vector <- c(heat.colors(num))
+            } else if (input$colourtype == "terrain.colors") {
+              colorblind_vector <- c(terrain.colors(num))
+            } else if (input$colourtype == "rainbow") {
+              colorblind_vector <- c(rainbow(num))
+            } else if (input$colourtype == "random") {
+              colorblind_vector <- distinctColorPalette(num)
+
+            }  else {
+
+            }
+
+
+            col.df$col <- colorblind_vector
+
+            df <- ggplot(data=Anno.selected,aes(x=UMAP_1,UMAP_2,colour=colouring_col,size= colouring_col,alpha = colouring_col))+
+              geom_point()+
+              scale_color_manual(na.value=input$NA_col_analysis, values = col.df$col)+
+              scale_size_manual(na.value=0.25,values = rep(2,num))+
+              scale_alpha_manual(na.value=0.25,values = rep(1,num))+
+              theme(
+                legend.text = element_text(colour="black", size=input$Bar_legend_size,family=input$font_type),
+                legend.title = element_blank(),
+                legend.position = input$legend_position,
+              )+
+              theme_bw()
+
+            message(paste(i," Downloading the count UMAP"))
+            x = today()
+            top.name.clonotypes.top_png <- paste("Prioritisation/Annotation/",i,"_",selected.Anno.name,"_Annotation_UMAP_",x,".png",sep="")
+            png(top.name.clonotypes.top_png, width = input$width_png_TCR.UMAP,height = input$height_png_TCR.UMAP,res = input$resolution_PNG_TCR.UMAP)
+            plot(df)
+            dev.off()
+
+            # Stats table ------
+            md.checking <- Common_Annotation_code()
+            md.checking <- md.checking[order(md.checking$order),]
+            rownames(md.checking) <- md.checking$Cell_Index
+
+            md.checking$selected <- ifelse(md.checking$Selected_group == df2$Selected_group[i],df2$Selected_group[i],"NS")
+            md.checking$selected[is.na(md.checking$selected)] <- "NS"
+            md.checking <- md.checking[order(md.checking$order),]
+            md.checking
+            sc@meta.data <- md.checking
+            Idents(object = sc) <- sc@meta.data$selected
+
+            name.check.epi <- df2$Selected_group[i]
+            min.pct.expression<- input$min_point_ #standard setting: 0.25
+            min.logfc<-  input$LogFC_ #0.25 is standard
+
+            markers.fm.list <- FindMarkers(sc, ident.1 = name.check.epi, min.pct = min.pct.expression,  logfc.threshold = min.logfc, only.pos=TRUE)
+            markers.fm.list2 <- subset(markers.fm.list,markers.fm.list$p_val_adj < input$pval.ex.filter)
+
+            message(paste(i,selected.Anno.name,"Annotation has",length(markers.fm.list2$p_val_adj),"total markers"))
+
+            if(length(markers.fm.list2$p_val_adj)>0) {
+              message(paste(i," Downloading stats table"))
+              Exp_stats_cutoff_count.name <-paste("Prioritisation/Annotation/",i,"_",selected.Anno.name,"_Annotation_statsTab_",x,".csv",sep="")
+              write.csv(markers.fm.list2,Exp_stats_cutoff_count.name, row.names = T)
+
+              #   # stats dotplot ----
+              if (length(rownames(markers.fm.list2))<40) {
+                list.names <- rownames(markers.fm.list2)
+              } else {
+                list.names <- rownames(markers.fm.list2)
+                list.names <- list.names[1:40]
+              }
+
+              size_legend = input$Bar_legend_size-2
+
+              dotplotClust <- DotPlot(sc, features = list.names) +
+                RotatedAxis() +
+                theme(
+                  axis.title.y = element_blank(),
+                  axis.text.y = element_text(colour="black",family=input$font_type,size = input$text_size),
+                  axis.text.x = element_text(colour="black",family=input$font_type,size = input$text_size, angle = 90),
+                  axis.title.x = element_blank(),
+                  legend.title = element_text(colour="black", size=input$Bar_legend_size,family=input$font_type),
+                  legend.text = element_text(colour="black", size=size_legend,family=input$font_type),
+                  legend.position = input$legend_position,
+                ) +
+                scale_colour_gradient2(low = input$low.dotplot.clust, mid = input$middle.dotplot.clust, high = input$high.dotplot.clust)+
+                scale_x_discrete(labels = label_wrap(20)) +
+                scale_y_discrete(labels = label_wrap(20))
+
+              top.name.clonotypes.top_png <- paste("Prioritisation/Annotation/",i,"_",selected.Anno.name,"_dot.plot_",x,".png",sep="")
+              png(top.name.clonotypes.top_png, width = input$width_png_all_expression_dotplot_clust,
+                  height = input$height_png_all_expression_dotplot_clust,
+                  res = input$resolution_PNG_all_expression_dotplot_clust)
+              plot(dotplotClust)
+              dev.off()
+              # stats OverRep analysis ----
+              if(dim(markers.fm.list2)[1]>0) {
+
+                geneSet <- read.csv(system.file("OverRep","GeneSets.csv",package = "STEGO.R"),header = T)
+
+                background.genes.name <- as.data.frame(rownames(sc@assays$RNA$scale.data))
+                names(background.genes.name) <- "V1"
+                background.genes <- length(rownames(sc@assays$RNA$scale.data))
+
+                #
+                geneSet$background.genes <- background.genes
+
+                DEx.genes <- as.data.frame(rownames(markers.fm.list2))
+                names(DEx.genes) <- "V1"
+                total.sig <- length(DEx.genes$V1)
+                geneSet$total.sig <- length(DEx.genes$V1)
+                # geneSet
+                geneSet$background.geneset <- NA
+                geneSet$background.geneset.name <- NA
+                geneSet$in.geneset <- NA
+                geneSet$in.geneset.name <- NA
+
+                if(input$datasource == "BD_Rhapsody_Paired" || input$datasource == "BD_Rhapsody_AIRR") { # selectInput("datasource", "Data source",choices=c("10x_Genomics","BD_Rhapsody_Paired","BD_Rhapsody_AIRR")),
+                  geneSet$GeneSet <- gsub("-",".",geneSet$GeneSet)
+                }
+
+                if(input$species_analysis == "mm") { # selectInput("datasource", "Data source",choices=c("10x_Genomics","BD_Rhapsody_Paired","BD_Rhapsody_AIRR")),
+                  require(stringr)
+                  geneSet$GeneSet <- str_to_title(geneSet$GeneSet)
+                }
+                message(paste("Starting OverRep analysis of Annotation", i))
+                for (j in 1:dim(geneSet)[1]) {
+                  # listed GeneSet
+
+                  Gene.set.testing <- as.data.frame(strsplit(geneSet$GeneSet,";")[j])
+                  names(Gene.set.testing) <- "V1"
+                  Gene.set.testing2 <- as.data.frame(unique(Gene.set.testing$V1))
+                  names(Gene.set.testing2) <- "V1"
+                  background.overlap <- merge(Gene.set.testing2,background.genes.name,by= "V1")
+                  geneSet$background.geneset[j] <- length(background.overlap$V1)
+                  geneSet$background.geneset.name[j] <- as.character(paste(unlist(background.overlap[1]), collapse=';'))
+                  # in sig gene list
+                  overlap <- merge(background.overlap,DEx.genes,by= "V1")
+
+                  geneSet$in.geneset[j] <- length(overlap$V1)
+                  geneSet$in.geneset.name[j] <- as.character(paste(unlist(overlap[1]), collapse=';'))
+
+                }
+
+                geneSet2 <- subset(geneSet,geneSet$in.geneset>0)
+                message(paste(i,"there are", length(geneSet2$in.geneset),"GeneSets in Annotation",selected.Anno.name))
+
+                if(length(geneSet2$in.geneset)>0) {
+                  for (j in 1:dim(geneSet2)[1]) {
+                    tota.gene.set <- geneSet2$background.geneset[j] # genes that are identified in background
+                    in.geneset <-  geneSet2$in.geneset[j]# DEx in geneset
+                    not.in.total <- background.genes - tota.gene.set
+                    not.in.geneset.sig <- total.sig - in.geneset
+                    d <- data.frame( gene.in.interest=c( in.geneset, not.in.geneset.sig),gene.not.interest=c(tota.gene.set, not.in.total))
+                    row.names(d) <- c("In_category", "not_in_category")
+
+                    if (in.geneset>0) {
+                      geneSet2$p.val[j] <- unlist(fisher.test(d, alternative = "greater")$p.value)[1]
+                      geneSet2$lowerCI[j] <-  unlist(fisher.test(d, alternative = "greater")$conf.int)[1]
+                      geneSet2$upperCI[j] <-unlist(fisher.test(d)$conf.int)[2]
+                      geneSet2$OR[j] <- round(unlist(fisher.test(d, alternative = "greater")$estimate)[1],3)
+                    } else {
+                      geneSet2$p.value[j] <- "-"
+                      geneSet2$lowerCI[j] <-  "-"
+                      geneSet2$upperCI[j] <- "-"
+                      geneSet2$OR[j] <- "-"
+                    }
+                  }
+                  geneSet2 <- geneSet2[order(geneSet2$p.val,decreasing = F),]
+                  geneSet2$FDR <- p.adjust(geneSet2$p.val, method = "fdr")
+                  geneSet2$Bonferroni <- p.adjust(geneSet2$p.val, method = "bonferroni")
+                  message("Downloading the Summary table...")
+                  # top.name.clonotypes.top_png <- paste("Prioritisation/EpitopePred/",i,"_",selected.epitope.name,"_dot.plot_",x,".png",sep="")
+                  top.name.clonotypes <- paste("Prioritisation/Annotation/",i,"_",selected.Anno.name,"_OverRep_",x,".csv",sep="")
+                  write.csv(geneSet2,top.name.clonotypes, row.names = F)
+                }
+              }
+            } # loop to find
+            ######
+          }
+
+        })} else {
+          message("No Annotation to analyse")
+
+        }
+    })
+
+
+
+    output$Prior_Test_annoTb <- DT::renderDataTable(escape = FALSE, options = list(autoWidth = FALSE, lengthMenu = c(2,5,10,20,50,100), pageLength = 10, scrollX = TRUE),{
+      sc <- UMAP_metadata_with_labs()
+      validate(
+        need(nrow(sc)>0,
+             "Upload Files")
+      )
+      md <- Common_Annotation_code()
+      req(md)
+      Prior_Anno_dt_process()
     })
 
     ### test table -----
