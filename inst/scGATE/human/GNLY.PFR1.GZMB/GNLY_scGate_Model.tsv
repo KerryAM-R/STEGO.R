@@ -1,4 +1,4 @@
 levels	use_as	name	signature
-level1	positive	GNLY	
-level2	negative	GZMB	
-level3	negative	PRF1	
+level1	negative	GZMB	
+level2	negative	PRF1	
+level3	positive	GNLY	
