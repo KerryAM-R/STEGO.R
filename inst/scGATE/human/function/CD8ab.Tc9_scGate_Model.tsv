@@ -1,0 +1,10 @@
+levels	use_as	name	signature
+level1	positive	CD8A	
+level2	positive	CD8B	
+level4	negative	Cyto	
+level5	negative	Treg	
+level6	negative	KIR	
+level7	negative	RORC	
+level8	negative	CCR4	
+level9	negative	CCR10	
+level10	positive	IRF4	
