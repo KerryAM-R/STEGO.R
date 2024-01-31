@@ -1,9 +1,0 @@
-levels	use_as	name	signature
-level1	positive	CD8A	
-level2	negative	CD8B	
-level3	negative	Cyto	
-level4	negative	Treg	
-level5	negative	KIR	
-level6	negative	Naive	
-level7	negative	FTH1	
-level8	positive	IL23R	
