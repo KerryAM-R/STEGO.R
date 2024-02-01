@@ -849,10 +849,10 @@ runSTEGO <- function(){
                ),
                ###################
                # Merge multiple Seurat objects -----
-               tabPanel("Merge SC",
+               tabPanel("Merge & Batch correction",
                         sidebarLayout(
                           # Sidebar with a slider input
-                          sidebarPanel(id = "tPanel5",style = "overflow-y:scroll; max-height: 800px; position:relative;", width=3,
+                          sidebarPanel(id = "tPanel5",style = "overflow-y:scroll; max-height: 800px; position:relative;", width=4,
                                        selectInput("Seruat_version_merge","Seurat Version",choices = c("V4","V5")),
                                        selectInput("sample.type.source","Species",choices = ""),
                                        fileInput("file1_rds.file",
@@ -860,18 +860,27 @@ runSTEGO <- function(){
                                                  multiple = TRUE,
                                                  accept=c("rds",".rds")),
                                        textInput("project_name2","Name of Project",value = "Pro"),
-                                       downloadButton('downloaddf_SeruatObj_merged','Download Merged Seurat')
+                                       downloadButton('downloaddf_SeruatObj_merged2','Download Merged Seurat'),
+
+                                       fileInput("file1_rds.Merged_data_for_harmony",
+                                                 "Upload .rds file",
+                                                 multiple = F,
+                                                 accept=c('.rds','rds')),
+                                       downloadButton('downloaddf_SeruatObj_merged','Download Batch corrected Seurat')
                           ),
 
                           # Show a plot of the generated distribution
                           mainPanel(
                             tabsetPanel(
-                              tabPanel("Upload files",
+                              tabPanel("Merge Files",
                                        add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
                                        verbatimTextOutput("testing_mult"),
                                        verbatimTextOutput("testing_mult2")
+
+
                               ),
                               tabPanel("Variable data",
+                                       verbatimTextOutput("testing_mult3"),
                                        add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
                                        verbatimTextOutput("Scaling_check_output"),
 
@@ -905,7 +914,7 @@ runSTEGO <- function(){
                                        ),
                                        actionButton("run_reduction_harmony","Run Dimentional reduction"),
                                        add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
-                                       verbatimTextOutput("testing_mult3"),
+                                       verbatimTextOutput("testing_mult4"),
 
 
 
@@ -931,6 +940,7 @@ runSTEGO <- function(){
                         )
 
                ),
+
                ###################
                # remove cells based on one factor -----
                tabPanel("Remove Samps",
@@ -5812,6 +5822,7 @@ runSTEGO <- function(){
       df <- getData()
       print(df)
     })
+
     merging_sc <- reactive({
       sc <- input$file1_rds.file
       validate(
@@ -5819,31 +5830,52 @@ runSTEGO <- function(){
              "Upload files")
       )
 
-      samples_list <- getData()
-      num <- length(samples_list)
-      pbmc.normalized <- (samples_list[[1]])
-
+      list_seurat <- getData()
+      num <- length(list_seurat)
 
       if(num>1) {
-        for (i in 2:num ) {
-          message(paste("Started merging",i,"of",num))
-          pbmc.normalized <- merge(pbmc.normalized, y = samples_list[[i]],merge.data = TRUE)
-        }
+        merged_object <- reduce(list_seurat, function(x, y) {
+          merge(x = x, y = y, merge.data = TRUE, project = "SeuratProject")
+        })
 
-        pbmc.normalized
+        merged_object
       }
-      pbmc.normalized
+      merged_object
     })
-
     output$testing_mult2 <- renderPrint({
 
       merging_sc()
 
     })
 
+    output$downloaddf_SeruatObj_merged2 <- downloadHandler(
+      filename = function(){
+        x = today()
+        paste(input$project_name2,"_merged_",x,".rds", sep = "")
+      },
+      content = function(file){
+        SaveSeuratRds(merging_sc(), file)
+      })
+
+
+    ### performing harmony
+    Merged_data_for_harmony <- reactive({
+      inFile_sc_Merged_data_for_harmony <- input$file1_rds.Merged_data_for_harmony
+      if (is.null(inFile_sc_Merged_data_for_harmony))
+        return(NULL)
+
+      LoadSeuratRds(inFile_sc_Merged_data_for_harmony$datapath)
+
+    })
+    output$testing_mult3 <- renderPrint({
+
+      Merged_data_for_harmony()
+
+    })
+
     # how to identify if mouse or human
     observe({
-      sc <- merging_sc()
+      sc <- Merged_data_for_harmony()
       validate(
         need(nrow(sc)>0,
              "Run Variable")
@@ -5918,17 +5950,17 @@ runSTEGO <- function(){
 
     # find variable features
     observeEvent(input$run_var,{
-      sc <- merging_sc()
+      sc <- Merged_data_for_harmony()
       validate(
         need(nrow(sc)>0,
              "Run Variable")
       )
       all.genes <- rownames(sc)
 
-      if(length(all.genes)<2000) {
+      if(length(all.genes)<3001) {
         sc <- FindVariableFeatures(sc, selection.method = "vst")
       } else {
-        sc <- FindVariableFeatures(sc, selection.method = "vst", nfeatures = 2000)
+        sc <- FindVariableFeatures(sc, selection.method = "vst", nfeatures = 3000)
       }
       Vals_norm4$Norm1 <- sc
     })
@@ -5951,8 +5983,6 @@ runSTEGO <- function(){
       )
       req(Vals_norm4$Norm1)
       kmeans <- read.csv(system.file("Kmean","Kmeans.requires.annotation.csv",package = "STEGO.R"))
-
-      data <- getData()
 
       if(input$Seruat_version_merge=="V4") {
         var.genes <- as.data.frame(sc@assays$RNA@var.features)
@@ -5984,8 +6014,8 @@ runSTEGO <- function(){
       )
       req(Vals_norm4$Norm1)
       kmeans <- read.csv(system.file("Kmean","Kmeans.requires.annotation.csv",package = "STEGO.R"))
-      data <- getData()
-      VersionControl <- data[[1]]@version
+      data <- Merged_data_for_harmony()
+      VersionControl <- data@version
       VersionControl
     })
 
@@ -5997,10 +6027,6 @@ runSTEGO <- function(){
       )
       req(Vals_norm4$Norm1)
       kmeans <- read.csv(system.file("Kmean","Kmeans.requires.annotation.csv",package = "STEGO.R"))
-
-      data <- getData()
-      VersionControl <- data[[1]]@version
-      VersionControl
 
       if(input$Seruat_version_merge=="V4") {
         var.genes <- as.data.frame(sc@assays$RNA@var.features)
@@ -6101,7 +6127,7 @@ runSTEGO <- function(){
       Vals_norm$Norm1 <- sc
     })
 
-    output$testing_mult3 <- renderPrint({
+    output$testing_mult4 <- renderPrint({
       df <- Vals_norm$Norm1
       validate(
         need(nrow(df)>0,
@@ -18544,4 +18570,5 @@ runSTEGO <- function(){
     ### end -----
   }
   shinyApp(ui, server)
+
 }
