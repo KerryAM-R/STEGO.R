@@ -854,87 +854,87 @@ runSTEGO <- function(){
                           # Sidebar with a slider input
                           sidebarPanel(id = "tPanel5",style = "overflow-y:scroll; max-height: 800px; position:relative;", width=4,
                                        selectInput("Seruat_version_merge","Seurat Version",choices = c("V4","V5")),
-                                       selectInput("sample.type.source","Species",choices = ""),
-                                       fileInput("file1_rds.file",
-                                                 "Choose .rds files from directory",
-                                                 multiple = TRUE,
-                                                 accept=c("rds",".rds")),
-                                       textInput("project_name2","Name of Project",value = "Pro"),
-                                       downloadButton('downloaddf_SeruatObj_merged2','Download Merged Seurat'),
 
-                                       fileInput("file1_rds.Merged_data_for_harmony",
-                                                 "Upload .rds file",
-                                                 multiple = F,
-                                                 accept=c('.rds','rds')),
-                                       downloadButton('downloaddf_SeruatObj_merged','Download Batch corrected Seurat')
+                                       selectInput("sample.type.source","Species",choices = ""),
+
+                                       conditionalPanel(condition="input.Merging_and_batching == 'Merging_Harmony'",
+                                                        fileInput("file1_rds.file",
+                                                                  "Choose .rds files from merging",
+                                                                  multiple = TRUE,
+                                                                  accept=c("rds",".rds")),
+                                                        textInput("project_name2","Name of Project",value = "Pro"),
+                                                        downloadButton('downloaddf_SeruatObj_merged2','Download Merged Seurat')
+                                       ),
+                                       conditionalPanel(condition="input.Merging_and_batching != 'Merging_Harmony'",
+
+                                                        fileInput("file1_rds.Merged_data_for_harmony",
+                                                                  "Upload .rds file for Batch correction with Harmony",
+                                                                  multiple = F,
+                                                                  accept=c('.rds','rds')),
+                                                        downloadButton('downloaddf_SeruatObj_merged','Download Batch corrected Seurat')
+                                       )
                           ),
 
                           # Show a plot of the generated distribution
                           mainPanel(
-                            tabsetPanel(
-                              tabPanel("Merge Files",
-                                       add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
-                                       verbatimTextOutput("testing_mult"),
-                                       verbatimTextOutput("testing_mult2")
+                            tabsetPanel(id = "Merging_and_batching",
+                                        tabPanel("Merge Files", value = "Merging_Harmony",
+                                                 add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
+                                                 verbatimTextOutput("testing_mult"),
+                                                 verbatimTextOutput("testing_mult2")
+                                        ),
+                                        tabPanel("Variable data",
+                                                 verbatimTextOutput("testing_mult3"),
+                                                 add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
+                                                 verbatimTextOutput("Scaling_check_output"),
+                                                 actionButton("run_var","Run VariableFeatures"),
+                                                 add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
+                                                 verbatimTextOutput("var_harmony_verbrose")
+                                        ),
+                                        tabPanel("Scale data",
+                                                 add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
+                                                 actionButton("run_scale","Run Scale"),
+                                                 div(DT::dataTableOutput("Tb_scaling_features_for_annotation")),
+                                                 add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
+                                                 verbatimTextOutput("scale_harmony_verbrose")
+                                        ),
+                                        tabPanel("PCA",
+                                                 add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
+                                                 actionButton("run_PCA","Run PCA"),
+                                                 add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
+                                                 verbatimTextOutput("PCA_harmony_verbrose")
+                                        ),
+                                        tabPanel("harmony",
+                                                 add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
+                                                 actionButton("run_harmony","Run Harmony"),
+                                                 add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
+                                                 verbatimTextOutput("harmony_verbrose"),
+                                        ),
+                                        tabPanel("Dimentional reduction",
+                                                 fluidRow(
+                                                   column(3,numericInput("dimension_Merged","Max number of dimensions", value = 30)),
+                                                   column(6,numericInput("res_merged","Resolution of clusters", value = 0.5)),
+                                                 ),
+                                                 actionButton("run_reduction_harmony","Run Dimentional reduction"),
+                                                 add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
+                                                 verbatimTextOutput("testing_mult4"),
+                                        ),
+                                        tabPanel("UMAP",
+                                                 add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
+                                                 plotOutput("create_UMAP_merged",height="600px"),
 
+                                                 fluidRow(
+                                                   column(1,numericInput("width_sc_merged", "Width of PDF", value=10)),
+                                                   column(1,numericInput("height_sc_merged", "Height of PDF", value=8)),
+                                                   column(2,style = "margin-top: 25px;",downloadButton('downloadPlot_sc_merged','Download Network PDF')),
+                                                   column(2,numericInput("width_png_sc_merged","Width of PNG", value = 1200)),
+                                                   column(2,numericInput("height_png_sc_merged","Height of PNG", value = 1000)),
+                                                   column(2,numericInput("resolution_PNG_sc_merged","Resolution of PNG", value = 144)),
+                                                   column(2,style = "margin-top: 25px;",downloadButton('downloadPlotPNG_sc_merged','Download Network PNG')),
 
-                              ),
-                              tabPanel("Variable data",
-                                       verbatimTextOutput("testing_mult3"),
-                                       add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
-                                       verbatimTextOutput("Scaling_check_output"),
+                                                 ),
 
-                                       actionButton("run_var","Run VariableFeatures"),
-                                       add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
-                                       verbatimTextOutput("var_harmony_verbrose")
-                              ),
-                              tabPanel("Scale data",
-                                       add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
-                                       actionButton("run_scale","Run Scale"),
-                                       div(DT::dataTableOutput("Tb_scaling_features_for_annotation")),
-                                       add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
-                                       verbatimTextOutput("scale_harmony_verbrose")
-                              ),
-                              tabPanel("PCA",
-                                       add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
-                                       actionButton("run_PCA","Run PCA"),
-                                       add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
-                                       verbatimTextOutput("PCA_harmony_verbrose")
-                              ),
-                              tabPanel("harmony",
-                                       add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
-                                       actionButton("run_harmony","Run Harmony"),
-                                       add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
-                                       verbatimTextOutput("harmony_verbrose"),
-                              ),
-                              tabPanel("Dimentional reduction",
-                                       fluidRow(
-                                         column(3,numericInput("dimension_Merged","Max number of dimensions", value = 30)),
-                                         column(6,numericInput("res_merged","Resolution of clusters", value = 0.5)),
-                                       ),
-                                       actionButton("run_reduction_harmony","Run Dimentional reduction"),
-                                       add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
-                                       verbatimTextOutput("testing_mult4"),
-
-
-
-                              ),
-                              tabPanel("UMAP",
-                                       add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
-                                       plotOutput("create_UMAP_merged",height="600px"),
-
-                                       fluidRow(
-                                         column(1,numericInput("width_sc_merged", "Width of PDF", value=10)),
-                                         column(1,numericInput("height_sc_merged", "Height of PDF", value=8)),
-                                         column(2,style = "margin-top: 25px;",downloadButton('downloadPlot_sc_merged','Download Network PDF')),
-                                         column(2,numericInput("width_png_sc_merged","Width of PNG", value = 1200)),
-                                         column(2,numericInput("height_png_sc_merged","Height of PNG", value = 1000)),
-                                         column(2,numericInput("resolution_PNG_sc_merged","Resolution of PNG", value = 144)),
-                                         column(2,style = "margin-top: 25px;",downloadButton('downloadPlotPNG_sc_merged','Download Network PNG')),
-
-                                       ),
-
-                              ),
+                                        ),
 
                             ))
                         )
@@ -945,6 +945,7 @@ runSTEGO <- function(){
                # remove cells based on one factor -----
                tabPanel("Remove Samps",
                         sidebarLayout(
+
                           sidebarPanel(id = "tPanelSamps",style = "max-height: 800px; position:relative;", width=4,
                                        fileInput("file1_rds.fileSampsRemove",
                                                  "Upload .rds file",
@@ -956,7 +957,11 @@ runSTEGO <- function(){
                           ),
                           mainPanel(
                             h5("Before Samples are removed"),
+                            actionButton("run_remove_samps","Remove samples"),
                             verbatimTextOutput("Preliminary_samp_to_remove"),
+                            selectInput("DownVColumn","Chose subset type:", choices = c("Meta_data","Down_sampling")),
+
+                            numericInput("downsamp_limit","Down sampling limit", value = 1000),
 
                             selectInput("ID_Column_factor_SampToRemove","Order of graph",choices = "", multiple = T, width = "1400px"),
 
@@ -6184,7 +6189,6 @@ runSTEGO <- function(){
       LoadSeuratRds(inFile_sc_SampRemove$datapath)
 
     })
-
     output$Preliminary_samp_to_remove <- renderPrint({
       inFile_sc_SampRemove <- input$file1_rds.fileSampsRemove
       if (is.null(inFile_sc_SampRemove))
@@ -6192,8 +6196,6 @@ runSTEGO <- function(){
 
       LoadSeuratRds(inFile_sc_SampRemove$datapath)
     })
-
-
     observe({
       sc <- getData_SampRemove()
       validate(
@@ -6208,8 +6210,6 @@ runSTEGO <- function(){
         choices=names(df3.meta),
         selected = "Sample_Name")
     })
-
-
 
     select_group_metadata_SampToRemove <- reactive({
       sc <- getData_SampRemove()
@@ -6248,19 +6248,39 @@ runSTEGO <- function(){
       )
     })
 
-    Filtered_samp_to_remove_process <- reactive({
+    Samps_to_remove <- reactiveValues(Samp1=NULL)
+
+    observeEvent(input$run_remove_samps, {
       sc <- input$file1_rds.fileSampsRemove
       validate(
         need(nrow(sc)>0,
              "Upload files")
       )
-      sc <- getData_SampRemove()
 
-      sc@meta.data$selected <- sc@meta.data[,names(sc@meta.data) %in% input$Samp_col_SampToRemove]
-      sc@meta.data$keep <- ifelse(sc@meta.data$selected %in% c(input$ID_Column_factor_SampToRemove),"keep","NS")
-      sc <- subset(x = sc, subset = keep == "keep")
-      sc@meta.data <- sc@meta.data[,!names(sc@meta.data) %in% c("selected","keep")]
-      sc
+      if (input$DownVColumn == "Meta_data") {
+        sc <- getData_SampRemove()
+
+        sc@meta.data$selected <- sc@meta.data[,names(sc@meta.data) %in% input$Samp_col_SampToRemove]
+        sc@meta.data$keep <- ifelse(sc@meta.data$selected %in% c(input$ID_Column_factor_SampToRemove),"keep","NS")
+        sc <- subset(x = sc, subset = keep == "keep")
+        sc@meta.data <- sc@meta.data[,!names(sc@meta.data) %in% c("selected","keep")]
+        Samps_to_remove$Samp1 <- sc
+      } else {
+
+        sc <- getData_SampRemove()
+        sc@meta.data$orig.ident_old <- sc@meta.data$orig.ident
+        Idents(sc) <- sc@meta.data[,names(sc@meta.data) %in% input$Samp_col_SampToRemove]
+
+        sc2 <- subset(x = sc, downsample = input$downsamp_limit)
+        Idents(sc2) <- sc2@meta.data$orig.ident_old
+        Samps_to_remove$Samp1 <- sc2
+
+      }
+
+    })
+
+    Filtered_samp_to_remove_process <- reactive({
+      Samps_to_remove$Samp1
 
     })
 
@@ -9255,9 +9275,6 @@ runSTEGO <- function(){
       names(df2) <- "V1"
       df2 <- as.data.frame(df2[order(df2$V1),])
       names(df2) <- "V1"
-      df2
-      # df2 <- subset(df2,df2$V1 != "NA")
-
       df3 <- subset(df2,df2$V1 != "NA")
 
       updateSelectInput(
@@ -9277,7 +9294,6 @@ runSTEGO <- function(){
       names(df2) <- "V1"
       df2 <- as.data.frame(df2[order(df2$V1),])
       names(df2) <- "V1"
-      df2
       df2 <- subset(df2,df2$V1 != "NA")
 
       updateSelectInput(

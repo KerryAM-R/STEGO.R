@@ -32,7 +32,7 @@ suppressMessages(require("magrittr"))
 # suppressMessages(require("motifStack")) # function
 suppressMessages(require("network"))
 suppressMessages(require("plyr"))
-suppressMessages(require("purrr"))
+suppressMessages(require("purrr")) # merging Seurat objects
 suppressMessages(require("randomcoloR"))
 suppressMessages(require("RColorBrewer"))
 suppressMessages(require("Rcpp"))

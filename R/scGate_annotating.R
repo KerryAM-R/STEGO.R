@@ -14,11 +14,20 @@
 
 scGate_annotating <- function(file = file, TcellFunction = F,generic = F, stress = F, cycling = F, threshold = 0.2, reductionType = "harmony") {
   source(system.file("scGATE","custom_df_scGATE.R",package = "STEGO.R"))
-  STEGO.R::Load_required_packages()
+  require(Seurat)
+  require(scGate)
+
   sc <- file
+  len.obj <- dim(sc@meta.data)[1]
+
+  if (len.obj>120000) {
+    message(paste0("Cannot annotate larger >120K cells. Down sampling required"))
+    sc
+  } else {
 
   threshold_scGate = threshold
   len <- length(rownames(sc@assays$RNA$scale.data))
+
   if(TcellFunction) {
     models.list <- custom_db_scGATE(system.file("scGATE","human/function",package = "STEGO.R"))
     sc <- scGate(sc, model = models.list,pos.thr = threshold_scGate,neg.thr = threshold_scGate,nfeatures = len, ncores = 4, reduction = reductionType, min.cells = 1)
@@ -57,6 +66,6 @@ scGate_annotating <- function(file = file, TcellFunction = F,generic = F, stress
     sc@meta.data <- sc@meta.data[!grepl("is.pure_",names(sc@meta.data))]
     sc@meta.data <- sc@meta.data[!grepl("scGate_multi",names(sc@meta.data))]
   }
-  sc
-
+    sc
+  }
 }
