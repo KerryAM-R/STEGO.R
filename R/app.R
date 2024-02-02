@@ -16226,8 +16226,6 @@ runSTEGO <- function(){
 
     clonal_plot_multi <- reactive({
       df4 <- TCR_Expanded()
-      df4
-      names(df4)[names(df4) %in% input$Samp_col] <- "ID_Column"
       df4 <- df4[df4$ID_Column %in% input$ID_Column_factor,]
       df4$ID_Column <- as.character(df4$ID_Column)
       df4$ID_Column <- factor(df4$ID_Column,levels = input$ID_Column_factor)
@@ -16797,8 +16795,6 @@ runSTEGO <- function(){
       top.name.clonotypes.count_png <- paste("Prioritisation/Multi/Stacked_bar_plot",x,".png",sep="")
 
       df4 <- TCR_Expanded()
-      df4
-      names(df4)[names(df4) %in% input$Samp_col] <- "ID_Column"
       num_indiv <- length(unique(df4$ID_Column))
 
       png(top.name.clonotypes.count_png, width = (num_indiv*100+600),height = input$height_png_TCR.UMAP_top,res = input$resolution_PNG_TCR.UMAP_top)
