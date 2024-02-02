@@ -2159,13 +2159,20 @@ runSTEGO <- function(){
                                                              ),
                                                              # modules of priority Top clone ------
                                                              tabPanel("Clonotype",value = "PriorRepertoireTB",
+
+                                                                      fluidRow(
+                                                                        column(3, checkboxInput("Download_public_overlapping","Download Public-like",value = T)),
+                                                                        column(3, checkboxInput("Download_public_overlapping_bar","Download Public-like Over-rep", value = F)),
+                                                                        column(3, checkboxInput("Download_private_overlapping","Download Private clone analysis",value = F)),
+                                                                        column(3,checkboxInput("restrict_to_expanded","Restrict to expanded",value = F))
+                                                                      ),
                                                                       add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "purple"),
                                                                       verbatimTextOutput("Simple_workflow_step1"),
                                                                       verbatimTextOutput("Number_of_clonotypes_to_"),
                                                                       add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "purple"),
                                                                       div(DT::dataTableOutput("PriorClono_Tab")),
                                                                       uiOutput("Module_case_statements"),
-
+                                                                      div(DT::dataTableOutput("private_clonotypes")),
 
                                                              ),
                                                              # modules of priority cluster ------
@@ -16284,12 +16291,15 @@ runSTEGO <- function(){
       )
 
       BD_sum <- Upset_plot_overlap_Multi()
-      BD_sum <- subset(BD_sum,BD_sum$CloneTotal>2)
+      BD_sum <- subset(BD_sum,BD_sum$CloneTotal>1)
       BD_sum <- subset(BD_sum,BD_sum$TotalSamps>1)
       BD_sum$priority <- 1/(BD_sum$CloneTotal * BD_sum$TotalSamps)
-      BD_sum$same <- ifelse(BD_sum$CloneTotal==BD_sum$TotalSamps,"NEx","Ex")
-      BD_sum <- subset(BD_sum,BD_sum$same=="Ex")
-      BD_sum <- BD_sum[,!names(BD_sum) %in% "same"]
+      if(input$restrict_to_expanded) {
+        BD_sum$same <- ifelse(BD_sum$CloneTotal==BD_sum$TotalSamps,"NEx","Ex")
+        BD_sum <- subset(BD_sum,BD_sum$same=="Ex")
+        BD_sum <- BD_sum[,!names(BD_sum) %in% "same"]
+      }
+
       BD_sum$cluster_name <- rownames(BD_sum)
       BD_sum
 
@@ -16410,6 +16420,7 @@ runSTEGO <- function(){
       df3.meta$cluster_name <- df3.meta[,names(df3.meta) %in% input$V_gene_sc]
       sc@meta.data$Vgene <- sc@meta.data[,names(sc@meta.data) %in% input$V_gene_sc]
       BD_sum <- Top_clonotypes_multiCounts()
+      BD_sum <- subset(BD_sum,BD_sum$CloneTotal>2)
 
       if (dim(BD_sum)[1]>0) {
         BD_sum <-  subset(BD_sum,BD_sum$priority<input$cut.off_percent_repMulti)
@@ -16782,7 +16793,6 @@ runSTEGO <- function(){
       names(unique.df) <- c("group","chain")
       unique.df <- unique.df[unique.df$group %in% input$ID_Column_factor,]
       if (length(unique(unique.df$group))<31) {
-
         top.name.clonotypes.count_png <- paste("Prioritisation/Multi/Overlap_Upset_plot",x,".png",sep="")
         png(top.name.clonotypes.count_png, width = input$width_png_TCR.UMAP_top,height = input$height_png_TCR.UMAP_top,res = input$resolution_PNG_TCR.UMAP_top)
         plot(Upset_plot_multi())
@@ -16796,24 +16806,32 @@ runSTEGO <- function(){
 
       df4 <- TCR_Expanded()
       num_indiv <- length(unique(df4$ID_Column))
-
       png(top.name.clonotypes.count_png, width = (num_indiv*100+600),height = input$height_png_TCR.UMAP_top,res = input$resolution_PNG_TCR.UMAP_top)
       plot(clonal_plot_multi())
       dev.off()
 
-      message("Downloading Multi bar plots...")
-      Top_clonotypes_multiCounts_barplot()
+      if (input$Download_public_overlapping) {
+        message("Downloading Multi bar plots...")
 
-      message("Downloading Multi Marker and OverRep analysis ")
-      top_clone_FindMaker_looped_Multi()
+        Top_clonotypes_multiCounts_barplot()
+        message("Downloading Multi Marker and OverRep analysis ")
+        if(input$Download_public_overlapping_bar) {
+          top_clone_FindMaker_looped_Multi()
+        }
 
-      message("Downloading Private Marker and OverRep analysis summary table ...")
-      top.name.clonotypes <- paste("Prioritisation/Multi/Unique_Table_",x,".csv",sep="")
-      write.csv(Top_clonotypes_Private(),top.name.clonotypes, row.names = T)
+      }
 
-      message("Downloading Private Marker and OverRep analysis ")
-      top_clone_FindMaker_looped_Private()
+      if (input$Download_private_overlapping) {
+        message("Downloading Private Marker and OverRep analysis summary table ...")
+        top.name.clonotypes <- paste("Prioritisation/Multi/Unique_Table_",x,".csv",sep="")
+        write.csv(Top_clonotypes_Private(),top.name.clonotypes, row.names = T)
 
+        message("Downloading Private Marker and OverRep analysis ")
+        top_clone_FindMaker_looped_Private()
+
+      }
+
+      message("Finished")
     })
 
     # add in upset plot and table to show clonal expansion -> then make expansion overall with consideration to the sample. Also add in count, not just percentage.
@@ -16851,14 +16869,20 @@ runSTEGO <- function(){
 
     })
 
+    output$private_clonotypes <- DT::renderDataTable(escape = FALSE, options = list(autoWidth = FALSE, lengthMenu = c(2,5,10,20,50,100), pageLength = 2, scrollX = TRUE),{
+      BD_sum <- Top_clonotypes_multiCounts()
+      req(BD_sum)
+      BD_sum
+
+
+    })
+
     output$PriorClono_Tab <- DT::renderDataTable(escape = FALSE, options = list(autoWidth = FALSE, lengthMenu = c(2,5,10,20,50,100), pageLength = 2, scrollX = TRUE),{
       sc <- UMAP_metadata_with_labs()
       validate(
         need(nrow(sc)>0,
              "Upload")
       )
-
-
 
       x = today()
       req(input$Samp_col,input$V_gene_sc,input$cut.off_percent_repMulti)
@@ -16867,6 +16891,7 @@ runSTEGO <- function(){
       df3.meta$cluster_name <- df3.meta[,names(df3.meta) %in% input$V_gene_sc]
 
       BD_sum <- Top_clonotypes_multiCounts()
+      req(BD_sum)
 
       if (dim(BD_sum)[1]>0) {
         BD_sum$obs <- 1
