@@ -1003,7 +1003,7 @@ runSTEGO <- function(){
                               ),
 
                               tabPanel("scGATE",
-                                       selectInput("reduction_anno","Reduction to use", choices = c("calculate", "pca", "umap", "harmony"),selected = "haromony"),
+                                       selectInput("reduction_anno","Reduction to use", choices = c("calculate", "pca", "umap", "harmony"),selected = "harmony"),
 
                                        # custom annotations databases -----
                                        conditionalPanel(condition="input.Require_custom_geneset == 'yes'",
@@ -1041,6 +1041,7 @@ runSTEGO <- function(){
                                                           column(3,checkboxInput("hs_function_scGATE","Function (Human)", value = F)),
                                                           column(3,checkboxInput("hs_stress_scGATE","Stress (Human)", value = F)),
                                                           column(3,checkboxInput("hs_cycling_scGATE","Cycling (Human)", value = F)),
+                                                          column(3,checkboxInput("hs_TCRseq_scGATE","TCR-seq (Human)", value = F)),
                                                           # column(3,checkboxInput("generic_scGATE","Generic (Human)", value = F)),
 
                                                           # column(3,checkboxInput("generic_scGATE","Generic (Human)", value = F)),
@@ -1104,6 +1105,8 @@ runSTEGO <- function(){
                                                         verbatimTextOutput("scGATE_verbatum_stress"),
                                                         add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
                                                         verbatimTextOutput("scGATE_verbatum_cycling"),
+                                                        add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
+                                                        verbatimTextOutput("scGATE_verbatum_TCRseq"),
                                                         # add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
                                                         # verbatimTextOutput("scGATE_verbatum_Function"),
                                                         # add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
@@ -1563,70 +1566,79 @@ runSTEGO <- function(){
                                                                                            ),
                                                                                   ),
                                                                                   # UMAP clonality -> TCR -----
-                                                                                  tabPanel("UMAP with clonality (counts)", value = 3,
-                                                                                           add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
-                                                                                           fluidRow(
-                                                                                             column(3,selectInput("filter_umap_expand","Filter plot",choices = c("no","yes"))),
+                                                                                  tabPanel("Conality (counts)", value = 3,
+                                                                                           tabsetPanel(
+                                                                                             tabPanel("Test.table",
+                                                                                                      div(DT::dataTableOutput("Tb_TCR_clonotypes.table"))
 
+                                                                                             ),
+                                                                                             tabPanel("UMAP",
+                                                                                                      add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
+                                                                                                      fluidRow(
+                                                                                                        column(3,selectInput("filter_umap_expand","Filter plot",choices = c("no","yes"))),
+
+
+                                                                                                      ),
+                                                                                                      conditionalPanel(condition="input.filter_umap_expand == 'yes'",
+                                                                                                                       fluidRow(
+                                                                                                                         column(3,numericInput("UMAP_1x","UMAP_1 <",value = 10)),
+                                                                                                                         column(3,numericInput("UMAP_1y","UMAP_1 >",value = -10)),
+                                                                                                                         column(3,numericInput("UMAP_2x","UMAP_2 <",value = 10)),
+                                                                                                                         column(3,numericInput("UMAP_2y","UMAP_2 >",value = -10))
+                                                                                                                       ),
+
+                                                                                                      ),
+                                                                                                      conditionalPanel(condition="input.Graph_type_bar=='Number_expanded' || input.Graph_type_bar=='Frequency_expanded'",
+                                                                                                                       fluidRow(
+                                                                                                                         column(3,
+                                                                                                                                wellPanel(id = "tPanel23",style = "overflow-y:scroll; max-height: 600px",
+                                                                                                                                          uiOutput('cols_UMAP_clonal_plot'))),
+                                                                                                                         column(9, plotOutput("clonality.TCR.UMAP",height="600px"))
+                                                                                                                       ),
+
+                                                                                                                       fluidRow(
+                                                                                                                         column(1,numericInput("width_TCR.UMAP", "Width of PDF", value=10)),
+                                                                                                                         column(1,numericInput("height_TCR.UMAP", "Height of PDF", value=8)),
+                                                                                                                         column(2,style = "margin-top: 25px;",downloadButton('downloadPlot_TCR.UMAP','Download PDF')),
+                                                                                                                         column(2,numericInput("width_png_TCR.UMAP","Width of PNG", value = 1600)),
+                                                                                                                         column(2,numericInput("height_png_TCR.UMAP","Height of PNG", value = 1000)),
+                                                                                                                         column(2,numericInput("resolution_PNG_TCR.UMAP","Resolution of PNG", value = 144)),
+                                                                                                                         column(2,style = "margin-top: 25px;",downloadButton('downloadPlotPNG_TCR.UMAP','Download PNG'))
+                                                                                                                       ),
+
+
+                                                                                                      ),
+                                                                                                      conditionalPanel(condition="input.Graph_type_bar=='Top_clonotypes'",
+                                                                                                                       #
+
+                                                                                                                       fluidRow(
+                                                                                                                         # column(4,selectInput("Split_by_group","Include group comparison",choices=c("no","yes"))),
+                                                                                                                         column(4,selectInput("display_all_samps","Display all sample",choices=c("yes","no"))),
+                                                                                                                       ),
+                                                                                                                       column(12,selectInput("ID_Column_metadata","Select to display",choices = "", multiple = T, width = "1200px")),
+
+                                                                                                                       add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
+                                                                                                                       fluidRow(
+                                                                                                                         column(3,
+                                                                                                                                wellPanel(id = "tPanel23",style = "overflow-y:scroll; max-height: 600px",
+                                                                                                                                          uiOutput('cols_UMAP_Topclonotypes'))),
+                                                                                                                         column(9, plotOutput("clonality.TCR.UMAP.top",height="600px")),
+                                                                                                                         fluidRow(
+                                                                                                                           column(1,numericInput("width_TCR.UMAP_top", "Width of PDF", value=10)),
+                                                                                                                           column(1,numericInput("height_TCR.UMAP_top", "Height of PDF", value=8)),
+                                                                                                                           column(2,style = "margin-top: 25px;",downloadButton('downloadPlot_TCR.UMAP_top','Download PDF')),
+                                                                                                                           column(2,numericInput("width_png_TCR.UMAP_top","Width of PNG", value = 1800)),
+                                                                                                                           column(2,numericInput("height_png_TCR.UMAP_top","Height of PNG", value = 1000)),
+                                                                                                                           column(2,numericInput("resolution_PNG_TCR.UMAP_top","Resolution of PNG", value = 144)),
+                                                                                                                           column(2,style = "margin-top: 25px;",downloadButton('downloadPlotPNG_TCR.UMAP_top','Download PNG'))),
+
+                                                                                                                       ),
+                                                                                                      ),
+
+                                                                                             )
 
                                                                                            ),
-                                                                                           conditionalPanel(condition="input.filter_umap_expand == 'yes'",
-                                                                                                            fluidRow(
-                                                                                                              column(3,numericInput("UMAP_1x","UMAP_1 <",value = 10)),
-                                                                                                              column(3,numericInput("UMAP_1y","UMAP_1 >",value = -10)),
-                                                                                                              column(3,numericInput("UMAP_2x","UMAP_2 <",value = 10)),
-                                                                                                              column(3,numericInput("UMAP_2y","UMAP_2 >",value = -10))
-                                                                                                            ),
 
-                                                                                           ),
-                                                                                           conditionalPanel(condition="input.Graph_type_bar=='Number_expanded' || input.Graph_type_bar=='Frequency_expanded'",
-                                                                                                            fluidRow(
-                                                                                                              column(3,
-                                                                                                                     wellPanel(id = "tPanel23",style = "overflow-y:scroll; max-height: 600px",
-                                                                                                                               uiOutput('cols_UMAP_clonal_plot'))),
-                                                                                                              column(9, plotOutput("clonality.TCR.UMAP",height="600px"))
-                                                                                                            ),
-
-                                                                                                            fluidRow(
-                                                                                                              column(1,numericInput("width_TCR.UMAP", "Width of PDF", value=10)),
-                                                                                                              column(1,numericInput("height_TCR.UMAP", "Height of PDF", value=8)),
-                                                                                                              column(2,style = "margin-top: 25px;",downloadButton('downloadPlot_TCR.UMAP','Download PDF')),
-                                                                                                              column(2,numericInput("width_png_TCR.UMAP","Width of PNG", value = 1600)),
-                                                                                                              column(2,numericInput("height_png_TCR.UMAP","Height of PNG", value = 1000)),
-                                                                                                              column(2,numericInput("resolution_PNG_TCR.UMAP","Resolution of PNG", value = 144)),
-                                                                                                              column(2,style = "margin-top: 25px;",downloadButton('downloadPlotPNG_TCR.UMAP','Download PNG'))
-                                                                                                            ),
-
-
-                                                                                           ),
-                                                                                           conditionalPanel(condition="input.Graph_type_bar=='Top_clonotypes'",
-                                                                                                            # column(12,   div(DT::dataTableOutput("Tb_For_colouring_check"))),
-
-                                                                                                            fluidRow(
-                                                                                                              # column(4,selectInput("Split_by_group","Include group comparison",choices=c("no","yes"))),
-                                                                                                              column(4,selectInput("display_all_samps","Display all sample",choices=c("yes","no"))),
-
-                                                                                                            ),
-
-                                                                                                            column(12,selectInput("ID_Column_metadata","Select to display",choices = "", multiple = T, width = "1200px")),
-
-                                                                                                            add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
-                                                                                                            fluidRow(
-                                                                                                              column(3,
-                                                                                                                     wellPanel(id = "tPanel23",style = "overflow-y:scroll; max-height: 600px",
-                                                                                                                               uiOutput('cols_UMAP_Topclonotypes'))),
-                                                                                                              column(9, plotOutput("clonality.TCR.UMAP.top",height="600px")),
-                                                                                                              fluidRow(
-                                                                                                                column(1,numericInput("width_TCR.UMAP_top", "Width of PDF", value=10)),
-                                                                                                                column(1,numericInput("height_TCR.UMAP_top", "Height of PDF", value=8)),
-                                                                                                                column(2,style = "margin-top: 25px;",downloadButton('downloadPlot_TCR.UMAP_top','Download PDF')),
-                                                                                                                column(2,numericInput("width_png_TCR.UMAP_top","Width of PNG", value = 1800)),
-                                                                                                                column(2,numericInput("height_png_TCR.UMAP_top","Height of PNG", value = 1000)),
-                                                                                                                column(2,numericInput("resolution_PNG_TCR.UMAP_top","Resolution of PNG", value = 144)),
-                                                                                                                column(2,style = "margin-top: 25px;",downloadButton('downloadPlotPNG_TCR.UMAP_top','Download PNG'))),
-
-                                                                                                            ),
-                                                                                           ),
 
                                                                                   ),
                                                                       ),
@@ -6436,7 +6448,6 @@ runSTEGO <- function(){
       }
     })
 
-
     TCR_seq_classification <- reactive({
       sc <- getData_2()
       validate(
@@ -6449,8 +6460,9 @@ runSTEGO <- function(){
                                               ifelse(sc@meta.data$vj_gene_AG == "TRAV1-2.TRAJ12","MAIT",
                                                      ifelse(sc@meta.data$vj_gene_AG == "TRAV1-2.TRAJ23","MAIT",
                                                             ifelse(sc@meta.data$vj_gene_AG == "TRAV10.TRAJ18","iNKT",
-                                                                   ifelse(sc@meta.data$v_gene_BD == "TRBV4-1","possible CD1c-restricted",
-                                                                          ifelse(sc@meta.data$chain_AG == 'TRG' & sc@meta.data$chain_BD == 'TRB',"gb T cell",
+                                                                   ifelse(sc@meta.data$v_gene_BD == "TRBV4-1" & sc@meta.data$v_gene_AG == "TRAV17","CD1b-restricted",
+                                                                          ifelse(sc@meta.data$v_gene_BD == "TRBV4-1" & sc@meta.data$v_gene_AG != "TRAV17","CD1c-restricted (possible)",
+                                                                                 # ifelse(sc@meta.data$chain_AG == 'TRG' & sc@meta.data$chain_BD == 'TRB',"gb T cell",
                                                                                  ifelse(sc@meta.data$chain_AG == 'TRG' & sc@meta.data$chain_BD == 'TRD',"gd T cell",NA
 
                                                                                  )))))))
@@ -6522,6 +6534,7 @@ runSTEGO <- function(){
       cat(readLines(FN), sep="\n")
 
     })
+
     scGATE_anno_stress <- reactive({
       sc <- getData_2()
       validate(
@@ -6545,8 +6558,8 @@ runSTEGO <- function(){
 
         sc@meta.data$stress <- sc@meta.data$scGate_multi
 
-        sc@meta.data$Stress <- ifelse(grepl("Exhau",sc@meta.data$Stress),"Exhausted",sc@meta.data$Stress)
-        sc@meta.data$Stress <- ifelse(grepl("Multi",sc@meta.data$Stress),"Exhausted.Senescence",sc@meta.data$Stress)
+        sc@meta.data$stress <- ifelse(grepl("Exhau",sc@meta.data$Stress),"Exhausted",sc@meta.data$Stress)
+        sc@meta.data$stress <- ifelse(grepl("Multi",sc@meta.data$Stress),"Exhausted.Senescence",sc@meta.data$Stress)
         sc@meta.data <- sc@meta.data[!grepl("_UCell",names(sc@meta.data))]
         sc@meta.data <- sc@meta.data[!grepl("is.pure_",names(sc@meta.data))]
         sc@meta.data <- sc@meta.data[!grepl("scGate_multi",names(sc@meta.data))]
@@ -6574,6 +6587,7 @@ runSTEGO <- function(){
       cat(readLines(FN), sep="\n")
 
     })
+
     scGATE_anno_function <- reactive({
       sc <- getData_2()
       validate(
@@ -6622,6 +6636,7 @@ runSTEGO <- function(){
       cat(readLines(FN), sep="\n")
 
     })
+
     scGATE_anno_cycling <- reactive({
       sc <- getData_2()
       validate(
@@ -6669,6 +6684,44 @@ runSTEGO <- function(){
       sink(type = "message")
       sink(type = "output")
       cat(readLines(FN), sep="\n")
+
+    })
+
+    scGATE_anno_TCRseq <- reactive({
+      sc <- getData_2()
+      validate(
+        need(nrow(sc)>0,
+             "Upload files")
+      )
+
+      if (input$hs_TCRseq_scGATE == "hs") {
+        sc@meta.data$unconventional <- ifelse(sc@meta.data$vj_gene_AG == "TRAV1-2.TRAJ33","MAIT",
+                                              ifelse(sc@meta.data$vj_gene_AG == "TRAV1-2.TRAJ12","MAIT",
+                                                     ifelse(sc@meta.data$vj_gene_AG == "TRAV1-2.TRAJ23","MAIT",
+                                                            ifelse(sc@meta.data$vj_gene_AG == "TRAV10.TRAJ18","iNKT",
+                                                                   ifelse(sc@meta.data$v_gene_BD == "TRBV4-1" & sc@meta.data$v_gene_AG == "TRAV17","CD1b-restricted",
+                                                                          ifelse(sc@meta.data$v_gene_BD == "TRBV4-1" & sc@meta.data$v_gene_AG != "TRAV17","CD1c-restricted (possible)",
+                                                                                 # ifelse(sc@meta.data$chain_AG == 'TRG' & sc@meta.data$chain_BD == 'TRB',"gb T cell",
+                                                                                 ifelse(sc@meta.data$chain_AG == 'TRG' & sc@meta.data$chain_BD == 'TRD',"gd T cell",
+                                                                                        ifelse(sc@meta.data$chain_AG == 'TRA' & sc@meta.data$chain_BD == 'TRB',"ab T cell",""
+                                                                                        ) )))))))
+        sc
+      }
+
+      else {
+
+      }
+      sc
+    })
+    output$scGATE_verbatum_TCRseq <- renderPrint({
+      if (input$hs_TCRseq_scGATE) {
+        sc <- scGATE_anno_TCRseq()
+        table(sc@meta.data$unconventional)
+      }
+
+      else{
+        print("cycling not run")
+      }
 
     })
 
@@ -7601,7 +7654,7 @@ runSTEGO <- function(){
         need(nrow(sc)>0,
              "Upload file for annotation")
       )
-      if (input$hs_generic_scGATE==T) {
+      if (input$hs_generic_scGATE) {
         obj <- scGATE_anno_generic()
         sc@meta.data$generic <- obj@meta.data$generic
       }
@@ -7617,48 +7670,52 @@ runSTEGO <- function(){
         obj <- scGATE_anno_cycling()
         sc@meta.data$cycling <- obj@meta.data$cycling
       }
-      if (input$GeneSet1_scGate==T) {
+
+      if (input$hs_TCRseq_scGATE==T) {
+        obj <- scGATE_anno_cycling()
+        sc@meta.data$unconventional <- obj@meta.data$unconventional
+      }
+      if (input$GeneSet1_scGate) {
         obj <- scGate_anno_GeneSet1()
         sc@meta.data$geneSet1 <- obj@meta.data$geneSet1
         names(sc@meta.data)[names(sc@meta.data) %in% "geneSet1"] <- input$geneset1_name
       }
-      if (input$GeneSet2_scGate==T) {
+      if (input$GeneSet2_scGate) {
         obj <- scGate_anno_GeneSet2()
         sc@meta.data$geneSet2 <- obj@meta.data$geneSet2
         names(sc@meta.data)[names(sc@meta.data) %in% "geneSet2"] <- input$geneset2_name
       }
-      if (input$GeneSet3_scGate==T) {
+      if (input$GeneSet3_scGate) {
         obj <- scGate_anno_GeneSet3()
         sc@meta.data$geneSet3 <- obj@meta.data$geneSet3
         names(sc@meta.data)[names(sc@meta.data) %in% "geneSet3"] <- input$geneset3_name
       }
-      if (input$GeneSet4_scGate==T) {
+      if (input$GeneSet4_scGate) {
         obj <- scGate_anno_GeneSet4()
         sc@meta.data$geneSet4 <- obj@meta.data$geneSet4
         names(sc@meta.data)[names(sc@meta.data) %in% "geneSet4"] <- input$geneset4_name
       }
-      if (input$GeneSet5_scGate==T) {
+      if (input$GeneSet5_scGate) {
         obj <- scGate_anno_GeneSet5()
         sc@meta.data$geneSet5 <- obj@meta.data$geneSet5
         names(sc@meta.data)[names(sc@meta.data) %in% "geneSet5"] <- input$geneset5_name
       }
-
-      if (input$GeneSet6_scGate==T) {
+      if (input$GeneSet6_scGate) {
         obj <- scGate_anno_GeneSet6()
         sc@meta.data$geneSet6 <- obj@meta.data$geneSet6
         names(sc@meta.data)[names(sc@meta.data) %in% "geneSet6"] <- input$geneset6_name
       }
-      if (input$GeneSet7_scGate==T) {
+      if (input$GeneSet7_scGate) {
         obj <- scGate_anno_GeneSet7()
         sc@meta.data$geneSet7 <- obj@meta.data$geneSet7
         names(sc@meta.data)[names(sc@meta.data) %in% "geneSet7"] <- input$geneset7_name
       }
-      if (input$GeneSet8_scGate==T) {
+      if (input$GeneSet8_scGate) {
         obj <- scGate_anno_GeneSet8()
         sc@meta.data$geneSet8 <- obj@meta.data$geneSet8
         names(sc@meta.data)[names(sc@meta.data) %in% "geneSet8"] <- input$geneset8_name
       }
-      if (input$GeneSet9_scGate==T) {
+      if (input$GeneSet9_scGate) {
         obj <- scGate_anno_GeneSet9()
         sc@meta.data$geneSet9 <- obj@meta.data$geneSet9
         names(sc@meta.data)[names(sc@meta.data) %in% "geneSet9"] <- input$geneset9_name
@@ -7678,76 +7735,76 @@ runSTEGO <- function(){
         need(nrow(sc)>0,
              "Upload file for annotation")
       )
-      if (input$BDrhapsody_scGATE.MM.Tcell==T) {
+      if (input$BDrhapsody_scGATE.MM.Tcell) {
         obj <- scGATE_anno_BD_MM.FP_T.cell()
         sc@meta.data$T_cells <- obj@meta.data$T_cells
       }
-      if (input$BDrhapsody_scGATE.MM.Memory==T) {
+      if (input$BDrhapsody_scGATE.MM.Memory) {
         obj <- scGATE_anno_BD_MM.FP_Memory()
         sc@meta.data$Memory <- obj@meta.data$Memory
       }
-      if (input$BDrhapsody_scGATE.MM.signatures ==T) {
+      if (input$BDrhapsody_scGATE.MM.signatures ) {
         obj <- scGATE_anno_BD_MM.FP_signatures()
         sc@meta.data$signatures <- obj@meta.data$signatures
       }
-      if (input$BDrhapsody_scGATE.MM.Innate.NK ==T) {
+      if (input$BDrhapsody_scGATE.MM.Innate.NK ) {
         obj <- scGATE_anno_BD_MM.FP_Innate.NK()
         sc@meta.data$Innate.NK <- obj@meta.data$Innate.NK
       }
-      if (input$BDrhapsody_scGATE.MM.TNF.IFNg ==T) {
+      if (input$BDrhapsody_scGATE.MM.TNF.IFNg ) {
         obj <- scGATE_anno_BD_MM.FP_TNF.IFNg()
         sc@meta.data$TNF.IFNg <- obj@meta.data$TNF.IFNg
       }
-      if (input$BDrhapsody_scGATE.MM.subtypes ==T) {
+      if (input$BDrhapsody_scGATE.MM.subtypes ) {
         obj <- scGATE_anno_BD_MM.FP_subtypes()
         sc@meta.data$subtypes <- obj@meta.data$subtypes
       }
-      if (input$BDrhapsody_scGATE.MM.other ==T) {
+      if (input$BDrhapsody_scGATE.MM.other) {
         obj <- scGATE_anno_BD_MM.FP_other()
         sc@meta.data$other <- obj@meta.data$other
       }
 
-      if (input$GeneSet1_scGate==T) {
+      if (input$GeneSet1_scGate) {
         obj <- scGate_anno_GeneSet1()
         sc@meta.data$geneSet1 <- obj@meta.data$geneSet1
         names(sc@meta.data)[names(sc@meta.data) %in% "geneSet1"] <- input$geneset1_name
       }
-      if (input$GeneSet2_scGate==T) {
+      if (input$GeneSet2_scGate) {
         obj <- scGate_anno_GeneSet2()
         sc@meta.data$geneSet2 <- obj@meta.data$geneSet2
         names(sc@meta.data)[names(sc@meta.data) %in% "geneSet2"] <- input$geneset2_name
       }
-      if (input$GeneSet3_scGate==T) {
+      if (input$GeneSet3_scGate) {
         obj <- scGate_anno_GeneSet3()
         sc@meta.data$geneSet3 <- obj@meta.data$geneSet3
         names(sc@meta.data)[names(sc@meta.data) %in% "geneSet3"] <- input$geneset3_name
       }
-      if (input$GeneSet4_scGate==T) {
+      if (input$GeneSet4_scGate) {
         obj <- scGate_anno_GeneSet4()
         sc@meta.data$geneSet4 <- obj@meta.data$geneSet4
         names(sc@meta.data)[names(sc@meta.data) %in% "geneSet4"] <- input$geneset4_name
       }
-      if (input$GeneSet5_scGate==T) {
+      if (input$GeneSet5_scGate) {
         obj <- scGate_anno_GeneSet5()
         sc@meta.data$geneSet5 <- obj@meta.data$geneSet5
         names(sc@meta.data)[names(sc@meta.data) %in% "geneSet5"] <- input$geneset5_name
       }
-      if (input$GeneSet6_scGate==T) {
+      if (input$GeneSet6_scGate) {
         obj <- scGate_anno_GeneSet6()
         sc@meta.data$geneSet6 <- obj@meta.data$geneSet6
         names(sc@meta.data)[names(sc@meta.data) %in% "geneSet6"] <- input$geneset6_name
       }
-      if (input$GeneSet7_scGate==T) {
+      if (input$GeneSet7_scGate) {
         obj <- scGate_anno_GeneSet7()
         sc@meta.data$geneSet7 <- obj@meta.data$geneSet7
         names(sc@meta.data)[names(sc@meta.data) %in% "geneSet7"] <- input$geneset7_name
       }
-      if (input$GeneSet8_scGate==T) {
+      if (input$GeneSet8_scGate) {
         obj <- scGate_anno_GeneSet8()
         sc@meta.data$geneSet8 <- obj@meta.data$geneSet8
         names(sc@meta.data)[names(sc@meta.data) %in% "geneSet8"] <- input$geneset8_name
       }
-      if (input$GeneSet9_scGate==T) {
+      if (input$GeneSet9_scGate) {
         obj <- scGate_anno_GeneSet9()
         sc@meta.data$geneSet9 <- obj@meta.data$geneSet9
         names(sc@meta.data)[names(sc@meta.data) %in% "geneSet9"] <- input$geneset9_name
@@ -7766,47 +7823,47 @@ runSTEGO <- function(){
              "Upload file for annotation")
       )
 
-      if (input$GeneSet1_scGate==T) {
+      if (input$GeneSet1_scGate) {
         obj <- scGate_anno_GeneSet1()
         sc@meta.data$geneSet1 <- obj@meta.data$geneSet1
         names(sc@meta.data)[names(sc@meta.data) %in% "geneSet1"] <- input$geneset1_name
       }
-      if (input$GeneSet2_scGate==T) {
+      if (input$GeneSet2_scGate) {
         obj <- scGate_anno_GeneSet2()
         sc@meta.data$geneSet2 <- obj@meta.data$geneSet2
         names(sc@meta.data)[names(sc@meta.data) %in% "geneSet2"] <- input$geneset2_name
       }
-      if (input$GeneSet3_scGate==T) {
+      if (input$GeneSet3_scGate) {
         obj <- scGate_anno_GeneSet3()
         sc@meta.data$geneSet3 <- obj@meta.data$geneSet3
         names(sc@meta.data)[names(sc@meta.data) %in% "geneSet3"] <- input$geneset3_name
       }
-      if (input$GeneSet4_scGate==T) {
+      if (input$GeneSet4_scGate) {
         obj <- scGate_anno_GeneSet4()
         sc@meta.data$geneSet4 <- obj@meta.data$geneSet4
         names(sc@meta.data)[names(sc@meta.data) %in% "geneSet4"] <- input$geneset4_name
       }
-      if (input$GeneSet5_scGate==T) {
+      if (input$GeneSet5_scGate) {
         obj <- scGate_anno_GeneSet5()
         sc@meta.data$geneSet5 <- obj@meta.data$geneSet5
         names(sc@meta.data)[names(sc@meta.data) %in% "geneSet5"] <- input$geneset5_name
       }
-      if (input$GeneSet6_scGate==T) {
+      if (input$GeneSet6_scGate) {
         obj <- scGate_anno_GeneSet6()
         sc@meta.data$geneSet6 <- obj@meta.data$geneSet6
         names(sc@meta.data)[names(sc@meta.data) %in% "geneSet6"] <- input$geneset6_name
       }
-      if (input$GeneSet7_scGate==T) {
+      if (input$GeneSet7_scGate) {
         obj <- scGate_anno_GeneSet7()
         sc@meta.data$geneSet7 <- obj@meta.data$geneSet7
         names(sc@meta.data)[names(sc@meta.data) %in% "geneSet7"] <- input$geneset7_name
       }
-      if (input$GeneSet8_scGate==T) {
+      if (input$GeneSet8_scGate) {
         obj <- scGate_anno_GeneSet8()
         sc@meta.data$geneSet8 <- obj@meta.data$geneSet8
         names(sc@meta.data)[names(sc@meta.data) %in% "geneSet8"] <- input$geneset8_name
       }
-      if (input$GeneSet9_scGate==T) {
+      if (input$GeneSet9_scGate) {
         obj <- scGate_anno_GeneSet9()
         sc@meta.data$geneSet9 <- obj@meta.data$geneSet9
         names(sc@meta.data)[names(sc@meta.data) %in% "geneSet9"] <- input$geneset9_name
@@ -7830,15 +7887,15 @@ runSTEGO <- function(){
                                                                                        "Upload file for annotation")
                                                                                 )
                                                                                 if (input$Data_types=="10x_HS") {
-                                                                                  sc <- scGATE_anno_HS.10x()
+                                                                                  sc <- scGATE_anno_HS()
                                                                                   as.data.frame(sc@meta.data)
                                                                                 }
                                                                                 else if (input$Data_types=="BD_HS.Immune.Panel") {
-                                                                                  sc <- scGATE_anno_BD_HS.IP()
+                                                                                  sc <- scGATE_anno_HS()
                                                                                   as.data.frame(sc@meta.data)
                                                                                 }
                                                                                 else if (input$Data_types=="BD_HS.Full.Panel") {
-                                                                                  sc <- scGATE_anno_HS.10x()
+                                                                                  sc <- scGATE_anno_HS()
                                                                                   as.data.frame(sc@meta.data)
                                                                                 }
 
@@ -7879,16 +7936,15 @@ runSTEGO <- function(){
       },
       content = function(file){
         if (input$Data_types=="10x_HS") {
-          sc <- scGATE_anno_HS.10x()
+          sc <- scGATE_anno_HS()
           SaveSeuratRds(sc,file)
         }
         else if (input$Data_types=="BD_HS.Immune.Panel") {
-          sc <- scGATE_anno_BD_HS.IP()
+          sc <- scGATE_anno_HS()
           SaveSeuratRds(sc,file)
         }
-
         else if (input$Data_types=="BD_HS.Full.Panel") {
-          sc <- scGATE_anno_BD_HS.FP()
+          sc <- scGATE_anno_HS()
           SaveSeuratRds(sc,file)
         }
         # mouse panels
@@ -7914,51 +7970,6 @@ runSTEGO <- function(){
 
         }
       })
-
-    # output$downloaddf_SeruatObj_annotated <- downloadHandler(
-    #   filename = function(){
-    #     x = today
-    #     paste(input$project_name3,"_annotated_",gsub("-", ".", Sys.Date()),".h5Seurat", sep = "")
-    #   },
-    #   content = function(file){
-    #     if (input$Data_types=="10x_HS") {
-    #       sc <- scGATE_anno_HS.10x()
-    #       as.h5Seurat(sc,file)
-    #     }
-    #     else if (input$Data_types=="BD_HS.Immune.Panel") {
-    #       sc <- scGATE_anno_BD_HS.IP()
-    #       as.h5Seurat(sc,file)
-    #     }
-    #
-    #     else if (input$Data_types=="BD_HS.Full.Panel") {
-    #       sc <- scGATE_anno_BD_HS.FP()
-    #       as.h5Seurat(sc,file)
-    #     }
-    #     # mouse panels
-    #     else if (input$Data_types=="10x_MM") {
-    #       sc <- scGATE_anno_BD_MM.FP()
-    #       as.h5Seurat(sc,file)
-    #     }
-    #     else if (input$Data_types=="BD_MM_Full.Panel") {
-    #       sc <- scGATE_anno_BD_MM.FP()
-    #       as.h5Seurat(sc,file)
-    #     }
-    #     else if (input$Data_types=="BD_MM_Immune.Panel") {
-    #       sc <- scGATE_anno_BD_MM.IP()
-    #       as.h5Seurat(sc,file)
-    #     }
-    #
-    #     else if (input$Data_types=="TCR-seq") {
-    #       sc <- TCR_seq_classification()
-    #       as.h5Seurat(sc,file)
-    #     }
-    #
-    #     else {
-    #
-    #     }
-    #   } )
-
-    #
 
     ## differential expression -----
     observe({
@@ -8438,7 +8449,6 @@ runSTEGO <- function(){
         selected = "Sample_Name")
     })
 
-
     output$Tb_TCR_clonotypes.Umap <- DT::renderDataTable(escape = FALSE, options = list(autoWidth = FALSE, lengthMenu = c(2,5,10,20,50,100), pageLength = 5, scrollX = TRUE),{
       calls <- select_group_metadata()
       validate(
@@ -8508,9 +8518,9 @@ runSTEGO <- function(){
       df3.meta <- sc@meta.data
       df3.meta2 <- df3.meta[,names(df3.meta) %in% c(input$Samp_col,input$V_gene_sc)]
       df3.meta2$ID_Column <- df3.meta2[,names(df3.meta2) %in% input$Samp_col]
-
+      df3.meta2$v_gene_selected <- df3.meta2[,names(df3.meta2) %in% input$V_gene_sc]
       # names(df3.meta2)[names(df3.meta2) %in% input$Samp_col] <- "ID_Column"
-      names(df3.meta2)[names(df3.meta2) %in% input$V_gene_sc] <- "v_gene_selected"
+      # names(df3.meta2)[names(df3.meta2) %in% input$V_gene_sc] <- "v_gene_selected"
       # }
       df3.meta3 <- df3.meta2
       df3.meta3$v_gene_selected <- ifelse(df3.meta3$v_gene_selected=="_._","Unknown",df3.meta3$v_gene_selected)
@@ -8563,20 +8573,7 @@ runSTEGO <- function(){
       df4
     })
 
-    output$Tb_TCR_clonotypes.table <- DT::renderDataTable(escape = FALSE, options = list(autoWidth = FALSE, lengthMenu = c(2,5,10,20,50,100), pageLength = 10, scrollX = TRUE),{
-      sc <- UMAP_metadata_with_labs()
-      validate(
-        need(nrow(sc)>0,
-             error_message_val_UMAP)
-      )
-      umap.meta <- sc@meta.data
-      names(umap.meta)[names(umap.meta) %in% input$Samp_col] <- "ID_Column"
-      names(umap.meta)[names(umap.meta) %in% input$V_gene_sc] <- "v_gene_selected"
-      umap.meta
-      FILE_MERGED <- merge(umap.meta,TCR_Expanded(),by=c("v_gene_selected","ID_Column"),all.x=T)
-      FILE_MERGED$ID_Column[FILE_MERGED$v_gene_selected == "NA"] <- "unknown"
-      subset(FILE_MERGED,FILE_MERGED$v_gene_selected != "unknown")
-    })
+
 
     ## Umap -----
     create_UMAP2 <- reactive({
@@ -8586,12 +8583,13 @@ runSTEGO <- function(){
              error_message_val_UMAP)
       )
       umap.meta <- sc@meta.data
-      names(umap.meta)[names(umap.meta) %in% input$Samp_col] <- "ID_Column"
-      names(umap.meta)[names(umap.meta) %in% input$V_gene_sc] <- "v_gene_selected"
+      umap.meta$ID_Column <- umap.meta[,names(umap.meta) %in% input$Samp_col]
+      umap.meta$v_gene_selected <- umap.meta[,names(umap.meta) %in% input$V_gene_sc]
       umap.meta
 
 
       sc <- merge(umap.meta,TCR_Expanded(),by=c("v_gene_selected","ID_Column"),all.x=T)
+
       ggplot(sc,aes(x=UMAP_1,UMAP_2,colour=seurat_clusters))+
         geom_point()+
         scale_color_manual(values = rainbow(length(unique(sc$seurat_clusters))) , na.value=input$NA_col_analysis)+
@@ -8693,9 +8691,7 @@ runSTEGO <- function(){
       } # one colour
 
     })
-
     output$myPanel_clonal_plot <- renderUI({cols_clonal_plot()})
-
     colors_clonal_plot <- reactive({
       df4 <- TCR_Expanded()
       df4 <- df4[order(df4[,names(df4) %in% input$Graph_type_bar]),]
@@ -8718,17 +8714,13 @@ runSTEGO <- function(){
     clonal_plot <- reactive({
 
       df4 <- TCR_Expanded()
-      names(df4)[names(df4) %in% input$Samp_col] <- "ID_Column"
+      df4$ID_Column <- df4[,names(df4) %in% input$Samp_col]
+      message("Added ID")
       df4 <- df4[df4$ID_Column %in% input$ID_Column_factor,]
       df4$ID_Column <- as.character(df4$ID_Column)
       df4$ID_Column <- factor(df4$ID_Column,levels = input$ID_Column_factor)
       df.col.1 <- unlist(colors_clonal_plot())
-
-      # ggplot(df4, aes(y = frequency, x = Sample_Name, fill=Clonality, label = Clonality)) +
-      #   # ggplot(df4,aes(x=Sample_Name,y=frequency,fill=Clonality))+
-      #   geom_bar(stat="identity")+
-      #   theme_bw() +
-      #   scale_fill_manual(labels = ~ stringr::str_wrap(.x, width = 20),values=alpha(heat.colors(5), 1))
+      req(df4,input$Samp_col)
 
       ggplot(df4,aes(x=ID_Column,y=frequency,fill=get(input$Graph_type_bar),colour= get(input$Graph_type_bar),label=get(input$Graph_type_bar)))+
         geom_bar(stat="identity")+
@@ -8747,7 +8739,6 @@ runSTEGO <- function(){
 
     })
 
-    # , na.value=input$NA_col_analysis
     ### top clonotypes -----
     vals <- reactiveValues(top10=NULL)
     cols_top_clonal_plot <- reactive({
@@ -8852,6 +8843,7 @@ runSTEGO <- function(){
                                       levels = unique.top)
 
       df.col.1 <- unlist(colors_top_clonal_plot())
+
       unique.top$col <- as.list(df.col.1)
       ggplot(top10,aes(x=ID_Column,y=frequency,fill=v_gene_selected,label=v_gene_selected,colour="black"))+
         geom_bar(stat="identity")+
@@ -8942,7 +8934,54 @@ runSTEGO <- function(){
 
 
     # UMAP clonotype -> TCR -----
-    cols_UMAP_clonal_plot <- reactive({
+    UMAP.TCRclonalit <- reactive({
+      sc <- UMAP_metadata_with_labs()
+      validate(
+        need(nrow(sc)>0,
+             error_message_val_UMAP)
+      )
+      umap.meta <- as.data.frame(sc@meta.data)
+      umap.meta
+      umap.meta$ID_Column <- umap.meta[,names(umap.meta) %in% input$Samp_col]
+      umap.meta$v_gene_selected <- umap.meta[,names(umap.meta) %in% input$V_gene_sc]
+      TCR_Expanded <- as.data.frame(TCR_Expanded())
+
+      UMAP.wt.clonality <- merge(umap.meta,TCR_Expanded,by=c("v_gene_selected","ID_Column",input$Samp_col,input$V_gene_sc),all.x=T)
+      UMAP.wt.clonality
+
+      if (input$Graph_type_bar== "Number_expanded") {
+        UMAP.wt.clonality$TYPE.clonality <- UMAP.wt.clonality$Number_expanded
+      }
+      else {
+        UMAP.wt.clonality$TYPE.clonality <- paste(UMAP.wt.clonality$Frequency_expanded)
+      }
+
+      UMAP.wt.clonality[is.na(UMAP.wt.clonality)] <- "unknown"
+      UMAP.wt.clonality <- subset(UMAP.wt.clonality,UMAP.wt.clonality$TYPE.clonality != "unknown")
+      UMAP.wt.clonality
+
+    })
+
+
+    output$Tb_TCR_clonotypes.table <- DT::renderDataTable(escape = FALSE, options = list(autoWidth = FALSE, lengthMenu = c(2,5,10,20,50,100), pageLength = 10, scrollX = TRUE),{
+      sc <- UMAP_metadata_with_labs()
+      validate(
+        need(nrow(sc)>0,
+             error_message_val_UMAP)
+      )
+      umap.meta <- sc@meta.data
+      umap.meta$ID_Column <- umap.meta[,names(umap.meta) %in% input$Samp_col]
+      umap.meta$v_gene_selected <- umap.meta[,names(umap.meta) %in% input$V_gene_sc]
+      umap.meta
+      FILE_MERGED <- merge(umap.meta,TCR_Expanded(),by=c("v_gene_selected","ID_Column",input$Samp_col,input$V_gene_sc),all.x=T)
+      FILE_MERGED$ID_Column[FILE_MERGED$v_gene_selected == "NA"] <- "unknown"
+      subset(FILE_MERGED,FILE_MERGED$v_gene_selected != "unknown")
+      UMAP.TCRclonalit()
+    })
+
+
+
+    cols_UMAP_clonal_plot2 <- reactive({
       UMAP.wt.clonality <- UMAP.TCRclonalit()
       UMAP.wt.clonality <-  UMAP.wt.clonality[order( UMAP.wt.clonality$TYPE.clonality),]
       UMAP.wt.clonality$TYPE.clonality <- factor(UMAP.wt.clonality$TYPE.clonality,levels = unique(UMAP.wt.clonality$TYPE.clonality))
@@ -9002,7 +9041,9 @@ runSTEGO <- function(){
       } # one colour
 
     })
-    output$cols_UMAP_clonal_plot <- renderUI({cols_UMAP_clonal_plot()})
+
+
+    output$cols_UMAP_clonal_plot <- renderUI({cols_UMAP_clonal_plot2()})
     colors_UMAP_clonal_plot <- reactive({
       UMAP.wt.clonality <- UMAP.TCRclonalit()
       UMAP.wt.clonality <-  UMAP.wt.clonality[order( UMAP.wt.clonality$TYPE.clonality),]
@@ -9056,29 +9097,7 @@ runSTEGO <- function(){
 
     })
 
-    UMAP.TCRclonalit <- reactive({
-      sc <- UMAP_metadata_with_labs()
-      validate(
-        need(nrow(sc)>0,
-             error_message_val_UMAP)
-      )
-      umap.meta <- sc@meta.data
-      names(umap.meta)[names(umap.meta) %in% input$Samp_col] <- "ID_Column"
-      names(umap.meta)[names(umap.meta) %in% input$V_gene_sc] <- "v_gene_selected"
-      umap.meta
-      UMAP.wt.clonality <- merge(umap.meta,TCR_Expanded(),by=c("v_gene_selected","ID_Column"),all.x=T)
-      if (input$Graph_type_bar== "Number_expanded") {
-        UMAP.wt.clonality$TYPE.clonality <- paste(UMAP.wt.clonality$Number_expanded)
-      }
-      else {
-        UMAP.wt.clonality$TYPE.clonality <- paste(UMAP.wt.clonality$Frequency_expanded)
 
-      }
-      # UMAP.wt.clonality$TYPE.clonality<- ifelse(grepl("NA", UMAP.wt.clonality$TYPE.clonality),NA,UMAP.wt.clonality$TYPE.clonality)
-      UMAP.wt.clonality <- subset(UMAP.wt.clonality,UMAP.wt.clonality$TYPE.clonality != "NA")
-      UMAP.wt.clonality
-
-    })
 
     UMAP.TCRclonalit2 <- reactive({
       UMAP.wt.clonality <- UMAP.TCRclonalit()
@@ -9111,8 +9130,7 @@ runSTEGO <- function(){
       }
       colorblind_vector <- as.data.frame(colorblind_vector)
       names(colorblind_vector) <- "cols"
-
-      names(UMAP.wt.clonality)[names(UMAP.wt.clonality) %in% input$Samp_col] <- "ID_Column"
+      UMAP.wt.clonality$ID_Column <- UMAP.wt.clonality[,names(UMAP.wt.clonality) %in% input$Samp_col]
 
       if (input$Split_by_group=="yes") {
         UMAP.wt.clonality <- UMAP.wt.clonality[UMAP.wt.clonality$ID_Column %in% input$ID_Column_factor,]
@@ -9140,6 +9158,8 @@ runSTEGO <- function(){
           legend.title = element_blank(),
           legend.position = input$legend_position,
         )
+
+
       if (input$Split_by_group=="no") {
         plot
       }
@@ -18335,5 +18355,6 @@ runSTEGO <- function(){
     ### end -----
   }
   shinyApp(ui, server)
+
 
 }
