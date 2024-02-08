@@ -7,7 +7,8 @@
 merging_multi_SeuratRDS(
   set_directory = ".",
   merge_RDS = F,
-  pattern_RDS = "Anno.rds$"
+  pattern_RDS = ".rds$",
+  species = "hs"
 )
 }
 \arguments{
@@ -16,6 +17,8 @@ merging_multi_SeuratRDS(
 \item{merge_RDS}{Set to TRUE once you have check the directory with the .rds file}
 
 \item{pattern_RDS}{uses the list.files function to identify}
+
+\item{species}{Species: hs or mm, as the humans use upper case and the mouse gene use proper case.}
 }
 \description{
 This function is to aid im merging multiple Seurat object, which will then need to undergo harmony merging

@@ -202,6 +202,7 @@ runSTEGO <- function(){
   }
 
   ###################
+  ###################
   # UI page -----
   ui <- fluidPage(
     tags$head(tags$style(HTML('.progress-bar {background-color: darkblue;}'))),
@@ -853,11 +854,8 @@ runSTEGO <- function(){
                         sidebarLayout(
                           # Sidebar with a slider input
                           sidebarPanel(id = "tPanel5",style = "overflow-y:scroll; max-height: 800px; position:relative;", width=4,
-                                       selectInput("Seruat_version_merge","Seurat Version",choices = c("V4","V5")),
-
-                                       selectInput("sample.type.source","Species",choices = ""),
-
                                        conditionalPanel(condition="input.Merging_and_batching == 'Merging_Harmony'",
+                                                        selectInput("sample.type.source_merging","Species",choices = c("hs","mm")),
                                                         fileInput("file1_rds.file",
                                                                   "Choose .rds files from merging",
                                                                   multiple = TRUE,
@@ -866,7 +864,8 @@ runSTEGO <- function(){
                                                         downloadButton('downloaddf_SeruatObj_merged2','Download Merged Seurat')
                                        ),
                                        conditionalPanel(condition="input.Merging_and_batching != 'Merging_Harmony'",
-
+                                                        selectInput("Seruat_version_merge","Seurat Version",choices = c("V4","V5")),
+                                                        selectInput("sample.type.source","Species",choices = ""),
                                                         fileInput("file1_rds.Merged_data_for_harmony",
                                                                   "Upload .rds file for Batch correction with Harmony",
                                                                   multiple = F,
@@ -879,6 +878,7 @@ runSTEGO <- function(){
                           mainPanel(
                             tabsetPanel(id = "Merging_and_batching",
                                         tabPanel("Merge Files", value = "Merging_Harmony",
+                                                 actionButton("run_merging","run merging"),
                                                  add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
                                                  verbatimTextOutput("testing_mult"),
                                                  verbatimTextOutput("testing_mult2")
@@ -2160,6 +2160,7 @@ runSTEGO <- function(){
                                                              # tabPanel("Upset plot")
                                                  ),
                                         ),
+                                        ########
                                         #prioritization strategy ------
 
                                         tabPanel("Automation (TCR -> GEX)",value = "Prior",
@@ -5825,24 +5826,33 @@ runSTEGO <- function(){
     # merging multiple Seurat Obj -----
     getData <- reactive({
       inFile.seq <- input$file1_rds.file
+
       num <- dim(inFile.seq)[1]
-
-
       seurat_object_list <- vector("list", length = num)
-      seurat_object_list
+
+      list.sc <- list()
+
       for (i in 1:num) {
-        sc <- LoadSeuratRds(input$file1_rds.file[[i, 'datapath']])
-        sc@project.name <- "SeuratProject"
-        sc <-  DietSeurat(
-          sc,
-          scale.data = NULL
-        )
-        sc@meta.data$Cell_Index_old <- sc@meta.data$Cell_Index
-        sc@meta.data$Noval.ID <- paste(sc@meta.data$orig.ident,sc@meta.data$Cell_Index,i,sep = "_")
-        sc@meta.data$Noval.ID <- ifelse(grepl("NA[.]",sc@meta.data$Noval.ID),"",sc@meta.data$Noval.ID)
-        seurat_object_list[[i]] <- sc
+        message("reading in file ", i)
+        list.sc[[i]] <- LoadSeuratRds(input$file1_rds.file[[i, 'datapath']])
+        message("Reducing file size for file ", i)
+        if (input$sample.type.source_merging == "hs") {
+          features.var.needed <- read.csv(system.file("Kmean","human.variable.features.csv",package = "STEGO.R"))
+          # head(features.var.needed)
+          # str_to_title(features.var.needed$V1)[grep("KIR",features.var.needed$V1)]
+          list.sc[[i]] <- subset(list.sc[[i]],features=features.var.needed$V1)
+        } else {
+          features.var.needed <- read.csv(system.file("Kmean","human.variable.features.csv",package = "STEGO.R"))
+          features.var.needed$V1 <- str_to_title(features.var.needed$V1)
+          list.sc[[i]] <- subset(list.sc[[i]],features=features.var.needed$V1)
+        }
+        list.sc[[i]]@project.name <- "SeuratProject"
+        message("Updating cell Index ID for ", i)
+        list.sc[[i]]@meta.data$Cell_Index_old <- list.sc[[i]]@meta.data$Cell_Index
+        sl <- object.size(list.sc[[i]])
+        message(i, "object is ",round(sl[1]/1000^3,1)," Gb in R env.")
       }
-      seurat_object_list
+      list.sc
     })
 
     output$testing_mult <- renderPrint({
@@ -5855,13 +5865,14 @@ runSTEGO <- function(){
       print(df)
     })
 
-    merging_sc <- reactive({
+    merging_sc_ob <- reactiveValues(Val2=NULL)
+
+    observeEvent(input$run_merging,{
       sc <- input$file1_rds.file
       validate(
         need(nrow(sc)>0,
              "Upload files")
       )
-
       list_seurat <- getData()
       num <- length(list_seurat)
 
@@ -5869,15 +5880,19 @@ runSTEGO <- function(){
         merged_object <- reduce(list_seurat, function(x, y) {
           merge(x = x, y = y, merge.data = TRUE, project = "SeuratProject")
         })
-
-        merged_object
+        sl <- object.size(merged_object)
+        message("The merged object is ",round(sl[1]/1000^3,1)," Gb in R env.")
+        merging_sc_ob$Val2 <- merged_object
       }
-      merged_object
+
     })
+    merging_sc <- reactive({
+      merging_sc_ob$Val2
+
+    })
+
     output$testing_mult2 <- renderPrint({
-
       merging_sc()
-
     })
 
     output$downloaddf_SeruatObj_merged2 <- downloadHandler(
@@ -5969,6 +5984,7 @@ runSTEGO <- function(){
           selected = "")
       }
     })
+
 
     # selectInput("","Species",choices = c("hs","mm")),
 
@@ -13338,6 +13354,7 @@ runSTEGO <- function(){
 
       req(clust,md)
       if(input$datasource == "BD_Rhapsody_Paired" || input$datasource == "BD_Rhapsody_AIRR") {
+
         names(md)[names(md) %in% "v_gene_AG"] <- "Selected_V_AG"
         names(md)[names(md) %in% "junction_aa_AG"] <- "AminoAcid_AG"
       } else {
@@ -13493,25 +13510,7 @@ runSTEGO <- function(){
         need(nrow(cluster)>0,
              "Upload clusTCR table, which is needed for TCR -> UMAP section")
       )
-      cluster$ID_Column <- cluster[,names(cluster) %in% input$Samp_col]
-      Network_df <- cluster[order(cluster$Updated_order),]
-      Network_df <- Network_df[Network_df$Updated_order  %in% input$Clusters_to_dis_PIE,]
-      Network_df$Selected <- Network_df[,names(Network_df) %in% input$Colour_By_this]
-      Network_df
-
-      df3.meta3 <-  as.data.frame(table(Network_df$ID_Column,Network_df$Selected))
-      total.condition <- as.data.frame(ddply(df3.meta3,"Var1",numcolwise(sum)))
-      dim(total.condition)[1]
-      dim(df3.meta3)[1]
-      emtpy <- matrix(nrow =dim(df3.meta3)[1],ncol=dim(total.condition)[1])
-
-      for (i in 1:dim(df3.meta3)[1]) {
-
-        emtpy[i,] <- ifelse(df3.meta3$Var1[i]==total.condition$Var1[1:dim(total.condition)[1]],
-                            total.condition[total.condition$Var1==total.condition$Var1[1:dim(total.condition)[1]],2],F)
-      }
-      df3.meta3$n <- df3.meta3$Freq/rowSums(emtpy)
-      df3.meta3
+      cluster
 
     })
 
@@ -13551,11 +13550,10 @@ runSTEGO <- function(){
         need(nrow(cluster)>0,
              "Upload clusTCR table")
       )
-      req(cluster,input$Clusters_to_dis_PIE,input$Colour_By_this, input$Samp_col)
+      req(cluster,input$Colour_By_this, input$Samp_col)
       cluster$ID_Column <- cluster[,names(cluster) %in% input$Samp_col]
-      # names(cluster)[names(cluster) %in% input$Samp_col_cluster] <- "ID_Column"
+      cluster <- cluster[order(cluster$ID_Column),]
 
-      cluster <- cluster[cluster$Updated_order %in% input$Clusters_to_dis_PIE,]
       cluster$colour <- cluster[,names(cluster) %in% input$Colour_By_this]
       cluster$colour <- gsub("_"," ",cluster$colour)
       cluster$colour <- factor(cluster$colour, levels = unique(cluster$colour))
@@ -13563,6 +13561,7 @@ runSTEGO <- function(){
 
       num <- as.data.frame(unique(cluster$colour))
       num <- as.data.frame(num[complete.cases(num)==T,])
+      num
 
       col.gg <- gg_fill_hue(dim(num)[1])
       palette_rainbow <- rainbow(dim(num)[1])
@@ -13618,17 +13617,16 @@ runSTEGO <- function(){
 
     })
     output$myPanel_cols_clust_UMAP <- renderUI({cols_clust_UMAP()})
-
     colors_cols_cols_clust_UMAP <- reactive({
       cluster <- clusTCR2_df()
       validate(
         need(nrow(cluster)>0,
              "Upload clusTCR table")
       )
-      req(cluster,input$Clusters_to_dis_PIE,input$Colour_By_this)
+      req(cluster,input$Colour_By_this)
       cluster$ID_Column <- cluster[,names(cluster) %in% input$Samp_col]
-
-      cluster <- cluster[cluster$Updated_order %in% input$Clusters_to_dis_PIE,]
+      cluster <- cluster[order(cluster$ID_Column),]
+      # cluster <- cluster[cluster$Updated_order %in% input$Clusters_to_dis_PIE,]
       cluster$colour <- cluster[,names(cluster) %in% input$Colour_By_this]
       cluster$colour <- gsub("_"," ",cluster$colour)
       cluster$colour <- factor(cluster$colour, levels = unique(cluster$colour))
@@ -13642,6 +13640,8 @@ runSTEGO <- function(){
       })
     })
 
+
+
     UMAP_ClusTCR2 <- reactive({
       cluster <- clusTCR2_df()
       validate(
@@ -13650,21 +13650,28 @@ runSTEGO <- function(){
       )
       req(cluster,input$Clusters_to_dis_PIE,input$Colour_By_this)
       cluster$ID_Column <- cluster[,names(cluster) %in% input$Samp_col]
-
-      cluster <- cluster[cluster$Updated_order %in% input$Clusters_to_dis_PIE,]
+      cluster <- cluster[order(cluster$ID_Column),]
+      # cluster <- cluster[cluster$Updated_order %in% input$Clusters_to_dis_PIE,]
       cluster$colour <- cluster[,names(cluster) %in% input$Colour_By_this]
       cluster$colour <- gsub("_"," ",cluster$colour)
-      cluster$colour <- factor(cluster$colour, levels = unique(cluster$colour))
-      cluster$colour <- gsub("NA",NA,cluster$colour)
+      num <- as.data.frame(unique(cluster$colour))
+      num <- as.data.frame(num[complete.cases(num)==T,])
+      names(num) <- "ID"
+      num$col <- unlist(colors_cols_cols_clust_UMAP())
 
-      len.colour <- length(unique(cluster$colour))
-      col.df <- as.data.frame(unique(cluster$colour))
-      col.df <- as.data.frame(col.df[complete.cases(col.df)==T,])
-      col.df$col <- unlist(colors_cols_cols_clust_UMAP())
+
+      cluster$colour <- gsub("NA",NA,cluster$colour)
+      cluster <- cluster[cluster$Updated_order %in% input$Clusters_to_dis_PIE,]
+
+      num <- num[num$ID %in% unique(cluster$colour),]
+      print(num)
+
+      cluster$colour <- factor(cluster$colour, levels =num$ID)
+
 
       figure <- ggplot(data=cluster,aes(x=UMAP_1,UMAP_2,colour=colour))+
         geom_point(size = input$size.dot.umap)+
-        scale_color_manual(labels = ~ stringr::str_wrap(.x, width = 20),values = col.df$col,na.value=input$NA_col_analysis) +
+        scale_color_manual(labels = ~ stringr::str_wrap(.x, width = 20),values = num$col,na.value=input$NA_col_analysis) +
         theme_bw()+
         theme(
           legend.text = element_text(colour="black", size=input$Bar_legend_size,family=input$font_type),
@@ -18355,6 +18362,5 @@ runSTEGO <- function(){
     ### end -----
   }
   shinyApp(ui, server)
-
 
 }

@@ -5,6 +5,7 @@ require(STEGO.R)
 ###### merging seurat object ------
 merging_multi_SeuratRDS(set_directory = "2_scObj/", merge_RDS = F, pattern_RDS = ".rds$") # Check that you are in the correct working directory with your RDS files
 sc_merge <- merging_multi_SeuratRDS(set_directory = "2_scObj/", merge_RDS = T, pattern_RDS = ".rds$") # once that is check, switch merge_RDS to TRUE or T
+
 saveRDS(sc_merge,"2_scObj/sc_merge.rds") # save the merged file - it will not have the scaled data and PCA stored any more due to the merging process. This is in case R crashes and it needs to be read in.
 
 ## perform the harmony batch correction ------

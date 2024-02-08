@@ -6,11 +6,13 @@
 #' @param set_directory set the path to the directory with the. Default = current working directory. The program will reset the directory to the original to not impact the function of STEGO.R project file
 #' @param merge_RDS Set to TRUE once you have check the directory with the .rds file
 #' @param pattern_RDS uses the list.files function to identify
+#' @param species Species: hs or mm, as the humans use upper case and the mouse gene use proper case.
 #' @export
 
-merging_multi_SeuratRDS <- function (set_directory = ".", merge_RDS = F, pattern_RDS = "Anno.rds$") {
+merging_multi_SeuratRDS <- function (set_directory = ".", merge_RDS = F, pattern_RDS = ".rds$",species = "hs") {
   x <- getwd()
   require(purrr)
+  require(Seurat)
   setwd(set_directory)
   message(paste(getwd(),"is the current work directory"))
   temp = list.files(pattern=pattern_RDS)
@@ -19,25 +21,44 @@ merging_multi_SeuratRDS <- function (set_directory = ".", merge_RDS = F, pattern
   message(paste("There are",len.temp,"rds files in the directory for merging"))
   if (merge_RDS) {
     list.sc <- list()
+    features.var.needed <- read.csv(system.file("Kmean","human.variable.features.csv",package = "STEGO.R"))
+    dim(features.var.needed)
     for (i in 1:len.temp) {
       model.name <- strsplit(temp,".rds")[[i]][1]
+      message("reading in file ", model.name)
       list.sc[[model.name]] <- readRDS(temp[i])
+      message("Reducing file size ", model.name)
+
+      if (species == "hs") {
+        features.var.needed <- read.csv(system.file("Kmean","human.variable.features.csv",package = "STEGO.R"))
+      } else {
+        features.var.needed <- read.csv(system.file("Kmean","human.variable.features.csv",package = "STEGO.R"))
+        features.var.needed$V1 <- str_to_title(features.var.needed$V1)
+      }
+      list.sc[[i]] <- subset(list.sc[[i]],features=features.var.needed$V1)
+      message("adding project name")
+      list.sc[[i]]@project.name <- model.name
+      message("Updating cell Index ID")
+      list.sc[[i]]@meta.data$Cell_Index_old <- list.sc[[i]]@meta.data$Cell_Index
+      print(list.sc[[i]])
+      sl <- object.size(list.sc[[i]])
+      message("stored object is ",round(sl[1]/1000^3,1)," Gb")
     }
-    message("data is in list")
-    for (i in 1:len.temp) {
-      list.sc[[i]]@project.name <- "SeuratProject"
-    }
-    message("added in project name")
-    merged_object <- reduce(list.sc, function(x, y) {
-      message("merging",x,y)
-      merge(x = x, y = y, merge.data = TRUE, project = "SeuratProject")
-    })
+  sl <- object.size(list.sc)
+  message("stored object is ",round(sl[1]/1000^3,1)," Gb")
+  merged_object <- reduce(list.sc, function(x, y) {
+    merge(x = x, y = y, merge.data = TRUE)
+  })
+  merged_object@meta.data$Cell_Index_old <- merged_object@meta.data$Cell_Index
+  merged_object@meta.data$Cell_Index <- rownames(merged_object@meta.data)
+  sl <- object.size(merged_object)
+  message("The merged object is ",round(sl[1]/1000^3,1)," Gb")
 
     setwd(x)
     merged_object
   } else {
     setwd(x)
-    message("if these are the files you are looking for, set merge_RDS to T")
+    message("If these are the files you are looking for, set merge_RDS to T")
   }
 }
 
