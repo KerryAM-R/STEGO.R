@@ -23,11 +23,13 @@ merging_multi_SeuratRDS <- function (set_directory = ".", merge_RDS = F, pattern
       model.name <- strsplit(temp,".rds")[[i]][1]
       list.sc[[model.name]] <- readRDS(temp[i])
     }
+    message("data is in list")
     for (i in 1:len.temp) {
       list.sc[[i]]@project.name <- "SeuratProject"
     }
-
+    message("added in project name")
     merged_object <- reduce(list.sc, function(x, y) {
+      message("merging",x,y)
       merge(x = x, y = y, merge.data = TRUE, project = "SeuratProject")
     })
 
