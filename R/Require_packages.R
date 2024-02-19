@@ -1,5 +1,5 @@
-#' Packages needed for STEGO.R
-#' @param Load_required_packages load packages
+#' Load_required_packages
+#' @name Load_required_packages
 #' @export
 
 Load_required_packages <- function() {
@@ -34,6 +34,7 @@ Load_required_packages <- function() {
   suppressMessages(require("linkcomm")) # create the network graphs.
   suppressMessages(require("lubridate")) # create the network graphs.
   suppressMessages(require("Matrix"))
+  suppressMessages(require("magrittr"))
   suppressMessages(require("network"))
   suppressMessages(require("plyr"))
   suppressMessages(require("purrr"))
@@ -55,6 +56,7 @@ Load_required_packages <- function() {
   suppressMessages(require("showtext"))
   suppressMessages(require("showtextdb"))
   suppressMessages(require("stringr"))
+  suppressMessages(require("stats4"))
   suppressMessages(require("sysfonts"))
   suppressMessages(require("tibble"))
   suppressMessages(require("tidyr"))
@@ -62,8 +64,11 @@ Load_required_packages <- function() {
   require("chisq.posthoc.test")
 }
 
-#' Packages needed for STEGO.R
-#' @param gg_fill_hue coloring function
+#' gg_fill_hue
+#' @description
+#' This create a list of colours
+#'@name gg_fill_hue
+#' @param n length of object to colour
 #' @export
 
 gg_fill_hue <- function(n) {
@@ -71,11 +76,11 @@ gg_fill_hue <- function(n) {
   hcl(h = hues, l = 65, c = 100)[1:n]
 }
 
-#' Packages needed for STEGO.R
-#' @param TCR_Expanded_fun Feature set
+#' TCR_Expanded_fun
+#' @name TCR_Expanded_fun
 #' @param sc seurat object description
 #' @param Samp_col Name of the sample in the meta data
-#' @param V_gene_sc
+#' @param V_gene_sc name of the Variable gene column e.g., vdj_cdr3_AG_BD
 #' @export
 
 TCR_Expanded_fun <- function (sc,Samp_col,V_gene_sc) {
@@ -136,9 +141,9 @@ TCR_Expanded_fun <- function (sc,Samp_col,V_gene_sc) {
 }
 
 
-#' Packages needed for STEGO.R
-#' @param mat_sum Feature set
-#' @param sc seurat object description
+#' mat_sum
+#' @name mat_sum
+#' @param sc Seurat object
 #' @param Samp_col Name of the sample in the meta data
 #' @param V_gene_sc V gene
 #' @export

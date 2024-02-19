@@ -1,7 +1,0 @@
-levels	use_as	name	signature
-level1	positive	CD4T	
-level2	positive	Exh	
-level2	negative	Treg	
-level2	negative	NaiveLike	
-level3	positive	CTL	
-level4	negative	CD8T	

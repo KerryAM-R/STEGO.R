@@ -3,10 +3,10 @@
 \name{STEGO}
 \alias{STEGO}
 \alias{runSTEGO}
-\title{Run STEGO application.}
+\title{STEGO application}
 \usage{
 runSTEGO()
 }
 \description{
-Run STEGO application.
+STEGO application
 }

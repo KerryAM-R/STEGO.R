@@ -2,13 +2,10 @@
 % Please edit documentation in R/Require_packages.R
 \name{Load_required_packages}
 \alias{Load_required_packages}
-\title{Packages needed for STEGO.R}
+\title{Load_required_packages}
 \usage{
 Load_required_packages()
 }
-\arguments{
-\item{Load_required_packages}{load packages}
-}
 \description{
-Packages needed for STEGO.R
+Load_required_packages
 }

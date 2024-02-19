@@ -1,0 +1,7 @@
+levels	use_as	name	signature
+level1	positive	Tcell	
+level2	negative	Monoc	
+level3	negative	Bcell	
+level4	negative	Dend	
+level5	negative	CD8	
+level6	negative	CD4	
