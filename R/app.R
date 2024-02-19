@@ -202,8 +202,7 @@ runSTEGO <- function(){
   }
 
   ###################
- ###################
-# UI page -----
+  # UI page -----
   ui <- fluidPage(
     tags$head(tags$style(HTML('.progress-bar {background-color: darkblue;}'))),
     tags$head(
@@ -225,21 +224,12 @@ runSTEGO <- function(){
     ),
     # shinythemes::themeSelector(),
     tags$style(HTML("
-                    .tabbable > .nav > li > a {background-color: #808080;  color:white}
-                    ")
+    .tabbable > .nav > li > a {background-color: #808080;  color:white}
+    ")
     ),
     navbarPage(title = "STEGO.R",
-               # theme = "cerulean",  # <--- To use a theme, uncomment this
-               # "shinythemes",
-               # theme=bs_theme(version = 5, bootswatch = "default"),
-
-               navbarMenu("Quality control",
-                          # tabPanel("Convert_to_AIRR_format",
-                          #
-                          #
-                          #          ),
-# 10x_Genomics ----
-
+               navbarMenu("STEP 1.",
+                          # 10x_Genomics ----
                           tabPanel("10x_Genomics",
 
                                    sidebarLayout(
@@ -247,9 +237,9 @@ runSTEGO <- function(){
                                                   # selectInput("dataset_10x", "Choose a dataset:", choices = c("test_data_10x", "own_data_10x")),
                                                   selectInput("Source_type_10x","Input types",choices = c("Raw",".h5")),
                                                   conditionalPanel(condition="input.Source_type_10x=='Raw'",
- fileInput('file_calls_10x', 'Barcode file (.tsv.gz or .tsv)'),
- fileInput('file_features_10x', 'Features file (.tsv.gz or .tsv)'),
- fileInput('file_matrix_10x', 'Matrix file (.mtx.gz or .mtx)'),
+                                                                   fileInput('file_calls_10x', 'Barcode file (.tsv.gz or .tsv)'),
+                                                                   fileInput('file_features_10x', 'Features file (.tsv.gz or .tsv)'),
+                                                                   fileInput('file_matrix_10x', 'Matrix file (.mtx.gz or .mtx)'),
 
                                                   ),
                                                   selectInput("csv_contig_file","format of the contig file",choices  = c("csv/csv.gz","tsv")),
@@ -262,55 +252,55 @@ runSTEGO <- function(){
                                                   ),
                                                   selectInput("BCR_TCR_10x","Type of data",choices = c("TCR only","BCR only")),
                                      ),
-# 10x main panel -----
-                                     mainPanel(
+                                     # 10x main panel -----
+                                     mainPanel(width = 9,
 
-                                       tabsetPanel(id = "panel_10x",
-                                                   tabPanel("Uploaded data",value = 1,
-                                                            conditionalPanel(condition="input.Source_type_10x=='Raw'",
-           div(DT::dataTableOutput("test.files.10x1")),
-           div(DT::dataTableOutput("test.files.10x2")),
-                                                            ),
+                                               tabsetPanel(id = "panel_10x",
+                                                           tabPanel("Uploaded data",value = 1,
+                                                                    conditionalPanel(condition="input.Source_type_10x=='Raw'",
+                                                                                     div(DT::dataTableOutput("test.files.10x1")),
+                                                                                     div(DT::dataTableOutput("test.files.10x2")),
+                                                                    ),
 
-                                                            # div(DT::dataTableOutput("test.files.10x3")),
-                                                            div(DT::dataTableOutput("test.files.10x4")),
-                                                   ),
-                                                   tabPanel("TCRex",
-                                                            add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
-                                                            div(DT::dataTableOutput("tb_TCRex_10x_df")),
-                                                            downloadButton('downloaddf_TCRex_10x','Download table')
+                                                                    # div(DT::dataTableOutput("test.files.10x3")),
+                                                                    div(DT::dataTableOutput("test.files.10x4")),
+                                                           ),
+                                                           tabPanel("TCRex",
+                                                                    add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
+                                                                    div(DT::dataTableOutput("tb_TCRex_10x_df")),
+                                                                    downloadButton('downloaddf_TCRex_10x','Download table')
 
-                                                   ),
-                                                   tabPanel("Seurat QC",value = 2,
-                                                            tags$head(tags$style("#tb_10x_matrix2  {white-space: nowrap;  }")),
-                                                            add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
-                                                            div(DT::dataTableOutput("tb_10x_matrix2")),
-                                                            tags$head(tags$style("#sum_tb_10x1  {white-space: nowrap;  }")),
-                                                            div(DT::dataTableOutput("sum_tb_10x1")),
-                                                            div(DT::dataTableOutput("tb_10x_meta1")),
-                                                            fluidRow(column(3,downloadButton('downloadtb_10x_matrix2','Download matrix')),
-   column(3,downloadButton('downloadtb_10x_metadata2','Download metadata'))
-                                                            )
+                                                           ),
+                                                           tabPanel("Seurat QC",value = 2,
+                                                                    tags$head(tags$style("#tb_10x_matrix2  {white-space: nowrap;  }")),
+                                                                    add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
+                                                                    div(DT::dataTableOutput("tb_10x_matrix2")),
+                                                                    tags$head(tags$style("#sum_tb_10x1  {white-space: nowrap;  }")),
+                                                                    div(DT::dataTableOutput("sum_tb_10x1")),
+                                                                    div(DT::dataTableOutput("tb_10x_meta1")),
+                                                                    fluidRow(column(3,downloadButton('downloadtb_10x_matrix2','Download matrix')),
+                                                                             column(3,downloadButton('downloadtb_10x_metadata2','Download metadata'))
+                                                                    )
 
-                                                   ),
-                                                   tabPanel("ClusTCR",value = 3,
-                                                            tags$head(tags$style("#tb_10x_contigues1  {white-space: nowrap;  }")),
-                                                            div(DT::dataTableOutput("tb_10x_contigues1")),
-                                                            selectInput("chain_clusTCR2_10x","Select to download",choices = c("AG","BD","IgH","IgLK")),
-                                                            downloadButton('downloadtb_10x_contigues1','Download clusTCR')
-                                                   ),
-                                                   tabPanel("TCR_Explore",value = 4,
-                                                            tags$head(tags$style("#dt_TCR_Explore_10x  {white-space: nowrap;  }")),
-                                                            div(DT::dataTableOutput("dt_TCR_Explore_10x")),
-                                                            downloadButton('downloaddt_TCR_Explore_10x','Download TCR_Explore')
+                                                           ),
+                                                           tabPanel("ClusTCR",value = 3,
+                                                                    tags$head(tags$style("#tb_10x_contigues1  {white-space: nowrap;  }")),
+                                                                    div(DT::dataTableOutput("tb_10x_contigues1")),
+                                                                    selectInput("chain_clusTCR2_10x","Select to download",choices = c("AG","BD","IgH","IgLK")),
+                                                                    downloadButton('downloadtb_10x_contigues1','Download clusTCR')
+                                                           ),
+                                                           tabPanel("TCR_Explore",value = 4,
+                                                                    tags$head(tags$style("#dt_TCR_Explore_10x  {white-space: nowrap;  }")),
+                                                                    div(DT::dataTableOutput("dt_TCR_Explore_10x")),
+                                                                    downloadButton('downloaddt_TCR_Explore_10x','Download TCR_Explore')
 
-                                                   ),
-                                       ),
+                                                           ),
+                                               ),
                                      )
                                    )
                           ),
-# 10x_Genomics end -----
-# BD Rhapsody  ------
+                          # 10x_Genomics end -----
+                          # BD Rhapsody  ------
                           tabPanel("BD rhapsody data",
                                    sidebarLayout(
                                      sidebarPanel(id = "tPanel4",style = "overflow-y:scroll; max-height: 1000px; position:relative;", width=3,
@@ -320,134 +310,134 @@ runSTEGO <- function(){
                                                   fluidRow(
                                                     column(6,  numericInput("no_lines_skip_Tags","If needed, skip first 7 lines of Sample Tag",value = 7,min=0,max=20,step=7),),
                                                     column(6, fileInput('file_calls_BD', 'Sample Tag Calls (.csv)',
-      accept=c('text/csv', 'text/comma-separated-values,text/plain', '.csv')),)
+                                                                        accept=c('text/csv', 'text/comma-separated-values,text/plain', '.csv')),)
                                                   ),
 
 
                                                   h5("Upload the matrix files"),
                                                   selectInput("Format_bd","Format type",choices = c("cellXgene","Barcode_features_matrix"),selected = "Barcode_features_matrix"),
                                                   conditionalPanel(condition="input.Format_bd=='Barcode_features_matrix'",
- fileInput('file_barcode_bd', 'Barcode file (.tsv.gz or .tsv)'),
- fileInput('file_matrix_bd', 'Matrix file'),
- fileInput('file_features_bd', 'Features file (.tsv.gz or .tsv)'),
+                                                                   fileInput('file_barcode_bd', 'Barcode file (.tsv.gz or .tsv)'),
+                                                                   fileInput('file_matrix_bd', 'Matrix file'),
+                                                                   fileInput('file_features_bd', 'Features file (.tsv.gz or .tsv)'),
 
                                                   ),
                                                   conditionalPanel(condition="input.Format_bd=='cellXgene'",
- fluidRow(
-   column(6, numericInput("no_lines_skip_counts","If needed, skip first 7 lines of Count Matrix",value = 7,min=0,max=10,step=7),),
-   column(6,  fileInput('file_counts_BD', 'Counts (.csv)',
-                        accept=c('text/csv', 'text/comma-separated-values,text/plain', '.csv')),),
- ),
+                                                                   fluidRow(
+                                                                     column(6, numericInput("no_lines_skip_counts","If needed, skip first 7 lines of Count Matrix",value = 7,min=0,max=10,step=7),),
+                                                                     column(6,  fileInput('file_counts_BD', 'Counts (.csv)',
+                                                                                          accept=c('text/csv', 'text/comma-separated-values,text/plain', '.csv')),),
+                                                                   ),
                                                   ),
                                                   h5("Upload the TCR Contig file"),
                                                   selectInput("filtered_list","Contig Format",choices = c("Paired","Dominant","Unfiltered")),
                                                   conditionalPanel(condition="input.filtered_list=='Paired'",
- fluidRow(
-   column(6, numericInput("no_lines_skip_TCR","If needed, skip first 7 lines of VDJ Contig file",value = 7,min=0,max=10,step=7),),
-   column(6,fileInput('file_TCR_BD', 'TCR file (.csv)',
-                      accept=c('text/csv', 'text/comma-separated-values,text/plain', '.csv'))),),
+                                                                   fluidRow(
+                                                                     column(6, numericInput("no_lines_skip_TCR","If needed, skip first 7 lines of VDJ Contig file",value = 7,min=0,max=10,step=7),),
+                                                                     column(6,fileInput('file_TCR_BD', 'TCR file (.csv)',
+                                                                                        accept=c('text/csv', 'text/comma-separated-values,text/plain', '.csv'))),),
                                                   ),
                                                   conditionalPanel(condition="input.filtered_list=='Dominant' || input.filtered_list=='Unfiltered'",
- fileInput('file_TCR_bd2', 'Contig AIRR file (.tsv)',
-           accept=c('.tsv','tsv'))
+                                                                   fileInput('file_TCR_bd2', 'Contig AIRR file (.tsv)',
+                                                                             accept=c('.tsv','tsv'))
                                                   ),
                                                   ### filter out non-function TCR and un-paired TCR
                                                   conditionalPanel(condition="input.filtered_list=='Dominant' || input.filtered_list=='Unfiltered'",
- column(6,selectInput("locus_column",h5("Chain (e.g. locus)"),"")),
+                                                                   column(6,selectInput("locus_column",h5("Chain (e.g. locus)"),"")),
                                                   ),
                                                   conditionalPanel(condition="input.filtered_list=='Paired'",
- fluidRow(
-   column(6, selectInput("V_gene_AG_BDrhap",h6("Alpha/Gamma V gene"),""),),
-   column(6, selectInput("Junction_AG_BDrhap",h6("Alpha/Gamma junction"),""),),
-   column(6, selectInput("V_gene_BD_BDrhap",h6("Beta/Delta V gene"),"")),
-   column(6, selectInput("Junction_BD_BDrhap",h6("Beta/Delta junction"),"") )
- ),
+                                                                   fluidRow(
+                                                                     column(6, selectInput("V_gene_AG_BDrhap",h6("Alpha/Gamma V gene"),""),),
+                                                                     column(6, selectInput("Junction_AG_BDrhap",h6("Alpha/Gamma junction"),""),),
+                                                                     column(6, selectInput("V_gene_BD_BDrhap",h6("Beta/Delta V gene"),"")),
+                                                                     column(6, selectInput("Junction_BD_BDrhap",h6("Beta/Delta junction"),"") )
+                                                                   ),
                                                   ),
                                                   fluidRow(
                                                     column(6, checkboxInput("filtering_TCR", "paired chains?", value = FALSE, width = NULL),),
                                                     column(6, checkboxInput("BCR_present", "BCR present?", value = FALSE, width = NULL),),
                                                   ),
                                      ),
-# main panel ------
-                                     mainPanel(
-                                       tabsetPanel(
-                                         tabPanel("Imported data",
-                                                  add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
-                                                  div(DT::dataTableOutput("test.files")),
-                                                  conditionalPanel(condition="input.Format_bd=='cellXgene'",
- add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
- div(DT::dataTableOutput("test.files3"))
-                                                  ),
-                                                  conditionalPanel(condition="input.Format_bd=='Barcode_features_matrix'",
- add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
- div(DT::dataTableOutput("test.files.bd1")),
- add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
- div(DT::dataTableOutput("test.files.bd2")),
- add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
- div(DT::dataTableOutput("test.files.bd3")),
-                                                  ),
-                                                  conditionalPanel(condition="input.filtered_list=='Paired'",
- add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
- div(DT::dataTableOutput("test.files2"))
-                                                  ),
-                                                  conditionalPanel(condition="input.filtered_list=='Dominant' || input.filtered_list=='Unfiltered'",
- add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
- div(DT::dataTableOutput("test.files.bd4")),
-                                                  ),
-                                         ),
-                                         # tabPanel("Checking Merge",
-                                         #
-                                         #          div(DT::dataTableOutput("Check_table")),
-                                         #
-                                         #          ),
-                                         tabPanel("clusTCR2",
-                                                  tags$head(tags$style("#tb_clusTCR  {white-space: nowrap;  }")),
-                                                  add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
-                                                  div(DT::dataTableOutput("tb_clusTCR")),
-                                                  selectInput("chain_clusTCR2_bd","Select to download",choices = c("AG","BD","IgH","IgLK")),
-                                                  downloadButton('downloaddf_clusTCR','Download table')
-                                         ),
-                                         tabPanel("TCRex",
-                                                  add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
-                                                  div(DT::dataTableOutput("tb_TCRex_BDrap_df")),
-                                                  downloadButton('downloaddf_TCRex_BDrap','Download table')
-                                         ),
-                                         tabPanel("For Seurat",
-                                                  tags$head(tags$style("#tb_count_matrix  {white-space: nowrap;  }")),
-                                                  add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
-                                                  div(DT::dataTableOutput("tb_count_matrix")),
-                                                  add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
-                                                  div(DT::dataTableOutput("tb_metadata_sc")),
-                                                  fluidRow(
-                                                    column(3,downloadButton('downloadtb_count_matrix','Download count table')),
-                                                    column(3),
-                                                    column(3,downloadButton('downloadtb_metadata_sc','Download meta.data table')),
-                                                  ),
-                                         ),
-                                         tabPanel("TCR_Explore",
-                                                  tags$head(tags$style("#tb_TCR_Explore  {white-space: nowrap;  }")),
-                                                  add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
-                                                  div(DT::dataTableOutput("tb_TCR_Explore")),
-                                                  downloadButton('downloadtb_TCR_Explore','Download table')
-                                         ),
-                                         tabPanel("Multi-TCR",
-                                                  div(DT::dataTableOutput("tb_multiTCR")),
-                                                  downloadButton('downloadtb_multiTCR','Download Multi-TCR table')
-                                         ),
-                                         tabPanel("Create Sample Tags file",
-                                                  tags$head(tags$style("#tb_sample_tags_created  {white-space: nowrap;  }")),
-                                                  textInput("sample_tags_name","Name of sample",value = "BD EA splenocyte"),
-                                                  div(DT::dataTableOutput("tb_sample_tags_created")),
-                                                  downloadButton('downloadtb_sample_tags','Download Tags')
-                                         ),
-                                       )
+                                     # main panel ------
+                                     mainPanel(width = 9,
+                                               tabsetPanel(
+                                                 tabPanel("Imported data",
+                                                          add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
+                                                          div(DT::dataTableOutput("test.files")),
+                                                          conditionalPanel(condition="input.Format_bd=='cellXgene'",
+                                                                           add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
+                                                                           div(DT::dataTableOutput("test.files3"))
+                                                          ),
+                                                          conditionalPanel(condition="input.Format_bd=='Barcode_features_matrix'",
+                                                                           add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
+                                                                           div(DT::dataTableOutput("test.files.bd1")),
+                                                                           add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
+                                                                           div(DT::dataTableOutput("test.files.bd2")),
+                                                                           add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
+                                                                           div(DT::dataTableOutput("test.files.bd3")),
+                                                          ),
+                                                          conditionalPanel(condition="input.filtered_list=='Paired'",
+                                                                           add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
+                                                                           div(DT::dataTableOutput("test.files2"))
+                                                          ),
+                                                          conditionalPanel(condition="input.filtered_list=='Dominant' || input.filtered_list=='Unfiltered'",
+                                                                           add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
+                                                                           div(DT::dataTableOutput("test.files.bd4")),
+                                                          ),
+                                                 ),
+                                                 # tabPanel("Checking Merge",
+                                                 #
+                                                 #          div(DT::dataTableOutput("Check_table")),
+                                                 #
+                                                 #          ),
+                                                 tabPanel("clusTCR2",
+                                                          tags$head(tags$style("#tb_clusTCR  {white-space: nowrap;  }")),
+                                                          add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
+                                                          div(DT::dataTableOutput("tb_clusTCR")),
+                                                          selectInput("chain_clusTCR2_bd","Select to download",choices = c("AG","BD","IgH","IgLK")),
+                                                          downloadButton('downloaddf_clusTCR','Download table')
+                                                 ),
+                                                 tabPanel("TCRex",
+                                                          add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
+                                                          div(DT::dataTableOutput("tb_TCRex_BDrap_df")),
+                                                          downloadButton('downloaddf_TCRex_BDrap','Download table')
+                                                 ),
+                                                 tabPanel("For Seurat",
+                                                          tags$head(tags$style("#tb_count_matrix  {white-space: nowrap;  }")),
+                                                          add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
+                                                          div(DT::dataTableOutput("tb_count_matrix")),
+                                                          add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
+                                                          div(DT::dataTableOutput("tb_metadata_sc")),
+                                                          fluidRow(
+                                                            column(3,downloadButton('downloadtb_count_matrix','Download count table')),
+                                                            column(3),
+                                                            column(3,downloadButton('downloadtb_metadata_sc','Download meta.data table')),
+                                                          ),
+                                                 ),
+                                                 tabPanel("TCR_Explore",
+                                                          tags$head(tags$style("#tb_TCR_Explore  {white-space: nowrap;  }")),
+                                                          add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
+                                                          div(DT::dataTableOutput("tb_TCR_Explore")),
+                                                          downloadButton('downloadtb_TCR_Explore','Download table')
+                                                 ),
+                                                 tabPanel("Multi-TCR",
+                                                          div(DT::dataTableOutput("tb_multiTCR")),
+                                                          downloadButton('downloadtb_multiTCR','Download Multi-TCR table')
+                                                 ),
+                                                 tabPanel("Create Sample Tags file",
+                                                          tags$head(tags$style("#tb_sample_tags_created  {white-space: nowrap;  }")),
+                                                          textInput("sample_tags_name","Name of sample",value = "BD EA splenocyte"),
+                                                          div(DT::dataTableOutput("tb_sample_tags_created")),
+                                                          downloadButton('downloadtb_sample_tags','Download Tags')
+                                                 ),
+                                               )
                                      )
 
                                    ),
                           ),
-# BD rhapsody end ----
+                          # BD rhapsody end ----
 
-# array format -----
+                          # array format -----
                           tabPanel("Array",
                                    sidebarLayout(
                                      sidebarPanel(id = "tPanel4",style = "overflow-y:scroll; max-height: 800px; position:relative;", width=3,
@@ -459,42 +449,42 @@ runSTEGO <- function(){
                                                   textInput("sample_name_Array","Add sample name","Treatment_group"),
                                                   textInput("name.array","Add file name","FileName")
                                      ),
-                                     mainPanel(
-                                       tabsetPanel(
-                                         tabPanel("Check files",
-                                                  add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
-                                                  div(DT::dataTableOutput("test.files_array_Matrix")),
-                                                  add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
-                                                  div(DT::dataTableOutput("test.files_array_contig")),
+                                     mainPanel(width = 9,
+                                               tabsetPanel(
+                                                 tabPanel("Check files",
+                                                          add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
+                                                          div(DT::dataTableOutput("test.files_array_Matrix")),
+                                                          add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
+                                                          div(DT::dataTableOutput("test.files_array_contig")),
 
-                                         ),
-                                         tabPanel("Filtering",
-                                                  add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
-                                                  div(DT::dataTableOutput("test.files_array_contig_Filtered")),
-                                         ),
-                                         tabPanel("clusTCR",
-                                                  add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
-                                                  div(DT::dataTableOutput("test.files_ClusTCR2_array")),
-                                                  downloadButton("download_ClusTCR2_labs_array"),
-                                         ),
-                                         tabPanel("TCRex"),
-                                         tabPanel("Seurat",
-                                                  add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
-                                                  div(DT::dataTableOutput("tb_array_matrix2")),
-                                                  div(DT::dataTableOutput("tb_Array_meta1")),
-                                                  fluidRow(column(3,downloadButton('downloadtb_array_matrix2','Download matrix')),
-                                                           column(3,downloadButton('downloadtb_array_metadata2','Download metadata'))
-                                                  ),
-
-
+                                                 ),
+                                                 tabPanel("Filtering",
+                                                          add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
+                                                          div(DT::dataTableOutput("test.files_array_contig_Filtered")),
+                                                 ),
+                                                 tabPanel("clusTCR",
+                                                          add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
+                                                          div(DT::dataTableOutput("test.files_ClusTCR2_array")),
+                                                          downloadButton("download_ClusTCR2_labs_array"),
+                                                 ),
+                                                 tabPanel("TCRex"),
+                                                 tabPanel("Seurat",
+                                                          add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
+                                                          div(DT::dataTableOutput("tb_array_matrix2")),
+                                                          div(DT::dataTableOutput("tb_Array_meta1")),
+                                                          fluidRow(column(3,downloadButton('downloadtb_array_matrix2','Download matrix')),
+                                                                   column(3,downloadButton('downloadtb_array_metadata2','Download metadata'))
+                                                          ),
 
 
 
-                                         ),
-                                         tabPanel("TCR_Explore")
 
 
-                                       )
+                                                 ),
+                                                 tabPanel("TCR_Explore")
+
+
+                                               )
                                      )
 
 
@@ -507,745 +497,749 @@ runSTEGO <- function(){
 
 
 
-# Convert from .h5Seurat to .rds --------
-tabPanel("Convert format",
-         sidebarLayout(
-           sidebarPanel(
-             fileInput("file1_h5Seurat.file",
-                       "Choose .h5Seurat files from directory",
-                       multiple = TRUE,
-                       accept=c('.h5Seurat','h5Seurat')),
-             add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
-             textInput("project_name5","Name of Project",value = ""),
-             downloadButton('downloaddf_SeruatObj_Convert_to_RDS','Download converted .rds Seurat Obj')
+                          # Convert from .h5Seurat to .rds --------
+                          tabPanel("Convert format",
+                                   sidebarLayout(
+                                     sidebarPanel(width = 3,
+                                                  fileInput("file1_h5Seurat.file",
+                                                            "Choose .h5Seurat files from directory",
+                                                            multiple = TRUE,
+                                                            accept=c('.h5Seurat','h5Seurat')),
+                                                  add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
+                                                  textInput("project_name5","Name of Project",value = ""),
+                                                  downloadButton('downloaddf_SeruatObj_Convert_to_RDS','Download converted .rds Seurat Obj')
 
 
-           ),
-           mainPanel(
-             tabsetPanel(id = "Converting_formatting",
-                         tabPanel("Converting", value = "converting_PA",
-                                  h4("Convert .h5Seurat (V4 Seurat) to .rds"),
-                                  verbatimTextOutput('Convert_to_RDS_out')
-                         )
-             )
-           )
-         )
-),
-# End Nav menue data -----
+                                     ),
+                                     mainPanel(width = 9,
+                                               tabsetPanel(id = "Converting_formatting",
+                                                           tabPanel("Converting", value = "converting_PA",
+                                                                    h4("Convert .h5Seurat (V4 Seurat) to .rds"),
+                                                                    verbatimTextOutput('Convert_to_RDS_out')
+                                                           )
+                                               )
+                                     )
+                                   )
+                          ),
+                          # End Nav menue data -----
                ), # NavbarMenu
+               navbarMenu("STEP 2.",
+                          # TCRex merge files ----
+                          tabPanel("TCRex merge",
+                                   sidebarLayout(
+                                     sidebarPanel(id = "tPanel4",style = "overflow-y:scroll; max-height: 800px; position:relative;", width=3,
+                                                  # selectInput("dataset2", "Choose a dataset:", choices = c("test_data_clusTCR2","own_data_clusTCR2")),
+                                                  fileInput('file2_TCRexMerge', 'Select files to merge',
+                                                            multiple = TRUE,
+                                                            accept=c('text/csv', 'text/comma-separated-values,text/plain', '.csv')),
+                                                  downloadButton('downloaddf_TCRexFiltered','Download table')
+                                     ),
+                                     mainPanel(width = 9,
+                                               tabsetPanel(id = "TCRex_tabs",
+                                                           tabPanel("Merge Multiple Files",value = "merge",
+                                                                    div(DT::dataTableOutput("DEx_TCRexFiltered")),
+                                                                    # downloadButton('downloaddf_multiple_ClusTCR2','Download table')
+                                                           ),
 
-# TCRex merge files ----
-               tabPanel("TCRex merge",
-                        sidebarLayout(
-                          sidebarPanel(id = "tPanel4",style = "overflow-y:scroll; max-height: 800px; position:relative;", width=3,
-                                       # selectInput("dataset2", "Choose a dataset:", choices = c("test_data_clusTCR2","own_data_clusTCR2")),
-                                       fileInput('file2_TCRexMerge', 'Select files to merge',
-                                                 multiple = TRUE,
-                                                 accept=c('text/csv', 'text/comma-separated-values,text/plain', '.csv')),
-                                       downloadButton('downloaddf_TCRexFiltered','Download table')
+
+                                               )
+                                     )
+                                   )
                           ),
-                          mainPanel(
-                            tabsetPanel(id = "TCRex_tabs",
-                                        tabPanel("Merge Multiple Files",value = "merge",
-                                                 div(DT::dataTableOutput("DEx_TCRexFiltered")),
-                                                 # downloadButton('downloaddf_multiple_ClusTCR2','Download table')
-                                        ),
 
+                          # TCR clustering with ClusTCR2 -----
+                          tabPanel("ClusTCR2",
+                                   sidebarLayout(
+                                     sidebarPanel(id = "tPanel4",style = "overflow-y:scroll; max-height: 800px; position:relative;", width=3,
+                                                  # selectInput("dataset2", "Choose a dataset:", choices = c("test_data_clusTCR2","own_data_clusTCR2")),
 
-                            )
-                          )
-                        )
-               ),
+                                                  selectInput("Clust_lab_tab_output","Add prefix to file",choices = c("AG","BD","IgH","IgKL")),
 
-# TCR clustering with ClusTCR2 -----
-               tabPanel("ClusTCR2",
-                        sidebarLayout(
-                          sidebarPanel(id = "tPanel4",style = "overflow-y:scroll; max-height: 800px; position:relative;", width=3,
-                                       # selectInput("dataset2", "Choose a dataset:", choices = c("test_data_clusTCR2","own_data_clusTCR2")),
+                                                  conditionalPanel(condition="input.clusTCR2_tabs=='merge'",
+                                                                   fileInput('file1_ClusTCR2_multiple', 'Select files to merge',
+                                                                             multiple = TRUE,
+                                                                             accept=c('text/csv', 'text/comma-separated-values,text/plain', '.csv'))
 
-                                       selectInput("Clust_lab_tab_output","Add prefix to file",choices = c("AG","BD","IgH","IgKL")),
-
-                                       conditionalPanel(condition="input.clusTCR2_tabs=='merge'",
-                                                        fileInput('file1_ClusTCR2_multiple', 'Select files to merge',
-                                                                  multiple = TRUE,
-                                                                  accept=c('text/csv', 'text/comma-separated-values,text/plain', '.csv'))
-
-                                       ),
-
-                                       conditionalPanel(condition="input.clusTCR2_tabs=='processing1' || input.clusTCR2_tabs=='processing2'",
-                                                        fileInput('file2_ClusTCR2', 'Select file for single samples',
-                                                                  accept=c('text/csv', 'text/comma-separated-values,text/plain', '.csv')),
-
-                                                        actionButton("run_ClusTCR2","Update Clustering"),
-                                                        fluidRow(
-                                                          column(6,selectInput( "clusTCR2_names",label = h5("CDR3"),"")),
-                                                          column(6,selectInput( "clusTCR2_Vgene",label = h5("V gene"),"")),
-                                                        ),
-                                                        fluidRow(
-                                                          column(6,checkboxInput("allele_ClusTCR2","Remove allele *00?", value = T)),
-                                                          # column(6, numericInput("cores_ClusTCR2","Number of cores to parallel",value=1))
-                                                        ),
-                                       ),
-
-
-                                       conditionalPanel(condition="input.clusTCR2_tabs=='processing2'",
-
-                                                        downloadButton('download_ClusTCR_labels','Download Cluster table')
-
-                                       ),
-
-                          ),
-                          mainPanel(
-                            tabsetPanel(id = "clusTCR2_tabs",
-                                        tabPanel("Merge Multiple Files",value = "merge",
-                                                 add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
-                                                 div(DT::dataTableOutput("DEx_multiple_ClusTCR2")),
-                                                 downloadButton('downloaddf_multiple_ClusTCR2','Download table')
-                                        ),
-                                        tabPanel("Clustering inputs",value = "processing1",
-                                                 add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
-                                                 div(DT::dataTableOutput("clust_dt2_table")),
-                                        ),
-
-                                        tabPanel("Outputs",value = "processing2",
-                                                 tabsetPanel(
-                                                   tabPanel("Processing",
-                                                            add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
-                                                            verbatimTextOutput('ClusTCR2_Time'),
-                                                            verbatimTextOutput('verbatum_ClusTCR2')
-                                                   ),
-
-
-                                                   # div(DT::dataTableOutput("")),
-                                                   tabPanel("Table for analysis",
-                                                            add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
-                                                            div(DT::dataTableOutput("ClusTCR2_lab")),
-
-                                                            p(" "),
-
-                                                            # verbatimTextOutput('ClusTCR2_lab'),
-                                                            # div(DT::dataTableOutput("")),
-                                                   ),
-                                                   tabPanel("Figures",
-                                                            # cluster number
-                                                            fluidRow(
-                                                              column(3,numericInput("selected_Cluster","Selected cluster",value = 1)),
-                                                              column(3,numericInput("filter_connections","Keep connections >",value = 1)),
-                                                              #Name (CDR3_V_gene_Cluster), cluster, CDR3, V_gene, Len (length of CDR3 sequence),CDR3_selected,Name_selected,cluster_selected, (_selected only prints names of the chosen cluster), None
-                                                              column(3,selectInput('lab_clust_by',"Label cluster by:",choices = c("Name", "cluster", "CDR3", "V_gene", "Len","CDR3_selected","Name_selected", "cluster_selected","None"),selected = "cluster")),
-                                                              column(3,selectInput('Clust_size_order',"Order of cluster",choices = c("cluster", "Original_cluster", "Clust_size_order"),selected = "Clust_size_order")),
-                                                              column(3,selectInput('colour_ClusTCR2',"Type of colouring",choices = c("color_all", "color_test"),selected = "color_test")),
-                                                              column(3,numericInput("text_size1","Size of selected cluster",value = 4)),
-                                                              column(3,numericInput("text_size2","Size of non-selected cluster",value = 2)),
-                                                            ),
-
-                                                            fluidRow(
-                                                              conditionalPanel(condition="input.colour_ClusTCR2 == 'color_all'",
-             column(3,selectInput("colour_ClusTCR2_types","Colour panel",choices = c("default","rainbow","random","heat.colors","terrain.colors","topo.colors","hcl.colors"))),
-
-                                                              ),
-                                                              conditionalPanel(condition="input.colour_ClusTCR2 == 'color_test'",
-             fluidRow(
-               column(3,colourInput("sel_colour_netplot","Selected colour","purple")),
-               column(3,colourInput("nonsel_colour_netplot","Non-selected colour","grey80")),
-             ))
-                                                            ),
-                                                            fluidRow(
-                                                              column(8,plotOutput("NP_ClusTCR",height="600px")),
-                                                              column(4,plotOutput("MP_ClusTCR",height="200px")),
-                                                            ),
-                                                            fluidRow(
-                                                              column(1,numericInput("width_Network_plot2", "Width of PDF", value=10)),
-                                                              column(1,numericInput("height_Network_plot2", "Height of PDF", value=8)),
-                                                              column(2,style = "margin-top: 25px;",downloadButton('downloadPlot_Network_plot2','Download Network PDF')),
-                                                              column(2,numericInput("width_png_Network_plot2","Width of PNG", value = 1200)),
-                                                              column(2,numericInput("height_png_Network_plot2","Height of PNG", value = 1000)),
-                                                              column(2,numericInput("resolution_PNG_Network_plot2","Resolution of PNG", value = 144)),
-                                                              column(2,style = "margin-top: 25px;",downloadButton('downloadPlotPNG_Network_plot2','Download Network PNG')),
-
-                                                            ),
-                                                            fluidRow(
-                                                              column(1,numericInput("width_Motif_plot2", "Width of PDF", value=10)),
-                                                              column(1,numericInput("height_Motif_plot2", "Height of PDF", value=3.5)),
-                                                              column(2,style = "margin-top: 25px;",downloadButton('downloadPlot_Motif_plot2','Download Motif PDF')),
-                                                              column(2,numericInput("width_png_Motif_plot2","Width of PNG", value = 1200)),
-                                                              column(2,numericInput("height_png_Motif_plot2","Height of PNG", value = 600)),
-                                                              column(2,numericInput("resolution_PNG_Motif_plot2","Resolution of PNG", value = 144)),
-                                                              column(2,style = "margin-top: 25px;",downloadButton('downloadPlotPNG_Motif_plot2','Download Motif PNG'))),
-
-                                                   ),
-                                                   # tabPanel("Time",
-
-                                                   # )
-                                                 ))
-
-                            )
-                          )
-                        )
-               ),
-# end TCR clustering ------
-# Quality control side bar panel -----
-               tabPanel("Seurat QC",
-                        sidebarLayout(
-                          sidebarPanel(shinyjs::useShinyjs(),
-                                       id = "side-panel",
-                                       style = "overflow-y:scroll; max-height: 800px; position:relative;", width=3,
-
-                                       # selectInput("dataset_sc", "Choose a dataset:", choices = c("test_data_sc", "own_data_sc")),
-                                       # upload the file
-                                       fileInput('file_SC', 'Load csv (BDrhap), csv.gz (10x), .h5 (10x)',
-
-                                       ),
-                                       fileInput('file_SC_meta', 'Upload file meta.data file (.csv.gz or .csv)',
-
-                                       ),
-
-                                       textInput("project_name","Name of sample",value = ""),
-                                       # selectInput("species","Species",choices = c("human","mouse","other")),
-                                       selectInput("df_seruatobj_type","Data type", choices = c("10x_Genomics (raw)","10x_Genomics (.h5)","BD Rhapsody (Human Immune panel)","BD Rhapsody (Mouse)","Array")),
-                                       selectInput("stored_in_expression","Does the .h5 object has multiple part?",choices = c("no","yes")),
-                                       uiOutput("feature_input"),
-                                       actionButton("run","Update Violin plot"),
-
-
-                                       conditionalPanel(condition = ("input.run != 0"),
-                                                        fluidRow(
-                                                          column(6,numericInput("dimension_heatmap.min","View heatmap dimensions.min", value = 1)),
-                                                          column(6,numericInput("dimension_heatmap.max","View heatmap dimensions.max", value = 10)),
-                                                          column(6,numericInput("numberofcells","Number of cells to use for heatmap", value = 500)),
-                                                        ),
-                                                        selectInput("method_Seurat","Method",choices = c("vst","dispersion","mvp"),selected = "vst"),
-
-                                                        fluidRow(
-                                                          column(6,numericInput("dimension_sc","Max dimensions for clustering", value = 15)),
-                                                          column(6,numericInput("resolution","Resolution of clusters", value = 1)),
-                                                        ),
-                                                        actionButton("run_reduction","Run clustering"),
-                                                        p(""),
-                                                        actionButton("run_metadata","Impute metadata after clustering"),
-                                       ),
-
-
-                                       conditionalPanel(condition = ("input.run_metadata != 0"),
-
-                                                        add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
-                                                        downloadButton('downloaddf_SeruatObj','Download Seurat')
-
-
-                                       ),
-                                       tags$hr(),
-                                       # actionButton("reset_input", "Reset inputs")
-
-                          ),
-# QC main panel -----
-                          mainPanel(
-
-
-
-                            tabsetPanel(
-                              # tabPanel("Instructions"
-                              #          ),
-                              tabPanel("Header check",
-                                       div(DT::dataTableOutput("DEx_header_name_check.dt")),
-                              ),
-                              tabPanel("Violin and correlation",
-                                       tabsetPanel(
-                                         tabPanel("Before",
-                                                  add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
-                                                  plotOutput("before_plot_sc", height = "600px"),
-                                                  fluidRow(
-                                                    column(1,numericInput("width_before_plot_sc", "Width of PDF", value=10)),
-                                                    column(1,numericInput("height_before_plot_sc", "Height of PDF", value=8)),
-                                                    column(2,style = "margin-top: 25px;",downloadButton('downloadPlot_before_plot_sc','Download Network PDF')),
-                                                    column(2,numericInput("width_png_before_plot_sc","Width of PNG", value = 1200)),
-                                                    column(2,numericInput("height_png_before_plot_sc","Height of PNG", value = 1000)),
-                                                    column(2,numericInput("resolution_PNG_before_plot_sc","Resolution of PNG", value = 144)),
-                                                    column(2,style = "margin-top: 25px;",downloadButton('downloadPlotPNG_before_plot_sc','Download Network PNG')),
                                                   ),
-                                         ),
-                                         tabPanel("After",
-                                                  p("hit 'update Violin plot' to check cut-offs"),
-                                                  add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
-                                                  plotOutput("after_plot_sc", height = "600px"),
 
-                                                  fluidRow(
-                                                    column(1,numericInput("width_after_plot_sc", "Width of PDF", value=10)),
-                                                    column(1,numericInput("height_after_plot_sc", "Height of PDF", value=8)),
-                                                    column(2,style = "margin-top: 25px;",downloadButton('downloadPlot_after_plot_sc','Download Network PDF')),
-                                                    column(2,numericInput("width_png_after_plot_sc","Width of PNG", value = 1200)),
-                                                    column(2,numericInput("height_png_after_plot_sc","Height of PNG", value = 1000)),
-                                                    column(2,numericInput("resolution_PNG_after_plot_sc","Resolution of PNG", value = 144)),
-                                                    column(2,style = "margin-top: 25px;",downloadButton('downloadPlotPNG_after_plot_sc','Download Network PNG')),
+                                                  conditionalPanel(condition="input.clusTCR2_tabs=='processing1' || input.clusTCR2_tabs=='processing2'",
+                                                                   fileInput('file2_ClusTCR2', 'Select file for single samples',
+                                                                             accept=c('text/csv', 'text/comma-separated-values,text/plain', '.csv')),
+
+                                                                   actionButton("run_ClusTCR2","Update Clustering"),
+                                                                   fluidRow(
+                                                                     column(6,selectInput( "clusTCR2_names",label = h5("CDR3"),"")),
+                                                                     column(6,selectInput( "clusTCR2_Vgene",label = h5("V gene"),"")),
+                                                                   ),
+                                                                   fluidRow(
+                                                                     column(6,checkboxInput("allele_ClusTCR2","Remove allele *00?", value = T)),
+                                                                     # column(6, numericInput("cores_ClusTCR2","Number of cores to parallel",value=1))
+                                                                   ),
                                                   ),
-                                         )
-                                       ),
-                              ),
-# Variable features -----
-                              tabPanel("Top variable features",
-                                       add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
-                                       plotOutput("plot_10_features_sc", height = "600px"),
-                                       fluidRow(
-                                         column(1,numericInput("width_plot_10_features_sc", "Width of PDF", value=10)),
-                                         column(1,numericInput("height_plot_10_features_sc", "Height of PDF", value=8)),
-                                         column(2,style = "margin-top: 25px;",downloadButton('downloadPlot_plot_10_features_sc','Download Network PDF')),
-                                         column(2,numericInput("width_png_plot_10_features_sc","Width of PNG", value = 1200)),
-                                         column(2,numericInput("height_png_plot_10_features_sc","Height of PNG", value = 1000)),
-                                         column(2,numericInput("resolution_PNG_plot_10_features_sc","Resolution of PNG", value = 144)),
-                                         column(2,style = "margin-top: 25px;",downloadButton('downloadPlotPNG_plot_10_features_sc','Download PNG')),
-                                       ),
-                              ),
-# Elbow and heatmap  -----
-                              tabPanel("Elbow Plot",
-                                       plotOutput("create_elbowPlot_sc", height = "600px"),
-                                       fluidRow(
-                                         column(1,numericInput("width_create_elbowPlot_sc", "Width of PDF", value=10)),
-                                         column(1,numericInput("height_create_elbowPlot_sc", "Height of PDF", value=8)),
-                                         column(2,style = "margin-top: 25px;",downloadButton('downloadPlot_create_elbowPlot_sc','Download PDF')),
-                                         column(2,numericInput("width_png_create_elbowPlot_sc","Width of PNG", value = 1200)),
-                                         column(2,numericInput("height_png_create_elbowPlot_sc","Height of PNG", value = 1000)),
-                                         column(2,numericInput("resolution_PNG_create_elbowPlot_sc","Resolution of PNG", value = 144)),
-                                         column(2,style = "margin-top: 25px;",downloadButton('downloadPlotPNG_create_elbowPlot_sc','Download PNG')),
-                                       ),
-
-                              ),
-                              tabPanel("DimHeatmap",
-                                       add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
-
-                                       plotOutput("create_PCA_heatmap_sc", height = "1000px"),
-
-                                       fluidRow(
-                                         column(1,numericInput("width_heatmap_sc", "Width of PDF", value=10)),
-                                         column(1,numericInput("height_heatmap_sc", "Height of PDF", value=8)),
-                                         column(2,style = "margin-top: 25px;",downloadButton('downloadPlot_heatmap_sc','Download Network PDF')),
-                                         column(2,numericInput("width_png_heatmap_sc","Width of PNG", value = 1200)),
-                                         column(2,numericInput("height_png_heatmap_sc","Height of PNG", value = 1000)),
-                                         column(2,numericInput("resolution_PNG_heatmap_sc","Resolution of PNG", value = 144)),
-                                         column(2,style = "margin-top: 25px;",downloadButton('downloadPlotPNG_heatmap_sc','Download Network PNG')),
-                                       ),
-
-                              ),
-                              # tabPanel("Resolution plot"),
-# UMAP  -----
-                              tabPanel("UMAP",
-                                       add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
-                                       plotOutput("create_UMAP_sc", height = "600px")
-                              ), # Export a table with meta.data and expression.
-                              tabPanel("Add metadata",
-                                       add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
-                                       div(DT::dataTableOutput("DEx_view.meta.dt")),
-                                       add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
-                                       div(DT::dataTableOutput("DEx_table_meta.data")),
-                                       # selectInput("","comaprison 1")
-                              ),
 
 
-                            ),
+                                                  conditionalPanel(condition="input.clusTCR2_tabs=='processing2'",
 
+                                                                   downloadButton('download_ClusTCR_labels','Download Cluster table')
 
-                          ),
-# end of QC -----
-
-
-                        ),
-               ),
-###################
-# Merge multiple Seurat objects -----
-               tabPanel("Merge & Batch correction",
-                        sidebarLayout(
-                          # Sidebar with a slider input
-                          sidebarPanel(id = "tPanel5",style = "overflow-y:scroll; max-height: 800px; position:relative;", width=4,
-                                       conditionalPanel(condition="input.Merging_and_batching == 'Merging_Harmony'",
-                                                 selectInput("sample.type.source_merging","Species",choices = c("hs","mm")),
-                                                 fileInput("file1_rds.file",
-                                                           "Choose .rds files from merging",
-                                                           multiple = TRUE,
-                                                           accept=c("rds",".rds")),
-                                                 textInput("project_name2","Name of Project",value = "Pro"),
-                                                 downloadButton('downloaddf_SeruatObj_merged2','Download Merged Seurat')
-                                       ),
-                                       conditionalPanel(condition="input.Merging_and_batching != 'Merging_Harmony'",
-                                          selectInput("Seruat_version_merge","Seurat Version",choices = c("V4","V5")),
-                                           selectInput("sample.type.source","Species",choices = ""),
-                                           fileInput("file1_rds.Merged_data_for_harmony",
-                                                     "Upload .rds file for Batch correction with Harmony",
-                                                     multiple = F,
-                                                     accept=c('.rds','rds')),
-                                           downloadButton('downloaddf_SeruatObj_merged','Download Batch corrected Seurat')
-                                       )
-                          ),
-
-                          # Show a plot of the generated distribution
-                          mainPanel(
-                            tabsetPanel(id = "Merging_and_batching",
-                              tabPanel("Merge Files", value = "Merging_Harmony",
-
-                                       add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
-                                       tabsetPanel(
-                                         tabPanel("uploaded",
-                                                  verbatimTextOutput("testing_mult"),
                                                   ),
-                                         tabPanel("merging",
-                                                  actionButton("run_merging","run merging"),
-                                           verbatimTextOutput("testing_mult2")),
-                                       ),
-                              ),
-                              tabPanel("Variable data",
-                                       verbatimTextOutput("testing_mult3"),
-                                       add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
-                                       verbatimTextOutput("Scaling_check_output"),
-                                       actionButton("run_var","Run VariableFeatures"),
-                                       add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
-                                       verbatimTextOutput("var_harmony_verbrose")
-                              ),
-                              tabPanel("Scale data",
-                                       add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
-                                       actionButton("run_scale","Run Scale"),
-                                       div(DT::dataTableOutput("Tb_scaling_features_for_annotation")),
-                                       add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
-                                       verbatimTextOutput("scale_harmony_verbrose")
-                              ),
-                              tabPanel("PCA",
-                                       add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
-                                       actionButton("run_PCA","Run PCA"),
-                                       add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
-                                       verbatimTextOutput("PCA_harmony_verbrose")
-                              ),
-                              tabPanel("harmony",
-                                       add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
-                                       actionButton("run_harmony","Run Harmony"),
-                                       add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
-                                       verbatimTextOutput("harmony_verbrose"),
-                              ),
-                              tabPanel("Dimentional reduction",
-                                       fluidRow(
-                                         column(3,numericInput("dimension_Merged","Max number of dimensions", value = 30)),
-                                         column(6,numericInput("res_merged","Resolution of clusters", value = 0.5)),
-                                       ),
-                                       actionButton("run_reduction_harmony","Run Dimentional reduction"),
-                                       add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
-                                       verbatimTextOutput("testing_mult4"),
-                              ),
-                              tabPanel("UMAP",
-                                       add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
-                                       plotOutput("create_UMAP_merged",height="600px"),
 
-                                       fluidRow(
-                                         column(1,numericInput("width_sc_merged", "Width of PDF", value=10)),
-                                         column(1,numericInput("height_sc_merged", "Height of PDF", value=8)),
-                                         column(2,style = "margin-top: 25px;",downloadButton('downloadPlot_sc_merged','Download Network PDF')),
-                                         column(2,numericInput("width_png_sc_merged","Width of PNG", value = 1200)),
-                                         column(2,numericInput("height_png_sc_merged","Height of PNG", value = 1000)),
-                                         column(2,numericInput("resolution_PNG_sc_merged","Resolution of PNG", value = 144)),
-                                         column(2,style = "margin-top: 25px;",downloadButton('downloadPlotPNG_sc_merged','Download Network PNG')),
+                                     ),
+                                     mainPanel(width = 9,
+                                               tabsetPanel(id = "clusTCR2_tabs",
+                                                           tabPanel("Merge Multiple Files",value = "merge",
+                                                                    add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
+                                                                    div(DT::dataTableOutput("DEx_multiple_ClusTCR2")),
+                                                                    downloadButton('downloaddf_multiple_ClusTCR2','Download table')
+                                                           ),
+                                                           tabPanel("Clustering inputs",value = "processing1",
+                                                                    add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
+                                                                    div(DT::dataTableOutput("clust_dt2_table")),
+                                                           ),
 
-                                       ),
+                                                           tabPanel("Outputs",value = "processing2",
+                                                                    tabsetPanel(
+                                                                      tabPanel("Processing",
+                                                                               add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
+                                                                               verbatimTextOutput('ClusTCR2_Time'),
+                                                                               verbatimTextOutput('verbatum_ClusTCR2')
+                                                                      ),
 
-                              ),
 
-                            ))
-                        )
+                                                                      # div(DT::dataTableOutput("")),
+                                                                      tabPanel("Table for analysis",
+                                                                               add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
+                                                                               div(DT::dataTableOutput("ClusTCR2_lab")),
 
+                                                                               p(" "),
+
+                                                                               # verbatimTextOutput('ClusTCR2_lab'),
+                                                                               # div(DT::dataTableOutput("")),
+                                                                      ),
+                                                                      tabPanel("Figures",
+                                                                               # cluster number
+                                                                               fluidRow(
+                                                                                 column(3,numericInput("selected_Cluster","Selected cluster",value = 1)),
+                                                                                 column(3,numericInput("filter_connections","Keep connections >",value = 1)),
+                                                                                 #Name (CDR3_V_gene_Cluster), cluster, CDR3, V_gene, Len (length of CDR3 sequence),CDR3_selected,Name_selected,cluster_selected, (_selected only prints names of the chosen cluster), None
+                                                                                 column(3,selectInput('lab_clust_by',"Label cluster by:",choices = c("Name", "cluster", "CDR3", "V_gene", "Len","CDR3_selected","Name_selected", "cluster_selected","None"),selected = "cluster")),
+                                                                                 column(3,selectInput('Clust_size_order',"Order of cluster",choices = c("cluster", "Original_cluster", "Clust_size_order"),selected = "Clust_size_order")),
+                                                                                 column(3,selectInput('colour_ClusTCR2',"Type of colouring",choices = c("color_all", "color_test"),selected = "color_test")),
+                                                                                 column(3,numericInput("text_size1","Size of selected cluster",value = 4)),
+                                                                                 column(3,numericInput("text_size2","Size of non-selected cluster",value = 2)),
+                                                                               ),
+
+                                                                               fluidRow(
+                                                                                 conditionalPanel(condition="input.colour_ClusTCR2 == 'color_all'",
+                                                                                                  column(3,selectInput("colour_ClusTCR2_types","Colour panel",choices = c("default","rainbow","random","heat.colors","terrain.colors","topo.colors","hcl.colors"))),
+
+                                                                                 ),
+                                                                                 conditionalPanel(condition="input.colour_ClusTCR2 == 'color_test'",
+                                                                                                  fluidRow(
+                                                                                                    column(3,colourInput("sel_colour_netplot","Selected colour","purple")),
+                                                                                                    column(3,colourInput("nonsel_colour_netplot","Non-selected colour","grey80")),
+                                                                                                  ))
+                                                                               ),
+                                                                               fluidRow(
+                                                                                 column(8,plotOutput("NP_ClusTCR",height="600px")),
+                                                                                 column(4,plotOutput("MP_ClusTCR",height="200px")),
+                                                                               ),
+                                                                               fluidRow(
+                                                                                 column(1,numericInput("width_Network_plot2", "Width of PDF", value=10)),
+                                                                                 column(1,numericInput("height_Network_plot2", "Height of PDF", value=8)),
+                                                                                 column(2,style = "margin-top: 25px;",downloadButton('downloadPlot_Network_plot2','Download Network PDF')),
+                                                                                 column(2,numericInput("width_png_Network_plot2","Width of PNG", value = 1200)),
+                                                                                 column(2,numericInput("height_png_Network_plot2","Height of PNG", value = 1000)),
+                                                                                 column(2,numericInput("resolution_PNG_Network_plot2","Resolution of PNG", value = 144)),
+                                                                                 column(2,style = "margin-top: 25px;",downloadButton('downloadPlotPNG_Network_plot2','Download Network PNG')),
+
+                                                                               ),
+                                                                               fluidRow(
+                                                                                 column(1,numericInput("width_Motif_plot2", "Width of PDF", value=10)),
+                                                                                 column(1,numericInput("height_Motif_plot2", "Height of PDF", value=3.5)),
+                                                                                 column(2,style = "margin-top: 25px;",downloadButton('downloadPlot_Motif_plot2','Download Motif PDF')),
+                                                                                 column(2,numericInput("width_png_Motif_plot2","Width of PNG", value = 1200)),
+                                                                                 column(2,numericInput("height_png_Motif_plot2","Height of PNG", value = 600)),
+                                                                                 column(2,numericInput("resolution_PNG_Motif_plot2","Resolution of PNG", value = 144)),
+                                                                                 column(2,style = "margin-top: 25px;",downloadButton('downloadPlotPNG_Motif_plot2','Download Motif PNG'))),
+
+                                                                      ),
+                                                                      # tabPanel("Time",
+
+                                                                      # )
+                                                                    ))
+
+                                               )
+                                     )
+                                   )
+                          ),
                ),
+               # end TCR clustering ------
+               # Quality control side bar panel -----
+               navbarMenu("STEP 3.",
+                          tabPanel("3a. Seurat QC",
+                                   sidebarLayout(
+                                     sidebarPanel(shinyjs::useShinyjs(),
+                                                  id = "side-panel",
+                                                  style = "overflow-y:scroll; max-height: 800px; position:relative;", width=3,
 
-###################
-# remove cells based on one factor -----
-               tabPanel("Remove/Edit Samps",
-                        sidebarLayout(
+                                                  # selectInput("dataset_sc", "Choose a dataset:", choices = c("test_data_sc", "own_data_sc")),
+                                                  # upload the file
+                                                  fileInput('file_SC', 'Load csv (BDrhap), csv.gz (10x), .h5 (10x)',
 
-                          sidebarPanel(id = "tPanelSamps",style = "max-height: 800px; position:relative;", width=4,
-                                       fileInput("file1_rds.fileSampsRemove",
-                                                 "Upload .rds file",
-                                                 multiple = F,
-                                                 accept=c('.rds','rds')),
-                                       textInput("project_name4","Name of Project",value = ""),
-                                       selectInput("Samp_col_SampToRemove","Column name",choices = ""),
-                                       downloadButton('downloaddf_SeruatObj_annotated_SampToKeep','Download .rds'),
-                          ),
-                          mainPanel(
-                            tabsetPanel(
+                                                  ),
+                                                  fileInput('file_SC_meta', 'Upload file meta.data file (.csv.gz or .csv)',
 
-                              tabPanel("Remove Samps",
-                                       h5("Before Samples are removed"),
-                                       actionButton("run_remove_samps","Remove samples"),
-                                       verbatimTextOutput("Preliminary_samp_to_remove"),
-                                       selectInput("DownVColumn","Chose subset type:", choices = c("Meta_data","Down_sampling")),
+                                                  ),
 
-                                       numericInput("downsamp_limit","Down sampling limit", value = 1000),
-
-                                       selectInput("ID_Column_factor_SampToRemove","Order of graph",choices = "", multiple = T, width = "1400px"),
-
-                                       h5("After Samples are removed"),
-                                       verbatimTextOutput("Filtered_samp_to_remove"),
-                                       ),
-                              tabPanel("Update Meta data")
-                            )
+                                                  textInput("project_name","Name of sample",value = ""),
+                                                  # selectInput("species","Species",choices = c("human","mouse","other")),
+                                                  selectInput("df_seruatobj_type","Data type", choices = c("10x_Genomics (raw)","10x_Genomics (.h5)","BD Rhapsody (Human Immune panel)","BD Rhapsody (Mouse)","Array")),
+                                                  selectInput("stored_in_expression","Does the .h5 object has multiple part?",choices = c("no","yes")),
+                                                  uiOutput("feature_input"),
+                                                  actionButton("run","Update Violin plot"),
 
 
-                          )
-                        )),
-# Add annotations -----
-               tabPanel("Annotations",
-                        sidebarLayout(
-                          sidebarPanel(id = "tPanel4",style = "overflow-y:scroll; max-height: 800px; position:relative;", width=3,
-                                       # uiOutput("Detect_version"),
-                                       selectInput("Data_types","Source",choices = c("10x_HS","BD_HS.Immune.Panel","BD_HS.Full.Panel","10x_MM","BD_MM_Full.Panel","BD_MM_Immune.Panel", "TCR-seq")),
-                                       selectInput("sample.type.source.markers","Species",choices = ""),
-                                       fileInput("file1_rds.file2",
-                                                 "Choose merged or single .rds files from directory",
-                                                 multiple = TRUE,
-                                                 accept=c('.rds','rds')),
-                                       textInput("project_name3","Name of Project",value = ""),
-                                       selectInput("Require_custom_geneset","Require custom genes?", choices = c("no","yes")),
-                                       uiOutput("scGate_cutoffs"),
+                                                  conditionalPanel(condition = ("input.run != 0"),
+                                                                   fluidRow(
+                                                                     column(6,numericInput("dimension_heatmap.min","View heatmap dimensions.min", value = 1)),
+                                                                     column(6,numericInput("dimension_heatmap.max","View heatmap dimensions.max", value = 10)),
+                                                                     column(6,numericInput("numberofcells","Number of cells to use for heatmap", value = 500)),
+                                                                   ),
+                                                                   selectInput("method_Seurat","Method",choices = c("vst","dispersion","mvp"),selected = "vst"),
 
-                                       downloadButton('downloaddf_SeruatObj_annotated','Download Annotated Seurat'),
-
-                          ),
-                          mainPanel(
-                            tabsetPanel(
-                              tabPanel("Upload",
-                                       add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
-                                       verbatimTextOutput("testing_mult_anno")
-                              ),
-
-                              tabPanel("scGATE",
-                                  selectInput("reduction_anno","Reduction to use", choices = c("calculate", "pca", "umap", "harmony"),selected = "harmony"),
-
-# custom annotations databases -----
-                                       conditionalPanel(condition="input.Require_custom_geneset == 'yes'",
-                                                        fluidRow(
-                                                          column(2,checkboxInput("GeneSet1_scGate","GeneSet1", value = F)),
-                                                          column(2,textInput("geneset1_name","Name",value = "GeneSet1")),
-
-                                                          column(2,checkboxInput("GeneSet2_scGate","GeneSet2", value = F)),
-                                                          column(2,textInput("geneset2_name","Name",value = "GeneSet2")),
-
-                                                          column(2,checkboxInput("GeneSet3_scGate","GeneSet3", value = F)),
-                                                          column(2,textInput("geneset3_name","Name",value = "GeneSet3")),
-                                                          column(2,checkboxInput("GeneSet4_scGate","GeneSet4", value = F)),
-                                                          column(2,textInput("geneset4_name","Name",value = "GeneSet4")),
-                                                          column(2,checkboxInput("GeneSet5_scGate","GeneSet5", value = F)),
-                                                          column(2,textInput("geneset5_name","Name",value = "GeneSet5")),
-                                                          column(2,checkboxInput("GeneSet6_scGate","GeneSet6", value = F)),
-                                                          column(2,textInput("geneset6_name","Name",value = "GeneSet6")),
-                                                          column(2,checkboxInput("GeneSet7_scGate","GeneSet7", value = F)),
-                                                          column(2,textInput("geneset7_name","Name",value = "GeneSet7")),
-                                                          column(2,checkboxInput("GeneSet8_scGate","GeneSet8", value = F)),
-                                                          column(2,textInput("geneset8_name","Name",value = "GeneSet8")),
-                                                          column(2,checkboxInput("GeneSet9_scGate","GeneSet9", value = F)),
-                                                          column(2,textInput("geneset9_name","Name",value = "GeneSet9")),
-                                                        )
-                                       ),
+                                                                   fluidRow(
+                                                                     column(6,numericInput("dimension_sc","Max dimensions for clustering", value = 15)),
+                                                                     column(6,numericInput("resolution","Resolution of clusters", value = 1)),
+                                                                   ),
+                                                                   actionButton("run_reduction","Run clustering"),
+                                                                   p(""),
+                                                                   actionButton("run_metadata","Impute metadata after clustering"),
+                                                  ),
 
 
-# human 10x annotations -----
-                                       conditionalPanel(condition="input.Data_types == '10x_HS' || input.Data_types == 'BD_HS.Full.Panel' || 'BD_HS.Immune.Panel'",
-                                                        add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
-                                                        fluidRow(
+                                                  conditionalPanel(condition = ("input.run_metadata != 0"),
+
+                                                                   add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
+                                                                   downloadButton('downloaddf_SeruatObj','Download Seurat')
+
+
+                                                  ),
+                                                  tags$hr(),
+                                                  # actionButton("reset_input", "Reset inputs")
+
+                                     ),
+                                     # QC main panel -----
+                                     mainPanel(width = 9,
+                                               tabsetPanel(
+                                                 # tabPanel("Instructions"
+                                                 #          ),
+                                                 tabPanel("Header check",
+                                                          div(DT::dataTableOutput("DEx_header_name_check.dt")),
+                                                 ),
+                                                 tabPanel("Violin and correlation",
+                                                          tabsetPanel(
+                                                            tabPanel("Before",
+                                                                     add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
+                                                                     plotOutput("before_plot_sc", height = "600px"),
+                                                                     fluidRow(
+                                                                       column(1,numericInput("width_before_plot_sc", "Width of PDF", value=10)),
+                                                                       column(1,numericInput("height_before_plot_sc", "Height of PDF", value=8)),
+                                                                       column(2,style = "margin-top: 25px;",downloadButton('downloadPlot_before_plot_sc','Download Network PDF')),
+                                                                       column(2,numericInput("width_png_before_plot_sc","Width of PNG", value = 1200)),
+                                                                       column(2,numericInput("height_png_before_plot_sc","Height of PNG", value = 1000)),
+                                                                       column(2,numericInput("resolution_PNG_before_plot_sc","Resolution of PNG", value = 144)),
+                                                                       column(2,style = "margin-top: 25px;",downloadButton('downloadPlotPNG_before_plot_sc','Download Network PNG')),
+                                                                     ),
+                                                            ),
+                                                            tabPanel("After",
+                                                                     p("hit 'update Violin plot' to check cut-offs"),
+                                                                     add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
+                                                                     plotOutput("after_plot_sc", height = "600px"),
+
+                                                                     fluidRow(
+                                                                       column(1,numericInput("width_after_plot_sc", "Width of PDF", value=10)),
+                                                                       column(1,numericInput("height_after_plot_sc", "Height of PDF", value=8)),
+                                                                       column(2,style = "margin-top: 25px;",downloadButton('downloadPlot_after_plot_sc','Download Network PDF')),
+                                                                       column(2,numericInput("width_png_after_plot_sc","Width of PNG", value = 1200)),
+                                                                       column(2,numericInput("height_png_after_plot_sc","Height of PNG", value = 1000)),
+                                                                       column(2,numericInput("resolution_PNG_after_plot_sc","Resolution of PNG", value = 144)),
+                                                                       column(2,style = "margin-top: 25px;",downloadButton('downloadPlotPNG_after_plot_sc','Download Network PNG')),
+                                                                     ),
+                                                            )
+                                                          ),
+                                                 ),
+                                                 # Variable features -----
+                                                 tabPanel("Top variable features",
+                                                          add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
+                                                          plotOutput("plot_10_features_sc", height = "600px"),
+                                                          fluidRow(
+                                                            column(1,numericInput("width_plot_10_features_sc", "Width of PDF", value=10)),
+                                                            column(1,numericInput("height_plot_10_features_sc", "Height of PDF", value=8)),
+                                                            column(2,style = "margin-top: 25px;",downloadButton('downloadPlot_plot_10_features_sc','Download Network PDF')),
+                                                            column(2,numericInput("width_png_plot_10_features_sc","Width of PNG", value = 1200)),
+                                                            column(2,numericInput("height_png_plot_10_features_sc","Height of PNG", value = 1000)),
+                                                            column(2,numericInput("resolution_PNG_plot_10_features_sc","Resolution of PNG", value = 144)),
+                                                            column(2,style = "margin-top: 25px;",downloadButton('downloadPlotPNG_plot_10_features_sc','Download PNG')),
+                                                          ),
+                                                 ),
+                                                 # Elbow and heatmap  -----
+                                                 tabPanel("Elbow Plot",
+                                                          plotOutput("create_elbowPlot_sc", height = "600px"),
+                                                          fluidRow(
+                                                            column(1,numericInput("width_create_elbowPlot_sc", "Width of PDF", value=10)),
+                                                            column(1,numericInput("height_create_elbowPlot_sc", "Height of PDF", value=8)),
+                                                            column(2,style = "margin-top: 25px;",downloadButton('downloadPlot_create_elbowPlot_sc','Download PDF')),
+                                                            column(2,numericInput("width_png_create_elbowPlot_sc","Width of PNG", value = 1200)),
+                                                            column(2,numericInput("height_png_create_elbowPlot_sc","Height of PNG", value = 1000)),
+                                                            column(2,numericInput("resolution_PNG_create_elbowPlot_sc","Resolution of PNG", value = 144)),
+                                                            column(2,style = "margin-top: 25px;",downloadButton('downloadPlotPNG_create_elbowPlot_sc','Download PNG')),
+                                                          ),
+
+                                                 ),
+                                                 tabPanel("DimHeatmap",
                                                           add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
 
-                                                          column(3,checkboxInput("hs_function_scGATE","Function (Human)", value = F)),
-                                                          column(3,checkboxInput("hs_generic_scGATE","Generic (Human)", value = F)),
-                                                          column(3,checkboxInput("hs_exhausted_scGATE","Exhausted (Human)", value = F)),
-                                                          column(3,checkboxInput("hs_senescence_scGATE","Senescence (Human)", value = F)),
-                                                          column(3,checkboxInput("hs_cycling_scGATE","Cycling (Human)", value = F)),
-                                                          column(3,checkboxInput("hs_TCRseq_scGATE","TCR-seq (Human)", value = F)),
-                                            )
-                                       ),
+                                                          plotOutput("create_PCA_heatmap_sc", height = "1000px"),
 
-# BD rhapsody MM full panel ----
-                                       conditionalPanel("input.Data_types == 'BD_MM_Full.Panel' || input.Data_types =='10x_MM'",
-                                                        h5("Under development"),
-                                                        add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
-                                                        h6("Curated from Sharland lab"),
-                                                        fluidRow(
-                                                          column(3,checkboxInput("BDrhapsody_scGATE.MM.Tcell","Major T cell popualtions", value = F)),
-                                                          column(3,checkboxInput("BDrhapsody_scGATE.MM.Memory","Memory", value = F)),
-                                                          column(3,checkboxInput("BDrhapsody_scGATE.MM.signatures","signatures", value = F)),
-                                                          column(3,checkboxInput("BDrhapsody_scGATE.MM.Innate.NK","Innate & NK", value = F)),
-                                                        ),
-                                                        h6("From the human BD Rhapsody searches"),
-                                                        fluidRow(
-                                                          column(3,checkboxInput("BDrhapsody_scGATE.MM.TNF.IFNg","TNF.IFNg", value = F)),
-                                                          column(3,checkboxInput("BDrhapsody_scGATE.MM.subtypes","Subtypes", value = F)),
-                                                          column(3,checkboxInput("BDrhapsody_scGATE.MM.other","other", value = F)),
+                                                          fluidRow(
+                                                            column(1,numericInput("width_heatmap_sc", "Width of PDF", value=10)),
+                                                            column(1,numericInput("height_heatmap_sc", "Height of PDF", value=8)),
+                                                            column(2,style = "margin-top: 25px;",downloadButton('downloadPlot_heatmap_sc','Download Network PDF')),
+                                                            column(2,numericInput("width_png_heatmap_sc","Width of PNG", value = 1200)),
+                                                            column(2,numericInput("height_png_heatmap_sc","Height of PNG", value = 1000)),
+                                                            column(2,numericInput("resolution_PNG_heatmap_sc","Resolution of PNG", value = 144)),
+                                                            column(2,style = "margin-top: 25px;",downloadButton('downloadPlotPNG_heatmap_sc','Download Network PNG')),
+                                                          ),
 
-                                                        ),
-
-                                       ),
-# BD rhapsody MM immune panel ----
-                                       conditionalPanel("input.Data_types == 'BD_MM_Immune.Panel'",
-                                                        h5("Under development")
-
-                                       ),
-                                       conditionalPanel(condition="input.Require_custom_geneset == 'yes'",
-                                                        verbatimTextOutput("scGATE_verbatum_GeneSet1"),
-                                                        verbatimTextOutput("scGATE_verbatum_GeneSet2"),
-                                                        verbatimTextOutput("scGATE_verbatum_GeneSet3"),
-                                                        verbatimTextOutput("scGATE_verbatum_GeneSet4"),
-                                                        verbatimTextOutput("scGATE_verbatum_GeneSet5"),
-                                                        verbatimTextOutput("scGATE_verbatum_GeneSet6"),
-                                                        verbatimTextOutput("scGATE_verbatum_GeneSet7"),
-                                                        verbatimTextOutput("scGATE_verbatum_GeneSet8"),
-                                                        verbatimTextOutput("scGATE_verbatum_GeneSet9"),
-
-                                       ),
-# human 10x annotations Verbatium -----
-                                       conditionalPanel(condition="input.Data_types == '10x_HS' || input.Data_types == 'BD_HS.Full.Panel' || 'BD_HS.Immune.Panel'",
-                                                        add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
-                                                        verbatimTextOutput("scGATE_verbatum_function"),
-                                                        add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
-                                                        verbatimTextOutput("scGATE_verbatum_generic2"),
-                                                        add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
-                                                        verbatimTextOutput("scGATE_verbatum_exhausted"),
-                                                        add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
-                                                        verbatimTextOutput("scGATE_verbatum_senescence"),
-                                                        add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
-                                                        verbatimTextOutput("scGATE_verbatum_cycling"),
-                                                        add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
-                                                        verbatimTextOutput("scGATE_verbatum_TCRseq"),
-                                       ),
-                                       conditionalPanel("input.Data_types == 'BD_MM_Full.Panel' || input.Data_types =='10x_MM'",
-                                                        verbatimTextOutput("scGATE_verbatum_BDrhapsody_MM.FP.Tcell"),
-                                                        verbatimTextOutput("scGATE_verbatum_BDrhapsody_MM.FP.Memory"),
-                                                        verbatimTextOutput("scGATE_verbatum_BDrhapsody_MM.FP.signatures"),
-                                                        verbatimTextOutput("scGATE_verbatum_BDrhapsody_MM.FP.Innate.NK"),
-                                                        verbatimTextOutput("scGATE_verbatum_BDrhapsody_MM.FP.TNF.IFNg"),
-                                                        verbatimTextOutput("scGATE_verbatum_BDrhapsody_MM.FP.subtypes"),
-                                                        verbatimTextOutput("scGATE_verbatum_BDrhapsody_MM.FP.other")
-                                       ),
-
-                              ),
-                              tabPanel("UMAP check",
-                                       fluidRow(
-                                         column(4, plotOutput("create_custom_1", height = "600px")),
-                                         column(4,plotOutput("create_custom_2", height = "600px"),),
-                                         column(4, plotOutput("create_custom_3", height = "600px")),
-                                         column(4,plotOutput("create_custom_4", height = "600px"),),
-                                         column(4, plotOutput("create_custom_5", height = "600px")),
-                                         column(4,plotOutput("create_custom_6", height = "600px"),),
-                                         column(4, plotOutput("create_custom_7", height = "600px")),
-                                         column(4,plotOutput("create_custom_8", height = "600px"),),
-                                         column(4, plotOutput("create_custom_9", height = "600px")),
-                                       )
-                                       # plotOutput("create_custom_1", height = "600px"),
+                                                 ),
+                                                 # tabPanel("Resolution plot"),
+                                                 # UMAP  -----
+                                                 tabPanel("UMAP",
+                                                          add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
+                                                          plotOutput("create_UMAP_sc", height = "600px")
+                                                 ), # Export a table with meta.data and expression.
+                                                 tabPanel("Add metadata",
+                                                          add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
+                                                          div(DT::dataTableOutput("DEx_view.meta.dt")),
+                                                          add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
+                                                          div(DT::dataTableOutput("DEx_table_meta.data")),
+                                                          # selectInput("","comaprison 1")
+                                                 ),
 
 
-                              ),
-
-# classification based on TCR_seq -----
-
-                              tabPanel("TCR-seq",
-                                       add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "purple"),
-                                       div(DT::dataTableOutput("TCR_seq_classification_df")),
-                              ),
-# display metadata -----
-                              tabPanel("Marker check",
-                                       conditionalPanel(condition="input.Panel_DEX==5",
-                                                        fluidRow(
-                                                          column(3,numericInput("min.ptc.sc","minimum point",value = 0.25)),
-                                                          column(3,numericInput("logfc.ptc.sc","Log fold change",value = 0.25)),
-                                                          column(3,selectInput("normalN","Type of Differnetial expression",
-             choices = c("wilcox","bimod","roc","t","negbinom","poisson","LR","MAST","DESeq2")
-                                                          )),
-                                                          column(3,style = "margin-top: 25px;",actionButton("run_differental.exp","run differental expression"),)
-                                                        ),
-
-                                       ),
-
-                                       conditionalPanel(condition="input.Panel_DEX==55 || input.Panel_DEX==5",
-
-                                                        fluidRow(
-                                                          column(4,selectInput("multiple_group_sc","Include group comparison",choices=c("no","yes"))),
-                                                          column(4,selectInput("meta_data_sc_clust","Cluster by",choices = "")),
-                                                          column(4,selectInput("meta_data_sc_","Add group",choices = "")),
-
-                                                        ),
-
-                                       ),
-
-                                       tabsetPanel(id = "Panel_DEX",
-# Cluster table -----
-                                                   # tabPanel("Checking files",
-                                                   #          div(DT::dataTableOutput("list_of_genes")),
-                                                   #
-                                                   #          # verbatimTextOutput("checking_files_markers_featurePlot_sc"),
-                                                   #          ),
-                                                   tabPanel("Cluster differences (Feature plot)",
-                                                            actionButton("run_string.data3","View Feature plot"),
-                                                            fluidRow(column(12, selectInput("string.data3","column names for summary","",multiple = T, width = "1200px") )),
-                                                            fluidRow(
-                                                              column(2,checkboxInput("label_is_true_features","Add plot lables",value=T)),
-                                                              column(2,selectInput("norm_expression_for_all","Set Maximum",choices=c("no","yes"))),
-                                                              column(2,numericInput("max_norm_FP","Set maximum scale value",value = 10, step = 1, min=1)),
-                                                              column(2,colourInput("lower_col_FP","Min (Colour)",value = "grey90")),
-                                                              column(2,colourInput("upper_col_FP","Max (colour)",value = "Darkblue"))
-                                                            ),
-                                                            plotOutput("markers_featurePlot_sc", height = "600px"),
-
-                                                            fluidRow(
-                                                              column(3,numericInput("width_markers_featurePlot_sc", "Width of PDF", value=10)),
-                                                              column(3,numericInput("height_markers_featurePlot_sc", "Height of PDF", value=8)),
-                                                              column(3),
-                                                              column(3,style = "margin-top: 25px;",downloadButton('downloadPlot_markers_featurePlot_sc','Download PDF'))),
-                                                            fluidRow(
-                                                              column(3,numericInput("width_png_markers_featurePlot_sc","Width of PNG", value = 1200)),
-                                                              column(3,numericInput("height_png_markers_featurePlot_sc","Height of PNG", value = 1000)),
-                                                              column(3,numericInput("resolution_PNG_markers_featurePlot_sc","Resolution of PNG", value = 144)),
-                                                              column(3,style = "margin-top: 25px;",downloadButton('downloadPlotPNG_markers_featurePlot_sc','Download PNG'))
-                                                            )
-
-                                                   ),
-# differential expression within clusters ----
-                                                   tabPanel("Treatment differences within clusters",value = 55,
-
-                                                            actionButton("run_update_clust","Update comparisons"),
-                                                            fluidRow(
-                                                              column(4,selectInput("unique.Idents1","comaprison 1",choices = "")),
-                                                              column(4,selectInput("unique.Idents2","comaprison 2",choices = "")),
-                                                            ),
-                                                            tabsetPanel(
-                                                              tabPanel("Table",
-     div(DT::dataTableOutput("DEx_table_comparison")),
-     downloadButton('downloaddf_DEx_sc','Download Table (.csv)'),
-     downloadButton('downloaddf_DEx_sc_ggVolcanoR','Download ggVolcanoR compatible table (.csv)')
-                                                              ),
-                                                              tabPanel("Plot",
-     plotOutput("volc_plot_cluster", height = "600px"))
-                                                            ),
-                                                   ),
-                                                   tabPanel("Cluster differences (All markers)", value = 5,
-                                                            add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
-                                                            div(DT::dataTableOutput("DEx_table_clusters")),
-                                                            downloadButton('downloaddf_DEx_table_clusters','Download Table (.csv)')
-                                                   ),
+                                               ),
 
 
-                                       )
+                                     ),
+                                     # end of QC -----
 
-                              ),
 
-# meta data table ------
-                              tabPanel("Meta data table",
-                                       fluidRow(
-                                         # column(3,checkboxInput("add.kmeans","Add K-means classification", value = F)),
-                                         # column(3,checkboxInput("add.scGATE","Add scGATE classifications", value = T))
-                                       ),
-                                       add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
-                                       div(DT::dataTableOutput("DEx_table_TcellClass_scGATE")),
-                              )
-                            ),
-                          )
+                                   ),
+                          ),
+                          ###################
+                          # Merge multiple Seurat objects -----
+                          tabPanel("3b. Merge & Batch correction",
+                                   sidebarLayout(
+                                     # Sidebar with a slider input
+                                     sidebarPanel(id = "tPanel5",style = "overflow-y:scroll; max-height: 800px; position:relative;", width=4,
+                                                  conditionalPanel(condition="input.Merging_and_batching == 'Merging_Harmony'",
+                                                                   selectInput("sample.type.source_merging","Species",choices = c("hs","mm")),
+                                                                   fileInput("file1_rds.file",
+                                                                             "Choose .rds files from merging",
+                                                                             multiple = TRUE,
+                                                                             accept=c("rds",".rds")),
+                                                                   textInput("project_name2","Name of Project",value = "Pro"),
+                                                                   downloadButton('downloaddf_SeruatObj_merged2','Download Merged Seurat')
+                                                  ),
+                                                  conditionalPanel(condition="input.Merging_and_batching != 'Merging_Harmony'",
+                                                                   selectInput("Seruat_version_merge","Seurat Version",choices = c("V4","V5")),
+                                                                   selectInput("sample.type.source","Species",choices = ""),
+                                                                   fileInput("file1_rds.Merged_data_for_harmony",
+                                                                             "Upload .rds file for Batch correction with Harmony",
+                                                                             multiple = F,
+                                                                             accept=c('.rds','rds')),
+                                                                   downloadButton('downloaddf_SeruatObj_merged','Download Batch corrected Seurat')
+                                                  )
+                                     ),
 
-                        )
+                                     # Show a plot of the generated distribution
+                                     mainPanel(width = 9,
+                                               tabsetPanel(id = "Merging_and_batching",
+                                                           tabPanel("Merge Files", value = "Merging_Harmony",
+
+                                                                    add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
+                                                                    tabsetPanel(
+                                                                      tabPanel("uploaded",
+                                                                               verbatimTextOutput("testing_mult"),
+                                                                      ),
+                                                                      tabPanel("merging",
+                                                                               actionButton("run_merging","run merging"),
+                                                                               verbatimTextOutput("testing_mult2")),
+                                                                    ),
+                                                           ),
+                                                           tabPanel("Variable data",
+                                                                    verbatimTextOutput("testing_mult3"),
+                                                                    add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
+                                                                    verbatimTextOutput("Scaling_check_output"),
+                                                                    actionButton("run_var","Run VariableFeatures"),
+                                                                    add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
+                                                                    verbatimTextOutput("var_harmony_verbrose")
+                                                           ),
+                                                           tabPanel("Scale data",
+                                                                    add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
+                                                                    actionButton("run_scale","Run Scale"),
+                                                                    div(DT::dataTableOutput("Tb_scaling_features_for_annotation")),
+                                                                    add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
+                                                                    verbatimTextOutput("scale_harmony_verbrose")
+                                                           ),
+                                                           tabPanel("PCA",
+                                                                    add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
+                                                                    actionButton("run_PCA","Run PCA"),
+                                                                    add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
+                                                                    verbatimTextOutput("PCA_harmony_verbrose")
+                                                           ),
+                                                           tabPanel("harmony",
+                                                                    add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
+                                                                    actionButton("run_harmony","Run Harmony"),
+                                                                    add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
+                                                                    verbatimTextOutput("harmony_verbrose"),
+                                                           ),
+                                                           tabPanel("Dimentional reduction",
+                                                                    fluidRow(
+                                                                      column(3,numericInput("dimension_Merged","Max number of dimensions", value = 30)),
+                                                                      column(6,numericInput("res_merged","Resolution of clusters", value = 0.5)),
+                                                                    ),
+                                                                    actionButton("run_reduction_harmony","Run Dimentional reduction"),
+                                                                    add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
+                                                                    verbatimTextOutput("testing_mult4"),
+                                                           ),
+                                                           tabPanel("UMAP",
+                                                                    add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
+                                                                    plotOutput("create_UMAP_merged",height="600px"),
+
+                                                                    fluidRow(
+                                                                      column(1,numericInput("width_sc_merged", "Width of PDF", value=10)),
+                                                                      column(1,numericInput("height_sc_merged", "Height of PDF", value=8)),
+                                                                      column(2,style = "margin-top: 25px;",downloadButton('downloadPlot_sc_merged','Download Network PDF')),
+                                                                      column(2,numericInput("width_png_sc_merged","Width of PNG", value = 1200)),
+                                                                      column(2,numericInput("height_png_sc_merged","Height of PNG", value = 1000)),
+                                                                      column(2,numericInput("resolution_PNG_sc_merged","Resolution of PNG", value = 144)),
+                                                                      column(2,style = "margin-top: 25px;",downloadButton('downloadPlotPNG_sc_merged','Download Network PNG')),
+
+                                                                    ),
+
+                                                           ),
+
+                                               ))
+                                   )
+
+                          ),
+
+                          ###################
+
+                          # Add annotations -----
+                          tabPanel("3c. Annotations",
+                                   sidebarLayout(
+                                     sidebarPanel(id = "tPanel4",style = "overflow-y:scroll; max-height: 800px; position:relative;", width=3,
+                                                  # uiOutput("Detect_version"),
+                                                  selectInput("Data_types","Source",choices = c("10x_HS","BD_HS.Immune.Panel","BD_HS.Full.Panel","10x_MM","BD_MM_Full.Panel","BD_MM_Immune.Panel", "TCR-seq")),
+                                                  selectInput("sample.type.source.markers","Species",choices = ""),
+                                                  fileInput("file1_rds.file2",
+                                                            "Choose merged or single .rds files from directory",
+                                                            multiple = TRUE,
+                                                            accept=c('.rds','rds')),
+                                                  textInput("project_name3","Name of Project",value = ""),
+                                                  selectInput("Require_custom_geneset","Require custom genes?", choices = c("no","yes")),
+                                                  uiOutput("scGate_cutoffs"),
+
+                                                  downloadButton('downloaddf_SeruatObj_annotated','Download Annotated Seurat'),
+
+                                     ),
+                                     mainPanel(width = 9,
+                                               tabsetPanel(
+                                                 tabPanel("Upload",
+                                                          add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
+                                                          verbatimTextOutput("testing_mult_anno")
+                                                 ),
+
+                                                 tabPanel("scGATE",
+                                                          selectInput("reduction_anno","Reduction to use", choices = c("calculate", "pca", "umap", "harmony"),selected = "harmony"),
+
+                                                          # custom annotations databases -----
+                                                          conditionalPanel(condition="input.Require_custom_geneset == 'yes'",
+                                                                           fluidRow(
+                                                                             column(2,checkboxInput("GeneSet1_scGate","GeneSet1", value = F)),
+                                                                             column(2,textInput("geneset1_name","Name",value = "GeneSet1")),
+
+                                                                             column(2,checkboxInput("GeneSet2_scGate","GeneSet2", value = F)),
+                                                                             column(2,textInput("geneset2_name","Name",value = "GeneSet2")),
+
+                                                                             column(2,checkboxInput("GeneSet3_scGate","GeneSet3", value = F)),
+                                                                             column(2,textInput("geneset3_name","Name",value = "GeneSet3")),
+                                                                             column(2,checkboxInput("GeneSet4_scGate","GeneSet4", value = F)),
+                                                                             column(2,textInput("geneset4_name","Name",value = "GeneSet4")),
+                                                                             column(2,checkboxInput("GeneSet5_scGate","GeneSet5", value = F)),
+                                                                             column(2,textInput("geneset5_name","Name",value = "GeneSet5")),
+                                                                             column(2,checkboxInput("GeneSet6_scGate","GeneSet6", value = F)),
+                                                                             column(2,textInput("geneset6_name","Name",value = "GeneSet6")),
+                                                                             column(2,checkboxInput("GeneSet7_scGate","GeneSet7", value = F)),
+                                                                             column(2,textInput("geneset7_name","Name",value = "GeneSet7")),
+                                                                             column(2,checkboxInput("GeneSet8_scGate","GeneSet8", value = F)),
+                                                                             column(2,textInput("geneset8_name","Name",value = "GeneSet8")),
+                                                                             column(2,checkboxInput("GeneSet9_scGate","GeneSet9", value = F)),
+                                                                             column(2,textInput("geneset9_name","Name",value = "GeneSet9")),
+                                                                           )
+                                                          ),
+
+
+                                                          # human 10x annotations -----
+                                                          conditionalPanel(condition="input.Data_types == '10x_HS' || input.Data_types == 'BD_HS.Full.Panel' || 'BD_HS.Immune.Panel'",
+                                                                           add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
+                                                                           fluidRow(
+                                                                             add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
+
+                                                                             column(3,checkboxInput("hs_function_scGATE","Function (Human)", value = F)),
+                                                                             column(3,checkboxInput("hs_generic_scGATE","Generic (Human)", value = F)),
+                                                                             column(3,checkboxInput("hs_exhausted_scGATE","Exhausted (Human)", value = F)),
+                                                                             column(3,checkboxInput("hs_senescence_scGATE","Senescence (Human)", value = F)),
+                                                                             column(3,checkboxInput("hs_cycling_scGATE","Cycling (Human)", value = F)),
+                                                                             column(3,checkboxInput("hs_TCRseq_scGATE","TCR-seq (Human)", value = F)),
+                                                                           )
+                                                          ),
+
+                                                          # BD rhapsody MM full panel ----
+                                                          conditionalPanel("input.Data_types == 'BD_MM_Full.Panel' || input.Data_types =='10x_MM'",
+                                                                           h5("Under development"),
+                                                                           add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
+                                                                           h6("Curated from Sharland lab"),
+                                                                           fluidRow(
+                                                                             column(3,checkboxInput("BDrhapsody_scGATE.MM.Tcell","Major T cell popualtions", value = F)),
+                                                                             column(3,checkboxInput("BDrhapsody_scGATE.MM.Memory","Memory", value = F)),
+                                                                             column(3,checkboxInput("BDrhapsody_scGATE.MM.signatures","signatures", value = F)),
+                                                                             column(3,checkboxInput("BDrhapsody_scGATE.MM.Innate.NK","Innate & NK", value = F)),
+                                                                           ),
+                                                                           h6("From the human BD Rhapsody searches"),
+                                                                           fluidRow(
+                                                                             column(3,checkboxInput("BDrhapsody_scGATE.MM.TNF.IFNg","TNF.IFNg", value = F)),
+                                                                             column(3,checkboxInput("BDrhapsody_scGATE.MM.subtypes","Subtypes", value = F)),
+                                                                             column(3,checkboxInput("BDrhapsody_scGATE.MM.other","other", value = F)),
+
+                                                                           ),
+
+                                                          ),
+                                                          # BD rhapsody MM immune panel ----
+                                                          conditionalPanel("input.Data_types == 'BD_MM_Immune.Panel'",
+                                                                           h5("Under development")
+
+                                                          ),
+                                                          conditionalPanel(condition="input.Require_custom_geneset == 'yes'",
+                                                                           verbatimTextOutput("scGATE_verbatum_GeneSet1"),
+                                                                           verbatimTextOutput("scGATE_verbatum_GeneSet2"),
+                                                                           verbatimTextOutput("scGATE_verbatum_GeneSet3"),
+                                                                           verbatimTextOutput("scGATE_verbatum_GeneSet4"),
+                                                                           verbatimTextOutput("scGATE_verbatum_GeneSet5"),
+                                                                           verbatimTextOutput("scGATE_verbatum_GeneSet6"),
+                                                                           verbatimTextOutput("scGATE_verbatum_GeneSet7"),
+                                                                           verbatimTextOutput("scGATE_verbatum_GeneSet8"),
+                                                                           verbatimTextOutput("scGATE_verbatum_GeneSet9"),
+
+                                                          ),
+                                                          # human 10x annotations Verbatium -----
+                                                          conditionalPanel(condition="input.Data_types == '10x_HS' || input.Data_types == 'BD_HS.Full.Panel' || 'BD_HS.Immune.Panel'",
+                                                                           add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
+                                                                           verbatimTextOutput("scGATE_verbatum_function"),
+                                                                           add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
+                                                                           verbatimTextOutput("scGATE_verbatum_generic2"),
+                                                                           add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
+                                                                           verbatimTextOutput("scGATE_verbatum_exhausted"),
+                                                                           add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
+                                                                           verbatimTextOutput("scGATE_verbatum_senescence"),
+                                                                           add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
+                                                                           verbatimTextOutput("scGATE_verbatum_cycling"),
+                                                                           add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
+                                                                           verbatimTextOutput("scGATE_verbatum_TCRseq"),
+                                                          ),
+                                                          conditionalPanel("input.Data_types == 'BD_MM_Full.Panel' || input.Data_types =='10x_MM'",
+                                                                           verbatimTextOutput("scGATE_verbatum_BDrhapsody_MM.FP.Tcell"),
+                                                                           verbatimTextOutput("scGATE_verbatum_BDrhapsody_MM.FP.Memory"),
+                                                                           verbatimTextOutput("scGATE_verbatum_BDrhapsody_MM.FP.signatures"),
+                                                                           verbatimTextOutput("scGATE_verbatum_BDrhapsody_MM.FP.Innate.NK"),
+                                                                           verbatimTextOutput("scGATE_verbatum_BDrhapsody_MM.FP.TNF.IFNg"),
+                                                                           verbatimTextOutput("scGATE_verbatum_BDrhapsody_MM.FP.subtypes"),
+                                                                           verbatimTextOutput("scGATE_verbatum_BDrhapsody_MM.FP.other")
+                                                          ),
+
+                                                 ),
+                                                 tabPanel("UMAP check",
+                                                          fluidRow(
+                                                            column(4, plotOutput("create_custom_1", height = "600px")),
+                                                            column(4,plotOutput("create_custom_2", height = "600px"),),
+                                                            column(4, plotOutput("create_custom_3", height = "600px")),
+                                                            column(4,plotOutput("create_custom_4", height = "600px"),),
+                                                            column(4, plotOutput("create_custom_5", height = "600px")),
+                                                            column(4,plotOutput("create_custom_6", height = "600px"),),
+                                                            column(4, plotOutput("create_custom_7", height = "600px")),
+                                                            column(4,plotOutput("create_custom_8", height = "600px"),),
+                                                            column(4, plotOutput("create_custom_9", height = "600px")),
+                                                          )
+                                                          # plotOutput("create_custom_1", height = "600px"),
+
+
+                                                 ),
+
+                                                 # classification based on TCR_seq -----
+
+                                                 tabPanel("TCR-seq",
+                                                          add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "purple"),
+                                                          div(DT::dataTableOutput("TCR_seq_classification_df")),
+                                                 ),
+                                                 # display metadata -----
+                                                 tabPanel("Marker check",
+                                                          conditionalPanel(condition="input.Panel_DEX==5",
+                                                                           fluidRow(
+                                                                             column(3,numericInput("min.ptc.sc","minimum point",value = 0.25)),
+                                                                             column(3,numericInput("logfc.ptc.sc","Log fold change",value = 0.25)),
+                                                                             column(3,selectInput("normalN","Type of Differnetial expression",
+                                                                                                  choices = c("wilcox","bimod","roc","t","negbinom","poisson","LR","MAST","DESeq2")
+                                                                             )),
+                                                                             column(3,style = "margin-top: 25px;",actionButton("run_differental.exp","run differental expression"),)
+                                                                           ),
+
+                                                          ),
+
+                                                          conditionalPanel(condition="input.Panel_DEX==55 || input.Panel_DEX==5",
+
+                                                                           fluidRow(
+                                                                             column(4,selectInput("multiple_group_sc","Include group comparison",choices=c("no","yes"))),
+                                                                             column(4,selectInput("meta_data_sc_clust","Cluster by",choices = "")),
+                                                                             column(4,selectInput("meta_data_sc_","Add group",choices = "")),
+
+                                                                           ),
+
+                                                          ),
+
+                                                          tabsetPanel(id = "Panel_DEX",
+                                                                      # Cluster table -----
+                                                                      # tabPanel("Checking files",
+                                                                      #          div(DT::dataTableOutput("list_of_genes")),
+                                                                      #
+                                                                      #          # verbatimTextOutput("checking_files_markers_featurePlot_sc"),
+                                                                      #          ),
+                                                                      tabPanel("Cluster differences (Feature plot)",
+                                                                               actionButton("run_string.data3","View Feature plot"),
+                                                                               fluidRow(column(12, selectInput("string.data3","column names for summary","",multiple = T, width = "1200px") )),
+                                                                               fluidRow(
+                                                                                 column(2,checkboxInput("label_is_true_features","Add plot lables",value=T)),
+                                                                                 column(2,selectInput("norm_expression_for_all","Set Maximum",choices=c("no","yes"))),
+                                                                                 column(2,numericInput("max_norm_FP","Set maximum scale value",value = 10, step = 1, min=1)),
+                                                                                 column(2,colourInput("lower_col_FP","Min (Colour)",value = "grey90")),
+                                                                                 column(2,colourInput("upper_col_FP","Max (colour)",value = "Darkblue"))
+                                                                               ),
+                                                                               plotOutput("markers_featurePlot_sc", height = "600px"),
+
+                                                                               fluidRow(
+                                                                                 column(3,numericInput("width_markers_featurePlot_sc", "Width of PDF", value=10)),
+                                                                                 column(3,numericInput("height_markers_featurePlot_sc", "Height of PDF", value=8)),
+                                                                                 column(3),
+                                                                                 column(3,style = "margin-top: 25px;",downloadButton('downloadPlot_markers_featurePlot_sc','Download PDF'))),
+                                                                               fluidRow(
+                                                                                 column(3,numericInput("width_png_markers_featurePlot_sc","Width of PNG", value = 1200)),
+                                                                                 column(3,numericInput("height_png_markers_featurePlot_sc","Height of PNG", value = 1000)),
+                                                                                 column(3,numericInput("resolution_PNG_markers_featurePlot_sc","Resolution of PNG", value = 144)),
+                                                                                 column(3,style = "margin-top: 25px;",downloadButton('downloadPlotPNG_markers_featurePlot_sc','Download PNG'))
+                                                                               )
+
+                                                                      ),
+                                                                      # differential expression within clusters ----
+                                                                      tabPanel("Treatment differences within clusters",value = 55,
+
+                                                                               actionButton("run_update_clust","Update comparisons"),
+                                                                               fluidRow(
+                                                                                 column(4,selectInput("unique.Idents1","comaprison 1",choices = "")),
+                                                                                 column(4,selectInput("unique.Idents2","comaprison 2",choices = "")),
+                                                                               ),
+                                                                               tabsetPanel(
+                                                                                 tabPanel("Table",
+                                                                                          div(DT::dataTableOutput("DEx_table_comparison")),
+                                                                                          downloadButton('downloaddf_DEx_sc','Download Table (.csv)'),
+                                                                                          downloadButton('downloaddf_DEx_sc_ggVolcanoR','Download ggVolcanoR compatible table (.csv)')
+                                                                                 ),
+                                                                                 tabPanel("Plot",
+                                                                                          plotOutput("volc_plot_cluster", height = "600px"))
+                                                                               ),
+                                                                      ),
+                                                                      tabPanel("Cluster differences (All markers)", value = 5,
+                                                                               add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
+                                                                               div(DT::dataTableOutput("DEx_table_clusters")),
+                                                                               downloadButton('downloaddf_DEx_table_clusters','Download Table (.csv)')
+                                                                      ),
+
+
+                                                          )
+
+                                                 ),
+
+                                                 # meta data table ------
+                                                 tabPanel("Meta data table",
+                                                          fluidRow(
+                                                            # column(3,checkboxInput("add.kmeans","Add K-means classification", value = F)),
+                                                            # column(3,checkboxInput("add.scGATE","Add scGATE classifications", value = T))
+                                                          ),
+                                                          add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
+                                                          div(DT::dataTableOutput("DEx_table_TcellClass_scGATE")),
+                                                 )
+                                               ),
+                                     )
+
+                                   )
+                          ),
+                          # remove cells based on one factor -----
+                          tabPanel("3d. Remove/Edit Samps",
+                                   sidebarLayout(
+
+                                     sidebarPanel(id = "tPanelSamps",style = "max-height: 800px; position:relative;", width=3,
+                                                  fileInput("file1_rds.fileSampsRemove",
+                                                            "Upload .rds file",
+                                                            multiple = F,
+                                                            accept=c('.rds','rds')),
+                                                  textInput("project_name4","Name of Project",value = ""),
+                                                  selectInput("Samp_col_SampToRemove","Column name",choices = ""),
+                                                  downloadButton('downloaddf_SeruatObj_annotated_SampToKeep','Download .rds'),
+                                     ),
+                                     mainPanel(width = 9,
+                                               tabsetPanel(
+
+                                                 tabPanel("Remove Samps",
+                                                          h5("Before Samples are removed"),
+                                                          actionButton("run_remove_samps","Remove samples"),
+                                                          verbatimTextOutput("Preliminary_samp_to_remove"),
+                                                          selectInput("DownVColumn","Chose subset type:", choices = c("Meta_data","Down_sampling")),
+
+                                                          numericInput("downsamp_limit","Down sampling limit", value = 1000),
+
+                                                          selectInput("ID_Column_factor_SampToRemove","Order of graph",choices = "", multiple = T, width = "1400px"),
+
+                                                          h5("After Samples are removed"),
+                                                          verbatimTextOutput("Filtered_samp_to_remove"),
+                                                 ),
+                                                 tabPanel("Update Meta data")
+                                               )
+
+
+                                     )
+                                   )),
+                          tabPanel("STEP3. Markdown"
+
+
+                          ),
                ),
 
+               ###################
+               # Analysis (UI side panel) ---------
+               tabPanel("STEP 4. Analysis",
 
-###################
-# Analysis (UI side panel) ---------
-               tabPanel("Analysis",
-
-# side bar layout ------
+                        # side bar layout ------
                         sidebarLayout(
                           sidebarPanel(id = "tPanel4",style = "overflow-y:scroll; max-height: 1000px; position:relative;", width=3,
                                        conditionalPanel(condition="input.check_up_files== 'up'",
@@ -1254,27 +1248,27 @@ tabPanel("Convert format",
 
                                                         selectInput("add_additional_lables", "add additional labels", choices = c("no","yes")),
                                                         conditionalPanel(condition="input.add_additional_lables== 'yes'",
-       p("The .csv file first column should be label 'ID' and match the selected column"),
-       selectInput("Samp_col2","Sample column name",choices = ""),
+                                                                         p("The .csv file first column should be label 'ID' and match the selected column"),
+                                                                         selectInput("Samp_col2","Sample column name",choices = ""),
 
-       fileInput("file_Labels_to_add","Upload other identifiers (.csv)",
-                 accept=c('.csv','csv')
-       ),
+                                                                         fileInput("file_Labels_to_add","Upload other identifiers (.csv)",
+                                                                                   accept=c('.csv','csv')
+                                                                         ),
                                                         ),
                                                         selectInput("Type_of_receptor","Type of receptor",choices = c("TCR","BCR"),selected = "TCR"),
                                                         conditionalPanel(condition="input.Type_of_receptor== 'TCR'",
 
-       fileInput('file_cluster_file_AG', 'Upload AG clusTCR2 file (.csv)',
-                 accept=c('.csv','csv')),
-       fileInput('file_cluster_file_BD', 'Upload BD clusTCR2 file (.csv)',
-                 accept=c('.csv','csv')),
+                                                                         fileInput('file_cluster_file_AG', 'Upload AG clusTCR2 file (.csv)',
+                                                                                   accept=c('.csv','csv')),
+                                                                         fileInput('file_cluster_file_BD', 'Upload BD clusTCR2 file (.csv)',
+                                                                                   accept=c('.csv','csv')),
                                                         ),
                                                         conditionalPanel(condition="input.Type_of_receptor== 'BCR'",
 
-       fileInput('file_cluster_file_IgH', 'Upload IgH clusTCR2 file (.csv)',
-                 accept=c('.csv','csv')),
-       fileInput('file_cluster_file_IgKL', 'Upload IgKL clusTCR2 file (.csv)',
-                 accept=c('.csv','csv')),
+                                                                         fileInput('file_cluster_file_IgH', 'Upload IgH clusTCR2 file (.csv)',
+                                                                                   accept=c('.csv','csv')),
+                                                                         fileInput('file_cluster_file_IgKL', 'Upload IgKL clusTCR2 file (.csv)',
+                                                                                   accept=c('.csv','csv')),
                                                         ),
                                                         numericInput("skip_TCRex_up","Skip # of lines for TCRex file",value = 7),
                                                         fileInput('upload_TCRex_file', 'Upload TCRex (.tsv)',
@@ -1284,12 +1278,15 @@ tabPanel("Convert format",
                                        selectInput("species_analysis","Species",choices = ""),
                                        selectInput("Samp_col","Selected Individual",choices = ""),
                                        selectInput("V_gene_sc","V gene with/without CDR3",choices = ""),
+
                                        selectInput("colourtype","Type of colouring",choices = c("default","rainbow","random","heat.colors","terrain.colors","topo.colors","hcl.colors","one colour")),
+
+
                                        conditionalPanel( condition="input.check_up_files != 'up'",
                                                          conditionalPanel( condition="input.Panel_TCRUMAP != 'Expanded'",
-         conditionalPanel( condition="input.check_up_files != 'up2'",
-                           uiOutput("classification_to_add")
-         )
+                                                                           conditionalPanel( condition="input.check_up_files != 'up2'",
+                                                                                             uiOutput("classification_to_add")
+                                                                           )
 
                                                          )
                                        ),
@@ -1298,7 +1295,7 @@ tabPanel("Convert format",
                                                          uiOutput("classification_to_add_overview")
                                        ),
 
-# side bar layoutexpansion priority UI -------
+                                       # side bar layoutexpansion priority UI -------
                                        conditionalPanel( condition="input.check_up_files == 'Prior' || input.check_up_files == 'TCR_and_GEX_tb' ",
                                                          fluidRow(
                                                            column(6,selectInput("Split_group_by_","Split graph by:",choices ="")),
@@ -1307,7 +1304,6 @@ tabPanel("Convert format",
                                                            column(6,uiOutput("classification_to_add2")),
                                                          ),
                                                          fluidRow(
-
                                                            column(6,numericInput("cut.off_percent_rep","Percent of Repertoire", value = 1, step = 1, min = 1,max = 100)),
                                                            column(6,numericInput("size.dot.umap","size of UMAP dot's",value =2,step = 1, min = 1))
                                                          )
@@ -1324,14 +1320,14 @@ tabPanel("Convert format",
 
                                                          )
                                        ),
-                                        conditionalPanel( condition="input.PriorTBMods == 'PriorClustTB' || input.Panel_TCRUMAP == 'ClusTCR2'",
-                                                          selectInput("Clusters_to_dis_PIE","Clusters to display",choices = "",multiple = F)
-                                        ),
+                                       conditionalPanel( condition="input.PriorTBMods == 'PriorClustTB' || input.Panel_TCRUMAP == 'ClusTCR2'",
+                                                         selectInput("Clusters_to_dis_PIE","Clusters to display",choices = "",multiple = F)
+                                       ),
                                        conditionalPanel(condition="input.Panel_TCRUMAP=='ClusTCR2'",
-                                                         selectInput("chain_TCR","Chain to display",choices = c("TRAG","TRBD","IgH","IgKL")),
+                                                        selectInput("chain_TCR","Chain to display",choices = c("TRAG","TRBD","IgH","IgKL")),
                                        ),
                                        #
-# Expanded stat cut-offs -----
+                                       # Expanded stat cut-offs -----
 
                                        conditionalPanel( condition="input.PriorTBMods == 'PriorRepertoireTB' || input.check_up_files == 'TCR_and_GEX_tb' ",
                                                          fluidRow(
@@ -1347,18 +1343,16 @@ tabPanel("Convert format",
                                        conditionalPanel(condition="input.check_up_files != 'up' ",
 
                                                         fluidRow(
-                                                          column(12,selectInput("colourtype","Type of colouring",choices = c("default","rainbow","random","heat.colors","terrain.colors","topo.colors","hcl.colors","one colour"))),
                                                           column(6,colourInput("one.colour.default","One colour","grey50")),
                                                           column(6,colourInput("NA_col_analysis","NA colour","grey90"),)
-
                                                         ),
 
                                                         conditionalPanel(condition="input.check_up_files == 'up2' || input.check_up_files == 'Prior'",
-       fluidRow(column(12,selectInput("Graph_type_bar","Type of graph",choices = c("Number_expanded","Frequency_expanded","Top_clonotypes")))),
-       fluidRow(
-         uiOutput("Top_clone_number")
+                                                                         fluidRow(column(12,selectInput("Graph_type_bar","Type of graph",choices = c("Number_expanded","Frequency_expanded","Top_clonotypes")))),
+                                                                         fluidRow(
+                                                                           uiOutput("Top_clone_number")
 
-       ),
+                                                                         ),
                                                         ),
                                                         fluidRow( column(6, numericInput("wrap_row",h5("Wrap rows"), value = 3))),
 
@@ -1392,1081 +1386,1091 @@ tabPanel("Convert format",
                                        )
                           ),
 
-# add in clustering  (why did I add this comment?) -----
-                          mainPanel(
+                          # add in clustering  (why did I add this comment?) -----
+                          mainPanel(width = 9,
 
-                            tabsetPanel(id = "check_up_files",
-                                        tabPanel("Check files uploaded",value = 'up',
-                                                 add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
-
-
-                                                 fluidRow(
-                                                   column(12,  div(DT::dataTableOutput("meta.data_check_upload"))),
-                                                   column(12,  div(DT::dataTableOutput("Sample_names_merging_sc"))),
-                                                   # column(12,  div(DT::dataTableOutput("Tb_TCR_clonotypes.Umap"))),
-                                                   column(12,   div(DT::dataTableOutput("Tb_ClusTCR_test"))),
-                                                   column(12,   div(DT::dataTableOutput("Tb_tcrex_test")))
-
-                                                 ),
-
-                                        ),
+                                    tabsetPanel(id = "check_up_files",
+                                                tabPanel("Check files uploaded",value = 'up',
+                                                         add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
 
 
-# UMAP -> TCR -----
-tabPanel("Overview", value = 'up2',
-                                                 fluidRow(
-                                                   add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
-                                                   column(12,selectInput("ID_Column_factor","Order of graph",choices = "", multiple = T, width = "1200px")),
-                                                 ),
-                                                 fluidRow(
-                                                   column(3,selectInput("Split_group_by_overview","Split graph by:",choices ="")),
-                                                 ),
-                                                 tabsetPanel(id = "QC_panel",
-# T cell classification ------
-tabPanel("GEX", value = "GEX_panel",
-                                                                      tabsetPanel(id = "Panel_class",
-                                                                                  tabPanel("Percentage",value = 16,
-                                                                                           add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
-                                                                                           verbatimTextOutput("Percent_tab"),
-                                                                                           downloadButton('downloaddf_Percent_tab','Download table')
-                                                                                  ),
-                                                                                  tabPanel("UMAP plot",value = 14,
-                                                                                           fluidRow(column(3,selectInput("show_selected","Show all labels?",choices=c("All","Selected_list"))),
-                                                                                                    column(9,uiOutput("SiteNumInput",width = "900px")),
-                                                                                           ),
+                                                         fluidRow(
+                                                           column(12,  div(DT::dataTableOutput("meta.data_check_upload"))),
+                                                           column(12,  div(DT::dataTableOutput("Sample_names_merging_sc"))),
+                                                           # column(12,  div(DT::dataTableOutput("Tb_TCR_clonotypes.Umap"))),
+                                                           column(12,   div(DT::dataTableOutput("Tb_ClusTCR_test"))),
+                                                           column(12,   div(DT::dataTableOutput("Tb_tcrex_test")))
 
-                                                                                           fluidRow(
-                                                                                             column(2,numericInput("Filter_lower_UMAP1_marker_GEX","UMAP_1 >",value = -20)),
-                                                                                             column(2,numericInput("Filter_lower_UMAP1_marker2_GEX","UMAP_1 <",value = 20)),
-                                                                                             column(2,numericInput("Filter_lower_UMAP2_marker_GEX","UMAP_2 >",value = -20)),
-                                                                                             column(2,numericInput("Filter_lower_UMAP2_marker2_GEX","UMAP_2 <",value = 20)),
-                                                                                           ),
+                                                         ),
 
-                                                                                           add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
-                                                                                           fluidRow(
-                                                                                             column(3,
-                                                                                                    wellPanel(id = "tPanel23",style = "overflow-y:scroll; max-height: 600px",
-                                                                                                              uiOutput('cols_UMAP_all_classification'))),
-                                                                                             column(9, plotOutput("UMAP_all_classification2",height="600px"))
-                                                                                           ),
-                                                                                           fluidRow(
-                                                                                             column(1,numericInput("width_UMAP_all_classification", "Width of PDF", value=10)),
-                                                                                             column(1,numericInput("height_UMAP_all_classification", "Height of PDF", value=8)),
-                                                                                             column(2,style = "margin-top: 25px;",downloadButton('downloadPlot_UMAP_all_classification','Download PDF')),
-                                                                                             column(2,numericInput("width_png_UMAP_all_classification","Width of PNG", value = 1200)),
-                                                                                             column(2,numericInput("height_png_UMAP_all_classification","Height of PNG", value = 1000)),
-                                                                                             column(2,numericInput("resolution_PNG_UMAP_all_classification","Resolution of PNG", value = 144)),
-                                                                                             column(2,style = "margin-top: 25px;",downloadButton('downloadPlotPNG_UMAP_all_classification','Download PNG'))),
-                                                                                  ),
+                                                ),
 
-                                                                                  tabPanel("Pie chart",value = 15,
-                                                                                           add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
-                                                                                           fluidRow(
-                                                                                             # column(3,numericInput("strip_size","Size of header",value = 10)),
-                                                                                             column(9,p("Fill = Select function type; Group = Select cluster"))
-                                                                                           ),
-                                                                                           fluidRow(column(3,
-                                                                                                           wellPanel(id = "tPanel23",style = "overflow-y:scroll; max-height: 600px",
-                                                                                                                     uiOutput('myPanel_pie'))), # pie chart
-                                                                                                    column(9, plotOutput("Classification_clonotype_pie",height="600px"))
-                                                                                           ),
-                                                                                           # fluidRow(
-                                                                                           #   div(DT::dataTableOutput("table_pie")),
-                                                                                           # ),
 
-                                                                                           fluidRow(
-                                                                                             column(1,numericInput("width_Classification_clonotype_pie", "Width of PDF", value=10)),
-                                                                                             column(1,numericInput("height_Classification_clonotype_pie", "Height of PDF", value=8)),
-                                                                                             column(2,style = "margin-top: 25px;",downloadButton('downloadPlot_Classification_clonotype_pie','Download PDF')),
-                                                                                             column(2,numericInput("width_png_Classification_clonotype_pie","Width of PNG", value = 1200)),
-                                                                                             column(2,numericInput("height_png_Classification_clonotype_pie","Height of PNG", value = 1000)),
-                                                                                             column(2,numericInput("resolution_PNG_Classification_clonotype_pie","Resolution of PNG", value = 144)),
-                                                                                             column(2,style = "margin-top: 25px;",downloadButton('downloadPlotPNG_Classification_clonotype_pie','Download PNG'))),
+                                                # UMAP -> TCR -----
+                                                tabPanel("Overview", value = 'up2',
+                                                         fluidRow(
+                                                           add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
+                                                           column(12,selectInput("ID_Column_factor","Order of graph",choices = "", multiple = T, width = "1200px")),
+                                                         ),
+                                                         fluidRow(
+                                                           column(3,selectInput("Split_group_by_overview","Split graph by:",choices ="")),
+                                                         ),
+                                                         tabsetPanel(id = "QC_panel",
+                                                                     # T cell classification ------
+                                                                     tabPanel("GEX", value = "GEX_panel",
+                                                                              tabsetPanel(id = "Panel_class",
+                                                                                          tabPanel("Percentage",value = 16,
+                                                                                                   add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
+                                                                                                   verbatimTextOutput("Percent_tab"),
+                                                                                                   downloadButton('downloaddf_Percent_tab','Download table')
+                                                                                          ),
+                                                                                          tabPanel("UMAP plot",value = 14,
+                                                                                                   fluidRow(column(3,selectInput("show_selected","Show all labels?",choices=c("All","Selected_list"))),
+                                                                                                            column(9,uiOutput("SiteNumInput",width = "900px")),
+                                                                                                   ),
 
-                                                                                  ),
+                                                                                                   fluidRow(
+                                                                                                     column(2,numericInput("Filter_lower_UMAP1_marker_GEX","UMAP_1 >",value = -20)),
+                                                                                                     column(2,numericInput("Filter_lower_UMAP1_marker2_GEX","UMAP_1 <",value = 20)),
+                                                                                                     column(2,numericInput("Filter_lower_UMAP2_marker_GEX","UMAP_2 >",value = -20)),
+                                                                                                     column(2,numericInput("Filter_lower_UMAP2_marker2_GEX","UMAP_2 <",value = 20)),
+                                                                                                   ),
+
+                                                                                                   add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
+                                                                                                   fluidRow(
+                                                                                                     column(3,
+                                                                                                            wellPanel(id = "tPanel23",style = "overflow-y:scroll; max-height: 600px",
+                                                                                                                      uiOutput('cols_UMAP_all_classification'))),
+                                                                                                     column(9, plotOutput("UMAP_all_classification2",height="600px"))
+                                                                                                   ),
+                                                                                                   fluidRow(
+                                                                                                     column(1,numericInput("width_UMAP_all_classification", "Width of PDF", value=10)),
+                                                                                                     column(1,numericInput("height_UMAP_all_classification", "Height of PDF", value=8)),
+                                                                                                     column(2,style = "margin-top: 25px;",downloadButton('downloadPlot_UMAP_all_classification','Download PDF')),
+                                                                                                     column(2,numericInput("width_png_UMAP_all_classification","Width of PNG", value = 1200)),
+                                                                                                     column(2,numericInput("height_png_UMAP_all_classification","Height of PNG", value = 1000)),
+                                                                                                     column(2,numericInput("resolution_PNG_UMAP_all_classification","Resolution of PNG", value = 144)),
+                                                                                                     column(2,style = "margin-top: 25px;",downloadButton('downloadPlotPNG_UMAP_all_classification','Download PNG'))),
+                                                                                          ),
+
+                                                                                          tabPanel("Pie chart",value = 15,
+                                                                                                   add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
+                                                                                                   fluidRow(
+                                                                                                     # column(3,numericInput("strip_size","Size of header",value = 10)),
+                                                                                                     column(9,p("Fill = Select function type; Group = Select cluster"))
+                                                                                                   ),
+                                                                                                   fluidRow(column(3,
+                                                                                                                   wellPanel(id = "tPanel23",style = "overflow-y:scroll; max-height: 600px",
+                                                                                                                             uiOutput('myPanel_pie'))), # pie chart
+                                                                                                            column(9, plotOutput("Classification_clonotype_pie",height="600px"))
+                                                                                                   ),
+                                                                                                   # fluidRow(
+                                                                                                   #   div(DT::dataTableOutput("table_pie")),
+                                                                                                   # ),
+
+                                                                                                   fluidRow(
+                                                                                                     column(1,numericInput("width_Classification_clonotype_pie", "Width of PDF", value=10)),
+                                                                                                     column(1,numericInput("height_Classification_clonotype_pie", "Height of PDF", value=8)),
+                                                                                                     column(2,style = "margin-top: 25px;",downloadButton('downloadPlot_Classification_clonotype_pie','Download PDF')),
+                                                                                                     column(2,numericInput("width_png_Classification_clonotype_pie","Width of PNG", value = 1200)),
+                                                                                                     column(2,numericInput("height_png_Classification_clonotype_pie","Height of PNG", value = 1000)),
+                                                                                                     column(2,numericInput("resolution_PNG_Classification_clonotype_pie","Resolution of PNG", value = 144)),
+                                                                                                     column(2,style = "margin-top: 25px;",downloadButton('downloadPlotPNG_Classification_clonotype_pie','Download PNG'))),
+
+                                                                                          ),
+
+                                                                              ),
+                                                                     ),
+                                                                     # TCR overview ontop of UMAP -----
+
+
+                                                                     tabPanel("TCR",
+                                                                              tabsetPanel(id = "TCR",
+                                                                                          tabPanel("Overlap",
+                                                                                                   tabsetPanel(
+                                                                                                     tabPanel("Table",
+                                                                                                              div(DT::dataTableOutput("Upset_plot_overlap_Tb")),
+                                                                                                              downloadButton('downloaddf_Upset_plot_overlap_Tb','Download table')
+                                                                                                     ),
+                                                                                                     tabPanel("Upset Plot",
+                                                                                                              plotOutput("Upset_plot_overlap"),
+                                                                                                              fluidRow(
+                                                                                                                column(1,numericInput("width_Upset_plot_overlap", "Width of PDF", value=10)),
+                                                                                                                column(1,numericInput("height_Upset_plot_overlap", "Height of PDF", value=8)),
+                                                                                                                column(2,style = "margin-top: 25px;",downloadButton('downloadPlot_Upset_plot_overlap','Download PDF')),
+                                                                                                                column(2,numericInput("width_png_Upset_plot_overlap","Width of PNG", value = 1200)),
+                                                                                                                column(2,numericInput("height_png_Upset_plot_overlap","Height of PNG", value = 1000)),
+                                                                                                                column(2,numericInput("resolution_PNG_Upset_plot_overlap","Resolution of PNG", value = 144)),
+                                                                                                                column(2,style = "margin-top: 25px;",downloadButton('downloadPlotPNG_Upset_plot_overlap','Download PNG'))),
+                                                                                                     ),
+                                                                                                   )
+                                                                                          ),
+
+                                                                                          tabPanel("Clonal expansion plots",value = 2,
+                                                                                                   add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
+                                                                                                   fluidRow(
+                                                                                                     # uiOutput('myPanel_top_clonal_plot'),
+                                                                                                     conditionalPanel(condition="input.Graph_type_bar=='Number_expanded' || input.Graph_type_bar=='Frequency_expanded'",
+                                                                                                                      fluidRow(
+                                                                                                                        column(3,
+                                                                                                                               wellPanel(id = "tPanel23",style = "overflow-y:scroll; max-height: 600px",
+                                                                                                                                         uiOutput('myPanel_clonal_plot'))),
+                                                                                                                        column(9, plotOutput("clonality.bar.graph",height="600px"))
+                                                                                                                      )
+                                                                                                     ),
+                                                                                                     conditionalPanel(condition="input.Graph_type_bar=='Top_clonotypes'",
+                                                                                                                      fluidRow(
+                                                                                                                        column(3,
+                                                                                                                               wellPanel(id = "tPanel23",style = "overflow-y:scroll; max-height: 600px",
+                                                                                                                                         uiOutput('myPanel_top_clonal_plot'))),
+                                                                                                                        column(9, plotOutput("clonality.bar.graph2",height="600px"))
+
+                                                                                                                      ),
+                                                                                                     ),
+                                                                                                   ),
+
+                                                                                                   fluidRow(
+                                                                                                     column(1,numericInput("width_clonality.bar.graph", "Width of PDF", value=10)),
+                                                                                                     column(1,numericInput("height_clonality.bar.graph", "Height of PDF", value=8)),
+                                                                                                     column(2,style = "margin-top: 25px;",downloadButton('downloadPlot_clonaity.bar.graph','Download PDF')),
+                                                                                                     column(2,numericInput("width_png_clonality.bar.graph","Width of PNG", value = 1200)),
+                                                                                                     column(2,numericInput("height_png_clonality.bar.graph","Height of PNG", value = 1000)),
+                                                                                                     column(2,numericInput("resolution_PNG_clonality.bar.graph","Resolution of PNG", value = 144)),
+                                                                                                     column(2,style = "margin-top: 25px;",downloadButton('downloadPlotPNG_clonaity.bar.graph','Download PNG'))
+                                                                                                   ),
+                                                                                          ),
+                                                                                          # UMAP clonality -> TCR -----
+                                                                                          tabPanel("Conality (counts)", value = 3,
+                                                                                                   tabsetPanel(
+                                                                                                     tabPanel("Test.table",
+                                                                                                              div(DT::dataTableOutput("Tb_TCR_clonotypes.table"))
+
+                                                                                                     ),
+                                                                                                     tabPanel("UMAP",
+                                                                                                              add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
+                                                                                                              fluidRow(
+                                                                                                                column(3,selectInput("filter_umap_expand","Filter plot",choices = c("no","yes"))),
+
+
+                                                                                                              ),
+                                                                                                              conditionalPanel(condition="input.filter_umap_expand == 'yes'",
+                                                                                                                               fluidRow(
+                                                                                                                                 column(3,numericInput("UMAP_1x","UMAP_1 <",value = 10)),
+                                                                                                                                 column(3,numericInput("UMAP_1y","UMAP_1 >",value = -10)),
+                                                                                                                                 column(3,numericInput("UMAP_2x","UMAP_2 <",value = 10)),
+                                                                                                                                 column(3,numericInput("UMAP_2y","UMAP_2 >",value = -10))
+                                                                                                                               ),
+
+                                                                                                              ),
+                                                                                                              conditionalPanel(condition="input.Graph_type_bar=='Number_expanded' || input.Graph_type_bar=='Frequency_expanded'",
+                                                                                                                               fluidRow(
+                                                                                                                                 column(3,
+                                                                                                                                        wellPanel(id = "tPanel23",style = "overflow-y:scroll; max-height: 600px",
+                                                                                                                                                  uiOutput('cols_UMAP_clonal_plot'))),
+                                                                                                                                 column(9, plotOutput("clonality.TCR.UMAP",height="600px"))
+                                                                                                                               ),
+
+                                                                                                                               fluidRow(
+                                                                                                                                 column(1,numericInput("width_TCR.UMAP", "Width of PDF", value=10)),
+                                                                                                                                 column(1,numericInput("height_TCR.UMAP", "Height of PDF", value=8)),
+                                                                                                                                 column(2,style = "margin-top: 25px;",downloadButton('downloadPlot_TCR.UMAP','Download PDF')),
+                                                                                                                                 column(2,numericInput("width_png_TCR.UMAP","Width of PNG", value = 1600)),
+                                                                                                                                 column(2,numericInput("height_png_TCR.UMAP","Height of PNG", value = 1000)),
+                                                                                                                                 column(2,numericInput("resolution_PNG_TCR.UMAP","Resolution of PNG", value = 144)),
+                                                                                                                                 column(2,style = "margin-top: 25px;",downloadButton('downloadPlotPNG_TCR.UMAP','Download PNG'))
+                                                                                                                               ),
+
+
+                                                                                                              ),
+                                                                                                              conditionalPanel(condition="input.Graph_type_bar=='Top_clonotypes'",
+                                                                                                                               #
+
+                                                                                                                               fluidRow(
+                                                                                                                                 # column(4,selectInput("Split_by_group","Include group comparison",choices=c("no","yes"))),
+                                                                                                                                 column(4,selectInput("display_all_samps","Display all sample",choices=c("yes","no"))),
+                                                                                                                               ),
+                                                                                                                               column(12,selectInput("ID_Column_metadata","Select to display",choices = "", multiple = T, width = "1200px")),
+
+                                                                                                                               add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
+                                                                                                                               fluidRow(
+                                                                                                                                 column(3,
+                                                                                                                                        wellPanel(id = "tPanel23",style = "overflow-y:scroll; max-height: 600px",
+                                                                                                                                                  uiOutput('cols_UMAP_Topclonotypes'))),
+                                                                                                                                 column(9, plotOutput("clonality.TCR.UMAP.top",height="600px")),
+                                                                                                                                 fluidRow(
+                                                                                                                                   column(1,numericInput("width_TCR.UMAP_top", "Width of PDF", value=10)),
+                                                                                                                                   column(1,numericInput("height_TCR.UMAP_top", "Height of PDF", value=8)),
+                                                                                                                                   column(2,style = "margin-top: 25px;",downloadButton('downloadPlot_TCR.UMAP_top','Download PDF')),
+                                                                                                                                   column(2,numericInput("width_png_TCR.UMAP_top","Width of PNG", value = 1800)),
+                                                                                                                                   column(2,numericInput("height_png_TCR.UMAP_top","Height of PNG", value = 1000)),
+                                                                                                                                   column(2,numericInput("resolution_PNG_TCR.UMAP_top","Resolution of PNG", value = 144)),
+                                                                                                                                   column(2,style = "margin-top: 25px;",downloadButton('downloadPlotPNG_TCR.UMAP_top','Download PNG'))),
+
+                                                                                                                               ),
+                                                                                                              ),
+
+                                                                                                     )
+
+                                                                                                   ),
+
+
+                                                                                          ),
+                                                                              ),
+                                                                     ),
+
+
+
+                                                                     # tabPanel("Clonotype overlap per cluster (upset plot)",
+                                                                     #          # add in upset plot per cluster
+                                                                     #          )
+                                                         )
+                                                ),
+                                                # end of differential expression -----
+                                                # TCR and GEX analysis section-----
+                                                tabPanel("TCR -> GEX", value = "TCR_and_GEX_tb",
+                                                         fluidRow(
+                                                           column(12,
+                                                                  # conditionalPanel(condition="input.Panel_TCRUMAP=='top_clone' || input.Panel_TCRUMAP=='Epitope'",
+                                                                  selectInput("Graph_split_order","Order of split by:",choices = "", multiple = T, width = "1400px"))
+                                                           # ),
+                                                         ),
+
+
+
+
+                                                         # Classification to include ------
+                                                         tabsetPanel(id = "Panel_TCRUMAP",
+                                                                     # top clonotypes plot -----
+                                                                     tabPanel("Top clonotypes", value = "top_clone",
+                                                                              fluidRow(
+                                                                                column(3,
+                                                                                       conditionalPanel(
+                                                                                         condition="input.Panel_TCRUMAP=='top_clone'",
+                                                                                         checkboxInput("limit_to_top_clones","Limit to the top clones",value = T)),
+                                                                                ),
+                                                                                column(3,
+                                                                                       conditionalPanel(
+                                                                                         condition="input.Panel_TCRUMAP=='top_clone' && input.limit_to_top_clones",
+                                                                                         numericInput("max_top_clone_limit","1 to max value", value = 50)),
+                                                                                )),
+                                                                              fluidRow(
+                                                                                # column(3,
+                                                                                #        conditionalPanel(
+                                                                                #          condition="input.Panel_TCRUMAP=='top_clone'",
+                                                                                #          actionButton("run_top","Update selected clonotype")),
+                                                                                # ),
+                                                                                column(12,
+                                                                                       conditionalPanel(
+                                                                                         condition="input.Panel_TCRUMAP=='top_clone'",
+                                                                                         selectInput("Selected_clonotype","Select clonotype:",choices ="",width = "1400px") ),
+
+                                                                                ),
+                                                                              ),
+
+
+
+                                                                              tabsetPanel(
+                                                                                # tabPanel("Table",
+                                                                                #          add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
+                                                                                #          div(DT::dataTableOutput("test.table_ridge")),
+                                                                                #
+                                                                                # ),
+
+                                                                                tabPanel("Summary table",
+                                                                                         add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
+                                                                                         div(DT::dataTableOutput("Top_clonotype_sum")),
+                                                                                         downloadButton('download_Top_clonotype_sum','Download table')
+
+
+
+                                                                                ),
+                                                                                tabPanel("Bar graph",
+                                                                                         add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
+
+                                                                                         fluidRow(
+                                                                                           column(3,
+                                                                                                  wellPanel(id = "tPanel23",style = "overflow-y:scroll; max-height: 600px",
+                                                                                                            uiOutput('myPanel_Top_bar_clonotype'))),
+                                                                                           column(9, plotOutput("top_clonotype",height="600px"))
+                                                                                         ),
+                                                                                         fluidRow(
+                                                                                           column(1,numericInput("width_top_clonotype", "Width of PDF", value=10)),
+                                                                                           column(1,numericInput("height_top_clonotype", "Height of PDF", value=8)),
+                                                                                           column(2,style = "margin-top: 25px;",downloadButton('downloadPlot_top_clonotype','Download PDF')),
+                                                                                           column(2,numericInput("width_png_top_clonotype","Width of PNG", value = 1200)),
+                                                                                           column(2,numericInput("height_png_top_clonotype","Height of PNG", value = 1000)),
+                                                                                           column(2,numericInput("resolution_PNG_top_clonotype","Resolution of PNG", value = 144)),
+                                                                                           column(2,style = "margin-top: 25px;",downloadButton('downloadPlotPNG_top_clonotype','Download PNG'))),
+
+                                                                                ),
+                                                                                # tabPanel("Pie labs",
+                                                                                #          add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
+                                                                                #          div(DT::dataTableOutput("Top_clonotype_Labs")),
+                                                                                #
+                                                                                # ),
+
+                                                                                tabPanel("heatmap",value = "TopHeat",
+                                                                                         p("Colour by: = x-axis; Split graph by: = y-axis for this heatmap"),
+                                                                                         plotOutput("heatmap_topclone_plot",height="600px"),
+                                                                                         fluidRow(
+                                                                                           column(1,numericInput("width_heatmap_topclone_plot", "Width of PDF", value=10)),
+                                                                                           column(1,numericInput("height_heatmap_topclone_plot", "Height of PDF", value=8)),
+                                                                                           column(2,style = "margin-top: 25px;",downloadButton('downloadPlot_heatmap_topclone_plot','Download PDF')),
+                                                                                           column(2,numericInput("width_png_heatmap_topclone_plot","Width of PNG", value = 1200)),
+                                                                                           column(2,numericInput("height_png_heatmap_topclone_plot","Height of PNG", value = 1000)),
+                                                                                           column(2,numericInput("resolution_heatmap_topclone_plot","Resolution of PNG", value = 144)),
+                                                                                           column(2,style = "margin-top: 25px;",downloadButton('downloadPlotPNG_heatmap_topclone_plot','Download PNG'))
+                                                                                         ),
+                                                                                ),
+                                                                                #####
+                                                                                tabPanel("Pie/UMAP chart",
+
+                                                                                         add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
+                                                                                         fluidRow(
+                                                                                           column(3,selectInput("Plot_type_selected","Plot",choices = c("pie","UMAP"))),
+                                                                                           # column(3,numericInput("strip_size_pie","Size of header",value = 10)),
+                                                                                           column(3,numericInput("size_selected_top","Size of Point",value = 2)),
+                                                                                         ),
+                                                                                         fluidRow(
+                                                                                           column(3,
+                                                                                                  wellPanel(id = "tPanel23",style = "overflow-y:scroll; max-height: 600px",
+                                                                                                            uiOutput('myPanel_Top_pie_clonotype'))),
+                                                                                           column(9, plotOutput("top_clonotype_pie",height="600px")),
+                                                                                         ),
+                                                                                         fluidRow(
+                                                                                           column(1,numericInput("width_top_clonotype_pie", "Width of PDF", value=10)),
+                                                                                           column(1,numericInput("height_top_clonotype_pie", "Height of PDF", value=8)),
+                                                                                           column(2,style = "margin-top: 25px;",downloadButton('downloadPlot_top_clonotype_pie','Download PDF')),
+                                                                                           column(2,numericInput("width_png_top_clonotype_pie","Width of PNG", value = 1200)),
+                                                                                           column(2,numericInput("height_png_top_clonotype_pie","Height of PNG", value = 1000)),
+                                                                                           column(2,numericInput("resolution_PNG_top_clonotype_pie","Resolution of PNG", value = 144)),
+                                                                                           column(2,style = "margin-top: 25px;",downloadButton('downloadPlotPNG_top_clonotype_pie','Download PNG'))),
+                                                                                ),
+                                                                                # add in find marker for comparing population to other for top clonotype
+                                                                                # tabPanel("FindMarker"),
+
+                                                                                # tabPanel("Expression",
+
+
+
+                                                                                # tabsetPanel(
+                                                                                tabPanel("Ridge/Violin plots",
+
+                                                                                         actionButton("run_string.data_Exp_top","View Ridge plot"),
+                                                                                         fluidRow(column(12, selectInput("string.data_Exp_top","column names for summary","",multiple = F, width = "1200px") )),
+                                                                                         fluidRow(
+                                                                                           column(3, checkboxInput("restric_ex","Restrict to above a threshold?", value = F )),
+                                                                                           column(3, numericInput("Gre_ex","Expression above:", value = 0 )),
+                                                                                           column(3, selectInput("plot_type_ridgvi","Plot type", choices = c("Ridge (selected clonotype)","Ridge (compare)","Violin (selected clonotype)", "Violin (compare)"))),
+                                                                                         ),
+
+                                                                                         add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
+                                                                                         fluidRow(
+                                                                                           column(6, div(DT::dataTableOutput("Ridge_chart_alpha_gamma_stat"))),
+                                                                                           column(6, plotOutput("Ridge_chart_alpha_gamma_plot_out",height="600px"))
+
+                                                                                         ),
+                                                                                         column(6,downloadButton('downloaddf_clusTCR_GEx','Download stats')),
+                                                                                         fluidRow(
+                                                                                           column(1,numericInput("width_Ridge_chart_alpha_gamma_plot_out", "Width of PDF", value=10)),
+                                                                                           column(1,numericInput("height_Ridge_chart_alpha_gamma_plot_out", "Height of PDF", value=8)),
+                                                                                           column(2,style = "margin-top: 25px;",downloadButton('downloadPlot_Ridge_chart_alpha_gamma_plot_out','Download PDF')),
+                                                                                           column(2,numericInput("width_png_Ridge_chart_alpha_gamma_plot_out","Width of PNG", value = 1200)),
+                                                                                           column(2,numericInput("height_png_Ridge_chart_alpha_gamma_plot_out","Height of PNG", value = 1000)),
+                                                                                           column(2,numericInput("resolution_PNG_Ridge_chart_alpha_gamma_plot_out","Resolution of PNG", value = 144)),
+                                                                                           column(2,style = "margin-top: 25px;",downloadButton('downloadPlotPNG_Ridge_chart_alpha_gamma_plot_out','Download PNG'))),
+
+                                                                                ),
+
+                                                                                tabPanel("Stats",
+                                                                                         add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
+                                                                                         div(DT::dataTableOutput("Ridge_chart_alpha_gamma_stat_comp")),
+                                                                                         downloadButton('downloaddf_FindMarker_Top','Download stat (Right)')
+                                                                                ),
+                                                                                # dotplot top-----
+                                                                                tabPanel("Dotplot",
+                                                                                         fluidRow(
+                                                                                           column(2,colourInput("low.dotplot","Lower color:","darkblue")),
+                                                                                           column(2,colourInput("middle.dotplot","Middle color:","white")),
+                                                                                           column(2,colourInput("high.dotplot","High color:","darkred")),
+                                                                                           column(2,checkboxInput("restict_no_points","Restrict Label",value = F)),
+                                                                                           column(2,numericInput("pval.ex.top_genes","Top genes to display", value = 40)),
+                                                                                         ),
+                                                                                         add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
+
+                                                                                         plotOutput("all_expression_dotplot_top",height="400px"),
+
+                                                                                         textInput("name_clonotype_selected","Name of clone","clone 1"),
+                                                                                         fluidRow(
+                                                                                           column(1,numericInput("width_all_expression_dotplot_top", "Width of PDF", value=20)),
+                                                                                           column(1,numericInput("height_all_expression_dotplot_top", "Height of PDF", value=4)),
+                                                                                           column(2,style = "margin-top: 25px;",downloadButton('downloadPlot_all_expression_dotplot_top','Download PDF')),
+                                                                                           column(2,numericInput("width_png_all_expression_dotplot_top","Width of PNG", value = 2400)),
+                                                                                           column(2,numericInput("height_png_all_expression_dotplot_top","Height of PNG", value = 700)),
+                                                                                           column(2,numericInput("resolution_PNG_all_expression_dotplot_top","Resolution of PNG", value = 144)),
+                                                                                           column(2,style = "margin-top: 25px;",downloadButton('downloadPlotPNG_all_expression_dotplot_top','Download PNG'))),
+
+                                                                                ),
+                                                                                tabPanel("Over-representation",
+                                                                                         fluidRow(
+                                                                                           column(3,numericInput("in.geneset.cutoff_top","Min number of genes in GeneSet",value = 1, min = 0,step = 1, max = 60000)),
+                                                                                           column(3,numericInput("p.val_cutoff_top","p-val cut-off",value = 0.05, min = 0, max = 1)),
+                                                                                           # column(3,numericInput("adjust_cutoff_top","BH cut-off",value = 1, min = 0, max = 1)),
+                                                                                         ),
+                                                                                         add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
+                                                                                         div(DT::dataTableOutput("Over_rep_Top_clones_Tab")),
+                                                                                         downloadButton('downloadtb_over.rep.Top_Ex','Download table')
+                                                                                         #
+                                                                                ),
+                                                                                # ),
+                                                                                # ),
+                                                                              ),
+                                                                     ),
+
+                                                                     # expanded phenotype -----
+                                                                     tabPanel("Expanded", value = "Expanded",
+
+                                                                              tabsetPanel(id = "ExPan",
+                                                                                          tabPanel("Table",
+                                                                                                   add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
+                                                                                                   div(DT::dataTableOutput("Expansion_check")),
+                                                                                          ),
+                                                                                          tabPanel("ex.UMAP",value = "ExPan_UMAP",
+                                                                                                   fluidRow(
+                                                                                                     add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
+                                                                                                     column(3,
+                                                                                                            wellPanel(id = "tPanel23",style = "overflow-y:scroll; max-height: 600px",
+                                                                                                                      uiOutput('cols_UMAP_Expanded'))),
+                                                                                                     column(9, plotOutput("UMAP_Expanded",height="600px"))
+                                                                                                   ),
+                                                                                                   fluidRow(
+                                                                                                     column(1,numericInput("width_UMAP_Expanded", "Width of PDF", value=10)),
+                                                                                                     column(1,numericInput("height_UMAP_Expanded", "Height of PDF", value=8)),
+                                                                                                     column(2,style = "margin-top: 25px;",downloadButton('downloadPlot_UMAP_Expanded','Download PDF')),
+                                                                                                     column(2,numericInput("width_png_UMAP_Expanded","Width of PNG", value = 1200)),
+                                                                                                     column(2,numericInput("height_png_UMAP_Expanded","Height of PNG", value = 1000)),
+                                                                                                     column(2,numericInput("resolution_PNG_UMAP_Expanded","Resolution of PNG", value = 144)),
+                                                                                                     column(2,style = "margin-top: 25px;",downloadButton('downloadPlotPNG_UMAP_Expanded','Download PNG'))
+                                                                                                   ),
+                                                                                          ),
+                                                                                          tabPanel("Stats",value = "ExPan_stat",
+                                                                                                   add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
+                                                                                                   div(DT::dataTableOutput("compare.stat_Ex")),
+                                                                                                   downloadButton('downloadtb_compare.stat_Ex','Download table')
+                                                                                          ),
+                                                                                          tabPanel("Dotplot",value = "ExPan_dot",
+                                                                                                   fluidRow(
+                                                                                                     column(2,colourInput("low.dotplot.ex","Lower color:","darkblue")),
+                                                                                                     column(2,colourInput("middle.dotplot.ex","Middle color:","white")),
+                                                                                                     column(2,colourInput("high.dotplot.ex","High color:","darkred")),
+
+                                                                                                   ),
+                                                                                                   add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
+                                                                                                   plotOutput("relative_expression_dotplot_ex",height="600px"),
+                                                                                                   fluidRow(
+                                                                                                     column(1,numericInput("width_all_expression_dotplot_ex", "Width of PDF", value=20)),
+                                                                                                     column(1,numericInput("height_all_expression_dotplot_ex", "Height of PDF", value=4)),
+                                                                                                     column(2,style = "margin-top: 25px;",downloadButton('downloadPlot_all_expression_dotplot_ex','Download PDF')),
+                                                                                                     column(2,numericInput("width_png_all_expression_dotplot_ex","Width of PNG", value = 2400)),
+                                                                                                     column(2,numericInput("height_png_all_expression_dotplot_ex","Height of PNG", value = 600)),
+                                                                                                     column(2,numericInput("resolution_PNG_all_expression_dotplot_ex","Resolution of PNG", value = 144)),
+                                                                                                     column(2,style = "margin-top: 25px;",downloadButton('downloadPlotPNG_all_expression_dotplot_ex','Download PNG'))
+                                                                                                   ),
+                                                                                          ),
+                                                                                          tabPanel("Over-representation",value="ExPan_OvRep",
+                                                                                                   fluidRow(
+                                                                                                     column(3,numericInput("in.geneset.cutoff_Exp","Min number of genes in GeneSet",value = 1, min = 0,step = 1, max = 60000)),
+                                                                                                     column(3,numericInput("p.val_cutoff_Exp","p-val cut-off",value = 0.05, min = 0, max = 1)),
+                                                                                                     # column(3,numericInput("adjust_cutoff_Exp","BH cut-off",value = 1, min = 0, max = 1)),
+                                                                                                     # column(3,numericInput("adjust_cutoff_Exp","BH cut-off",value = 0.05, min = 0, max = 1)),
+
+                                                                                                   ),
+
+                                                                                                   add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
+                                                                                                   div(DT::dataTableOutput("Over_rep_Exp_Tab")),
+                                                                                                   downloadButton('downloadtb_over.rep_Exp','Download table')
+                                                                                                   #
+                                                                                          )
+
+                                                                              )
+
+                                                                     ),
+
+                                                                     # ClusTCR2 Analysis -----
+                                                                     tabPanel("ClusTCR2",value = "ClusTCR2",
+                                                                              tabsetPanel(
+                                                                                tabPanel("Table.Clust",
+                                                                                         add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
+                                                                                         div(DT::dataTableOutput("Tb_ClusTCR_selected")),
+                                                                                         downloadButton('downloadtb_Tb_ClusTCR_selected','Download table')
+                                                                                ),
+                                                                                tabPanel("UMAP",
+                                                                                         fluidRow(
+                                                                                           column(3,
+                                                                                                  wellPanel(id = "tPanel23",style = "overflow-y:scroll; max-height: 600px",
+                                                                                                            uiOutput('myPanel_cols_clust_UMAP'))),
+                                                                                           column(9, plotOutput("UMAP_ClusTCR2_plot",height="600px"))
+                                                                                         ),
+                                                                                         fluidRow(
+                                                                                           column(1,numericInput("width_UMAP_ClusTCR2_plot", "Width of PDF", value=10)),
+                                                                                           column(1,numericInput("height_UMAP_ClusTCR2_plot", "Height of PDF", value=8)),
+                                                                                           column(2,style = "margin-top: 25px;",downloadButton('downloadPlot_UMAP_ClusTCR2_plot','Download PDF')),
+                                                                                           column(2,numericInput("width_png_UMAP_ClusTCR2_plot","Width of PNG", value = 1200)),
+                                                                                           column(2,numericInput("height_png_UMAP_ClusTCR2_plot","Height of PNG", value = 1000)),
+                                                                                           column(2,numericInput("resolution_PNG_UMAP_ClusTCR2_plot","Resolution of PNG", value = 144)),
+                                                                                           column(2,style = "margin-top: 25px;",downloadButton('downloadPlotPNG_UMAP_ClusTCR2_plot','Download PNG'))),
+
+                                                                                ),
+                                                                                tabPanel("motif",
+                                                                                         plotOutput("Motif_ClusTCR2_cluster",height="300px"),
+                                                                                         verbatimTextOutput("print_unique_cases"),
+                                                                                         # div(DT::dataTableOutput("Tb_motif_cluster")),
+
+                                                                                         fluidRow(
+                                                                                           column(1,numericInput("width_Motif_ClusTCR2_cluster", "Width of PDF", value=10)),
+                                                                                           column(1,numericInput("height_Motif_ClusTCR2_cluster", "Height of PDF", value=4)),
+                                                                                           column(2,style = "margin-top: 25px;",downloadButton('downloadPlot_Motif_ClusTCR2_cluster','Download PDF')),
+                                                                                           column(2,numericInput("width_png_Motif_ClusTCR2_cluster","Width of PNG", value = 2400)),
+                                                                                           column(2,numericInput("height_png_Motif_ClusTCR2_cluster","Height of PNG", value = 600)),
+                                                                                           column(2,numericInput("resolution_PNG_Motif_ClusTCR2_cluster","Resolution of PNG", value = 144)),
+                                                                                           column(2,style = "margin-top: 25px;",downloadButton('downloadPlotPNG_Motif_ClusTCR2_cluster','Download PNG'))),
+
+                                                                                ),
+
+                                                                                #####
+                                                                                tabPanel("heatmap",value = "ClustHeat",
+                                                                                         p("Colour by: = x-axis; Split graph by: = y-axis for this heatmap"),
+                                                                                         plotOutput("Pie_ClusTCR2_plot",height="600px"),
+                                                                                         fluidRow(
+                                                                                           column(1,numericInput("width_Pie_ClusTCR2_plot", "Width of PDF", value=10)),
+                                                                                           column(1,numericInput("height_Pie_ClusTCR2_plot", "Height of PDF", value=8)),
+                                                                                           column(2,style = "margin-top: 25px;",downloadButton('downloadPlot_Pie_ClusTCR2_plot','Download PDF')),
+                                                                                           column(2,numericInput("width_png_Pie_ClusTCR2_plot","Width of PNG", value = 1200)),
+                                                                                           column(2,numericInput("height_png_Pie_ClusTCR2_plot","Height of PNG", value = 1000)),
+                                                                                           column(2,numericInput("resolution_PNG_Pie_ClusTCR2_plot","Resolution of PNG", value = 144)),
+                                                                                           column(2,style = "margin-top: 25px;",downloadButton('downloadPlotPNG_Pie_ClusTCR2_plot','Download PNG'))
+                                                                                         ),
+                                                                                ),
+
+                                                                                # tabPanel("Pie (Expression)", value = "ClusPie",
+                                                                                #          fluidRow(
+                                                                                #            column(3,
+                                                                                #   wellPanel(id = "tPanel23",style = "overflow-y:scroll; max-height: 600px",
+                                                                                #             uiOutput('myPanel_cols_clusTCR2_pie')
+                                                                                #   )
+                                                                                #            ),
+                                                                                #            column(9, )
+                                                                                #          ),
+
+                                                                                # ),
+
+                                                                                tabPanel("Stats",value = "ClusPan_stat",
+                                                                                         add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
+
+                                                                                         div(DT::dataTableOutput("compare.stat_Cluster_DT")),
+                                                                                         downloadButton('downloadtb_compare.stat_Cluster','Download table')
+                                                                                ),
+
+                                                                                # dotplot Cluster ------
+                                                                                tabPanel("Dotplot",value = "ClusPan_dot",
+                                                                                         fluidRow(
+                                                                                           column(2,colourInput("low.dotplot.clust","Lower color:","darkblue")),
+                                                                                           column(2,colourInput("middle.dotplot.clust","Middle color:","white")),
+                                                                                           column(2,colourInput("high.dotplot.clust","High color:","darkred")),
+                                                                                           column(2,checkboxInput("restrict.dotpot.clust","Restrict to top list",value = F)),
+                                                                                           column(2,numericInput("restrict.dotpot.num.clust","Total genes to display:", value = 10))
+                                                                                         ),
+                                                                                         add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
+
+                                                                                         plotOutput("all_expression_dotplot_cluster",height="400px"),
+
+                                                                                         fluidRow(
+                                                                                           column(1,numericInput("width_all_expression_dotplot_clust", "Width of PDF", value=20)),
+                                                                                           column(1,numericInput("height_all_expression_dotplot_clust", "Height of PDF", value=8)),
+                                                                                           column(2,style = "margin-top: 25px;",downloadButton('downloadPlot_all_expression_dotplot_clust','Download PDF')),
+                                                                                           column(2,numericInput("width_png_all_expression_dotplot_clust","Width of PNG", value = 2400)),
+                                                                                           column(2,numericInput("height_png_all_expression_dotplot_clust","Height of PNG", value = 700)),
+                                                                                           column(2,numericInput("resolution_PNG_all_expression_dotplot_clust","Resolution of PNG", value = 144)),
+                                                                                           column(2,style = "margin-top: 25px;",downloadButton('downloadPlotPNG_all_expression_dotplot_clust','Download PNG'))
+                                                                                         ),
+                                                                                ),
+                                                                                tabPanel("Over-representation",value="ClusPan_OvRep",
+                                                                                         fluidRow(
+                                                                                           column(3,numericInput("in.geneset.cutoff_Clust","Min number of genes in GeneSet",value = 1, min = 0,step = 1, max = 60000)),
+                                                                                           column(3,numericInput("p.val_cutoff_Clust","p-val cut-off",value = 0.05, min = 0, max = 1)),
+                                                                                           # column(3,numericInput("adjust_cutoff_Clust","BH cut-off",value = 1, min = 0, max = 1)),
+                                                                                         ),
+                                                                                         add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
+
+                                                                                         div(DT::dataTableOutput("Over_rep_Cluster_Tab")),
+                                                                                         downloadButton('downloadtb_over.rep.cluster','Download table')
+                                                                                )
+                                                                              )
+                                                                     ),
+                                                                     # epitope analysis -----
+                                                                     tabPanel("Epitope", value = "Epitope",
+                                                                              conditionalPanel(condition="input.Panel_TCRUMAP=='Epitope'",
+                                                                                               fluidRow(
+                                                                                                 column(3,uiOutput("classification_to_add_epitope")),
+                                                                                                 column(3,uiOutput("classification_to_add_epitope2")),
+                                                                                                 column(3,actionButton("Update_epi","Add in Epitope list")),
+                                                                                                 column(3,selectInput("Epi_of_interest","Epitope of interest",""))
+
+                                                                                               ),
+                                                                              ),
+                                                                              tabsetPanel(id = "EpitipeTabs",
+                                                                                          # tabPanel("Uploaded Epitope file",
+                                                                                          #          add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
+                                                                                          #          div(DT::dataTableOutput("MainTcell_Check")),
+                                                                                          # ),
+                                                                                          tabPanel("Summary Table",
+                                                                                                   add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
+                                                                                                   div(DT::dataTableOutput("Pie_Epitope_dt")),
+                                                                                                   downloadButton('downloaddf_Pie_Epitope_dt','Download table')
+                                                                                          ),
+
+                                                                                          tabPanel("Heatmap",
+                                                                                                   add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
+                                                                                                   plotOutput("Heatmap_epi_plot",height="600px"),
+
+                                                                                                   fluidRow(
+                                                                                                     column(1,numericInput("width_Heatmap_epi_plot", "Width of PDF", value=10)),
+                                                                                                     column(1,numericInput("height_Heatmap_epi_plot", "Height of PDF", value=8)),
+                                                                                                     column(2,style = "margin-top: 25px;",downloadButton('downloadPlot_Heatmap_epi_plot','Download PDF')),
+                                                                                                     column(2,numericInput("width_png_Heatmap_epi_plot","Width of PNG", value = 1200)),
+                                                                                                     column(2,numericInput("height_png_Heatmap_epi_plot","Height of PNG", value = 1000)),
+                                                                                                     column(2,numericInput("resolution_PNG_Heatmap_epi_plot","Resolution of PNG", value = 144)),
+                                                                                                     column(2,style = "margin-top: 25px;",downloadButton('downloadPlotPNG_Heatmap_epi_plot','Download PNG'))),
+
+
+                                                                                          ),
+                                                                                          tabPanel("UMAP",
+
+                                                                                                   numericInput("value_size_epi_umap","Size of epitope dots",value = 2),
+
+                                                                                                   # column(3,selectInput("epitope_umap_selected","Select",choices = c("beta","epitope","pathology"),selected = "pathology")),
+                                                                                                   add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
+                                                                                                   fluidRow(
+                                                                                                     column(3,
+                                                                                                            wellPanel(id = "tPanel23",style = "overflow-y:scroll; max-height: 600px",
+                                                                                                                      uiOutput('myPanel_cols_epitope'))),
+                                                                                                     column(9, plotOutput("UMAP_Epitope_plot",height="600px"))
+                                                                                                   ),
+
+                                                                                                   fluidRow(
+                                                                                                     column(1,numericInput("width_UMAP_Epitope", "Width of PDF", value=10)),
+                                                                                                     column(1,numericInput("height_UMAP_Epitope", "Height of PDF", value=8)),
+                                                                                                     column(2,style = "margin-top: 25px;",downloadButton('downloadPlot_UMAP_Epitope','Download PDF')),
+                                                                                                     column(2,numericInput("width_png_UMAP_Epitope","Width of PNG", value = 1200)),
+                                                                                                     column(2,numericInput("height_png_UMAP_Epitope","Height of PNG", value = 1000)),
+                                                                                                     column(2,numericInput("resolution_PNG_UMAP_Epitope","Resolution of PNG", value = 144)),
+                                                                                                     column(2,style = "margin-top: 25px;",downloadButton('downloadPlotPNG_UMAP_Epitope','Download PNG'))),
+
+                                                                                          ),
+                                                                                          tabPanel("Pie (Expression)",
+
+                                                                                                   add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
+                                                                                                   fluidRow(
+                                                                                                     column(3,
+                                                                                                            wellPanel(id = "tPanel23",style = "overflow-y:scroll; max-height: 600px",
+                                                                                                                      uiOutput('myPanel_cols_epitope_pie'))),
+                                                                                                     column(9, plotOutput("Pie_Epitope_plot",height="600px"))
+                                                                                                   ),
+
+                                                                                                   fluidRow(
+                                                                                                     column(1,numericInput("width_Pie_Epitope", "Width of PDF", value=10)),
+                                                                                                     column(1,numericInput("height_Pie_Epitope", "Height of PDF", value=8)),
+                                                                                                     column(2,style = "margin-top: 25px;",downloadButton('downloadPlot_Pie_Epitope','Download PDF')),
+                                                                                                     column(2,numericInput("width_png_Pie_Epitope","Width of PNG", value = 1200)),
+                                                                                                     column(2,numericInput("height_png_Pie_Epitope","Height of PNG", value = 1000)),
+                                                                                                     column(2,numericInput("resolution_PNG_Pie_Epitope","Resolution of PNG", value = 144)),
+                                                                                                     column(2,style = "margin-top: 25px;",downloadButton('downloadPlotPNG_Pie_Epitope','Download PNG'))),
+                                                                                          ),
+
+                                                                                          tabPanel("Stats",value = "EpiPan_stat",
+                                                                                                   add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
+                                                                                                   div(DT::dataTableOutput("Epi_of_interest_DF")),
+                                                                                                   div(DT::dataTableOutput("compare.stat_Epi_DT")),
+                                                                                                   downloadButton('downloadtb_compare.stat_Epi','Download table')
+                                                                                          ),
+                                                                                          tabPanel("Dotplot",value = "EpiPan_dot",
+                                                                                                   fluidRow(
+                                                                                                     column(2,colourInput("low.dotplot.epi","Lower color:","darkblue")),
+                                                                                                     column(2,colourInput("middle.dotplot.epi","Middle color:","white")),
+                                                                                                     column(2,colourInput("high.dotplot.epi","High color:","darkred")),
+                                                                                                     column(2,checkboxInput("restrict.dotpot.epi","Restrict to top list",value = F)),
+                                                                                                     column(2,numericInput("restrict.dotpot.num.epi","Total genes to display:", value = 10))
+                                                                                                   ),
+                                                                                                   add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
+
+
+                                                                                                   # div(DT::dataTableOutput("checking_epi_dot_issue")),
+
+                                                                                                   plotOutput("all_expression_dotplot_epi",height="400px"),
+
+                                                                                                   fluidRow(
+                                                                                                     column(1,numericInput("width_all_expression_dotplot_epi", "Width of PDF", value=20)),
+                                                                                                     column(1,numericInput("height_all_expression_dotplot_epi", "Height of PDF", value=4)),
+                                                                                                     column(2,style = "margin-top: 25px;",downloadButton('downloadPlot_all_expression_dotplot_epi','Download PDF')),
+                                                                                                     column(2,numericInput("width_png_all_expression_dotplot_epi","Width of PNG", value = 2400)),
+                                                                                                     column(2,numericInput("height_png_all_expression_dotplot_epi","Height of PNG", value = 700)),
+                                                                                                     column(2,numericInput("resolution_PNG_all_expression_dotplot_epi","Resolution of PNG", value = 144)),
+                                                                                                     column(2,style = "margin-top: 25px;",downloadButton('downloadPlotPNG_all_expression_dotplot_epi','Download PNG'))
+                                                                                                   ),
+
+
+
+                                                                                          ),
+                                                                                          tabPanel("Over-representation",value="EpiPan_OvRep",
+                                                                                                   fluidRow(
+                                                                                                     column(3,numericInput("in.geneset.cutoff_Epi","Min number of genes in GeneSet",value = 1, min = 0,step = 1, max = 60000)),
+                                                                                                     column(3,numericInput("p.val_cutoff_Epi","p-val cut-off",value = 0.05, min = 0, max = 1)),
+
+                                                                                                   ),
+
+                                                                                                   add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
+                                                                                                   div(DT::dataTableOutput("Over_rep_Epi_Tab")),
+                                                                                                   downloadButton('downloadtb_over.rep.Epi','Download table')
+                                                                                                   #
+                                                                                          )
+
+                                                                              ),
+
+                                                                     ),
+
+                                                                     # Overlap ------
+
+                                                                     # tabPanel("Clonotypes per cluster (Pie/bar plot)"),
+                                                                     # tabPanel("Upset plot")
+                                                         ),
+                                                ),
+                                                ########
+                                                #prioritization strategy ------
+
+                                                tabPanel("Automation (TCR -> GEX)",value = "Prior",
+                                                         h5("under construction"),
+                                                         tabsetPanel(id = "PriorTBMods",
+                                                                     tabPanel("Analysis steps", value = "ModstoConsid",
+                                                                              p("The prioritisation section automates the analysis based on certain thresholds"),
+
+                                                                              p("There are three section"),
+                                                                              p("1. Clonotype"),
+                                                                              p("    - Single sample: immunodominant based on percentage threshold"),
+                                                                              p("2. Cluster"),
+                                                                              p("3. Epitope"),
+                                                                              p("Note: minimum threshold of expansion (n=3) per analysis. Cannot perform stats on n=1 or n=2"),
+
+                                                                     ),
+                                                                     # modules of priority Top clone ------
+                                                                     tabPanel("Clonotype",value = "PriorRepertoireTB",
+
+                                                                              fluidRow(
+                                                                                column(3, checkboxInput("Download_public_overlapping","Download Public-like",value = T)),
+                                                                                column(3, checkboxInput("Download_public_overlapping_bar","Download Public-like Over-rep", value = F)),
+                                                                                column(3, checkboxInput("Download_private_overlapping","Download Private clone analysis",value = F)),
+                                                                                column(3,checkboxInput("restrict_to_expanded","Restrict to expanded",value = F))
+                                                                              ),
+                                                                              add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "purple"),
+                                                                              verbatimTextOutput("Simple_workflow_step1"),
+                                                                              verbatimTextOutput("Number_of_clonotypes_to_"),
+                                                                              add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "purple"),
+                                                                              div(DT::dataTableOutput("PriorClono_Tab")),
+                                                                              uiOutput("Module_case_statements"),
+                                                                              div(DT::dataTableOutput("private_clonotypes")),
+
+                                                                     ),
+                                                                     # modules of priority cluster ------
+                                                                     tabPanel("Cluster",value = "PriorClustTB",
+                                                                              fluidRow(
+                                                                                column(3,uiOutput("Default_priority_cutoffAG")),
+
+                                                                                column(3,uiOutput("Default_priority_cutoffBD")),
+                                                                                # column(3,numericInput("CloneTotal_input","Select clones > ",value = 2, min = 2)),
+                                                                              ),
+                                                                              fluidRow(
+                                                                                column(3,numericInput("Sample_count_cluster","AG Sample count >=",value = 2)),
+                                                                                column(3,numericInput("Total_cloneCount_cluster","AG Clone count >=",value = 3,min = 3)),
+                                                                                column(3,numericInput("Sample_count_clusterBD","BD Sample count >=",value = 3,min = 3)),
+                                                                                column(3,numericInput("Total_cloneCount_clusterBD","BD Clone count >=",value = 2)),
+
+                                                                              ),
+
+                                                                              add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "purple"),
+                                                                              verbatimTextOutput("number_clusters_to_analyse_AG"),
+                                                                              add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "purple"),
+                                                                              verbatimTextOutput("number_clusters_to_analyse_BD"),
+
+                                                                              add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "purple"),
+
+                                                                              uiOutput("Cluster_dowload_button_prior"),
+                                                                              # div(DT::dataTableOutput("colors.top_dt")),
+
+                                                                     ),
+                                                                     # modules of priority Epitope ------
+                                                                     tabPanel("Epitope/Annotation",value = "PriorEpiTB",
+                                                                              add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "purple"),
+                                                                              checkboxInput("epitope_uploaded","Add in Epitope data", value = T),
+                                                                              fluidRow(
+                                                                                column(3,uiOutput("AddInEpiUI_1")),
+                                                                                column(3,uiOutput("AddInEpiUI_2")),
+                                                                              ),
+                                                                              actionButton("EpitopePrior_Download_Bt","Automated Epitope analysis"),
+                                                                              div(DT::dataTableOutput("Test_table_1")),
+
+                                                                     ),
+
+                                                                     ### end priority
+                                                         )
+                                                ),
+
+                                                # GEX -> TCR --------
+                                                tabPanel("GEX -> TCR",
+                                                         h5("Under Development..."),
+                                                         tabsetPanel(
+                                                           ##### annotation GEX -> TCR --------
+                                                           tabPanel("Annotation", value = "PanelAnno_GEXTCR",
+                                                                    h5("Under Active Development..."),
+                                                                    fluidRow(
+                                                                      column(3,uiOutput("AddInAnnoUI_man_1")),
+                                                                      column(3,uiOutput("AddInAnnoUI_man_2")),
+                                                                      column(3,selectInput("Slected_annotation","Select annotation",choices = ""))
+
+                                                                    ),
+                                                                    tabsetPanel(
+                                                                      tabPanel("Table",
+                                                                               div(DT::dataTableOutput("AnnoTable_perMarkers")),
+                                                                               downloadButton('downloaddf_AnnoTable_perMarkers','Download table'),
 
                                                                       ),
-                                                             ),
-# TCR overview ontop of UMAP -----
+                                                                      tabPanel("UMAP"),
+                                                                      tabPanel("TCR per Anno ID"),
+                                                                      tabPanel("Stats"),
+                                                                      tabPanel("Dot plot"),
+                                                                      tabPanel("Over representation")
+                                                                    )
+                                                           ),
+
+                                                           # marker specific TCR analysis --------
+                                                           tabPanel("Marker",value = "Marker",
 
 
-tabPanel("TCR",
-    tabsetPanel(id = "TCR",
-                tabPanel("Overlap",
-                         tabsetPanel(
-                           tabPanel("Table",
-                                    div(DT::dataTableOutput("Upset_plot_overlap_Tb")),
-                                    downloadButton('downloaddf_Upset_plot_overlap_Tb','Download table')
-                           ),
-                           tabPanel("Upset Plot",
-                                    plotOutput("Upset_plot_overlap"),
-                                    fluidRow(
-                                      column(1,numericInput("width_Upset_plot_overlap", "Width of PDF", value=10)),
-                                      column(1,numericInput("height_Upset_plot_overlap", "Height of PDF", value=8)),
-                                      column(2,style = "margin-top: 25px;",downloadButton('downloadPlot_Upset_plot_overlap','Download PDF')),
-                                      column(2,numericInput("width_png_Upset_plot_overlap","Width of PNG", value = 1200)),
-                                      column(2,numericInput("height_png_Upset_plot_overlap","Height of PNG", value = 1000)),
-                                      column(2,numericInput("resolution_PNG_Upset_plot_overlap","Resolution of PNG", value = 144)),
-                                      column(2,style = "margin-top: 25px;",downloadButton('downloadPlotPNG_Upset_plot_overlap','Download PNG'))),
-                           ),
-                         )
-                ),
 
-                tabPanel("Clonal expansion plots",value = 2,
-                         add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
-                         fluidRow(
-                           # uiOutput('myPanel_top_clonal_plot'),
-                           conditionalPanel(condition="input.Graph_type_bar=='Number_expanded' || input.Graph_type_bar=='Frequency_expanded'",
-                                            fluidRow(
-                                              column(3,
-                                                     wellPanel(id = "tPanel23",style = "overflow-y:scroll; max-height: 600px",
-        uiOutput('myPanel_clonal_plot'))),
-                                              column(9, plotOutput("clonality.bar.graph",height="600px"))
-                                            )
-                           ),
-                           conditionalPanel(condition="input.Graph_type_bar=='Top_clonotypes'",
-                                            fluidRow(
-                                              column(3,
-                                                     wellPanel(id = "tPanel23",style = "overflow-y:scroll; max-height: 600px",
-        uiOutput('myPanel_top_clonal_plot'))),
-                                              column(9, plotOutput("clonality.bar.graph2",height="600px"))
+                                                                    tabsetPanel(id = "Marker_Panel",
+                                                                                tabPanel("Single marker",
+                                                                                         actionButton("load_marker_genes_sig","Load genes"),
 
-                                            ),
-                           ),
-                         ),
+                                                                                         fluidRow(
+                                                                                           column(4,selectizeInput("Var_to_col_marker","Marker col","")),
+                                                                                           column(2,numericInput("Filter_lower_UMAP1_marker","UMAP_1 >",value = -20)),
+                                                                                           column(2,numericInput("Filter_lower_UMAP1_marker2","UMAP_1 <",value = 20)),
+                                                                                           column(2,numericInput("Filter_lower_UMAP2_marker","UMAP_2 >",value = -20)),
+                                                                                           column(2,numericInput("Filter_lower_UMAP2_marker2","UMAP_2 <",value = 20)),
+                                                                                         ),
+                                                                                         # conditionalPanel(condition="input.Marker_Panel =='Marker_Panel_plot_stats'",
+                                                                                         fluidRow(
+                                                                                           column(3,selectInput("Analysis_marker_stats_type","Analysis type",choices = c("Population","Expanded"))),
+                                                                                           column(3,selectInput("Help_marer","Definitions",choices = c("No","Yes"))),
+                                                                                           column(3, numericInput("cutoff_marker_gt","Marker +ve cut-off (>)",value = 0,step = 0.1)),
+                                                                                           column(3,numericInput("pos_expanded_cut_off","clone count (>) for +ve",value = 2, min=1)),
+                                                                                         ),
+                                                                                         conditionalPanel(condition = "input.Help_marer == 'Yes'",
+                                                                                                          # p(strong("1. Total."), "Refers to the marker of interest compared to all negative cells"),
+                                                                                                          p(strong("1. Population."), "Refers to the the restricted UMAP selected population and compared the +ve to -ve marker population."),
+                                                                                                          p(strong("2. Expanded."), "Compares the clonal expaned (min 3) vs non-expanded population for all cells +ve for the marker in the restricted UMAP space."),
+                                                                                         ),
 
-                         fluidRow(
-                           column(1,numericInput("width_clonality.bar.graph", "Width of PDF", value=10)),
-                           column(1,numericInput("height_clonality.bar.graph", "Height of PDF", value=8)),
-                           column(2,style = "margin-top: 25px;",downloadButton('downloadPlot_clonaity.bar.graph','Download PDF')),
-                           column(2,numericInput("width_png_clonality.bar.graph","Width of PNG", value = 1200)),
-                           column(2,numericInput("height_png_clonality.bar.graph","Height of PNG", value = 1000)),
-                           column(2,numericInput("resolution_PNG_clonality.bar.graph","Resolution of PNG", value = 144)),
-                           column(2,style = "margin-top: 25px;",downloadButton('downloadPlotPNG_clonaity.bar.graph','Download PNG'))
-                         ),
-                ),
-# UMAP clonality -> TCR -----
-                tabPanel("Conality (counts)", value = 3,
-                         tabsetPanel(
-                           tabPanel("Test.table",
-                                    div(DT::dataTableOutput("Tb_TCR_clonotypes.table"))
+                                                                                         tabsetPanel(
+                                                                                           tabPanel("Table", value = "Marker_Panel_table",
+                                                                                                    add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
+                                                                                                    div(DT::dataTableOutput("marker_selected_tab")),
+                                                                                           ),
+                                                                                           tabPanel("UMAP plot",value = "Marker_Panel_plot_UMAP",
+                                                                                                    h4("Select area of the plot to keep for the specific marker"),
+                                                                                                    h6("Recommended to filter to broad populations based on UMAP e.g., CD4, CD8 or other"),
+                                                                                                    add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
+                                                                                                    numericInput("max_scale","MAX scale",value = ""),
 
-                                    ),
-                           tabPanel("UMAP",
-                                    add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
-                                    fluidRow(
-                                      column(3,selectInput("filter_umap_expand","Filter plot",choices = c("no","yes"))),
+                                                                                                    plotOutput("marker_selected_UMAP_plot",height="600px"),
+
+                                                                                                    fluidRow(
+                                                                                                      column(3,numericInput("width_marker_selected_UMAP_plot", "Width of PDF", value=10)),
+                                                                                                      column(3,numericInput("height_marker_selected_UMAP_plot", "Height of PDF", value=8)),
+                                                                                                      column(3),
+                                                                                                      column(3,style = "margin-top: 25px;",downloadButton('downloadPlot_marker_selected_UMAP_plot','Download PDF'))),
+                                                                                                    fluidRow(
+                                                                                                      column(3,numericInput("width_png_marker_selected_UMAP_plot","Width of PNG", value = 1200)),
+                                                                                                      column(3,numericInput("height_png_marker_selected_UMAP_plot","Height of PNG", value = 1000)),
+                                                                                                      column(3,numericInput("resolution_PNG_marker_selected_UMAP_plot","Resolution of PNG", value = 144)),
+                                                                                                      column(3,style = "margin-top: 25px;",downloadButton('downloadPlotPNG_marker_selected_UMAP_plot','Download PNG'))
+                                                                                                    )
 
 
-                                    ),
-                                    conditionalPanel(condition="input.filter_umap_expand == 'yes'",
-                                                     fluidRow(
-                                                       column(3,numericInput("UMAP_1x","UMAP_1 <",value = 10)),
-                                                       column(3,numericInput("UMAP_1y","UMAP_1 >",value = -10)),
-                                                       column(3,numericInput("UMAP_2x","UMAP_2 <",value = 10)),
-                                                       column(3,numericInput("UMAP_2y","UMAP_2 >",value = -10))
-                                                     ),
+                                                                                           ),
 
-                                    ),
-                                    conditionalPanel(condition="input.Graph_type_bar=='Number_expanded' || input.Graph_type_bar=='Frequency_expanded'",
-                                                     fluidRow(
-                                                       column(3,
-                                                              wellPanel(id = "tPanel23",style = "overflow-y:scroll; max-height: 600px",
-                                                                        uiOutput('cols_UMAP_clonal_plot'))),
-                                                       column(9, plotOutput("clonality.TCR.UMAP",height="600px"))
-                                                     ),
+                                                                                           tabPanel("Violin/Ridge plot",value = "Marker_Panel_plot_VR",
+                                                                                                    h4("Filter marker of interest based on threshold"),
+                                                                                                    fluidRow(
+                                                                                                      column(3,selectInput("select_plot_vio.ridge","Plot type",choices = c("Violin","Ridge")))
+                                                                                                    ),
+                                                                                                    add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
+                                                                                                    plotOutput("marker_selected_VioRidge_plot",height="600px")
 
-                                                     fluidRow(
-                                                       column(1,numericInput("width_TCR.UMAP", "Width of PDF", value=10)),
-                                                       column(1,numericInput("height_TCR.UMAP", "Height of PDF", value=8)),
-                                                       column(2,style = "margin-top: 25px;",downloadButton('downloadPlot_TCR.UMAP','Download PDF')),
-                                                       column(2,numericInput("width_png_TCR.UMAP","Width of PNG", value = 1600)),
-                                                       column(2,numericInput("height_png_TCR.UMAP","Height of PNG", value = 1000)),
-                                                       column(2,numericInput("resolution_PNG_TCR.UMAP","Resolution of PNG", value = 144)),
-                                                       column(2,style = "margin-top: 25px;",downloadButton('downloadPlotPNG_TCR.UMAP','Download PNG'))
-                                                     ),
+                                                                                           ),
+                                                                                           # tabPanel("UMAP"),
+                                                                                           tabPanel("TCR/BCR mapped", value = "Marker_Panel_plot_TCR",
+                                                                                                    h4("TCR and/or BCR seqeunces that are positive for that marker"),
+                                                                                                    add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
+                                                                                                    fluidRow(
+                                                                                                      column(6,div(DT::dataTableOutput("TCR_marker_positive_count"))),
+                                                                                                      column(6,div(DT::dataTableOutput("TCR_marker_neg_count")))
+                                                                                                    ),
+
+                                                                                                    div(DT::dataTableOutput("merged_marker_hist_table")),
+                                                                                                    downloadButton('downloaddf_clonotype_distribution','Download table'),
+
+                                                                                                    add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
+                                                                                                    plotOutput("marker_selected_histogram_plot",height="600px")
 
 
-                                    ),
-                                    conditionalPanel(condition="input.Graph_type_bar=='Top_clonotypes'",
-                                                     #
 
-                                                     fluidRow(
-                                                       # column(4,selectInput("Split_by_group","Include group comparison",choices=c("no","yes"))),
-                                                       column(4,selectInput("display_all_samps","Display all sample",choices=c("yes","no"))),
-                                                     ),
-                                                     column(12,selectInput("ID_Column_metadata","Select to display",choices = "", multiple = T, width = "1200px")),
+                                                                                           ),
 
-                                                     add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
-                                                     fluidRow(
-                                                       column(3,
-                                                              wellPanel(id = "tPanel23",style = "overflow-y:scroll; max-height: 600px",
-                                                                        uiOutput('cols_UMAP_Topclonotypes'))),
-                                                       column(9, plotOutput("clonality.TCR.UMAP.top",height="600px")),
-                                                       fluidRow(
-                                                         column(1,numericInput("width_TCR.UMAP_top", "Width of PDF", value=10)),
-                                                         column(1,numericInput("height_TCR.UMAP_top", "Height of PDF", value=8)),
-                                                         column(2,style = "margin-top: 25px;",downloadButton('downloadPlot_TCR.UMAP_top','Download PDF')),
-                                                         column(2,numericInput("width_png_TCR.UMAP_top","Width of PNG", value = 1800)),
-                                                         column(2,numericInput("height_png_TCR.UMAP_top","Height of PNG", value = 1000)),
-                                                         column(2,numericInput("resolution_PNG_TCR.UMAP_top","Resolution of PNG", value = 144)),
-                                                         column(2,style = "margin-top: 25px;",downloadButton('downloadPlotPNG_TCR.UMAP_top','Download PNG'))),
+                                                                                           tabPanel("Stats",value = "MP_plot_stats",
+                                                                                                    add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
+                                                                                                    div(DT::dataTableOutput("Compare.stat_marker")),
+                                                                                                    downloadButton('downloaddf_Marker_stats','Download table')
 
-                                                     ),
-                                    ),
+                                                                                                    # filtered on marker of interest, broad population
+                                                                                                    # determine if
+                                                                                                    # segregated into expanded vs non-expaned  expanded clonotypes?
+
+
+                                                                                           ),
+                                                                                           # tabPanel("Dotplot",
+                                                                                           #
+                                                                                           #
+                                                                                           # ),
+                                                                                           # tabPanel("Over-representation",
+                                                                                           #
+                                                                                           # ),
+
+                                                                                         ),
+                                                                                         # cut-off 1,
+                                                                                         # umap filtering?
+
+
+                                                                                ),
+                                                                                # dual marker analysis ------
+                                                                                tabPanel("Dual marker analysis",
+                                                                                         actionButton("load_marker_genes_dual","Load genes"),
+                                                                                         # marker 1 # cut-off 1
+                                                                                         # marker 2 @ cut-off 2 (negative control)
+                                                                                         fluidRow(
+                                                                                           column(4,selectizeInput("Var_to_col_marker2","X-axis Marker","")),
+                                                                                           column(4,selectizeInput("Var_to_col_marker3","Y-axis Marker",""))
+                                                                                         ),
+                                                                                         fluidRow(
+                                                                                           column(2,numericInput("Filter_dual_UMAP1_marker","UMAP_1 >",value = -20)),
+                                                                                           column(2,numericInput("Filter_dual_UMAP1_marker2","UMAP_1 <",value = 20)),
+                                                                                           column(2,numericInput("Filter_dual_UMAP2_marker","UMAP_2 >",value = -20)),
+                                                                                           column(2,numericInput("Filter_dual_UMAP2_marker2","UMAP_2 <",value = 20)),
+                                                                                           # column(2),
+                                                                                           column(2,numericInput("X_axis_dot_dual","X-axis line",value = 0, step = 0.1)),
+                                                                                           column(2,numericInput("Y_axis_dot_dual","Y-axis line",value = 0, step = 0.1)),
+
+                                                                                         ),
+
+                                                                                         tabsetPanel(
+                                                                                           tabPanel("table",
+                                                                                                    add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
+                                                                                                    div(DT::dataTableOutput("meta_data_for_features_scale2_df")),
+
+                                                                                           ),
+                                                                                           tabPanel("Feature plots",
+                                                                                                    add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
+                                                                                                    fluidRow(
+                                                                                                      column(3,numericInput("max_scale2","MAX scale (left)",value = "")),
+                                                                                                      column(3,numericInput("max_scale3","MAX scale (right)",value = "")),
+                                                                                                    ),
+
+                                                                                                    add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
+                                                                                                    fluidRow(
+                                                                                                      column(6,plotOutput("marker_selected_UMAP_plot2",height="600px")),
+                                                                                                      column(6,plotOutput("marker_selected_UMAP_plot3",height="600px")),
+                                                                                                    )
+                                                                                           ),
+                                                                                           tabPanel("X by Y plot",
+
+                                                                                                    add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
+                                                                                                    plotOutput("df_dotplot_marker_plot",height="600px"),
+
+                                                                                                    fluidRow(
+                                                                                                      column(1,numericInput("width_df_dotplot_marker_plot", "Width of PDF", value=10)),
+                                                                                                      column(1,numericInput("height_df_dotplot_marker_plot", "Height of PDF", value=8)),
+                                                                                                      column(2,style = "margin-top: 25px;",downloadButton('downloadPlot_df_dotplot_marker_plot','Download Network PDF')),
+                                                                                                      column(2,numericInput("width_png_df_dotplot_marker_plot","Width of PNG", value = 1200)),
+                                                                                                      column(2,numericInput("height_png_df_dotplot_marker_plot","Height of PNG", value = 1000)),
+                                                                                                      column(2,numericInput("resolution_PNG_df_dotplot_marker_plot","Resolution of PNG", value = 144)),
+                                                                                                      column(2,style = "margin-top: 25px;",downloadButton('downloadPlotPNG_df_dotplot_marker_plot','Download Network PNG')),
+
+                                                                                                    ),
+
+
+                                                                                           ),
+                                                                                           # tabPanel("Violin plot"),# will include splitting by T cell/B cell markers? Ig?
+                                                                                           # tabPanel("UMAP"),
+                                                                                           tabPanel("TCR table",
+                                                                                                    add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
+                                                                                                    div(DT::dataTableOutput("dual_maker_TCR_Sum_DT")),
+
+                                                                                                    downloadButton('Dule_marker_TCRsummary_DT','Download table')
+
+                                                                                           ),
+
+                                                                                           tabPanel("Stats",
+                                                                                                    add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
+                                                                                                    selectInput("quad_dualmarker","Quadrant to compute",choices = c("Q1","Q2","Q3","Q4")),
+                                                                                                    div(DT::dataTableOutput("dual_maker_TCR_statsTB")),
+                                                                                                    downloadButton('Dule_marker_statsTBDownload','Download table')
+
+
+                                                                                           ),
+                                                                                         ))
+                                                                    )
+                                                           ),
+                                                           # modules of priority Annotations ------
+                                                           # tabPanel("Automation of Annotations",value = "PrioAnnoTB",
+                                                           #          add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "purple"),
+                                                           #          fluidRow(
+                                                           #            column(3,uiOutput("AddInAnnoUI_1")),
+                                                           #            column(3,uiOutput("AddInAnnoUI_2")),
+                                                           #          ),
+                                                           #          # actionButton("AnnoPrior_Download_Bt","Automated Annotation analysis"),
+                                                           #          div(DT::dataTableOutput("Prior_Test_annoTb")),
+                                                           #
+                                                           # ),
+                                                         )
+                                                )
+
 
                                     )
-
-                         ),
-
-
-                ),
-    ),
-),
-
-
-
-                                                             # tabPanel("Clonotype overlap per cluster (upset plot)",
-                                                             #          # add in upset plot per cluster
-                                                             #          )
-                                                 )
-                                        ),
-# end of differential expression -----
-# TCR and GEX analysis section-----
-                                        tabPanel("TCR -> GEX", value = "TCR_and_GEX_tb",
-                                                 #### User interface above the TCR with GEx
-
-                                                 fluidRow(column(3, conditionalPanel( condition="input.Panel_TCRUMAP == 'ClusTCR2'",
-                    selectInput("Samp_col_cluster","Column name",choices = ""))
-                                                 ),
-
-
-                                                 ),
-
-                                                 # column(3, selectInput("V_gene_sc","Select V with/without CDR3",choices ="")),
-                                                 fluidRow(
-                                                   column(3,
-                                                          conditionalPanel(
-                                                            condition="input.Panel_TCRUMAP=='top_clone'",
-                                                            actionButton("run_top","Update selected clonotype")),
-                                                   ),
-                                                   column(9,
-                                                          conditionalPanel(
-                                                            condition="input.Panel_TCRUMAP=='top_clone'",
-                                                            selectInput("Selected_clonotype","Select clonotype:",choices ="",width = "900px") ),
-
-                                                   ),
-                                                 ),
-                                                 fluidRow(
-
-
-                                                   # column(2,conditionalPanel(condition="input.Panel_TCRUMAP=='top_clone' || input.Panel_TCRUMAP=='Epitope'",
-                                                   # selectInput("Split_by_group2","Split by Function?",choices=c("no","yes")))),
-
-                                                   column(9,
-                                                          conditionalPanel(condition="input.Panel_TCRUMAP=='top_clone' || input.Panel_TCRUMAP=='Epitope'",
-         selectInput("Graph_split_order","Order of split by:",choices = "", multiple = T, width = "900px"))
-                                                   ),
-                                                 ),
-
-
-
-                                                 conditionalPanel(condition="input.Panel_TCRUMAP=='Epitope'",
-                                                                  fluidRow(
-  column(3,uiOutput("classification_to_add_epitope")),
-  column(3,uiOutput("classification_to_add_epitope2")),
-  column(3,actionButton("Update_epi","Impute Epitope list")),
-  column(3,selectInput("Epi_of_interest","Epitope of interest",""))
-
-                                                                  ),
-                                                 ),
-# Classification to include ------
-                                                 tabsetPanel(id = "Panel_TCRUMAP",
-# top clonotypes plot -----
-                                                             tabPanel("Top clonotypes", value = "top_clone",
-    tabsetPanel(
-      # tabPanel("Table",
-      #          add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
-      #          div(DT::dataTableOutput("test.table_ridge")),
-      #
-      # ),
-
-      tabPanel("Summary table",
-               add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
-               div(DT::dataTableOutput("Top_clonotype_sum")),
-               downloadButton('download_Top_clonotype_sum','Download table')
-
-
-
-      ),
-      tabPanel("Bar graph",
-               add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
-
-               fluidRow(
-                 column(3,
-                        wellPanel(id = "tPanel23",style = "overflow-y:scroll; max-height: 600px",
-                                  uiOutput('myPanel_Top_bar_clonotype'))),
-                 column(9, plotOutput("top_clonotype",height="600px"))
-               ),
-               fluidRow(
-                 column(1,numericInput("width_top_clonotype", "Width of PDF", value=10)),
-                 column(1,numericInput("height_top_clonotype", "Height of PDF", value=8)),
-                 column(2,style = "margin-top: 25px;",downloadButton('downloadPlot_top_clonotype','Download PDF')),
-                 column(2,numericInput("width_png_top_clonotype","Width of PNG", value = 1200)),
-                 column(2,numericInput("height_png_top_clonotype","Height of PNG", value = 1000)),
-                 column(2,numericInput("resolution_PNG_top_clonotype","Resolution of PNG", value = 144)),
-                 column(2,style = "margin-top: 25px;",downloadButton('downloadPlotPNG_top_clonotype','Download PNG'))),
-
-      ),
-      # tabPanel("Pie labs",
-      #          add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
-      #          div(DT::dataTableOutput("Top_clonotype_Labs")),
-      #
-      # ),
-      tabPanel("Pie/UMAP chart",
-
-               add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
-               fluidRow(
-                 column(3,selectInput("Plot_type_selected","Plot",choices = c("pie","UMAP"))),
-                 # column(3,numericInput("strip_size_pie","Size of header",value = 10)),
-                 column(3,numericInput("size_selected_top","Size of Point",value = 2)),
-               ),
-               fluidRow(
-                 column(3,
-                        wellPanel(id = "tPanel23",style = "overflow-y:scroll; max-height: 600px",
-                                  uiOutput('myPanel_Top_pie_clonotype'))),
-                 column(9, plotOutput("top_clonotype_pie",height="600px")),
-               ),
-               fluidRow(
-                 column(1,numericInput("width_top_clonotype_pie", "Width of PDF", value=10)),
-                 column(1,numericInput("height_top_clonotype_pie", "Height of PDF", value=8)),
-                 column(2,style = "margin-top: 25px;",downloadButton('downloadPlot_top_clonotype_pie','Download PDF')),
-                 column(2,numericInput("width_png_top_clonotype_pie","Width of PNG", value = 1200)),
-                 column(2,numericInput("height_png_top_clonotype_pie","Height of PNG", value = 1000)),
-                 column(2,numericInput("resolution_PNG_top_clonotype_pie","Resolution of PNG", value = 144)),
-                 column(2,style = "margin-top: 25px;",downloadButton('downloadPlotPNG_top_clonotype_pie','Download PNG'))),
-      ),
-      # add in find marker for comparing population to other for top clonotype
-      # tabPanel("FindMarker"),
-
-      # tabPanel("Expression",
-
-
-
-      # tabsetPanel(
-      tabPanel("Ridge/Violin plots",
-
-               actionButton("run_string.data_Exp_top","View Ridge plot"),
-               fluidRow(column(12, selectInput("string.data_Exp_top","column names for summary","",multiple = F, width = "1200px") )),
-               fluidRow(
-                 column(3, checkboxInput("restric_ex","Restrict to above a threshold?", value = F )),
-                 column(3, numericInput("Gre_ex","Expression above:", value = 0 )),
-                 column(3, selectInput("plot_type_ridgvi","Plot type", choices = c("Ridge (selected clonotype)","Ridge (compare)","Violin (selected clonotype)", "Violin (compare)"))),
-               ),
-
-               add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
-               fluidRow(
-                 column(6, div(DT::dataTableOutput("Ridge_chart_alpha_gamma_stat"))),
-                 column(6, plotOutput("Ridge_chart_alpha_gamma_plot_out",height="600px"))
-
-               ),
-               column(6,downloadButton('downloaddf_clusTCR_GEx','Download stats')),
-               fluidRow(
-                 column(1,numericInput("width_Ridge_chart_alpha_gamma_plot_out", "Width of PDF", value=10)),
-                 column(1,numericInput("height_Ridge_chart_alpha_gamma_plot_out", "Height of PDF", value=8)),
-                 column(2,style = "margin-top: 25px;",downloadButton('downloadPlot_Ridge_chart_alpha_gamma_plot_out','Download PDF')),
-                 column(2,numericInput("width_png_Ridge_chart_alpha_gamma_plot_out","Width of PNG", value = 1200)),
-                 column(2,numericInput("height_png_Ridge_chart_alpha_gamma_plot_out","Height of PNG", value = 1000)),
-                 column(2,numericInput("resolution_PNG_Ridge_chart_alpha_gamma_plot_out","Resolution of PNG", value = 144)),
-                 column(2,style = "margin-top: 25px;",downloadButton('downloadPlotPNG_Ridge_chart_alpha_gamma_plot_out','Download PNG'))),
-
-      ),
-
-      tabPanel("Stats",
-               add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
-               div(DT::dataTableOutput("Ridge_chart_alpha_gamma_stat_comp")),
-               downloadButton('downloaddf_FindMarker_Top','Download stat (Right)')
-      ),
-# dotplot top-----
-      tabPanel("Dotplot",
-               fluidRow(
-                 column(2,colourInput("low.dotplot","Lower color:","darkblue")),
-                 column(2,colourInput("middle.dotplot","Middle color:","white")),
-                 column(2,colourInput("high.dotplot","High color:","darkred")),
-                 column(2,checkboxInput("restict_no_points","Restrict Label",value = F)),
-                 column(2,numericInput("pval.ex.top_genes","Top genes to display", value = 40)),
-               ),
-               add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
-
-               plotOutput("all_expression_dotplot_top",height="400px"),
-
-               textInput("name_clonotype_selected","Name of clone","clone 1"),
-               fluidRow(
-                 column(1,numericInput("width_all_expression_dotplot_top", "Width of PDF", value=20)),
-                 column(1,numericInput("height_all_expression_dotplot_top", "Height of PDF", value=4)),
-                 column(2,style = "margin-top: 25px;",downloadButton('downloadPlot_all_expression_dotplot_top','Download PDF')),
-                 column(2,numericInput("width_png_all_expression_dotplot_top","Width of PNG", value = 2400)),
-                 column(2,numericInput("height_png_all_expression_dotplot_top","Height of PNG", value = 700)),
-                 column(2,numericInput("resolution_PNG_all_expression_dotplot_top","Resolution of PNG", value = 144)),
-                 column(2,style = "margin-top: 25px;",downloadButton('downloadPlotPNG_all_expression_dotplot_top','Download PNG'))),
-
-      ),
-      tabPanel("Over-representation",
-               fluidRow(
-                 column(3,numericInput("in.geneset.cutoff_top","Min number of genes in GeneSet",value = 1, min = 0,step = 1, max = 60000)),
-                 column(3,numericInput("p.val_cutoff_top","p-val cut-off",value = 0.05, min = 0, max = 1)),
-                 # column(3,numericInput("adjust_cutoff_top","BH cut-off",value = 1, min = 0, max = 1)),
-               ),
-               add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
-               div(DT::dataTableOutput("Over_rep_Top_clones_Tab")),
-               downloadButton('downloadtb_over.rep.Top_Ex','Download table')
-               #
-      ),
-      # ),
-      # ),
-    ),
-                                                             ),
-
-# expanded phenotype -----
-tabPanel("Expanded", value = "Expanded",
-   fluidRow(
-      column(3,selectInput("Samp_col_expanded","Sample column name",choices = "")),
-      column(9,selectInput("ID_Column_factor_expanded","ID's to include",choices = "", multiple = T, width = "1200px"))
-    ),
-
-    fluidRow(
-      # column(3,actionButton("update_Expansion_run","Upate expansion")),
-
-
-    ),
-    tabsetPanel(id = "ExPan",
-                tabPanel("Table",
-                         add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
-                         div(DT::dataTableOutput("Expansion_check")),
-                ),
-                tabPanel("ex.UMAP",value = "ExPan_UMAP",
-                         fluidRow(
-                           add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
-                           column(3,
-                                  wellPanel(id = "tPanel23",style = "overflow-y:scroll; max-height: 600px",
-                                            uiOutput('cols_UMAP_Expanded'))),
-                           column(9, plotOutput("UMAP_Expanded",height="600px"))
-                         ),
-                         fluidRow(
-                           column(1,numericInput("width_UMAP_Expanded", "Width of PDF", value=10)),
-                           column(1,numericInput("height_UMAP_Expanded", "Height of PDF", value=8)),
-                           column(2,style = "margin-top: 25px;",downloadButton('downloadPlot_UMAP_Expanded','Download PDF')),
-                           column(2,numericInput("width_png_UMAP_Expanded","Width of PNG", value = 1200)),
-                           column(2,numericInput("height_png_UMAP_Expanded","Height of PNG", value = 1000)),
-                           column(2,numericInput("resolution_PNG_UMAP_Expanded","Resolution of PNG", value = 144)),
-                           column(2,style = "margin-top: 25px;",downloadButton('downloadPlotPNG_UMAP_Expanded','Download PNG'))
-                         ),
-                ),
-                tabPanel("Check expansion",
-                         add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
-                         div(DT::dataTableOutput("Expansion_check2")),
-                ),
-                # tabPanel("Stats",value = "ExPan_stat",
-                #          add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
-                #          div(DT::dataTableOutput("compare.stat_Ex")),
-                #          downloadButton('downloadtb_compare.stat_Ex','Download table')
-                # ),
-                # tabPanel("Dotplot",value = "ExPan_dot",
-                #          fluidRow(
-                #            column(2,colourInput("low.dotplot.ex","Lower color:","darkblue")),
-                #            column(2,colourInput("middle.dotplot.ex","Middle color:","white")),
-                #            column(2,colourInput("high.dotplot.ex","High color:","darkred")),
-                #
-                #          ),
-                #          add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
-                #          plotOutput("relative_expression_dotplot_ex",height="600px"),
-                #          fluidRow(
-                #            column(1,numericInput("width_all_expression_dotplot_ex", "Width of PDF", value=20)),
-                #            column(1,numericInput("height_all_expression_dotplot_ex", "Height of PDF", value=4)),
-                #            column(2,style = "margin-top: 25px;",downloadButton('downloadPlot_all_expression_dotplot_ex','Download PDF')),
-                #            column(2,numericInput("width_png_all_expression_dotplot_ex","Width of PNG", value = 2400)),
-                #            column(2,numericInput("height_png_all_expression_dotplot_ex","Height of PNG", value = 600)),
-                #            column(2,numericInput("resolution_PNG_all_expression_dotplot_ex","Resolution of PNG", value = 144)),
-                #            column(2,style = "margin-top: 25px;",downloadButton('downloadPlotPNG_all_expression_dotplot_ex','Download PNG'))
-                #          ),
-                # ),
-                # tabPanel("Over-representation",value="ExPan_OvRep",
-                #          fluidRow(
-                #            column(3,numericInput("in.geneset.cutoff_Exp","Min number of genes in GeneSet",value = 1, min = 0,step = 1, max = 60000)),
-                #            column(3,numericInput("p.val_cutoff_Exp","p-val cut-off",value = 0.05, min = 0, max = 1)),
-                #            # column(3,numericInput("adjust_cutoff_Exp","BH cut-off",value = 1, min = 0, max = 1)),
-                #            # column(3,numericInput("adjust_cutoff_Exp","BH cut-off",value = 0.05, min = 0, max = 1)),
-                #
-                #          ),
-                #
-                #          add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
-                #          div(DT::dataTableOutput("Over_rep_Exp_Tab")),
-                #          downloadButton('downloadtb_over.rep_Exp','Download table')
-                #          #
-                # )
-
-    )
-
-                                                             ),
-
-# ClusTCR2 Analysis -----
-tabPanel("ClusTCR2",value = "ClusTCR2",
-    tabsetPanel(
-      tabPanel("Table.Clust",
-               add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
-               div(DT::dataTableOutput("Tb_ClusTCR_selected")),
-               downloadButton('downloadtb_Tb_ClusTCR_selected','Download table')
-      ),
-      tabPanel("UMAP",
-               fluidRow(
-                 column(3,
-                        wellPanel(id = "tPanel23",style = "overflow-y:scroll; max-height: 600px",
-                                  uiOutput('myPanel_cols_clust_UMAP'))),
-                 column(9, plotOutput("UMAP_ClusTCR2_plot",height="600px"))
-               ),
-               fluidRow(
-                 column(1,numericInput("width_UMAP_ClusTCR2_plot", "Width of PDF", value=10)),
-                 column(1,numericInput("height_UMAP_ClusTCR2_plot", "Height of PDF", value=8)),
-                 column(2,style = "margin-top: 25px;",downloadButton('downloadPlot_UMAP_ClusTCR2_plot','Download PDF')),
-                 column(2,numericInput("width_png_UMAP_ClusTCR2_plot","Width of PNG", value = 1200)),
-                 column(2,numericInput("height_png_UMAP_ClusTCR2_plot","Height of PNG", value = 1000)),
-                 column(2,numericInput("resolution_PNG_UMAP_ClusTCR2_plot","Resolution of PNG", value = 144)),
-                 column(2,style = "margin-top: 25px;",downloadButton('downloadPlotPNG_UMAP_ClusTCR2_plot','Download PNG'))),
-
-      ),
-      tabPanel("motif",
-               plotOutput("Motif_ClusTCR2_cluster",height="300px"),
-               verbatimTextOutput("print_unique_cases"),
-               # div(DT::dataTableOutput("Tb_motif_cluster")),
-
-               fluidRow(
-                 column(1,numericInput("width_Motif_ClusTCR2_cluster", "Width of PDF", value=10)),
-                 column(1,numericInput("height_Motif_ClusTCR2_cluster", "Height of PDF", value=4)),
-                 column(2,style = "margin-top: 25px;",downloadButton('downloadPlot_Motif_ClusTCR2_cluster','Download PDF')),
-                 column(2,numericInput("width_png_Motif_ClusTCR2_cluster","Width of PNG", value = 2400)),
-                 column(2,numericInput("height_png_Motif_ClusTCR2_cluster","Height of PNG", value = 600)),
-                 column(2,numericInput("resolution_PNG_Motif_ClusTCR2_cluster","Resolution of PNG", value = 144)),
-                 column(2,style = "margin-top: 25px;",downloadButton('downloadPlotPNG_Motif_ClusTCR2_cluster','Download PNG'))),
-
-      ),
-      tabPanel("Pie (Expression)", value = "ClusPie",
-               fluidRow(
-                 column(3,
-                        wellPanel(id = "tPanel23",style = "overflow-y:scroll; max-height: 600px",
-                                  uiOutput('myPanel_cols_clusTCR2_pie')
-                        )
-                 ),
-                 column(9, plotOutput("Pie_ClusTCR2_plot",height="600px"))
-               ),
-               fluidRow(
-                 column(1,numericInput("width_Pie_ClusTCR2_plot", "Width of PDF", value=10)),
-                 column(1,numericInput("height_Pie_ClusTCR2_plot", "Height of PDF", value=8)),
-                 column(2,style = "margin-top: 25px;",downloadButton('downloadPlot_Pie_ClusTCR2_plot','Download PDF')),
-                 column(2,numericInput("width_png_Pie_ClusTCR2_plot","Width of PNG", value = 1200)),
-                 column(2,numericInput("height_png_Pie_ClusTCR2_plot","Height of PNG", value = 1000)),
-                 column(2,numericInput("resolution_PNG_Pie_ClusTCR2_plot","Resolution of PNG", value = 144)),
-                 column(2,style = "margin-top: 25px;",downloadButton('downloadPlotPNG_Pie_ClusTCR2_plot','Download PNG'))
-               ),
-      ),
-
-      tabPanel("Stats",value = "ClusPan_stat",
-               add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
-
-               div(DT::dataTableOutput("compare.stat_Cluster_DT")),
-               downloadButton('downloadtb_compare.stat_Cluster','Download table')
-      ),
-
-# dotplot Cluster ------
-      tabPanel("Dotplot",value = "ClusPan_dot",
-               fluidRow(
-                 column(2,colourInput("low.dotplot.clust","Lower color:","darkblue")),
-                 column(2,colourInput("middle.dotplot.clust","Middle color:","white")),
-                 column(2,colourInput("high.dotplot.clust","High color:","darkred")),
-                 column(2,checkboxInput("restrict.dotpot.clust","Restrict to top list",value = F)),
-                 column(2,numericInput("restrict.dotpot.num.clust","Total genes to display:", value = 10))
-               ),
-               add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
-
-               plotOutput("all_expression_dotplot_cluster",height="400px"),
-
-               fluidRow(
-                 column(1,numericInput("width_all_expression_dotplot_clust", "Width of PDF", value=20)),
-                 column(1,numericInput("height_all_expression_dotplot_clust", "Height of PDF", value=8)),
-                 column(2,style = "margin-top: 25px;",downloadButton('downloadPlot_all_expression_dotplot_clust','Download PDF')),
-                 column(2,numericInput("width_png_all_expression_dotplot_clust","Width of PNG", value = 2400)),
-                 column(2,numericInput("height_png_all_expression_dotplot_clust","Height of PNG", value = 700)),
-                 column(2,numericInput("resolution_PNG_all_expression_dotplot_clust","Resolution of PNG", value = 144)),
-                 column(2,style = "margin-top: 25px;",downloadButton('downloadPlotPNG_all_expression_dotplot_clust','Download PNG'))
-               ),
-      ),
-      tabPanel("Over-representation",value="ClusPan_OvRep",
-               fluidRow(
-                 column(3,numericInput("in.geneset.cutoff_Clust","Min number of genes in GeneSet",value = 1, min = 0,step = 1, max = 60000)),
-                 column(3,numericInput("p.val_cutoff_Clust","p-val cut-off",value = 0.05, min = 0, max = 1)),
-                 # column(3,numericInput("adjust_cutoff_Clust","BH cut-off",value = 1, min = 0, max = 1)),
-               ),
-               add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
-
-               div(DT::dataTableOutput("Over_rep_Cluster_Tab")),
-               downloadButton('downloadtb_over.rep.cluster','Download table')
-      )
-    )
-                                                             ),
-# epitope analysis -----
-tabPanel("Epitope", value = "Epitope",
-         tabsetPanel(id = "EpitipeTabs",
-                     # tabPanel("Uploaded Epitope file",
-                     #          add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
-                     #          div(DT::dataTableOutput("MainTcell_Check")),
-                     # ),
-                     tabPanel("Summary Table",
-                              add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
-                              div(DT::dataTableOutput("Pie_Epitope_dt")),
-                              downloadButton('downloaddf_Pie_Epitope_dt','Download table')
-                     ),
-
-                     tabPanel("Heatmap",
-                              add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
-                              plotOutput("Heatmap_epi_plot",height="600px"),
-
-                              fluidRow(
-                                column(1,numericInput("width_Heatmap_epi_plot", "Width of PDF", value=10)),
-                                column(1,numericInput("height_Heatmap_epi_plot", "Height of PDF", value=8)),
-                                column(2,style = "margin-top: 25px;",downloadButton('downloadPlot_Heatmap_epi_plot','Download PDF')),
-                                column(2,numericInput("width_png_Heatmap_epi_plot","Width of PNG", value = 1200)),
-                                column(2,numericInput("height_png_Heatmap_epi_plot","Height of PNG", value = 1000)),
-                                column(2,numericInput("resolution_PNG_Heatmap_epi_plot","Resolution of PNG", value = 144)),
-                                column(2,style = "margin-top: 25px;",downloadButton('downloadPlotPNG_Heatmap_epi_plot','Download PNG'))),
-
-
-                     ),
-                     tabPanel("UMAP",
-
-                              numericInput("value_size_epi_umap","Size of epitope dots",value = 2),
-
-                              # column(3,selectInput("epitope_umap_selected","Select",choices = c("beta","epitope","pathology"),selected = "pathology")),
-                              add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
-                              fluidRow(
-                                column(3,
-                                       wellPanel(id = "tPanel23",style = "overflow-y:scroll; max-height: 600px",
-                                                 uiOutput('myPanel_cols_epitope'))),
-                                column(9, plotOutput("UMAP_Epitope_plot",height="600px"))
-                              ),
-
-                              fluidRow(
-                                column(1,numericInput("width_UMAP_Epitope", "Width of PDF", value=10)),
-                                column(1,numericInput("height_UMAP_Epitope", "Height of PDF", value=8)),
-                                column(2,style = "margin-top: 25px;",downloadButton('downloadPlot_UMAP_Epitope','Download PDF')),
-                                column(2,numericInput("width_png_UMAP_Epitope","Width of PNG", value = 1200)),
-                                column(2,numericInput("height_png_UMAP_Epitope","Height of PNG", value = 1000)),
-                                column(2,numericInput("resolution_PNG_UMAP_Epitope","Resolution of PNG", value = 144)),
-                                column(2,style = "margin-top: 25px;",downloadButton('downloadPlotPNG_UMAP_Epitope','Download PNG'))),
-
-                     ),
-                     tabPanel("Pie (Expression)",
-
-                              add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
-                              fluidRow(
-                                column(3,
-                                       wellPanel(id = "tPanel23",style = "overflow-y:scroll; max-height: 600px",
-                                                 uiOutput('myPanel_cols_epitope_pie'))),
-                                column(9, plotOutput("Pie_Epitope_plot",height="600px"))
-                              ),
-
-                              fluidRow(
-                                column(1,numericInput("width_Pie_Epitope", "Width of PDF", value=10)),
-                                column(1,numericInput("height_Pie_Epitope", "Height of PDF", value=8)),
-                                column(2,style = "margin-top: 25px;",downloadButton('downloadPlot_Pie_Epitope','Download PDF')),
-                                column(2,numericInput("width_png_Pie_Epitope","Width of PNG", value = 1200)),
-                                column(2,numericInput("height_png_Pie_Epitope","Height of PNG", value = 1000)),
-                                column(2,numericInput("resolution_PNG_Pie_Epitope","Resolution of PNG", value = 144)),
-                                column(2,style = "margin-top: 25px;",downloadButton('downloadPlotPNG_Pie_Epitope','Download PNG'))),
-                     ),
-
-                     tabPanel("Stats",value = "EpiPan_stat",
-                              add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
-                              div(DT::dataTableOutput("Epi_of_interest_DF")),
-                              div(DT::dataTableOutput("compare.stat_Epi_DT")),
-                              downloadButton('downloadtb_compare.stat_Epi','Download table')
-                     ),
-                     tabPanel("Dotplot",value = "EpiPan_dot",
-                              fluidRow(
-                                column(2,colourInput("low.dotplot.epi","Lower color:","darkblue")),
-                                column(2,colourInput("middle.dotplot.epi","Middle color:","white")),
-                                column(2,colourInput("high.dotplot.epi","High color:","darkred")),
-                                column(2,checkboxInput("restrict.dotpot.epi","Restrict to top list",value = F)),
-                                column(2,numericInput("restrict.dotpot.num.epi","Total genes to display:", value = 10))
-                              ),
-                              add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
-
-
-                              # div(DT::dataTableOutput("checking_epi_dot_issue")),
-
-                              plotOutput("all_expression_dotplot_epi",height="400px"),
-
-                              fluidRow(
-                                column(1,numericInput("width_all_expression_dotplot_epi", "Width of PDF", value=20)),
-                                column(1,numericInput("height_all_expression_dotplot_epi", "Height of PDF", value=4)),
-                                column(2,style = "margin-top: 25px;",downloadButton('downloadPlot_all_expression_dotplot_epi','Download PDF')),
-                                column(2,numericInput("width_png_all_expression_dotplot_epi","Width of PNG", value = 2400)),
-                                column(2,numericInput("height_png_all_expression_dotplot_epi","Height of PNG", value = 700)),
-                                column(2,numericInput("resolution_PNG_all_expression_dotplot_epi","Resolution of PNG", value = 144)),
-                                column(2,style = "margin-top: 25px;",downloadButton('downloadPlotPNG_all_expression_dotplot_epi','Download PNG'))
-                              ),
-
-
-
-                     ),
-                     tabPanel("Over-representation",value="EpiPan_OvRep",
-                              fluidRow(
-                                column(3,numericInput("in.geneset.cutoff_Epi","Min number of genes in GeneSet",value = 1, min = 0,step = 1, max = 60000)),
-                                column(3,numericInput("p.val_cutoff_Epi","p-val cut-off",value = 0.05, min = 0, max = 1)),
-
-                              ),
-
-                              add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
-                              div(DT::dataTableOutput("Over_rep_Epi_Tab")),
-                              downloadButton('downloadtb_over.rep.Epi','Download table')
-                              #
-                     )
-
-         ),
-
-),
-
-# Overlap ------
-
-                                                             # tabPanel("Clonotypes per cluster (Pie/bar plot)"),
-                                                             # tabPanel("Upset plot")
-                                                 ),
-                                        ),
-########
-#prioritization strategy ------
-
-tabPanel("Automation (TCR -> GEX)",value = "Prior",
-         h5("under construction"),
-         tabsetPanel(id = "PriorTBMods",
-                     tabPanel("Analysis steps", value = "ModstoConsid",
-                              p("The prioritisation section automates the analysis based on certain thresholds"),
-
-                              p("There are three section"),
-                              p("1. Clonotype"),
-                              p("    - Single sample: immunodominant based on percentage threshold"),
-                              p("2. Cluster"),
-                              p("3. Epitope"),
-                              p("Note: minimum threshold of expansion (n=3) per analysis. Cannot perform stats on n=1 or n=2"),
-
-                     ),
-# modules of priority Top clone ------
-                     tabPanel("Clonotype",value = "PriorRepertoireTB",
-
-                              fluidRow(
-                               column(3, checkboxInput("Download_public_overlapping","Download Public-like",value = T)),
-                               column(3, checkboxInput("Download_public_overlapping_bar","Download Public-like Over-rep", value = F)),
-                               column(3, checkboxInput("Download_private_overlapping","Download Private clone analysis",value = F)),
-                               column(3,checkboxInput("restrict_to_expanded","Restrict to expanded",value = F))
-                              ),
-                              add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "purple"),
-                              verbatimTextOutput("Simple_workflow_step1"),
-                              verbatimTextOutput("Number_of_clonotypes_to_"),
-                              add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "purple"),
-                              div(DT::dataTableOutput("PriorClono_Tab")),
-                              uiOutput("Module_case_statements"),
-                              div(DT::dataTableOutput("private_clonotypes")),
-
-                     ),
-# modules of priority cluster ------
-                     tabPanel("Cluster",value = "PriorClustTB",
-                              fluidRow(
-                                column(3,uiOutput("Default_priority_cutoffAG")),
-
-                                column(3,uiOutput("Default_priority_cutoffBD")),
-                                # column(3,numericInput("CloneTotal_input","Select clones > ",value = 2, min = 2)),
-                              ),
-                              fluidRow(
-                                column(3,numericInput("Sample_count_cluster","AG Sample count >=",value = 2)),
-                                column(3,numericInput("Total_cloneCount_cluster","AG Clone count >=",value = 3,min = 3)),
-                                column(3,numericInput("Sample_count_clusterBD","BD Sample count >=",value = 3,min = 3)),
-                                column(3,numericInput("Total_cloneCount_clusterBD","BD Clone count >=",value = 2)),
-
-                              ),
-
-                              add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "purple"),
-                              verbatimTextOutput("number_clusters_to_analyse_AG"),
-                              add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "purple"),
-                              verbatimTextOutput("number_clusters_to_analyse_BD"),
-
-                              add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "purple"),
-
-                              uiOutput("Cluster_dowload_button_prior"),
-                              # div(DT::dataTableOutput("colors.top_dt")),
-
-                     ),
-# modules of priority Epitope ------
-                     tabPanel("Epitope/Annotation",value = "PriorEpiTB",
-                              add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "purple"),
-                              checkboxInput("epitope_uploaded","Add in Epitope data", value = T),
-                              fluidRow(
-                                column(3,uiOutput("AddInEpiUI_1")),
-                                column(3,uiOutput("AddInEpiUI_2")),
-                              ),
-                              actionButton("EpitopePrior_Download_Bt","Automated Epitope analysis"),
-                              div(DT::dataTableOutput("Test_table_1")),
-
-                     ),
-
-                     ### end priority
-         )
-),
-
-# GEX -> TCR --------
-tabPanel("GEX -> TCR",
-         h5("Under Development..."),
-         tabsetPanel(
-           ##### annotation GEX -> TCR --------
-           tabPanel("Annotation", value = "PanelAnno_GEXTCR",
-                    h5("Under Active Development..."),
-                    fluidRow(
-                      column(3,uiOutput("AddInAnnoUI_man_1")),
-                      column(3,uiOutput("AddInAnnoUI_man_2")),
-                      column(3,selectInput("Slected_annotation","Select annotation",choices = ""))
-
-                    ),
-                    tabsetPanel(
-                        tabPanel("Table",
-                               div(DT::dataTableOutput("AnnoTable_perMarkers")),
-                               downloadButton('downloaddf_AnnoTable_perMarkers','Download table'),
-
-                               ),
-                      tabPanel("UMAP"),
-                      tabPanel("TCR per Anno ID"),
-                      tabPanel("Stats"),
-                      tabPanel("Dot plot"),
-                      tabPanel("Over representation")
-                    )
-           ),
-
-           # marker specific TCR analysis --------
-           tabPanel("Marker",value = "Marker",
-
-
-
-                    tabsetPanel(id = "Marker_Panel",
-                                tabPanel("Single marker",
-                                         actionButton("load_marker_genes_sig","Load genes"),
-
-                                         fluidRow(
-                                           column(4,selectizeInput("Var_to_col_marker","Marker col","")),
-                                           column(2,numericInput("Filter_lower_UMAP1_marker","UMAP_1 >",value = -20)),
-                                           column(2,numericInput("Filter_lower_UMAP1_marker2","UMAP_1 <",value = 20)),
-                                           column(2,numericInput("Filter_lower_UMAP2_marker","UMAP_2 >",value = -20)),
-                                           column(2,numericInput("Filter_lower_UMAP2_marker2","UMAP_2 <",value = 20)),
-                                         ),
-                                         # conditionalPanel(condition="input.Marker_Panel =='Marker_Panel_plot_stats'",
-                                         fluidRow(
-                                           column(3,selectInput("Analysis_marker_stats_type","Analysis type",choices = c("Population","Expanded"))),
-                                           column(3,selectInput("Help_marer","Definitions",choices = c("No","Yes"))),
-                                           column(3, numericInput("cutoff_marker_gt","Marker +ve cut-off (>)",value = 0,step = 0.1)),
-                                           column(3,numericInput("pos_expanded_cut_off","clone count (>) for +ve",value = 2, min=1)),
-                                         ),
-                                         conditionalPanel(condition = "input.Help_marer == 'Yes'",
-                                                          # p(strong("1. Total."), "Refers to the marker of interest compared to all negative cells"),
-                                                          p(strong("1. Population."), "Refers to the the restricted UMAP selected population and compared the +ve to -ve marker population."),
-                                                          p(strong("2. Expanded."), "Compares the clonal expaned (min 3) vs non-expanded population for all cells +ve for the marker in the restricted UMAP space."),
-                                         ),
-
-                                         tabsetPanel(
-                                           tabPanel("Table", value = "Marker_Panel_table",
-                                                    add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
-                                                    div(DT::dataTableOutput("marker_selected_tab")),
-                                           ),
-                                           tabPanel("UMAP plot",value = "Marker_Panel_plot_UMAP",
-                                                    h4("Select area of the plot to keep for the specific marker"),
-                                                    h6("Recommended to filter to broad populations based on UMAP e.g., CD4, CD8 or other"),
-                                                    add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
-                                                    numericInput("max_scale","MAX scale",value = ""),
-
-                                                    plotOutput("marker_selected_UMAP_plot",height="600px"),
-
-                                                    fluidRow(
-                                                      column(3,numericInput("width_marker_selected_UMAP_plot", "Width of PDF", value=10)),
-                                                      column(3,numericInput("height_marker_selected_UMAP_plot", "Height of PDF", value=8)),
-                                                      column(3),
-                                                      column(3,style = "margin-top: 25px;",downloadButton('downloadPlot_marker_selected_UMAP_plot','Download PDF'))),
-                                                    fluidRow(
-                                                      column(3,numericInput("width_png_marker_selected_UMAP_plot","Width of PNG", value = 1200)),
-                                                      column(3,numericInput("height_png_marker_selected_UMAP_plot","Height of PNG", value = 1000)),
-                                                      column(3,numericInput("resolution_PNG_marker_selected_UMAP_plot","Resolution of PNG", value = 144)),
-                                                      column(3,style = "margin-top: 25px;",downloadButton('downloadPlotPNG_marker_selected_UMAP_plot','Download PNG'))
-                                                    )
-
-
-                                           ),
-
-                                           tabPanel("Violin/Ridge plot",value = "Marker_Panel_plot_VR",
-                                                    h4("Filter marker of interest based on threshold"),
-                                                    fluidRow(
-                                                      column(3,selectInput("select_plot_vio.ridge","Plot type",choices = c("Violin","Ridge")))
-                                                    ),
-                                                    add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
-                                                    plotOutput("marker_selected_VioRidge_plot",height="600px")
-
-                                           ),
-                                           # tabPanel("UMAP"),
-                                           tabPanel("TCR/BCR mapped", value = "Marker_Panel_plot_TCR",
-                                                    h4("TCR and/or BCR seqeunces that are positive for that marker"),
-                                                    add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
-                                                    fluidRow(
-                                                      column(6,div(DT::dataTableOutput("TCR_marker_positive_count"))),
-                                                      column(6,div(DT::dataTableOutput("TCR_marker_neg_count")))
-                                                    ),
-
-                                                    div(DT::dataTableOutput("merged_marker_hist_table")),
-                                                    downloadButton('downloaddf_clonotype_distribution','Download table'),
-
-                                                    add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
-                                                    plotOutput("marker_selected_histogram_plot",height="600px")
-
-
-
-                                           ),
-
-                                           tabPanel("Stats",value = "MP_plot_stats",
-                                                    add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
-                                                    div(DT::dataTableOutput("Compare.stat_marker")),
-                                                    downloadButton('downloaddf_Marker_stats','Download table')
-
-                                                    # filtered on marker of interest, broad population
-                                                    # determine if
-                                                    # segregated into expanded vs non-expaned  expanded clonotypes?
-
-
-                                           ),
-                                           # tabPanel("Dotplot",
-                                           #
-                                           #
-                                           # ),
-                                           # tabPanel("Over-representation",
-                                           #
-                                           # ),
-
-                                         ),
-                                         # cut-off 1,
-                                         # umap filtering?
-
-
-                                ),
-           # dual marker analysis ------
-                                tabPanel("Dual marker analysis",
-                                         actionButton("load_marker_genes_dual","Load genes"),
-                                         # marker 1 # cut-off 1
-                                         # marker 2 @ cut-off 2 (negative control)
-                                         fluidRow(
-                                           column(4,selectizeInput("Var_to_col_marker2","X-axis Marker","")),
-                                           column(4,selectizeInput("Var_to_col_marker3","Y-axis Marker",""))
-                                         ),
-                                         fluidRow(
-                                           column(2,numericInput("Filter_dual_UMAP1_marker","UMAP_1 >",value = -20)),
-                                           column(2,numericInput("Filter_dual_UMAP1_marker2","UMAP_1 <",value = 20)),
-                                           column(2,numericInput("Filter_dual_UMAP2_marker","UMAP_2 >",value = -20)),
-                                           column(2,numericInput("Filter_dual_UMAP2_marker2","UMAP_2 <",value = 20)),
-                                           # column(2),
-                                           column(2,numericInput("X_axis_dot_dual","X-axis line",value = 0, step = 0.1)),
-                                           column(2,numericInput("Y_axis_dot_dual","Y-axis line",value = 0, step = 0.1)),
-
-                                         ),
-
-                                         tabsetPanel(
-                                           tabPanel("table",
-                                                    add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
-                                                    div(DT::dataTableOutput("meta_data_for_features_scale2_df")),
-
-                                           ),
-                                           tabPanel("Feature plots",
-                                                    add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
-                                                    fluidRow(
-                                                      column(3,numericInput("max_scale2","MAX scale (left)",value = "")),
-                                                      column(3,numericInput("max_scale3","MAX scale (right)",value = "")),
-                                                    ),
-
-                                                    add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
-                                                    fluidRow(
-                                                      column(6,plotOutput("marker_selected_UMAP_plot2",height="600px")),
-                                                      column(6,plotOutput("marker_selected_UMAP_plot3",height="600px")),
-                                                    )
-                                           ),
-                                           tabPanel("X by Y plot",
-
-                                                    add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
-                                                    plotOutput("df_dotplot_marker_plot",height="600px"),
-
-                                                    fluidRow(
-                                                      column(1,numericInput("width_df_dotplot_marker_plot", "Width of PDF", value=10)),
-                                                      column(1,numericInput("height_df_dotplot_marker_plot", "Height of PDF", value=8)),
-                                                      column(2,style = "margin-top: 25px;",downloadButton('downloadPlot_df_dotplot_marker_plot','Download Network PDF')),
-                                                      column(2,numericInput("width_png_df_dotplot_marker_plot","Width of PNG", value = 1200)),
-                                                      column(2,numericInput("height_png_df_dotplot_marker_plot","Height of PNG", value = 1000)),
-                                                      column(2,numericInput("resolution_PNG_df_dotplot_marker_plot","Resolution of PNG", value = 144)),
-                                                      column(2,style = "margin-top: 25px;",downloadButton('downloadPlotPNG_df_dotplot_marker_plot','Download Network PNG')),
-
-                                                    ),
-
-
-                                           ),
-                                           # tabPanel("Violin plot"),# will include splitting by T cell/B cell markers? Ig?
-                                           # tabPanel("UMAP"),
-                                           tabPanel("TCR table",
-                                                    add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
-                                                    div(DT::dataTableOutput("dual_maker_TCR_Sum_DT")),
-
-                                                    downloadButton('Dule_marker_TCRsummary_DT','Download table')
-
-                                           ),
-
-                                           tabPanel("Stats",
-                                                    add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
-                                                    selectInput("quad_dualmarker","Quadrant to compute",choices = c("Q1","Q2","Q3","Q4")),
-                                                    div(DT::dataTableOutput("dual_maker_TCR_statsTB")),
-                                                    downloadButton('Dule_marker_statsTBDownload','Download table')
-
-
-                                           ),
-                                         ))
-                    )
-           ),
-           # modules of priority Annotations ------
-           tabPanel("Automation of Annotations",value = "PrioAnnoTB",
-                    add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "purple"),
-                    fluidRow(
-                      column(3,uiOutput("AddInAnnoUI_1")),
-                      column(3,uiOutput("AddInAnnoUI_2")),
-                    ),
-                    # actionButton("AnnoPrior_Download_Bt","Automated Annotation analysis"),
-                    div(DT::dataTableOutput("Prior_Test_annoTb")),
-
-           ),
-         )
-         )
-
-
-                            )
                           )
                         )
                ),
-# end of Integration -----
+               # end of Integration -----
                tabPanel("Post Analysis",
                         sidebarLayout(
-                          sidebarPanel(),
-                          mainPanel(
-                            tabsetPanel(id = "Other_post_analysis",
-                                        tabPanel("Contig design"), # upload the unfiltered AIRR file and clonotypes for designing TCR contigs
-                                        tabPanel("Cluster Post analysis", value = "",
-                                                 # p("Convert .h5Seurat to .rds")
+                          sidebarPanel(width = 3),
+                          mainPanel(width=9,
+                                    tabsetPanel(id = "Other_post_analysis",
+                                                tabPanel("Contig design"), # upload the unfiltered AIRR file and clonotypes for designing TCR contigs
+                                                tabPanel("Cluster Post analysis", value = "",
+                                                         # p("Convert .h5Seurat to .rds")
 
-                                        )
+                                                )
 
 
-                            )
+                                    )
                           )
                         )
 
@@ -2476,19 +2480,19 @@ tabPanel("GEX -> TCR",
     ) # nav page
   )
 
-########
-# server ------
+  ########
+  # server ------
   server <- function(input, output,session) {
     # convert ------
-      Convert_to_RDS <- reactive({
-                      inFile_sc_pro2 <- input$file1_h5Seurat.file
-                      if (is.null(inFile_sc_pro2)) return(NULL)
-                      else {
-                        dataframe = LoadH5Seurat(inFile_sc_pro2$datapath)
+    Convert_to_RDS <- reactive({
+      inFile_sc_pro2 <- input$file1_h5Seurat.file
+      if (is.null(inFile_sc_pro2)) return(NULL)
+      else {
+        dataframe = LoadH5Seurat(inFile_sc_pro2$datapath)
 
-                      }
+      }
 
-                  })
+    })
 
     output$Convert_to_RDS_out <- renderPrint({
       sc <- input$file1_h5Seurat.file
@@ -2906,8 +2910,8 @@ tabPanel("GEX -> TCR",
                                                ifelse(grepl(".TCSAR",TCR_unfiltered_prod$junction_aa),".TCSAR",
                                                       ifelse(grepl('^C', TCR_unfiltered_prod$junction_aa) & grepl('F$', TCR_unfiltered_prod$junction_aa),"C___F",
                                                              ifelse(grepl('^C', TCR_unfiltered_prod$junction_aa),"C__",
-  ifelse(TCR_unfiltered_prod$junction_aa == '',"blank",
-         "other")))))
+                                                                    ifelse(TCR_unfiltered_prod$junction_aa == '',"blank",
+                                                                           "other")))))
 
       TCR_unfiltered_prod_junc <- subset(TCR_unfiltered_prod,TCR_unfiltered_prod$juct_issue!="blank")
 
@@ -2981,7 +2985,7 @@ tabPanel("GEX -> TCR",
                                                ifelse(non_standard2$Clonality=="AB D" & non_standard2$locus == "TRD", "remove_D",
                                                       ifelse(non_standard2$Clonality== "B GD" & non_standard2$locus == "TRB", "remove_B",
                                                              ifelse(non_standard2$Clonality== "A GD" & non_standard2$locus == "TRA", "remove_A",
-  ifelse(non_standard2$Clonality== "AB GD" & c(non_standard2$locus == "TRG" | non_standard2$locus == "TRD"), "remove_GD","keep")))))
+                                                                    ifelse(non_standard2$Clonality== "AB GD" & c(non_standard2$locus == "TRG" | non_standard2$locus == "TRD"), "remove_GD","keep")))))
 
       non_standard <- subset(non_standard2,non_standard2$Standard_to_keep=="keep")
       non_standard <- non_standard[,!names(non_standard) %in% c("filter","Standard_to_keep")]
@@ -3078,28 +3082,28 @@ tabPanel("GEX -> TCR",
         if (length(contigs_lim$Clonality[contigs_lim$Clonality == "B D"])>0) {
 
 
-        contig_D <- subset(contigs_lim,contigs_lim$chain=="TRD" & contigs_lim$Clonality == "B D")
-        name.list <- names(contig_D[c(names(contig_D[grep("gene",names(contig_D))]),
-                                      names(contig_D[grep("call",names(contig_D))]),
-                                      names(contig_D[grep("cdr3",names(contig_D))]),
-                                      names(contig_D[grep("cdr2",names(contig_D))]),
-                                      names(contig_D[grep("cdr1",names(contig_D))]),
-                                      names(contig_D[grep("junction",names(contig_D))]),
-                                      "chain",
-                                      "cell_type_experimental",
+          contig_D <- subset(contigs_lim,contigs_lim$chain=="TRD" & contigs_lim$Clonality == "B D")
+          name.list <- names(contig_D[c(names(contig_D[grep("gene",names(contig_D))]),
+                                        names(contig_D[grep("call",names(contig_D))]),
+                                        names(contig_D[grep("cdr3",names(contig_D))]),
+                                        names(contig_D[grep("cdr2",names(contig_D))]),
+                                        names(contig_D[grep("cdr1",names(contig_D))]),
+                                        names(contig_D[grep("junction",names(contig_D))]),
+                                        "chain",
+                                        "cell_type_experimental",
 
-                                      "Clonal_Expanded"
-        )])
+                                        "Clonal_Expanded"
+          )])
 
-        contig_D <- contig_D %>%
-          select(all_of(name.list), everything())
-        names(contig_D)[1:summary(name.list)[1]] <-paste(names(contig_D[names(contig_D) %in% name.list]),"_AG",sep="")
+          contig_D <- contig_D %>%
+            select(all_of(name.list), everything())
+          names(contig_D)[1:summary(name.list)[1]] <-paste(names(contig_D[names(contig_D) %in% name.list]),"_AG",sep="")
 
-        contig_AG <- rbind(contig_AG,contig_D)
-      } else {
-        contig_AG <- contig_AG
-      }
+          contig_AG <- rbind(contig_AG,contig_D)
+        } else {
+          contig_AG <- contig_AG
         }
+      }
 
       contig_BD <- subset(contigs_lim,contigs_lim$chain=="TRB" | contigs_lim$chain=="TRD")
 
@@ -3171,21 +3175,21 @@ tabPanel("GEX -> TCR",
 
       # if (input$filtered_list == "Unfiltered") {
       #   if (length(contigs_lim$Clonality[contigs_lim$Clonality == "B D"])>0) {
-          contig_paired$pairing <- ifelse(contig_paired$Clonality=="AB","abTCR Paired",
-                                          ifelse(contig_paired$Clonality=="GD","gdTCR Paired",
-                                                 ifelse(contig_paired$Clonality=="B D", "bdTCR Paired",
-                                                        ifelse(contig_paired$Clonality=="B G", "bgTCR Paired",
-                                                               ifelse(contig_paired$Clonality=="A D", "adTCR Paired",
-    ifelse(contig_paired$Clonality == "B","orphan B",
-           ifelse(contig_paired$Clonality == "A","orphan A",
-                  ifelse(contig_paired$Clonality == "G","orphan G",
-                         ifelse(contig_paired$Clonality == "D","orphan D",NA)))))))))
+      contig_paired$pairing <- ifelse(contig_paired$Clonality=="AB","abTCR Paired",
+                                      ifelse(contig_paired$Clonality=="GD","gdTCR Paired",
+                                             ifelse(contig_paired$Clonality=="B D", "bdTCR Paired",
+                                                    ifelse(contig_paired$Clonality=="B G", "bgTCR Paired",
+                                                           ifelse(contig_paired$Clonality=="A D", "adTCR Paired",
+                                                                  ifelse(contig_paired$Clonality == "B","orphan B",
+                                                                         ifelse(contig_paired$Clonality == "A","orphan A",
+                                                                                ifelse(contig_paired$Clonality == "G","orphan G",
+                                                                                       ifelse(contig_paired$Clonality == "D","orphan D",NA)))))))))
 
-        # }} else {
-        #   contig_paired$pairing <- ifelse(contig_paired$chain_BD=="TRB" & contig_paired$chain_AG=="TRA","abTCR Paired",
-        #                                   ifelse(contig_paired$chain_BD=="TRD" & contig_paired$chain_AG=="TRG","gdTCR Paired",NA
-        #                                   ))
-        #   }
+      # }} else {
+      #   contig_paired$pairing <- ifelse(contig_paired$chain_BD=="TRB" & contig_paired$chain_AG=="TRA","abTCR Paired",
+      #   ifelse(contig_paired$chain_BD=="TRD" & contig_paired$chain_AG=="TRG","gdTCR Paired",NA
+      #   ))
+      #   }
 
 
 
@@ -3975,13 +3979,13 @@ tabPanel("GEX -> TCR",
                                                 ifelse(contig_paired$chain_B=="TRB" & contig_paired$chain_A=="TRA" & contig_paired$chain_D=="TRD" & contig_paired$chain_G!="TRG", "AB D",
                                                        ifelse(contig_paired$chain_B!="TRB" & contig_paired$chain_A=="TRA" & contig_paired$chain_D=="TRD" & contig_paired$chain_G=="TRG","AG D",
                                                               ifelse(contig_paired$chain_B=="TRB" & contig_paired$chain_A!="TRA" & contig_paired$chain_D=="TRD" & contig_paired$chain_G=="TRG","B GD",
-   ifelse(contig_paired$chain_B=="TRB" & contig_paired$chain_A=="TRA" & contig_paired$chain_D!="TRD" & contig_paired$chain_G!="TRG","AB",
-          ifelse(contig_paired$chain_B!="TRB" & contig_paired$chain_A!="TRA" & contig_paired$chain_D=="TRD" & contig_paired$chain_G=="TRG","GD",
+                                                                     ifelse(contig_paired$chain_B=="TRB" & contig_paired$chain_A=="TRA" & contig_paired$chain_D!="TRD" & contig_paired$chain_G!="TRG","AB",
+                                                                            ifelse(contig_paired$chain_B!="TRB" & contig_paired$chain_A!="TRA" & contig_paired$chain_D=="TRD" & contig_paired$chain_G=="TRG","GD",
 
-                 ifelse(contig_paired$chain_B=="TRB" & contig_paired$chain_A!="TRA" & contig_paired$chain_D!="TRD" & contig_paired$chain_G=="TRG","B G",
-                        ifelse(contig_paired$chain_B!="TRB" & contig_paired$chain_A=="TRA" & contig_paired$chain_D=="TRD" & contig_paired$chain_G!="TRG","A D",
-                               "other"
-                        )))))))))
+                                                                                   ifelse(contig_paired$chain_B=="TRB" & contig_paired$chain_A!="TRA" & contig_paired$chain_D!="TRD" & contig_paired$chain_G=="TRG","B G",
+                                                                                          ifelse(contig_paired$chain_B!="TRB" & contig_paired$chain_A=="TRA" & contig_paired$chain_D=="TRD" & contig_paired$chain_G!="TRG","A D",
+                                                                                                 "other"
+                                                                                          )))))))))
 
 
 
@@ -4011,18 +4015,18 @@ tabPanel("GEX -> TCR",
                                                     ifelse(junction_only_sum$chain_B=="TRB" & junction_only_sum$chain_A=="TRA" & junction_only_sum$chain_D=="TRD" & junction_only_sum$chain_G!="TRG", "AB D",
                                                            ifelse(junction_only_sum$chain_B!="TRB" & junction_only_sum$chain_A=="TRA" & junction_only_sum$chain_D=="TRD" & junction_only_sum$chain_G=="TRG","AG D",
                                                                   ifelse(junction_only_sum$chain_B=="TRB" & junction_only_sum$chain_A!="TRA" & junction_only_sum$chain_D=="TRD" & junction_only_sum$chain_G=="TRG","B GD",
-       ifelse(junction_only_sum$chain_B=="TRB" & junction_only_sum$chain_A=="TRA" & junction_only_sum$chain_D!="TRD" & junction_only_sum$chain_G!="TRG","AB",
-              ifelse(junction_only_sum$chain_B!="TRB" & junction_only_sum$chain_A!="TRA" & junction_only_sum$chain_D=="TRD" & junction_only_sum$chain_G=="TRG","GD",
-                     ifelse(junction_only_sum$chain_B=="TRB" & junction_only_sum$chain_A!="TRA" & junction_only_sum$chain_D!="TRD" & junction_only_sum$chain_G=="TRG","B G",
-                            ifelse(junction_only_sum$chain_B=="TRB" & junction_only_sum$chain_A!="TRA" & junction_only_sum$chain_D=="TRD" & junction_only_sum$chain_G!="TRG","B D",
-                                   ifelse(junction_only_sum$chain_B!="TRB" & junction_only_sum$chain_A=="TRA" & junction_only_sum$chain_D=="TRD" & junction_only_sum$chain_G!="TRG","A D",
-                                          ifelse(junction_only_sum$chain_B!="TRB" & junction_only_sum$chain_A=="TRA" & junction_only_sum$chain_D!="TRD" & junction_only_sum$chain_G=="TRG","A G",
-                                                 ifelse(junction_only_sum$chain_B!="TRB" & junction_only_sum$chain_A=="TRA" & junction_only_sum$chain_D!="TRD" & junction_only_sum$chain_G!="TRG","A",
- ifelse(junction_only_sum$chain_B=="TRB" & junction_only_sum$chain_A!="TRA" & junction_only_sum$chain_D!="TRD" & junction_only_sum$chain_G!="TRG","B",
-        ifelse(junction_only_sum$chain_B!="TRB" & junction_only_sum$chain_A!="TRA" & junction_only_sum$chain_D!="TRD" & junction_only_sum$chain_G=="TRG","G",
-               ifelse(junction_only_sum$chain_B!="TRB" & junction_only_sum$chain_A!="TRA" & junction_only_sum$chain_D=="TRD" & junction_only_sum$chain_G!="TRG","D",
-                      "other"
-               )))))))))))))))
+                                                                         ifelse(junction_only_sum$chain_B=="TRB" & junction_only_sum$chain_A=="TRA" & junction_only_sum$chain_D!="TRD" & junction_only_sum$chain_G!="TRG","AB",
+                                                                                ifelse(junction_only_sum$chain_B!="TRB" & junction_only_sum$chain_A!="TRA" & junction_only_sum$chain_D=="TRD" & junction_only_sum$chain_G=="TRG","GD",
+                                                                                       ifelse(junction_only_sum$chain_B=="TRB" & junction_only_sum$chain_A!="TRA" & junction_only_sum$chain_D!="TRD" & junction_only_sum$chain_G=="TRG","B G",
+                                                                                              ifelse(junction_only_sum$chain_B=="TRB" & junction_only_sum$chain_A!="TRA" & junction_only_sum$chain_D=="TRD" & junction_only_sum$chain_G!="TRG","B D",
+                                                                                                     ifelse(junction_only_sum$chain_B!="TRB" & junction_only_sum$chain_A=="TRA" & junction_only_sum$chain_D=="TRD" & junction_only_sum$chain_G!="TRG","A D",
+                                                                                                            ifelse(junction_only_sum$chain_B!="TRB" & junction_only_sum$chain_A=="TRA" & junction_only_sum$chain_D!="TRD" & junction_only_sum$chain_G=="TRG","A G",
+                                                                                                                   ifelse(junction_only_sum$chain_B!="TRB" & junction_only_sum$chain_A=="TRA" & junction_only_sum$chain_D!="TRD" & junction_only_sum$chain_G!="TRG","A",
+                                                                                                                          ifelse(junction_only_sum$chain_B=="TRB" & junction_only_sum$chain_A!="TRA" & junction_only_sum$chain_D!="TRD" & junction_only_sum$chain_G!="TRG","B",
+                                                                                                                                 ifelse(junction_only_sum$chain_B!="TRB" & junction_only_sum$chain_A!="TRA" & junction_only_sum$chain_D!="TRD" & junction_only_sum$chain_G=="TRG","G",
+                                                                                                                                        ifelse(junction_only_sum$chain_B!="TRB" & junction_only_sum$chain_A!="TRA" & junction_only_sum$chain_D=="TRD" & junction_only_sum$chain_G!="TRG","D",
+                                                                                                                                               "other"
+                                                                                                                                        )))))))))))))))
 
         head(junction_only_sum)
         junction_only_sum_selected <- subset(junction_only_sum,junction_only_sum$junction_aa_A=="CVLSASSSFSKLVF")
@@ -5885,7 +5889,7 @@ tabPanel("GEX -> TCR",
       })
 
 
-### performing harmony
+    ### performing harmony
     Merged_data_for_harmony <- reactive({
       inFile_sc_Merged_data_for_harmony <- input$file1_rds.Merged_data_for_harmony
       if (is.null(inFile_sc_Merged_data_for_harmony))
@@ -5900,7 +5904,7 @@ tabPanel("GEX -> TCR",
 
     })
 
-# how to identify if mouse or human
+    # how to identify if mouse or human
     observe({
       sc <- Merged_data_for_harmony()
       validate(
@@ -6213,7 +6217,7 @@ tabPanel("GEX -> TCR",
 
     })
     output$Preliminary_samp_to_remove <- renderPrint({
-            inFile_sc_SampRemove <- input$file1_rds.fileSampsRemove
+      inFile_sc_SampRemove <- input$file1_rds.fileSampsRemove
       if (is.null(inFile_sc_SampRemove))
         return(NULL)
 
@@ -6457,11 +6461,11 @@ tabPanel("GEX -> TCR",
                                                      ifelse(sc@meta.data$vj_gene_AG == "TRAV1-2.TRAJ23","MAIT",
                                                             ifelse(sc@meta.data$vj_gene_AG == "TRAV10.TRAJ18","iNKT",
                                                                    ifelse(sc@meta.data$v_gene_BD == "TRBV4-1" & sc@meta.data$v_gene_AG == "TRAV17","CD1b-restricted",
- ifelse(sc@meta.data$v_gene_BD == "TRBV4-1" & sc@meta.data$v_gene_AG != "TRAV17","CD1c-restricted (possible)",
-        # ifelse(sc@meta.data$chain_AG == 'TRG' & sc@meta.data$chain_BD == 'TRB',"gb T cell",
-               ifelse(sc@meta.data$chain_AG == 'TRG' & sc@meta.data$chain_BD == 'TRD',"gd T cell",NA
+                                                                          ifelse(sc@meta.data$v_gene_BD == "TRBV4-1" & sc@meta.data$v_gene_AG != "TRAV17","CD1c-restricted (possible)",
+                                                                                 # ifelse(sc@meta.data$chain_AG == 'TRG' & sc@meta.data$chain_BD == 'TRB',"gb T cell",
+                                                                                 ifelse(sc@meta.data$chain_AG == 'TRG' & sc@meta.data$chain_BD == 'TRD',"gd T cell",NA
 
-               )))))))
+                                                                                 )))))))
       }
 
       else {
@@ -6514,26 +6518,14 @@ tabPanel("GEX -> TCR",
       }
       sc
     })
-    output$scGATE_verbatum_generic <- renderPrint({
-
-      if (input$hs_generic_scGate) {
-        sc <- scGATE_anno_generic()
-        table(sc@meta.data$generic)
-      }
-      else{
-        print("Generic not run")
-      }
-    })
 
     output$scGATE_verbatum_generic2 <- renderPrint({
-
-      if (input$hs_generic_scGate) {
-        sc <- scGATE_anno_generic()
-        table(sc@meta.data$generic)
-      }
-      else{
+      if (input$hs_generic_scGATE) {
+        print("Running generic model")
+      } else {
         print("Generic not run")
       }
+
     })
 
     scGATE_anno_exhausted <- reactive({
@@ -6552,11 +6544,11 @@ tabPanel("GEX -> TCR",
         models.list <- scGate_models_DB
 
         sc <- scGate(sc, model = models.list,
-                      pos.thr = input$threshold_scGate,
-                      neg.thr = input$threshold_scGate,
-                      nfeatures = len,
+                     pos.thr = input$threshold_scGate,
+                     neg.thr = input$threshold_scGate,
+                     nfeatures = len,
                      reduction = input$reduction_anno,
-                      ncores = 8 ,min.cells = 1)
+                     ncores = 8 ,min.cells = 1)
 
         sc@meta.data$exhausted <- sc@meta.data$scGate_multi
         sc@meta.data <- sc@meta.data[!grepl("_UCell",names(sc@meta.data))]
@@ -6740,21 +6732,21 @@ tabPanel("GEX -> TCR",
       )
       if (input$hs_TCRseq_scGATE) {
 
-      if (input$sample.type.source.markers == "hs") {
-        sc@meta.data$unconventional <- ifelse(sc@meta.data$vj_gene_AG == "TRAV1-2.TRAJ33","MAIT",
-                                              ifelse(sc@meta.data$vj_gene_AG == "TRAV1-2.TRAJ12","MAIT",
-                                                     ifelse(sc@meta.data$vj_gene_AG == "TRAV1-2.TRAJ23","MAIT",
-                                                            ifelse(sc@meta.data$vj_gene_AG == "TRAV1-2.TRAJ9","CD1b-restricted(poss)",
-                                                            ifelse(sc@meta.data$vj_gene_AG == "TRAV10.TRAJ18","iNKT",
-                                                                   ifelse(sc@meta.data$v_gene_BD == "TRBV4-1" & sc@meta.data$v_gene_AG == "TRAV17","CD1b-restricted(poss)",
-                                                                          ifelse(sc@meta.data$v_gene_BD == "TRBV4-1" & sc@meta.data$v_gene_AG != "TRAV17","CD1c-restricted(poss)",
-                                                                                 # ifelse(sc@meta.data$chain_AG == 'TRG' & sc@meta.data$chain_BD == 'TRB',"gb T cell",
-                                                                                 ifelse(sc@meta.data$chain_AG == 'TRG' & sc@meta.data$chain_BD == 'TRD',"gd T cell",
-                                                                                        ifelse(sc@meta.data$chain_AG == 'TRA' & sc@meta.data$chain_BD == 'TRB',"ab T cell",""
-                                                                                        ) ))))))))
-        sc
-      } else {
-         }
+        if (input$sample.type.source.markers == "hs") {
+          sc@meta.data$unconventional <- ifelse(sc@meta.data$vj_gene_AG == "TRAV1-2.TRAJ33","MAIT",
+                                                ifelse(sc@meta.data$vj_gene_AG == "TRAV1-2.TRAJ12","MAIT",
+                                                       ifelse(sc@meta.data$vj_gene_AG == "TRAV1-2.TRAJ23","MAIT",
+                                                              ifelse(sc@meta.data$vj_gene_AG == "TRAV1-2.TRAJ9","CD1b-restricted(poss)",
+                                                                     ifelse(sc@meta.data$vj_gene_AG == "TRAV10.TRAJ18","iNKT",
+                                                                            ifelse(sc@meta.data$v_gene_BD == "TRBV4-1" & sc@meta.data$v_gene_AG == "TRAV17","CD1b-restricted(poss)",
+                                                                                   ifelse(sc@meta.data$v_gene_BD == "TRBV4-1" & sc@meta.data$v_gene_AG != "TRAV17","CD1c-restricted(poss)",
+                                                                                          # ifelse(sc@meta.data$chain_AG == 'TRG' & sc@meta.data$chain_BD == 'TRB',"gb T cell",
+                                                                                          ifelse(sc@meta.data$chain_AG == 'TRG' & sc@meta.data$chain_BD == 'TRD',"gd T cell",
+                                                                                                 ifelse(sc@meta.data$chain_AG == 'TRA' & sc@meta.data$chain_BD == 'TRB',"ab T cell",""
+                                                                                                 ) ))))))))
+          sc
+        } else {
+        }
       }
       sc
     })
@@ -7299,7 +7291,6 @@ tabPanel("GEX -> TCR",
         need(nrow(sc)>0,
              "Run Clustering")
       )
-
       DimPlot(sc, reduction = "umap", group.by = "geneSet2", pt.size = 1)
     })
     output$create_custom_2<- renderPlot({
@@ -7723,14 +7714,17 @@ tabPanel("GEX -> TCR",
         need(nrow(sc)>0,
              "Upload file for annotation")
       )
+
+      if (input$hs_function_scGATE) {
+        obj <- scGATE_anno_function()
+        sc@meta.data$Tcell.function <- obj@meta.data$Tcell.function
+      }
       if (input$hs_generic_scGATE) {
         obj <- scGATE_anno_generic()
         sc@meta.data$generic <- obj@meta.data$generic
       }
-      if (input$hs_function_scGATE) {
-        obj <- scGATE_anno_function()
-        sc@meta.data$TcellFunction <- obj@meta.data$TcellFunction
-      }
+
+
       if (input$hs_exhausted_scGATE) {
         obj <- scGATE_anno_exhausted()
         sc@meta.data$exhausted <- obj@meta.data$exhausted
@@ -7952,55 +7946,55 @@ tabPanel("GEX -> TCR",
     # all.annotations added -----
     output$DEx_table_TcellClass_scGATE <-  DT::renderDataTable(escape = FALSE, filter = list(position = 'top', clear = FALSE),
                                                                options = list(autoWidth = FALSE, lengthMenu = c(2,5,10,20,50,100),
-            pageLength = 5, scrollX = TRUE),{
-              # c("10x_HS","BD_HS.Immune.Panel","BD_HS.Full.Panel","10x_MM","BD_MM_Full.Panel","BD_MM_Immune.Panel",)
-              sc <- getData_2()
-              validate(
-                need(nrow(sc)>0,
-                     "Upload file for annotation")
-              )
-              if (input$Data_types=="10x_HS") {
-                sc <- scGATE_anno_HS()
-                as.data.frame(sc@meta.data)
-              }
-              else if (input$Data_types=="BD_HS.Immune.Panel") {
-                sc <- scGATE_anno_HS()
-                as.data.frame(sc@meta.data)
-              }
-              else if (input$Data_types=="BD_HS.Full.Panel") {
-                sc <- scGATE_anno_HS()
-                as.data.frame(sc@meta.data)
-              }
+                                                                              pageLength = 5, scrollX = TRUE),{
+                                                                                # c("10x_HS","BD_HS.Immune.Panel","BD_HS.Full.Panel","10x_MM","BD_MM_Full.Panel","BD_MM_Immune.Panel",)
+                                                                                sc <- getData_2()
+                                                                                validate(
+                                                                                  need(nrow(sc)>0,
+                                                                                       "Upload file for annotation")
+                                                                                )
+                                                                                if (input$Data_types=="10x_HS") {
+                                                                                  sc <- scGATE_anno_HS()
+                                                                                  as.data.frame(sc@meta.data)
+                                                                                }
+                                                                                else if (input$Data_types=="BD_HS.Immune.Panel") {
+                                                                                  sc <- scGATE_anno_HS()
+                                                                                  as.data.frame(sc@meta.data)
+                                                                                }
+                                                                                else if (input$Data_types=="BD_HS.Full.Panel") {
+                                                                                  sc <- scGATE_anno_HS()
+                                                                                  as.data.frame(sc@meta.data)
+                                                                                }
 
-              else if (input$Data_types=="10x_MM") {
-                sc <- scGATE_anno_BD_MM.FP()
-                as.data.frame(sc@meta.data)
-              }
+                                                                                else if (input$Data_types=="10x_MM") {
+                                                                                  sc <- scGATE_anno_BD_MM.FP()
+                                                                                  as.data.frame(sc@meta.data)
+                                                                                }
 
-              else if (input$Data_types=="BD_MM_Full.Panel") {
-                sc <- scGATE_anno_BD_MM.FP()
-                as.data.frame(sc@meta.data)
-              }
+                                                                                else if (input$Data_types=="BD_MM_Full.Panel") {
+                                                                                  sc <- scGATE_anno_BD_MM.FP()
+                                                                                  as.data.frame(sc@meta.data)
+                                                                                }
 
-              else if (input$Data_types=="BD_MM_Immune.Panel") {
-                sc <- scGATE_anno_BD_MM.IP()
-                as.data.frame(sc@meta.data)
-              }
+                                                                                else if (input$Data_types=="BD_MM_Immune.Panel") {
+                                                                                  sc <- scGATE_anno_BD_MM.IP()
+                                                                                  as.data.frame(sc@meta.data)
+                                                                                }
 
-              else if (input$Data_types=="TCR-seq") {
-                sc <- TCR_seq_classification()
-                as.data.frame(sc@meta.data)
+                                                                                else if (input$Data_types=="TCR-seq") {
+                                                                                  sc <- TCR_seq_classification()
+                                                                                  as.data.frame(sc@meta.data)
 
-              }
+                                                                                }
 
 
-              else {
-                df <- as.data.frame("Other panels are under development")
-                names(df) <- "V1"
-                df
-              }
+                                                                                else {
+                                                                                  df <- as.data.frame("Other panels are under development")
+                                                                                  names(df) <- "V1"
+                                                                                  df
+                                                                                }
 
-            })
+                                                                              })
 
     output$downloaddf_SeruatObj_annotated <- downloadHandler(
       filename = function(){
@@ -8283,38 +8277,38 @@ tabPanel("GEX -> TCR",
              error_message_val1)
       )
 
-     meta.data <- sc@meta.data
+      meta.data <- sc@meta.data
 
 
-     if("junction_aa_BD" %in% names(sc@meta.data)) {
-       updateSelectInput(
-         session,
-         "datasource",
-         choices=c("10x_Genomics","BD_Rhapsody_Paired","BD_Rhapsody_AIRR"),
-         selected = "BD_Rhapsody_AIRR")
-     } else if ("cdr3_BD" %in% names(sc@meta.data) ) {
-       sc@meta.data$orientation <- (ifelse(grepl('^C', sc@meta.data$cdr3_BD) & grepl('F$', sc@meta.data$cdr3_BD),"C___F",NA))
-       if ("C___F" %in% sc@meta.data$orientation) {
-         updateSelectInput(
-           session,
-           "datasource",
-           choices=c("10x_Genomics","BD_Rhapsody_Paired","BD_Rhapsody_AIRR"),
-           selected = "10x_Genomics")
-       } else {
-         updateSelectInput(
-           session,
-           "datasource",
-           choices=c("10x_Genomics","BD_Rhapsody_Paired","BD_Rhapsody_AIRR"),
-           selected = "BD_Rhapsody_Paired")
-       }
-     } else {
+      if("junction_aa_BD" %in% names(sc@meta.data)) {
+        updateSelectInput(
+          session,
+          "datasource",
+          choices=c("10x_Genomics","BD_Rhapsody_Paired","BD_Rhapsody_AIRR"),
+          selected = "BD_Rhapsody_AIRR")
+      } else if ("cdr3_BD" %in% names(sc@meta.data) ) {
+        sc@meta.data$orientation <- (ifelse(grepl('^C', sc@meta.data$cdr3_BD) & grepl('F$', sc@meta.data$cdr3_BD),"C___F",NA))
+        if ("C___F" %in% sc@meta.data$orientation) {
+          updateSelectInput(
+            session,
+            "datasource",
+            choices=c("10x_Genomics","BD_Rhapsody_Paired","BD_Rhapsody_AIRR"),
+            selected = "10x_Genomics")
+        } else {
+          updateSelectInput(
+            session,
+            "datasource",
+            choices=c("10x_Genomics","BD_Rhapsody_Paired","BD_Rhapsody_AIRR"),
+            selected = "BD_Rhapsody_Paired")
+        }
+      } else {
 
-       updateSelectInput(
-         session,
-         "datasource",
-         choices=c("10x_Genomics","BD_Rhapsody_Paired","BD_Rhapsody_AIRR"),
-         selected = "")
-     }
+        updateSelectInput(
+          session,
+          "datasource",
+          choices=c("10x_Genomics","BD_Rhapsody_Paired","BD_Rhapsody_AIRR"),
+          selected = "")
+      }
     })
     ## uploading seruat obj ----
     input.data_sc_pro <- reactive({
@@ -8375,6 +8369,10 @@ tabPanel("GEX -> TCR",
              error_message_val_UMAP)
       )
       req(input$Samp_col2, input$datasource, input$species_analysis, input$V_gene_sc)
+
+
+      sc@meta.data$Cell_Index_old <- sc@meta.data$Cell_Index
+      sc@meta.data$Cell_Index <- rownames(sc@meta.data)
       sc@meta.data$order <- 1:dim(sc@meta.data)[1]
       reduction <- (sc@reductions$umap)
       UMAP <- as.data.frame(reduction@cell.embeddings)
@@ -8415,7 +8413,7 @@ tabPanel("GEX -> TCR",
       }
 
       else {
-        as.data.frame("Processing")
+        as.data.frame("Isssue with the file...")
 
       }
     })
@@ -8430,8 +8428,14 @@ tabPanel("GEX -> TCR",
       )
 
       umap.meta <- sc@meta.data
-      names(umap.meta)[names(umap.meta) %in% input$Samp_col] <- "ID_Column"
-      names(umap.meta)[names(umap.meta) %in% input$V_gene_sc] <- "v_gene_selected"
+      if(length(input$Samp_col)>0) {
+        # message(paste("the ID column selected is: ",input$Samp_col))
+        names(umap.meta)[names(umap.meta) %in% input$Samp_col] <- "ID_Column"
+      }
+
+      if(length(input$V_gene_sc)>0) {
+        names(umap.meta)[names(umap.meta) %in% input$V_gene_sc] <- "v_gene_selected"
+      }
       umap.meta
       req(TCR_Expanded())
       sc_merged <- merge(umap.meta,TCR_Expanded(),by=c("v_gene_selected","ID_Column"),all.x=T)
@@ -8443,9 +8447,7 @@ tabPanel("GEX -> TCR",
 
       else {
         as.data.frame("Possible issue with Cell Index, check merging")
-
       }
-
     })
     # upload TCRex file ----
     input.data_sc_TCRex <- reactive({
@@ -8563,18 +8565,6 @@ tabPanel("GEX -> TCR",
       topclones_col$col <- colorblind_vector
       topclones_col
 
-    })
-
-    output$Tb_For_colouring_check <- DT::renderDataTable(escape = FALSE, options = list(autoWidth = FALSE, lengthMenu = c(2,5,10,20,50,100), pageLength = 5, scrollX = TRUE),{
-      df2 <- as.data.frame(select_group_metadata())
-      validate(
-        need(nrow(df2)>0,
-             error_message_val_UMAP)
-      )
-      names(df2) <- "V1"
-      df2 <- as.data.frame(df2[order(df2$V1),])
-      names(df2) <- "V1"
-      df2
     })
 
     ## TCR expansion ----
@@ -9692,16 +9682,16 @@ tabPanel("GEX -> TCR",
       # range of genes -----
       sub.mutateddf.gene2 <- mutate(mutateddf.gene,
                                     colour=ifelse(mutateddf.gene$ID %in% gene_list & mutateddf.gene$avg_log2FC>pos & mutateddf.gene$p_val_adj<0.05, "Labelled_up",
-                                                  ifelse(mutateddf.gene$ID %in% gene_list & mutateddf.gene$avg_log2FC<neg & mutateddf.gene$p_val_adj<0.05, "Labelled_down",                         ifelse(mutateddf.gene$p_val_adj<0.05& mutateddf.gene$avg_log2FC>pos,"Significant-up",
-                           ifelse(mutateddf.gene$p_val_adj<0.05& mutateddf.gene$avg_log2FC<neg,"Significant-down","Non-significant")))),
+                                                  ifelse(mutateddf.gene$ID %in% gene_list & mutateddf.gene$avg_log2FC<neg & mutateddf.gene$p_val_adj<0.05, "Labelled_down",         ifelse(mutateddf.gene$p_val_adj<0.05& mutateddf.gene$avg_log2FC>pos,"Significant-up",
+                                                                                                                                                                                           ifelse(mutateddf.gene$p_val_adj<0.05& mutateddf.gene$avg_log2FC<neg,"Significant-down","Non-significant")))),
 
                                     size=ifelse(mutateddf.gene$ID %in% gene_list & mutateddf.gene$avg_log2FC>pos & mutateddf.gene$p_val_adj<0.05, 3,
-                                                ifelse(mutateddf.gene$ID %in% gene_list & mutateddf.gene$avg_log2FC<neg & mutateddf.gene$p_val_adj<0.05, 3,                         ifelse(mutateddf.gene$p_val_adj<0.05& mutateddf.gene$avg_log2FC>pos,3,
-           ifelse(mutateddf.gene$p_val_adj<0.05& mutateddf.gene$avg_log2FC<neg,3,1)))),
+                                                ifelse(mutateddf.gene$ID %in% gene_list & mutateddf.gene$avg_log2FC<neg & mutateddf.gene$p_val_adj<0.05, 3,         ifelse(mutateddf.gene$p_val_adj<0.05& mutateddf.gene$avg_log2FC>pos,3,
+                                                                                                                                                                           ifelse(mutateddf.gene$p_val_adj<0.05& mutateddf.gene$avg_log2FC<neg,3,1)))),
 
                                     shape=ifelse(mutateddf.gene$ID %in% gene_list & mutateddf.gene$avg_log2FC>pos & mutateddf.gene$p_val_adj<0.05, 19,
-                                                 ifelse(mutateddf.gene$ID %in% gene_list & mutateddf.gene$avg_log2FC<neg & mutateddf.gene$p_val_adj<0.05, 19,                         ifelse(mutateddf.gene$p_val_adj<0.05& mutateddf.gene$avg_log2FC>pos,15,
-             ifelse(mutateddf.gene$p_val_adj<0.05& mutateddf.gene$avg_log2FC<neg,15,1)))),
+                                                 ifelse(mutateddf.gene$ID %in% gene_list & mutateddf.gene$avg_log2FC<neg & mutateddf.gene$p_val_adj<0.05, 19,         ifelse(mutateddf.gene$p_val_adj<0.05& mutateddf.gene$avg_log2FC>pos,15,
+                                                                                                                                                                             ifelse(mutateddf.gene$p_val_adj<0.05& mutateddf.gene$avg_log2FC<neg,15,1)))),
 
       )
 
@@ -10397,13 +10387,15 @@ tabPanel("GEX -> TCR",
       )
 
       # if (input$analysis_set.type)
-      BD_sum <- subset(BD_sum,BD_sum$Total_count>1)
-      if(dim(BD_sum)[1]>50) {
+      BD_sum <- subset(BD_sum,BD_sum$Total_count>2)
+      # if(input$restict_vGene) {
+      #   BD_sum$Topclone <- BD_sum[,names(BD_sum) %in% input$v_gene_top_clone]
+      #   BD_sum <- subset(BD_sum,BD_sum$Topclone == input$top_clone_selected)
+      # }
+      if(input$limit_to_top_clones) {
 
-        BD_sum <- BD_sum[1:50,]
+        BD_sum <- BD_sum[1:input$max_top_clone_limit,]
       }
-
-
 
       updateSelectInput(
         session,
@@ -10468,8 +10460,6 @@ tabPanel("GEX -> TCR",
       top_BD_clonotype
 
     })
-
-
 
     ##### bar graph of top clonotypes -----
     cols_Top_bar_clonotype <- reactive({
@@ -10850,6 +10840,70 @@ tabPanel("GEX -> TCR",
       plot_pie
 
     })
+
+
+    #### top heatmap ------
+    Selected_top_plot <- reactive({
+      cluster <- top_clonotype_bar_code()
+      validate(
+        need(nrow(cluster)>0,
+             "Upload Seurat file")
+      )
+      cluster$ID_Column2 <- cluster[,names(cluster) %in% input$Split_group_by_]
+      Network_df <- cluster
+      Network_df$Selected <- Network_df[,names(Network_df) %in% input$Colour_By_this]
+      Network_df$cloneCount <- 1
+      df.1 <- acast(Network_df, ID_Column2~Selected, value.var="cloneCount")
+      df.1[is.na(df.1)] <- 0
+      min.FC <- min(df.1)
+      # med.FC <- max(df.1)/2
+      max.FC <- max(df.1)
+
+      ht <- Heatmap(df.1,
+                    heatmap_legend_param = list(title = "Count",
+                                                title_gp = gpar(fontsize = 10,
+                                                                fontface = "bold",fontfamily='serif'),
+                                                labels_gp = gpar(fontsize = 10,fontfamily='serif')),
+                    col = colorRamp2(c(min.FC,max.FC), c("gold","purple")),
+                    row_names_gp = grid::gpar(fontsize = 10,fontfamily='serif'),
+                    column_names_gp = grid::gpar(fontsize = 10,fontfamily='serif'),
+
+      )
+
+      draw(ht, padding = unit(c(10, 10, 10, 10), "mm"))
+
+    })
+
+
+
+    output$heatmap_topclone_plot <- renderPlot({
+      # Pie_chart_ClusTCR2()
+      Selected_top_plot()
+    })
+
+
+    output$downloadPlot_heatmap_topclone_plot <- downloadHandler(
+      filename = function() {
+        x <- today()
+        paste(input$Selected_clonotype,"_heatmap_topclone_plot_",input$Split_group_by_,"_",input$Colour_By_this,"_",x, ".pdf", sep = "")
+      },
+      content = function(file) {
+        pdf(file, width=input$width_heatmap_topclone_plot,height=input$height_heatmap_topclone_plot, onefile = FALSE) # open the pdf device
+        plot(Selected_top_plot())
+        dev.off()}, contentType = "application/pdf" )
+
+    output$downloadPlotPNG_heatmap_topclone_plot <- downloadHandler(
+      filename = function() {
+        x <- today()
+        paste(input$Selected_clonotype,"_heatmap_topclone_plot_",input$Split_group_by_,"_",input$Colour_By_this,"_",x, ".png", sep = "")
+      },
+      content = function(file) {
+        png(file, width = input$width_png_heatmap_topclone_plot,
+            height = input$height_png_Pie_heatmap_topclone_plot,
+            res = input$resolution_PNG_heatmap_topclone_plot)
+        plot(Selected_top_plot())
+        dev.off()},   contentType = "application/png" # MIME type of the image
+    )
 
     # plot pie and UMAP ----
 
@@ -11577,6 +11631,66 @@ tabPanel("GEX -> TCR",
 
     # Expanded TCR interrogation (regarless of TCR sequence ) -------
 
+    Expansion_check_tb <- reactive({
+      sc <- UMAP_metadata_with_labs()
+      validate(
+        need(nrow(sc)>0,
+             error_message_val_UMAP)
+      )
+      req(input$Split_group_by_,input$Graph_split_order,input$V_gene_sc,input$cut.off_expanded)
+      message(paste("Calculating expansion"))
+      if(input$Split_group_by_ != "") {
+        Expansion.meta.data <- sc@meta.data
+        Expansion.meta.data$Samp <- Expansion.meta.data[,names(Expansion.meta.data) %in% input$Split_group_by_] # changing to the Selected Individual column
+
+        if (length(input$Graph_split_order)>0) {
+          Expansion.meta.data <- Expansion.meta.data[Expansion.meta.data$Samp %in% c(input$Graph_split_order),]
+
+          if(dim(Expansion.meta.data)[1]>0) {
+            CDR3_Vgene_all <- as.data.frame(Expansion.meta.data[,names(Expansion.meta.data) %in% input$V_gene_sc])
+            names(CDR3_Vgene_all) <- "V1"
+            CDR3_Vgene_all[is.na(CDR3_Vgene_all)] <- "Unknown"
+            CDR3_Vgene_all$count <- 1
+            req(CDR3_Vgene_all)
+            total.condition <- as.data.frame(ddply(CDR3_Vgene_all,"V1",numcolwise(sum)))
+            req(total.condition)
+            total.condition <- total.condition[total.condition$V1 != "Unknown",]
+            req(total.condition)
+            total.condition
+            CDR3_Vgene_all2 <- as.data.frame(Expansion.meta.data[,names(Expansion.meta.data) %in% c(input$V_gene_sc,"Samp")])
+            names(CDR3_Vgene_all2)[names(CDR3_Vgene_all2) %in% input$V_gene_sc] <- "V1"
+            CDR3_Vgene_all2[is.na(CDR3_Vgene_all2)] <- "Unknown"
+            names(CDR3_Vgene_all2)[names(CDR3_Vgene_all2) %in% "Samp"] <- "V2"
+            CDR3_Vgene_all2$count.group <- 1
+            total.condition.group <- as.data.frame(ddply(CDR3_Vgene_all2,c("V1","V2"),numcolwise(sum)))
+            total.condition.group <- total.condition.group[total.condition.group$V1 != "Unknown",]
+            total.condition.group <- total.condition.group[total.condition.group$V2 != "Unknown",]
+            total.condition.group
+            total.condition.group.counts <- merge(total.condition.group,total.condition,by = "V1")
+            total.condition.group.counts <- total.condition.group.counts[order(total.condition.group.counts$count.group, decreasing = T),]
+            total.condition.group.counts$expand.singlets <- ifelse(total.condition.group.counts$count.group>input$cut.off_expanded,"Ex","NEx")
+            names(total.condition.group.counts)[names(total.condition.group.counts) %in% "V1"] <-input$V_gene_sc
+            names(total.condition.group.counts)[names(total.condition.group.counts) %in% "V2"] <- "Samp"
+            total.condition.group.counts
+            umap.meta2 <- merge(Expansion.meta.data, total.condition.group.counts, by = c("Samp",input$V_gene_sc),sort = F,all.x =T)
+            umap.meta2
+            rownames(umap.meta2) <- umap.meta2$Cell_Index
+            umap.meta2
+            message(paste("Finished calculating expansion"))
+            umap.meta2$Selected_Status <- umap.meta2$Samp
+            umap.meta2$expansion.status <- paste0(umap.meta2$Selected_Status,"_",umap.meta2$expand.singlets)
+            umap.meta2 <- umap.meta2[!is.na(umap.meta2$Samp),]
+            umap.meta2 <- umap.meta2[!is.na(umap.meta2$expand.singlets),]
+            umap.meta2
+          }
+
+        }
+
+      }
+
+
+    })
+
     output$Expansion_check <- DT::renderDataTable(escape = FALSE, filter = list(position = 'top', clear = FALSE), options = list(autoWidth = FALSE, lengthMenu = c(2,5,10,20,50,100), pageLength = 10, scrollX = TRUE),{
       sc <- UMAP_metadata_with_labs()
       validate(
@@ -11584,78 +11698,28 @@ tabPanel("GEX -> TCR",
              error_message_val_UMAP)
       )
 
-      req(input$Samp_col_expanded,input$ID_Column_factor_expanded,input$V_gene_sc,input$cut.off_expanded, sc)
-
-      message(paste("Calculating expansion"))
-
-      Expansion.meta.data <- sc@meta.data
-      Expansion.meta.data$Samp <- Expansion.meta.data[,names(Expansion.meta.data) %in% input$Samp_col_expanded]
-      # Expansion.meta.data <- Expansion.meta.data[Expansion.meta.data$Samp %in% c(input$ID_Column_factor_expanded),]
-      Expansion.meta.data
-      CDR3_Vgene_all <- as.data.frame(Expansion.meta.data[,names(Expansion.meta.data) %in% input$V_gene_sc])
-      names(CDR3_Vgene_all) <- "V1"
-      CDR3_Vgene_all$count <- 1
-      total.condition <- as.data.frame(ddply(CDR3_Vgene_all,"V1",numcolwise(sum)))
-      total.condition <- total.condition[total.condition$V1 != "NA",]
-      CDR3_Vgene_all2 <- as.data.frame(Expansion.meta.data[,names(Expansion.meta.data) %in% c(input$V_gene_sc,"Samp")])
-      names(CDR3_Vgene_all2)[names(CDR3_Vgene_all2) %in% input$V_gene_sc] <- "V1"
-      names(CDR3_Vgene_all2)[names(CDR3_Vgene_all2) %in% "Samp"] <- "V2"
-      CDR3_Vgene_all2$count.group <- 1
-      total.condition.group <- as.data.frame(ddply(CDR3_Vgene_all2,c("V1","V2"),numcolwise(sum)))
-      total.condition.group <- total.condition.group[total.condition.group$V1 != "NA",]
-      total.condition.group.counts <- merge(total.condition.group,total.condition,by = "V1")
-      total.condition.group.counts <- total.condition.group.counts[order(total.condition.group.counts$count.group, decreasing = T),]
-      total.condition.group.counts$expand.singlets <- ifelse(total.condition.group.counts$count.group>input$cut.off_expanded,"Ex","NEx")
-      names(total.condition.group.counts)[names(total.condition.group.counts) %in% "V1"] <-input$V_gene_sc
-      names(total.condition.group.counts)[names(total.condition.group.counts) %in% "V2"] <- "Samp"
-      umap.meta2 <- merge(Expansion.meta.data, total.condition.group.counts, by = c("Samp",input$V_gene_sc),sort = F,all.x =T)
-      rownames(umap.meta2) <- umap.meta2$Cell_Index
-      message(paste("Finished calculating expansion"))
-      umap.meta2$Selected_Status <- umap.meta2$Samp
-      umap.meta2$expansion.status <- paste0(umap.meta2$Selected_Status,"_",umap.meta2$expand.singlets)
-      umap.meta2 <- umap.meta2[!is.na(umap.meta2$Samp),]
-      umap.meta2 <- umap.meta2[!is.na(umap.meta2$expand.singlets),]
-      umap.meta2
-
+      Expansion_check_tb()
     })
 
-
-    observe({
-      sc <- UMAP_metadata_with_labs()
+    select_group_metadata_ex <- reactive ({
+      df <- Expansion_check_tb()
       validate(
-        need(nrow(sc)>0,
-             error_message_val_UMAP)
+        need(nrow(df)>0,
+             error_message_val1)
       )
-      df3.meta <- sc@meta.data
-      updateSelectInput(
-        session,
-        "Samp_col_expanded",
-        choices=names(df3.meta),
-        selected = "Sample_Name")
-    })
-
-
-    select_group_metadata_expanded <- reactive ({
-      sc <- UMAP_metadata_with_labs()
-      validate(
-        need(nrow(sc)>0,
-             "upload file")
-      )
-      req(input$Samp_col_expanded,sc)
-      df <- sc@meta.data
-      df2 <- as.data.frame(unique(df[names(df) %in% input$Samp_col_expanded]))
+      req(df)
+      df2 <- df$expansion.status
       df2 <- as.data.frame(df2)
       df2
     })
-
     observe({
-      df2 <- select_group_metadata_expanded()
+      df2 <- select_group_metadata_ex()
+
       validate(
         need(nrow(df2)>0,
              error_message_val1)
       )
-
-      req(input$Samp_col2,df2)
+      req(df2)
 
       df2 <- as.data.frame(df2)
       names(df2) <- "V1"
@@ -11663,153 +11727,48 @@ tabPanel("GEX -> TCR",
       names(df2) <- "V1"
       df2
       df2 <- subset(df2,df2$V1 != "NA")
-
-      updateSelectInput(
+      df3 <- unique(df2$V1)
+      updateSelectizeInput(
         session,
-        "ID_Column_factor_expanded",
-        choices=df2$V1,
-        selected = df2$V1[1]
+        "selected_Indiv_Ex_1",
+        choices=df3,
+        selected = df3[1]
       )
     })
-
-
-      observe({
-        sc <- UMAP_metadata_with_labs()
-        validate(
-          need(nrow(sc)>0,
-               error_message_val_UMAP)
-        )
-        df3.meta <- sc@meta.data
-          updateSelectInput(
-            session,
-            "Samp_col_expanded",
-            choices=names(df3.meta),
-            selected = "orig.ident")
-    })
-
-    # select_group_metadata_ex <- reactive ({
-    #   df <- Expansion_check_table()
-    #
-    #   validate(
-    #     need(nrow(df)>0,
-    #          error_message_val1)
-    #   )
-    #   req(df)
-    #   req(input$Samp_col_expanded)
-    #   df2 <- df$expansion.status
-    #   df2 <- as.data.frame(df2)
-    #   df2
-    #
-    # })
-    #
-    # observe({
-    #   df2 <- select_group_metadata_ex()
-    #
-    #   validate(
-    #     need(nrow(df2)>0,
-    #          error_message_val1)
-    #   )
-    #   req(df2)
-    #
-    #   df2 <- as.data.frame(df2)
-    #   names(df2) <- "V1"
-    #   df2 <- as.data.frame(df2[order(df2$V1),])
-    #   names(df2) <- "V1"
-    #   df2
-    #   df2 <- subset(df2,df2$V1 != "NA")
-    #   df3 <- unique(df2$V1)
-    #   updateSelectizeInput(
-    #     session,
-    #     "selected_Indiv_Ex_1",
-    #     choices=df3,
-    #     selected = df3[1]
-    #   )
-    # })
-    #
-    # observe({
-    #   df2 <- select_group_metadata_ex()
-    #   validate(
-    #     need(nrow(df2)>0,
-    #          error_message_val1)
-    #   )
-    #   df2 <- as.data.frame(df2)
-    #   names(df2) <- "V1"
-    #   df2 <- as.data.frame(df2[order(df2$V1),])
-    #   names(df2) <- "V1"
-    #   df2
-    #   df2 <- subset(df2,df2$V1 != "NA")
-    #   df3 <- unique(df2$V1)
-    #   updateSelectizeInput(
-    #     session,
-    #     "selected_Indiv_Ex_2",
-    #     choices=df3,
-    #     selected = df3[2]
-    #   )
-    # })
-    #
-    # ### table check ------
-    #
-    # Vals_Expans_table <- reactiveValues(output_expTab=NULL)
-    #
-    # observeEvent(input$update_Expansion_run,{
-    #
-    # })
-    #
-    Expansion_check_table <- reactive({
-      sc <- UMAP_metadata_with_labs()
+    observe({
+      df2 <- select_group_metadata_ex()
       validate(
-        need(nrow(sc)>0,
-             error_message_val_UMAP)
+        need(nrow(df2)>0,
+             error_message_val1)
       )
-
-      req(input$Samp_col_expanded,input$ID_Column_factor_expanded,input$V_gene_sc,input$cut.off_expanded, sc)
-
-      message(paste("Calculating expansion"))
-
-      Expansion.meta.data <- sc@meta.data
-      Expansion.meta.data$Samp <- Expansion.meta.data[,names(Expansion.meta.data) %in% input$Samp_col_expanded]
-      # Expansion.meta.data <- Expansion.meta.data[Expansion.meta.data$Samp %in% c(input$ID_Column_factor_expanded),]
-      Expansion.meta.data
-      CDR3_Vgene_all <- as.data.frame(Expansion.meta.data[,names(Expansion.meta.data) %in% input$V_gene_sc])
-      names(CDR3_Vgene_all) <- "V1"
-      CDR3_Vgene_all$count <- 1
-      total.condition <- as.data.frame(ddply(CDR3_Vgene_all,"V1",numcolwise(sum)))
-      total.condition <- total.condition[total.condition$V1 != "NA",]
-      CDR3_Vgene_all2 <- as.data.frame(Expansion.meta.data[,names(Expansion.meta.data) %in% c(input$V_gene_sc,"Samp")])
-      names(CDR3_Vgene_all2)[names(CDR3_Vgene_all2) %in% input$V_gene_sc] <- "V1"
-      names(CDR3_Vgene_all2)[names(CDR3_Vgene_all2) %in% "Samp"] <- "V2"
-      CDR3_Vgene_all2$count.group <- 1
-      total.condition.group <- as.data.frame(ddply(CDR3_Vgene_all2,c("V1","V2"),numcolwise(sum)))
-      total.condition.group <- total.condition.group[total.condition.group$V1 != "NA",]
-      total.condition.group.counts <- merge(total.condition.group,total.condition,by = "V1")
-      total.condition.group.counts <- total.condition.group.counts[order(total.condition.group.counts$count.group, decreasing = T),]
-      total.condition.group.counts$expand.singlets <- ifelse(total.condition.group.counts$count.group>input$cut.off_expanded,"Ex","NEx")
-      names(total.condition.group.counts)[names(total.condition.group.counts) %in% "V1"] <-input$V_gene_sc
-      names(total.condition.group.counts)[names(total.condition.group.counts) %in% "V2"] <- "Samp"
-      umap.meta2 <- merge(Expansion.meta.data, total.condition.group.counts, by = c("Samp",input$V_gene_sc),sort = F,all.x =T)
-      rownames(umap.meta2) <- umap.meta2$Cell_Index
-      message(paste("Finished calculating expansion"))
-      umap.meta2$Selected_Status <- umap.meta2$Samp
-      umap.meta2$expansion.status <- paste0(umap.meta2$Selected_Status,"_",umap.meta2$expand.singlets)
-      umap.meta2 <- umap.meta2[!is.na(umap.meta2$Samp),]
-      umap.meta2 <- umap.meta2[!is.na(umap.meta2$expand.singlets),]
-      umap.meta2
+      req(df2)
+      df2 <- as.data.frame(df2)
+      names(df2) <- "V1"
+      df2 <- as.data.frame(df2[order(df2$V1),])
+      names(df2) <- "V1"
+      df2
+      df2 <- subset(df2,df2$V1 != "NA")
+      df3 <- unique(df2$V1)
+      updateSelectizeInput(
+        session,
+        "selected_Indiv_Ex_2",
+        choices=df3,
+        selected = df3[2]
+      )
     })
-    #
-    #
-    output$Expansion_check2 <- DT::renderDataTable(escape = FALSE, filter = list(position = 'top', clear = FALSE), options = list(autoWidth = FALSE, lengthMenu = c(2,5,10,20,50,100), pageLength = 10, scrollX = TRUE),{
-      Expansion_check_table()
-    })
-    # ### add in colouring specific to Expanded
-    #
+    # #
+    # # ### table check ------
+    Vals_Expans_table <- reactiveValues(output_expTab=NULL)
+    # # ### add in colouring specific to Expanded
+    # #
     output$classification_to_add2 <- renderUI({
       sc <- input.data_sc_pro()
       validate(
         need(nrow(sc)>0,
              error_message_val_UMAP)
       )
-      req(Expansion_check_table())
-      df3.meta <- c(names(Expansion_check_table()))
+      req(Expansion_check_tb())
+      df3.meta <- c(names(Expansion_check_tb()))
 
       if(length(df3.meta)>0) {
         selectInput("Colour_By_this_Expanded","Expanded Colour by: ",choices = df3.meta,selected="expand.singlets")
@@ -11821,9 +11780,9 @@ tabPanel("GEX -> TCR",
 
 
     })
-
-
-    ## Expansion UMAP plot -----
+    #
+    #
+    # ## Expansion UMAP plot -----
     cols_UMAP_Expanded <- reactive({
       sc <- input.data_sc_pro()
       validate(
@@ -11832,7 +11791,8 @@ tabPanel("GEX -> TCR",
       )
       req(input$Colour_By_this_Expanded)
 
-      top_BD_cluster <-  Expansion_check_table()
+      top_BD_cluster <-  Expansion_check_tb()
+      req(top_BD_cluster)
       top_BD_cluster$Selected_function <- top_BD_cluster[,names(top_BD_cluster) %in% input$Colour_By_this_Expanded]
 
       if (input$Colour_By_this_Expanded == "expand.singlets") {
@@ -11858,11 +11818,11 @@ tabPanel("GEX -> TCR",
         col.gg[1] <- "grey90"
         col.gg[2] <- "#00BFC4"
 
-        palette_rainbow[2] <- "grey90"
-        heat_col[2] <- "grey90"
-        col.terrain[2] <- "grey90"
-        col.topo[2] <- "grey90"
-        col.hcl[2] <- "grey90"
+        palette_rainbow[1] <- "grey90"
+        heat_col[1] <- "grey90"
+        col.terrain[1] <- "grey90"
+        col.topo[1] <- "grey90"
+        col.hcl[1] <- "grey90"
       }
 
       else {
@@ -11922,8 +11882,10 @@ tabPanel("GEX -> TCR",
         need(nrow(sc)>0,
              error_message_val1)
       )
-      top_BD_cluster <-  Expansion_check_table()
+      top_BD_cluster <-  Expansion_check_tb()
       top_BD_cluster$Selected_function <- top_BD_cluster[,names(top_BD_cluster) %in% input$Colour_By_this_Expanded]
+
+
 
       if (input$Colour_By_this_Expanded == "expand.singlets") {
         top_BD_cluster$Selected_function <- ifelse(grepl("NA", top_BD_cluster$Selected_function),NA,top_BD_cluster$Selected_function)
@@ -11950,7 +11912,7 @@ tabPanel("GEX -> TCR",
              error_message_val1)
       )
       req(input$Colour_By_this_Expanded,input$wrap_row)
-      top_BD_cluster <-  Expansion_check_table()
+      top_BD_cluster <-  Expansion_check_tb()
       top_BD_cluster$Selected_function <- top_BD_cluster[,names(top_BD_cluster) %in% input$Colour_By_this_Expanded]
 
       if (input$Colour_By_this_Expanded == "expand.singlets") {
@@ -11969,12 +11931,10 @@ tabPanel("GEX -> TCR",
       names(col.file) <- "V1"
 
       col.file$col <- unlist(colors_Expanded())
-
       colorblind_vector <-as.data.frame(unlist(colors_Expanded()))
 
       if (dim(colorblind_vector)[1]==0) {
         num <- as.data.frame(unique(top_BD_cluster$Selected_function))
-
         if (input$colourtype == "default") {
           colorblind_vector <- c(gg_fill_hue(dim(num)[1]))
         } else if (input$colourtype == "hcl.colors") {
@@ -11995,33 +11955,15 @@ tabPanel("GEX -> TCR",
         }
 
       }
-
-      # if (input$Colour_By_this_Expanded == "expand.singlets") {
-      #   colorblind_vector[2] <- "grey90"
-      # }
-
-
       colorblind_vector <- as.data.frame(colorblind_vector)
 
       names(colorblind_vector) <- "cols"
-
-      names(top_BD_cluster)[names(top_BD_cluster) %in% input$Samp_col_expanded] <- "ID_Column"
-      top_BD_cluster <- top_BD_cluster[top_BD_cluster$ID_Column %in% input$ID_Column_factor_expanded,]
-      top_BD_cluster$ID_Column <- factor(top_BD_cluster$ID_Column,levels = input$ID_Column_factor_expanded)
+      top_BD_cluster$ID_Column <- top_BD_cluster[,names(top_BD_cluster) %in% input$Split_group_by_]
+      top_BD_cluster <- top_BD_cluster[top_BD_cluster$ID_Column %in% input$Graph_split_order,] # subset to a specific individuals
+      top_BD_cluster$ID_Column <- factor(top_BD_cluster$ID_Column,levels = input$Graph_split_order)
 
       df <- ggplot(top_BD_cluster,aes(x=UMAP_1,UMAP_2,colour=Selected_function,alpha = Selected_function,label = Selected_function))
-
-      # if (input$Colour_By_this_Expanded == "expand.singlets") {
-      #
-      #   df <- df + geom_point(data= NEx, aes(x=UMAP_1,UMAP_2,colour=Selected_function,alpha = Selected_function))
-      #   df <- df + geom_point(data= Ex, aes(x=UMAP_1,UMAP_2,colour=Selected_function,alpha = Selected_function))
-      # }
-
-      # else {
       df <-   df + geom_point()
-      # }
-
-
       df <- df + scale_color_manual(labels = ~ stringr::str_wrap(.x, width = 20),values = colorblind_vector$col, na.value=input$NA_col_analysis)+
         scale_alpha_manual(labels = ~ stringr::str_wrap(.x, width = 20),values = rep(1,length(unique(top_BD_cluster$Selected_function))), na.value=0.1) +
         theme_bw() +
@@ -12047,8 +11989,8 @@ tabPanel("GEX -> TCR",
     output$UMAP_Expanded <- renderPlot({
       UMAP_Expanded_plot()
     })
-
-    # download UMAP expanded ------
+    #
+    # # download UMAP expanded ------
     output$downloadPlot_UMAP_Expanded  <- downloadHandler(
       filename = function() {
         x <- today()
@@ -12072,68 +12014,49 @@ tabPanel("GEX -> TCR",
         dev.off()},   contentType = "application/png" # MIME type of the image
     )
 
+    # ## Expanded Violin plot ------
+    #
+    compare.stat_Expanded <- reactive({
+      sc <- UMAP_metadata_with_labs()
+      validate(
+        need(nrow(sc)>0,
+             error_message_val_UMAP)
+      )
+      req(input$Samp_col,Expansion_check_tb())
+      md <- sc@meta.data
+      ex.md <- Expansion_check_tb()
+      ex.md2 <- ex.md[,names(ex.md) %in% c("Cell_Index","expanded.singlets","Selected_Status","expansion.status")]
+      md.ex <- merge(md,ex.md2,sort = F)
+      rownames(md.ex) <- md.ex$Cell_Index
+      sc@meta.data <- md.ex
+      sc
 
-    ## Expanded Violin plot ------
-
-    # compare.stat_Violin_sc <- reactive({
-    #   sc <- UMAP_metadata_with_labs()
-    #   validate(
-    #     need(nrow(sc)>0,
-    #          error_message_val_UMAP)
-    #   )
-    #
-    #   req(input$Samp_col_expanded,input$ID_Column_factor_expanded,Expansion_check_table())
-    #
-    #   sc@meta.data$Samp <- sc@meta.data[,names(sc@meta.data) %in% input$Samp_col_expanded]
-    #   sc@meta.data$Samp.filter <- ifelse(sc@meta.data$Samp %in% c(input$ID_Column_factor_expanded), sc@meta.data$Samp,"Abs")
-    #   sc <- subset(sc, Samp.filter != "Abs")
-    #   sc@meta.data$filter <- sc@meta.data[,names(sc@meta.data) %in% input$V_gene_sc]
-    #   sc@meta.data$filter <- gsub("NA","Unknown",sc@meta.data$filter )
-    #   sc <- subset(sc, filter != "Unknown")
-    #   sc@meta.data$filter <- gsub("Unknown","NA",sc@meta.data$filter )
-    #   req(input$Samp_col_expanded,input$ID_Column_factor_expanded,input$V_gene_sc,input$cut.off_expanded)
-    #   meta.data <- sc@meta.data
-    #   expanded.meta.data <-  Expansion_check_table()
-    #   expanded.meta.data <- expanded.meta.data[,names(expanded.meta.data) %in% c(input$V_gene_sc,"Cell_Index",input$Samp_col_expanded,"expand.singlets","expansion.status")]
-    #   expanded.meta.data <- expanded.meta.data %>%
-    #     select("Cell_Index", everything())
-    #
-    #   meta.data_exp <- merge(meta.data,expanded.meta.data,by = c(input$V_gene_sc,"Cell_Index",input$Samp_col_expanded),all.x=T,sort = F)
-    #   meta.data_exp <- meta.data_exp[order(meta.data_exp$order,decreasing = F),]
-    #   rownames(meta.data_exp) <- meta.data_exp$Cell_Index
-    #   sc@meta.data <- meta.data_exp
-    #   sc
-    #
-    # })
+    })
     # Vals_expanded.stats <- reactiveValues(output_ex1=NULL)
 
+    Vals_expanded.stats <- reactive({
+      sc <-input.data_sc_pro()
 
+      validate(
+        need(nrow(sc)>0,
+             error_message_val_sc)
+      )
 
-    # Vals_expanded.stats <- reactive({
-    #
-    #   sc <-input.data_sc_pro()
-    #
-    #   validate(
-    #     need(nrow(sc)>0,
-    #          error_message_val_sc)
-    #   )
-    #
-    #   sc <- compare.stat_Violin_sc()
-    #   req(input$selected_Indiv_Ex_1,input$selected_Indiv_Ex_2,input$pval.ex.filter)
-    #
-    #   message("Updating Ident")
-    #   Idents(object = sc) <- sc@meta.data$expansion.status
-    #
-    #   min.pct.expression<- input$min_point_ #standard setting: 0.25
-    #   min.logfc <-  input$LogFC_ #0.25 is standard
-    #   message(paste0(" Calculating markers for cluster ",input$selected_Indiv_Ex_1," vs ",c(input$selected_Indiv_Ex_2)))
-    #
-    #   markers.fm.list <- FindMarkers(sc, ident.1 = input$selected_Indiv_Ex_1, ident.2 = c(input$selected_Indiv_Ex_2), min.pct = min.pct.expression,  logfc.threshold = min.logfc, only.pos=TRUE)
-    #   markers.fm.list2 <- subset(markers.fm.list,markers.fm.list$p_val_adj < input$pval.ex.filter)
-    #   Vals_expanded.stats <- as.data.frame(markers.fm.list2)
-    #   Vals_expanded.stats
-    #
-    # })
+      sc <- compare.stat_Expanded()
+      req(input$selected_Indiv_Ex_1,input$selected_Indiv_Ex_2,input$pval.ex.filter)
+      # head(sc@meta.data)
+      message("Updating Ident")
+      Idents(object = sc) <- sc@meta.data$expansion.status
+
+      min.pct.expression<- input$min_point_ #standard setting: 0.25
+      min.logfc <-  input$LogFC_ #0.25 is standard
+      message(paste0(" Calculating markers for cluster ",c(input$selected_Indiv_Ex_1)," vs ",c(input$selected_Indiv_Ex_2)))
+      markers.fm.list <- FindMarkers(sc, ident.1 = input$selected_Indiv_Ex_1, ident.2 = c(input$selected_Indiv_Ex_2), min.pct = min.pct.expression,  logfc.threshold = min.logfc, only.pos=TRUE)
+      markers.fm.list2 <- subset(markers.fm.list,markers.fm.list$p_val_adj < input$pval.ex.filter)
+      Vals_expanded.stats <- as.data.frame(markers.fm.list2)
+      Vals_expanded.stats
+
+    })
 
     output$compare.stat_Ex <- DT::renderDataTable(escape = FALSE, options = list(autoWidth = FALSE, lengthMenu = c(2,5,10,20,50,100), pageLength =10, scrollX = TRUE),{
 
@@ -12145,46 +12068,53 @@ tabPanel("GEX -> TCR",
       )
       as.data.frame(Vals_expanded.stats())
     })
-
+    #
     output$downloadtb_compare.stat_Ex <- downloadHandler(
       filename = function(){
-        paste("compare.stat_Expanded_",gsub("-", ".", Sys.Date()),".csv", sep = "")
+        paste("compare.stat_Expanded_", input$Split_group_by_,".csv", sep = "")
       },
       content = function(file){
         df <- as.data.frame(Vals_expanded.stats())
         write.csv(df,file, row.names = T)
       } )
-    ## dot plot
-    # relative_expression_plot_ex <- reactive({
-    #   sc <- compare.stat_Violin_sc()
-    #   validate(
-    #     need(nrow(sc)>0,
-    #          error_message_val_sc))
-    #
-    #   if(input$restrict.dotpot == "yes") {
-    #     list.names <- rownames(Vals_expanded.stats())[1:input$restrict.dotpot.num]
-    #   }
-    #   else {
-    #     list.names <- rownames(Vals_expanded.stats())
-    #   }
-    #
-    #   size_legend = input$Bar_legend_size-2
-    #   Idents(object = sc) <- sc@meta.data$expansion.status
-    #   DotPlot(sc,features = list.names) +
-    #     RotatedAxis() +
-    #     theme(
-    #       axis.title.y = element_blank(),
-    #       axis.text.y = element_text(colour="black",family=input$font_type,size = input$text_size),
-    #       axis.text.x = element_text(colour="black",family=input$font_type,size = input$text_size, angle = 90),
-    #       axis.title.x = element_blank(),
-    #       legend.title = element_text(colour="black", size=input$Bar_legend_size,family=input$font_type),
-    #       legend.text = element_text(colour="black", size=size_legend,family=input$font_type),
-    #       legend.position = input$legend_position,
-    #     ) +
-    #     scale_colour_gradient2(low = input$low.dotplot.ex, mid = input$middle.dotplot.ex, high = input$high.dotplot.ex)+
-    #     scale_x_discrete(labels = label_wrap(20)) +
-    #     scale_y_discrete(labels = label_wrap(20))
-    # })
+    ## dot plot Expanded ----
+    relative_expression_plot_ex <- reactive({
+      sc <- Vals_expanded.stats()
+      validate(
+        need(nrow(sc)>0,
+             error_message_val_sc))
+
+      if(input$restrict.dotpot == "yes") {
+        list.names <- rownames(Vals_expanded.stats())[1:input$restrict.dotpot.num]
+      }
+      else {
+        list.names <- rownames(Vals_expanded.stats())
+      }
+
+      sc <- compare.stat_Expanded()
+      validate(
+        need(nrow(sc)>0,
+             error_message_val_sc))
+
+      Idents(object = sc) <- sc@meta.data$expansion.status
+
+      size_legend = input$Bar_legend_size-2
+
+      DotPlot(sc,features = list.names) +
+        RotatedAxis() +
+        theme(
+          axis.title.y = element_blank(),
+          axis.text.y = element_text(colour="black",family=input$font_type,size = input$text_size),
+          axis.text.x = element_text(colour="black",family=input$font_type,size = input$text_size, angle = 90),
+          axis.title.x = element_blank(),
+          legend.title = element_text(colour="black", size=input$Bar_legend_size,family=input$font_type),
+          legend.text = element_text(colour="black", size=size_legend,family=input$font_type),
+          legend.position = input$legend_position,
+        ) +
+        scale_colour_gradient2(low = input$low.dotplot.ex, mid = input$middle.dotplot.ex, high = input$high.dotplot.ex)+
+        scale_x_discrete(labels = label_wrap(20)) +
+        scale_y_discrete(labels = label_wrap(20))
+    })
 
     output$relative_expression_dotplot_ex <- renderPlot({
       relative_expression_plot_ex()
@@ -12193,7 +12123,7 @@ tabPanel("GEX -> TCR",
 
     output$downloadPlot_all_expression_dotplot_ex <- downloadHandler(
       filename = function() {
-        paste("Expanded_dotplot","_",today(), ".pdf", sep = "")
+        paste("Expanded_dotplot",input$Split_group_by_,"_",today(), ".pdf", sep = "")
       },
       content = function(file) {
         pdf(file, width=input$width_all_expression_dotplot_ex,height=input$height_all_expression_dotplot_ex, onefile = FALSE) # open the pdf device
@@ -12203,7 +12133,7 @@ tabPanel("GEX -> TCR",
 
     output$downloadPlotPNG_all_expression_dotplot_ex  <- downloadHandler(
       filename = function() {
-        paste("Expanded_dotplot","_",today(), ".png", sep = "")
+        paste("Expanded_dotplot",input$Split_group_by_,"_",today(), ".png", sep = "")
       },
       content = function(file) {
         png(file, width = input$width_png_all_expression_dotplot_ex,
@@ -13399,78 +13329,76 @@ tabPanel("GEX -> TCR",
     #### clusTCR2 seting up the dataframe -----
     AG_cluster <- reactive({
       x = today()
-        clust <- input.data_sc_clusTCR_AG()
-        sc <- UMAP_metadata_with_labs()
-        validate(
-          need(nrow(sc)>0 & nrow(clust)>0,
-               "Upload File")
-        )
-        req(sc)
-        md <- sc@meta.data
+      clust <- input.data_sc_clusTCR_AG()
+      sc <- UMAP_metadata_with_labs()
+      validate(
+        need(nrow(sc)>0 & nrow(clust)>0,
+             "Upload File")
+      )
+      req(sc)
+      md <- sc@meta.data
 
-        req(clust,md)
-        if(input$datasource == "BD_Rhapsody_Paired" || input$datasource == "BD_Rhapsody_AIRR") {
+      req(clust,md)
+      if(input$datasource == "BD_Rhapsody_Paired" || input$datasource == "BD_Rhapsody_AIRR") {
 
-          names(md)[names(md) %in% "v_gene_AG"] <- "Selected_V_AG"
-          names(md)[names(md) %in% "junction_aa_AG"] <- "AminoAcid_AG"
-        } else {
-          names(md)[names(md) %in% "v_gene_AG"] <- "Selected_V_AG"
-          names(md)[names(md) %in% "cdr3_AG"] <- "AminoAcid_AG"
-        }
+        names(md)[names(md) %in% "v_gene_AG"] <- "Selected_V_AG"
+        names(md)[names(md) %in% "junction_aa_AG"] <- "AminoAcid_AG"
+      } else {
+        names(md)[names(md) %in% "v_gene_AG"] <- "Selected_V_AG"
+        names(md)[names(md) %in% "cdr3_AG"] <- "AminoAcid_AG"
+      }
 
-        req(md$Selected_V_AG,md$AminoAcid_AG,input$Samp_col)
+      req(md$Selected_V_AG,md$AminoAcid_AG,input$Samp_col)
 
-        md$CDR3_Vgene <- paste(md$AminoAcid_AG,md$Selected_V_AG,sep="_")
-        df <- merge(md,clust,by = "CDR3_Vgene")
+      md$CDR3_Vgene <- paste(md$AminoAcid_AG,md$Selected_V_AG,sep="_")
+      df <- merge(md,clust,by = "CDR3_Vgene")
 
-        # Total clone Count -----
-        df2 <- as.data.frame(df$Clust_size_order)
-        names(df2) <- "Clust_size_order"
-        df2$Total_cloneCount <- 1
-        df3 <- as.data.frame(ddply(df2,"Clust_size_order",numcolwise(sum)))
-        df3 <- subset(df3,df3$Total_cloneCount>2)
-        df4 <- merge(df3,df,by = "Clust_size_order")
-        df4
-        # updated cluster count
-        clusterCount <- df4[,names(df4) %in% c("Clust_size_order","CDR3_Vgene")]
-        clusterCount <- clusterCount[!duplicated(clusterCount), ]
-        clusterCount$ClusterCount <- 1
-        clusterCount2 <- as.data.frame(ddply(clusterCount,c("Clust_size_order"),numcolwise(sum)))
-        clusterCount2 <- subset(clusterCount2,clusterCount2$ClusterCount>1)
-        df4_clusterCount2 <- merge(df4,clusterCount2,by = c("Clust_size_order"))
-        df4_clusterCount2
-        # Sample Count
-        SampCount <- df4_clusterCount2[,names(df4_clusterCount2) %in% c("Clust_size_order",input$Samp_col)]
-        SampCount <- SampCount[!duplicated(SampCount), ]
-        SampCount$Sample_count <- 1
-        df9 <- as.data.frame(ddply(SampCount,c("Clust_size_order"),numcolwise(sum)))
-        df10 <- merge(df9,df4_clusterCount2,by = "Clust_size_order")
+      # Total clone Count -----
+      df2 <- as.data.frame(df$Clust_size_order)
+      names(df2) <- "Clust_size_order"
+      df2$Total_cloneCount <- 1
+      df3 <- as.data.frame(ddply(df2,"Clust_size_order",numcolwise(sum)))
+      df3 <- subset(df3,df3$Total_cloneCount>2)
+      df4 <- merge(df3,df,by = "Clust_size_order")
+      df4
+      # updated cluster count
+      clusterCount <- df4[,names(df4) %in% c("Clust_size_order","CDR3_Vgene")]
+      clusterCount <- clusterCount[!duplicated(clusterCount), ]
+      clusterCount$ClusterCount <- 1
+      clusterCount2 <- as.data.frame(ddply(clusterCount,c("Clust_size_order"),numcolwise(sum)))
+      clusterCount2 <- subset(clusterCount2,clusterCount2$ClusterCount>1)
+      df4_clusterCount2 <- merge(df4,clusterCount2,by = c("Clust_size_order"))
+      df4_clusterCount2
+      # Sample Count
+      SampCount <- df4_clusterCount2[,names(df4_clusterCount2) %in% c("Clust_size_order",input$Samp_col)]
+      SampCount <- SampCount[!duplicated(SampCount), ]
+      SampCount$Sample_count <- 1
+      df9 <- as.data.frame(ddply(SampCount,c("Clust_size_order"),numcolwise(sum)))
+      df10 <- merge(df9,df4_clusterCount2,by = "Clust_size_order")
 
-        # Calculating the priority
-        df10$priority <- 1/(df10$Total_cloneCount * df10$ClusterCount * df10$Sample_count)
-        df10 <- df10[order(df10$priority,decreasing = F),]
-        df10
-        df10$priority[is.na(df10$priority)] <- 0
-        df10 <- subset(df10,df10$priority>0)
-        df10
-        # updated order
-        updatedOrder <- df10[,names(df10) %in% c("priority","Clust_size_order")]
-        updatedOrder <- updatedOrder[!duplicated(updatedOrder), ]
-        updatedOrder <- updatedOrder[order(updatedOrder$priority,decreasing = F),]
-        updatedOrder$Updated_order <- 1:dim(updatedOrder)[1]
-        updatedOrder
+      # Calculating the priority
+      df10$priority <- 1/(df10$Total_cloneCount * df10$ClusterCount * df10$Sample_count)
+      df10 <- df10[order(df10$priority,decreasing = F),]
+      df10
+      df10$priority[is.na(df10$priority)] <- 0
+      df10 <- subset(df10,df10$priority>0)
+      df10
+      # updated order
+      updatedOrder <- df10[,names(df10) %in% c("priority","Clust_size_order")]
+      updatedOrder <- updatedOrder[!duplicated(updatedOrder), ]
+      updatedOrder <- updatedOrder[order(updatedOrder$priority,decreasing = F),]
+      updatedOrder$Updated_order <- 1:dim(updatedOrder)[1]
+      updatedOrder
 
-        # final data frame
-        df7 <- merge(updatedOrder, df10, by = c("Clust_size_order","priority"))
-        df7 <- df7[order(df7$priority,decreasing = F),]
+      # final data frame
+      df7 <- merge(updatedOrder, df10, by = c("Clust_size_order","priority"))
+      df7 <- df7[order(df7$priority,decreasing = F),]
 
 
-        clusterAG <- df7 %>%
-          select(all_of(c(input$Samp_col,"Sample_count","Total_cloneCount","ClusterCount","priority","Updated_order")), everything())
+      clusterAG <- df7 %>%
+        select(all_of(c(input$Samp_col,"Sample_count","Total_cloneCount","ClusterCount","priority","Updated_order")), everything())
 
     })
-
-
     BD_cluster <- reactive({
       sc <- UMAP_metadata_with_labs()
       clust <- input.data_sc_clusTCR_BD()
@@ -13482,60 +13410,60 @@ tabPanel("GEX -> TCR",
       md <- sc@meta.data
       x = today()
 
-        if(input$datasource == "BD_Rhapsody_Paired" || input$datasource == "BD_Rhapsody_AIRR") {
-          names(md)[names(md) %in% "v_gene_BD"] <- "Selected_V_BD"
-          names(md)[names(md) %in% "junction_aa_BD"] <- "AminoAcid_BD"
-        } else {
-          names(md)[names(md) %in% "v_gene_BD"] <- "Selected_V_BD"
-          names(md)[names(md) %in% "cdr3_BD"] <- "AminoAcid_BD"
-        }
+      if(input$datasource == "BD_Rhapsody_Paired" || input$datasource == "BD_Rhapsody_AIRR") {
+        names(md)[names(md) %in% "v_gene_BD"] <- "Selected_V_BD"
+        names(md)[names(md) %in% "junction_aa_BD"] <- "AminoAcid_BD"
+      } else {
+        names(md)[names(md) %in% "v_gene_BD"] <- "Selected_V_BD"
+        names(md)[names(md) %in% "cdr3_BD"] <- "AminoAcid_BD"
+      }
 
-        req(md$Selected_V_BD,md$AminoAcid_BD,input$Samp_col)
-        md$CDR3_Vgene <- paste(md$AminoAcid_BD,md$Selected_V_BD,sep="_")
-        df <- merge(md,clust,by = "CDR3_Vgene")
+      req(md$Selected_V_BD,md$AminoAcid_BD,input$Samp_col)
+      md$CDR3_Vgene <- paste(md$AminoAcid_BD,md$Selected_V_BD,sep="_")
+      df <- merge(md,clust,by = "CDR3_Vgene")
 
-        # Total clone Count -----
-        df2 <- as.data.frame(df$Clust_size_order)
-        names(df2) <- "Clust_size_order"
-        df2$Total_cloneCount <- 1
-        df3 <- as.data.frame(ddply(df2,"Clust_size_order",numcolwise(sum)))
-        df3 <- subset(df3,df3$Total_cloneCount>2)
-        df4 <- merge(df3,df,by = "Clust_size_order")
-        df4
-        # updated cluster count
-        clusterCount <- df4[,names(df4) %in% c("Clust_size_order","CDR3_Vgene")]
-        clusterCount <- clusterCount[!duplicated(clusterCount), ]
-        clusterCount$ClusterCount <- 1
-        clusterCount2 <- as.data.frame(ddply(clusterCount,c("Clust_size_order"),numcolwise(sum)))
-        clusterCount2 <- subset(clusterCount2,clusterCount2$ClusterCount>1)
-        df4_clusterCount2 <- merge(df4,clusterCount2,by = c("Clust_size_order"))
-        df4_clusterCount2
-        # Sample Count
-        SampCount <- df4_clusterCount2[,names(df4_clusterCount2) %in% c("Clust_size_order",input$Samp_col)]
-        SampCount <- SampCount[!duplicated(SampCount), ]
-        SampCount$Sample_count <- 1
-        df9 <- as.data.frame(ddply(SampCount,c("Clust_size_order"),numcolwise(sum)))
-        df10 <- merge(df9,df4_clusterCount2,by = "Clust_size_order")
+      # Total clone Count -----
+      df2 <- as.data.frame(df$Clust_size_order)
+      names(df2) <- "Clust_size_order"
+      df2$Total_cloneCount <- 1
+      df3 <- as.data.frame(ddply(df2,"Clust_size_order",numcolwise(sum)))
+      df3 <- subset(df3,df3$Total_cloneCount>2)
+      df4 <- merge(df3,df,by = "Clust_size_order")
+      df4
+      # updated cluster count
+      clusterCount <- df4[,names(df4) %in% c("Clust_size_order","CDR3_Vgene")]
+      clusterCount <- clusterCount[!duplicated(clusterCount), ]
+      clusterCount$ClusterCount <- 1
+      clusterCount2 <- as.data.frame(ddply(clusterCount,c("Clust_size_order"),numcolwise(sum)))
+      clusterCount2 <- subset(clusterCount2,clusterCount2$ClusterCount>1)
+      df4_clusterCount2 <- merge(df4,clusterCount2,by = c("Clust_size_order"))
+      df4_clusterCount2
+      # Sample Count
+      SampCount <- df4_clusterCount2[,names(df4_clusterCount2) %in% c("Clust_size_order",input$Samp_col)]
+      SampCount <- SampCount[!duplicated(SampCount), ]
+      SampCount$Sample_count <- 1
+      df9 <- as.data.frame(ddply(SampCount,c("Clust_size_order"),numcolwise(sum)))
+      df10 <- merge(df9,df4_clusterCount2,by = "Clust_size_order")
 
-        # Calculating the priority
-        df10$priority <- 1/(df10$Total_cloneCount * df10$ClusterCount * df10$Sample_count)
-        df10 <- df10[order(df10$priority,decreasing = F),]
-        df10$priority[is.na(df10$priority)] <- 0
-        df10 <- subset(df10,df10$priority>0)
-        # updated order
-        updatedOrder <- df10[,names(df10) %in% c("priority","Clust_size_order")]
-        updatedOrder <- updatedOrder[!duplicated(updatedOrder), ]
-        updatedOrder <- updatedOrder[order(updatedOrder$priority,decreasing = F),]
-        updatedOrder$Updated_order <- 1:dim(updatedOrder)[1]
-        updatedOrder
+      # Calculating the priority
+      df10$priority <- 1/(df10$Total_cloneCount * df10$ClusterCount * df10$Sample_count)
+      df10 <- df10[order(df10$priority,decreasing = F),]
+      df10$priority[is.na(df10$priority)] <- 0
+      df10 <- subset(df10,df10$priority>0)
+      # updated order
+      updatedOrder <- df10[,names(df10) %in% c("priority","Clust_size_order")]
+      updatedOrder <- updatedOrder[!duplicated(updatedOrder), ]
+      updatedOrder <- updatedOrder[order(updatedOrder$priority,decreasing = F),]
+      updatedOrder$Updated_order <- 1:dim(updatedOrder)[1]
+      updatedOrder
 
-        # final data frame
-        df7 <- merge(updatedOrder, df10, by = c("Clust_size_order","priority"))
-        df7 <- df7[order(df7$priority,decreasing = F),]
+      # final data frame
+      df7 <- merge(updatedOrder, df10, by = c("Clust_size_order","priority"))
+      df7 <- df7[order(df7$priority,decreasing = F),]
 
-        clusterBD <- df7 %>%
-          select(all_of(c(input$Samp_col,"Sample_count","Total_cloneCount","ClusterCount","priority","Updated_order")), everything())
-        clusterBD
+      clusterBD <- df7 %>%
+        select(all_of(c(input$Samp_col,"Sample_count","Total_cloneCount","ClusterCount","priority","Updated_order")), everything())
+      clusterBD
 
     })
 
@@ -13551,8 +13479,8 @@ tabPanel("GEX -> TCR",
         if (length(input.data_sc_clusTCR_BD())>0) {
           req(BD_cluster())
           BD_cluster()
-           }
         }
+      }
 
       else {
 
@@ -13587,8 +13515,8 @@ tabPanel("GEX -> TCR",
         need(nrow(cluster)>0,
              "upload clustering")
       )
-     cluster$ID_Column <- cluster[,names(cluster) %in% input$Samp_col]
-
+      cluster$ID_Column <- cluster[,names(cluster) %in% input$Samp_col]
+      req(input$Samp_col)
       # cluster <- cluster[cluster$Clust_size_order %in% input$lower_cluster:input$upper_cluster,]
       updateSelectInput(
         session,
@@ -13607,8 +13535,8 @@ tabPanel("GEX -> TCR",
              "Upload clusTCR table")
       )
       req(cluster,input$Colour_By_this, input$Samp_col)
-     cluster$ID_Column <- cluster[,names(cluster) %in% input$Samp_col]
-     cluster <- cluster[order(cluster$ID_Column),]
+      cluster$ID_Column <- cluster[,names(cluster) %in% input$Samp_col]
+      cluster <- cluster[order(cluster$ID_Column),]
 
       cluster$colour <- cluster[,names(cluster) %in% input$Colour_By_this]
       cluster$colour <- gsub("_"," ",cluster$colour)
@@ -13680,13 +13608,13 @@ tabPanel("GEX -> TCR",
              "Upload clusTCR table")
       )
       req(cluster,input$Colour_By_this)
-     cluster$ID_Column <- cluster[,names(cluster) %in% input$Samp_col]
-     cluster <- cluster[order(cluster$ID_Column),]
-     # cluster <- cluster[cluster$Updated_order %in% input$Clusters_to_dis_PIE,]
-     cluster$colour <- cluster[,names(cluster) %in% input$Colour_By_this]
-     cluster$colour <- gsub("_"," ",cluster$colour)
-     cluster$colour <- factor(cluster$colour, levels = unique(cluster$colour))
-     cluster$colour <- gsub("NA",NA,cluster$colour)
+      cluster$ID_Column <- cluster[,names(cluster) %in% input$Samp_col]
+      cluster <- cluster[order(cluster$ID_Column),]
+      # cluster <- cluster[cluster$Updated_order %in% input$Clusters_to_dis_PIE,]
+      cluster$colour <- cluster[,names(cluster) %in% input$Colour_By_this]
+      cluster$colour <- gsub("_"," ",cluster$colour)
+      cluster$colour <- factor(cluster$colour, levels = unique(cluster$colour))
+      cluster$colour <- gsub("NA",NA,cluster$colour)
 
       num <- as.data.frame(unique(cluster$colour))
       num <- as.data.frame(num[complete.cases(num)==T,])
@@ -13705,8 +13633,8 @@ tabPanel("GEX -> TCR",
              "Upload clusTCR table, which is needed for TCR -> UMAP section")
       )
       req(cluster,input$Clusters_to_dis_PIE,input$Colour_By_this)
-     cluster$ID_Column <- cluster[,names(cluster) %in% input$Samp_col]
-     cluster <- cluster[order(cluster$ID_Column),]
+      cluster$ID_Column <- cluster[,names(cluster) %in% input$Samp_col]
+      cluster <- cluster[order(cluster$ID_Column),]
       # cluster <- cluster[cluster$Updated_order %in% input$Clusters_to_dis_PIE,]
       cluster$colour <- cluster[,names(cluster) %in% input$Colour_By_this]
       cluster$colour <- gsub("_"," ",cluster$colour)
@@ -13785,7 +13713,7 @@ tabPanel("GEX -> TCR",
         need(nrow(cluster)>0,
              "Upload clusTCR table")
       )
-     cluster$ID_Column <- cluster[,names(cluster) %in% input$Samp_col]
+      cluster$ID_Column <- cluster[,names(cluster) %in% input$Samp_col]
       Network_df <- cluster[order(cluster$Updated_order),]
       # Network_df2 <-
       Network_df %>% distinct(CDR3_Vgene, .keep_all = TRUE) # make Unique
@@ -13805,7 +13733,7 @@ tabPanel("GEX -> TCR",
         need(nrow(cluster)>0,
              "Upload clusTCR table, which is needed for TCR -> UMAP section")
       )
-     cluster$ID_Column <- cluster[,names(cluster) %in% input$Samp_col]
+      cluster$ID_Column <- cluster[,names(cluster) %in% input$Samp_col]
 
       df <- cluster[cluster$Updated_order  %in% input$Clusters_to_dis_PIE,]
 
@@ -13847,146 +13775,181 @@ tabPanel("GEX -> TCR",
 
     )
 
+    ## heatmap for each cluster ----
+    Selected_cluster_plot <- reactive({
+      cluster <- clusTCR2_df()
+      validate(
+        need(nrow(cluster)>0,
+             "Upload clusTCR table, which is needed for TCR -> UMAP section")
+      )
+      cluster$ID_Column2 <- cluster[,names(cluster) %in% input$Split_group_by_]
+      Network_df <- cluster[order(cluster$Updated_order),]
+      Network_df <- Network_df[Network_df$Updated_order  %in% input$Clusters_to_dis_PIE,]
+      Network_df$Selected <- Network_df[,names(Network_df) %in% input$Colour_By_this]
+      Network_df$cloneCount <- 1
+      df.1 <- acast(Network_df, ID_Column2~Selected, value.var="cloneCount")
+      df.1[is.na(df.1)] <- 0
+      min.FC <- min(df.1)
+      med.FC <- max(df.1)/2
+      max.FC <- max(df.1)
+
+      ht <- Heatmap(df.1,
+                    heatmap_legend_param = list(title = "Count",
+                                                title_gp = gpar(fontsize = 10,
+                                                                fontface = "bold",fontfamily='serif'),
+                                                labels_gp = gpar(fontsize = 10,fontfamily='serif')),
+                    col = colorRamp2(c(min.FC,med.FC,max.FC), c("white","gold","purple")),
+                    row_names_gp = grid::gpar(fontsize = 10,fontfamily='serif'),
+                    column_names_gp = grid::gpar(fontsize = 10,fontfamily='serif'),
+
+      )
+
+      draw(ht, padding = unit(c(10, 10, 10, 10), "mm"))
+
+    })
+
+
     #### cluster pie chart function -----
-    cols_clusTCR2_pie <- reactive({
-      cluster <- clusTCR2_df()
-      validate(
-        need(nrow(cluster)>0,
-             "Upload clusTCR table, which is needed for TCR -> UMAP section")
-      )
-      cluster$ID_Column <- cluster[,names(cluster) %in% input$Samp_col]
-      Network_df <- cluster[order(cluster$Updated_order),]
-      Network_df <- Network_df[Network_df$Updated_order  %in% input$Clusters_to_dis_PIE,]
-      Network_df$Selected <- Network_df[,names(Network_df) %in% input$Colour_By_this]
-      Network_df$Selected <- gsub("NA",NA,Network_df$Selected)
-
-      num <- as.data.frame(unique(Network_df$Selected))
-      num <- as.data.frame(num[complete.cases(num)==T,])
-
-
-      col.gg <- gg_fill_hue(dim(num)[1])
-      palette_rainbow <- rainbow(dim(num)[1])
-      heat_col <- heat.colors(dim(num)[1])
-      col.terrain <- terrain.colors(dim(num)[1])
-      col.topo <- topo.colors(dim(num)[1])
-      col.hcl <- hcl.colors(dim(num)[1], palette = "viridis")
-
-      if (input$colourtype == "default") {
-        lapply(1:dim(num)[1], function(i) {
-          colourInput(paste("col.cols_clusTCR2_pie", i, sep="_"), paste(num[i,]), col.gg[i])
-        })
-      }
-      else if (input$colourtype == "hcl.colors") {
-        lapply(1:dim(num)[1], function(i) {
-          colourInput(paste("col.cols_clusTCR2_pie", i, sep="_"), paste(num[i,]), col.hcl[i])
-        })
-      }
-      else if (input$colourtype == "topo.colors") {
-        lapply(1:dim(num)[1], function(i) {
-          colourInput(paste("col.cols_clusTCR2_pie", i, sep="_"), paste(num[i,]), col.topo[i])
-        })
-      }
-      else if (input$colourtype == "heat.colors") {
-        lapply(1:dim(num)[1], function(i) {
-          colourInput(paste("col.cols_clusTCR2_pie", i, sep="_"), paste(num[i,]), heat_col[i])
-        })
-      }
-      else if (input$colourtype == "terrain.colors") {
-        lapply(1:dim(num)[1], function(i) {
-          colourInput(paste("col.cols_clusTCR2_pie", i, sep="_"), paste(num[i,]), col.terrain[i])
-        })
-      }
-
-      else if (input$colourtype == "rainbow") {
-        lapply(1:dim(num)[1], function(i) {
-          colourInput(paste("col.cols_clusTCR2_pie", i, sep="_"), paste(num[i,]), palette_rainbow[i])
-        }) }
-      else if (input$colourtype == "random") {
-        palette1 <- distinctColorPalette(dim(num)[1])
-        lapply(1:dim(num)[1], function(i) {
-          colourInput(paste("col.cols_clusTCR2_pie", i, sep="_"), paste(num[i,]), palette1[i])
-        })
-
-      }
-      else {
-        lapply(1:dim(num)[1], function(i) {
-          colourInput(paste("col.cols_clusTCR2_pie", i, sep="_"), paste(num[i,]), input$one.colour.default)
-        })
-
-
-      } # one colour
-
-    })
-
-    output$myPanel_cols_clusTCR2_pie <- renderUI({cols_clusTCR2_pie()})
-
-    colors_cols_clusTCR2_pie <- reactive({
-      cluster <- clusTCR2_df()
-      validate(
-        need(nrow(cluster)>0,
-             "Upload clusTCR table, which is needed for TCR -> UMAP section")
-      )
-      cluster$ID_Column <- cluster[,names(cluster) %in% input$Samp_col]
-      Network_df <- cluster[order(cluster$Updated_order),]
-      Network_df <- Network_df[Network_df$Updated_order  %in% input$Clusters_to_dis_PIE,]
-      Network_df$Selected <- Network_df[,names(Network_df) %in% input$Colour_By_this]
-      Network_df$Selected <- gsub("NA",NA,Network_df$Selected)
-
-      num <- as.data.frame(unique(Network_df$Selected))
-      num <- as.data.frame(num[complete.cases(num)==T,])
-
-
-      lapply(1:dim(num)[1], function(i) {
-        input[[paste("col.cols_clusTCR2_pie", i, sep="_")]]
-      })
-    })
-
-    Pie_chart_ClusTCR2 <- reactive({
-      cluster <- clusTCR2_df()
-      validate(
-        need(nrow(cluster)>0,
-             "Upload clusTCR table, which is needed for TCR -> UMAP section")
-      )
-      cluster$ID_Column <- cluster[,names(cluster) %in% input$Samp_col]
-      Network_df <- cluster[order(cluster$Updated_order),]
-      Network_df <- Network_df[Network_df$Updated_order  %in% input$Clusters_to_dis_PIE,]
-      Network_df$Selected <- Network_df[,names(Network_df) %in% input$Colour_By_this]
-      Network_df$Selected <- gsub("NA",NA,Network_df$Selected)
-
-      df3.meta3 <-  as.data.frame(table(Network_df$ID_Column,Network_df$Selected))
-      total.condition <- as.data.frame(ddply(df3.meta3,"Var1",numcolwise(sum)))
-      dim(total.condition)[1]
-      dim(df3.meta3)[1]
-      emtpy <- matrix(nrow =dim(df3.meta3)[1],ncol=dim(total.condition)[1])
-
-      for (i in 1:dim(df3.meta3)[1]) {
-
-        emtpy[i,] <- ifelse(df3.meta3$Var1[i]==total.condition$Var1[1:dim(total.condition)[1]],
-                            total.condition[total.condition$Var1==total.condition$Var1[1:dim(total.condition)[1]],2],F)
-      }
-      df3.meta3$n <- df3.meta3$Freq/rowSums(emtpy)
-      # df3.meta3
-      df.col <- unlist(colors_cols_clusTCR2_pie())
-
-      ggplot(df3.meta3,aes(x="", y=n, fill=Var2, group = Var1)) +
-        geom_bar(stat="identity", width=1) +
-        coord_polar("y", start=0)  +
-        theme_void(20) +
-        facet_wrap(~Var1, nrow = input$wrap_row) +
-        theme(
-          legend.key.size = unit(1, 'cm'),
-          legend.title = element_blank()) +
-        scale_fill_manual(labels = ~ stringr::str_wrap(.x, width = 20),values = df.col, na.value = input$NA_col_analysis) +
-        theme(strip.text = element_text(size = input$Strip_text_size, family = input$font_type),
-              legend.text = element_text(colour="black", size=input$Bar_legend_size,family=input$font_type),
-              legend.position = input$legend_position,
-              legend.title = element_blank()
-        )
-
-    })
-
+    # cols_clusTCR2_pie <- reactive({
+    #   cluster <- clusTCR2_df()
+    #   validate(
+    #     need(nrow(cluster)>0,
+    #          "Upload clusTCR table, which is needed for TCR -> UMAP section")
+    #   )
+    #   cluster$ID_Column <- cluster[,names(cluster) %in% input$Samp_col]
+    #   Network_df <- cluster[order(cluster$Updated_order),]
+    #   Network_df <- Network_df[Network_df$Updated_order  %in% input$Clusters_to_dis_PIE,]
+    #   Network_df$Selected <- Network_df[,names(Network_df) %in% input$Colour_By_this]
+    #   Network_df$Selected <- gsub("NA",NA,Network_df$Selected)
+    #
+    #   num <- as.data.frame(unique(Network_df$Selected))
+    #   num <- as.data.frame(num[complete.cases(num)==T,])
+    #
+    #
+    #   col.gg <- gg_fill_hue(dim(num)[1])
+    #   palette_rainbow <- rainbow(dim(num)[1])
+    #   heat_col <- heat.colors(dim(num)[1])
+    #   col.terrain <- terrain.colors(dim(num)[1])
+    #   col.topo <- topo.colors(dim(num)[1])
+    #   col.hcl <- hcl.colors(dim(num)[1], palette = "viridis")
+    #
+    #   if (input$colourtype == "default") {
+    #     lapply(1:dim(num)[1], function(i) {
+    #       colourInput(paste("col.cols_clusTCR2_pie", i, sep="_"), paste(num[i,]), col.gg[i])
+    #     })
+    #   }
+    #   else if (input$colourtype == "hcl.colors") {
+    #     lapply(1:dim(num)[1], function(i) {
+    #       colourInput(paste("col.cols_clusTCR2_pie", i, sep="_"), paste(num[i,]), col.hcl[i])
+    #     })
+    #   }
+    #   else if (input$colourtype == "topo.colors") {
+    #     lapply(1:dim(num)[1], function(i) {
+    #       colourInput(paste("col.cols_clusTCR2_pie", i, sep="_"), paste(num[i,]), col.topo[i])
+    #     })
+    #   }
+    #   else if (input$colourtype == "heat.colors") {
+    #     lapply(1:dim(num)[1], function(i) {
+    #       colourInput(paste("col.cols_clusTCR2_pie", i, sep="_"), paste(num[i,]), heat_col[i])
+    #     })
+    #   }
+    #   else if (input$colourtype == "terrain.colors") {
+    #     lapply(1:dim(num)[1], function(i) {
+    #       colourInput(paste("col.cols_clusTCR2_pie", i, sep="_"), paste(num[i,]), col.terrain[i])
+    #     })
+    #   }
+    #
+    #   else if (input$colourtype == "rainbow") {
+    #     lapply(1:dim(num)[1], function(i) {
+    #       colourInput(paste("col.cols_clusTCR2_pie", i, sep="_"), paste(num[i,]), palette_rainbow[i])
+    #     }) }
+    #   else if (input$colourtype == "random") {
+    #     palette1 <- distinctColorPalette(dim(num)[1])
+    #     lapply(1:dim(num)[1], function(i) {
+    #       colourInput(paste("col.cols_clusTCR2_pie", i, sep="_"), paste(num[i,]), palette1[i])
+    #     })
+    #
+    #   }
+    #   else {
+    #     lapply(1:dim(num)[1], function(i) {
+    #       colourInput(paste("col.cols_clusTCR2_pie", i, sep="_"), paste(num[i,]), input$one.colour.default)
+    #     })
+    #
+    #
+    #   } # one colour
+    #
+    # })
+    #
+    # output$myPanel_cols_clusTCR2_pie <- renderUI({cols_clusTCR2_pie()})
+    #
+    # colors_cols_clusTCR2_pie <- reactive({
+    #   cluster <- clusTCR2_df()
+    #   validate(
+    #     need(nrow(cluster)>0,
+    #          "Upload clusTCR table, which is needed for TCR -> UMAP section")
+    #   )
+    #   cluster$ID_Column <- cluster[,names(cluster) %in% input$Samp_col]
+    #   Network_df <- cluster[order(cluster$Updated_order),]
+    #   Network_df <- Network_df[Network_df$Updated_order  %in% input$Clusters_to_dis_PIE,]
+    #   Network_df$Selected <- Network_df[,names(Network_df) %in% input$Colour_By_this]
+    #   Network_df$Selected <- gsub("NA",NA,Network_df$Selected)
+    #
+    #   num <- as.data.frame(unique(Network_df$Selected))
+    #   num <- as.data.frame(num[complete.cases(num)==T,])
+    #
+    #
+    #   lapply(1:dim(num)[1], function(i) {
+    #     input[[paste("col.cols_clusTCR2_pie", i, sep="_")]]
+    #   })
+    # })
+    #
+    # Pie_chart_ClusTCR2 <- reactive({
+    #   cluster <- clusTCR2_df()
+    #   validate(
+    #     need(nrow(cluster)>0,
+    #          "Upload clusTCR table, which is needed for TCR -> UMAP section")
+    #   )
+    #   cluster$ID_Column <- cluster[,names(cluster) %in% input$Samp_col]
+    #   Network_df <- cluster[order(cluster$Updated_order),]
+    #   Network_df <- Network_df[Network_df$Updated_order  %in% input$Clusters_to_dis_PIE,]
+    #   Network_df$Selected <- Network_df[,names(Network_df) %in% input$Colour_By_this]
+    #   Network_df$Selected <- gsub("NA",NA,Network_df$Selected)
+    #
+    #   df3.meta3 <-  as.data.frame(table(Network_df$ID_Column,Network_df$Selected))
+    #   total.condition <- as.data.frame(ddply(df3.meta3,"Var1",numcolwise(sum)))
+    #   dim(total.condition)[1]
+    #   dim(df3.meta3)[1]
+    #   emtpy <- matrix(nrow =dim(df3.meta3)[1],ncol=dim(total.condition)[1])
+    #
+    #   for (i in 1:dim(df3.meta3)[1]) {
+    #
+    #     emtpy[i,] <- ifelse(df3.meta3$Var1[i]==total.condition$Var1[1:dim(total.condition)[1]],
+    #         total.condition[total.condition$Var1==total.condition$Var1[1:dim(total.condition)[1]],2],F)
+    #   }
+    #   df3.meta3$n <- df3.meta3$Freq/rowSums(emtpy)
+    #   # df3.meta3
+    #   df.col <- unlist(colors_cols_clusTCR2_pie())
+    #
+    #   ggplot(df3.meta3,aes(x="", y=n, fill=Var2, group = Var1)) +
+    #     geom_bar(stat="identity", width=1) +
+    #     coord_polar("y", start=0)  +
+    #     theme_void(20) +
+    #     facet_wrap(~Var1, nrow = input$wrap_row) +
+    #     theme(
+    #       legend.key.size = unit(1, 'cm'),
+    #       legend.title = element_blank()) +
+    #     scale_fill_manual(labels = ~ stringr::str_wrap(.x, width = 20),values = df.col, na.value = input$NA_col_analysis) +
+    #     theme(strip.text = element_text(size = input$Strip_text_size, family = input$font_type),
+    #           legend.text = element_text(colour="black", size=input$Bar_legend_size,family=input$font_type),
+    #           legend.position = input$legend_position,
+    #           legend.title = element_blank()
+    #     )
+    #
+    # })
+    ######
     output$Pie_ClusTCR2_plot <- renderPlot({
-      Pie_chart_ClusTCR2()
+      # Pie_chart_ClusTCR2()
+      Selected_cluster_plot()
     })
 
     output$downloadPlot_Pie_ClusTCR2_plot <- downloadHandler(
@@ -13996,7 +13959,7 @@ tabPanel("GEX -> TCR",
       },
       content = function(file) {
         pdf(file, width=input$width_Pie_ClusTCR2_plot,height=input$height_Pie_ClusTCR2_plot, onefile = FALSE) # open the pdf device
-        plot(Pie_chart_ClusTCR2())
+        plot(Selected_cluster_plot())
         dev.off()}, contentType = "application/pdf" )
 
     output$downloadPlotPNG_Pie_ClusTCR2_plot <- downloadHandler(
@@ -14008,7 +13971,7 @@ tabPanel("GEX -> TCR",
         png(file, width = input$width_png_Pie_ClusTCR2_plot,
             height = input$height_png_Pie_ClusTCR2_plot,
             res = input$resolution_PNG_Pie_ClusTCR2_plot)
-        plot(Pie_chart_ClusTCR2())
+        plot(Selected_cluster_plot())
         dev.off()},   contentType = "application/png" # MIME type of the image
     )
 
@@ -14686,12 +14649,12 @@ tabPanel("GEX -> TCR",
       )
       md <- sc@meta.data
 
-        df1 <- as.data.frame(sc@assays$RNA$counts[rownames(sc@assays$RNA$counts) %in% c(input$Var_to_col_marker,input$Var_to_col_marker2,input$Var_to_col_marker3,"CD4","CD8A","Cd4","Cd8","CD3E","Cd3e"),])
-        req(df1)
-        names(df1) <- colnames(sc@assays$RNA$counts)
-        df1 <- as.data.frame(t(df1))
-        df1$Cell_Index <- rownames(df1)
-        df1
+      df1 <- as.data.frame(sc@assays$RNA$counts[rownames(sc@assays$RNA$counts) %in% c(input$Var_to_col_marker,input$Var_to_col_marker2,input$Var_to_col_marker3,"CD4","CD8A","Cd4","Cd8","CD3E","Cd3e"),])
+      req(df1)
+      names(df1) <- colnames(sc@assays$RNA$counts)
+      df1 <- as.data.frame(t(df1))
+      df1$Cell_Index <- rownames(df1)
+      df1
 
     })
 
@@ -15307,13 +15270,13 @@ tabPanel("GEX -> TCR",
 
 
       sc@meta.data$Quad <- ifelse(sc@meta.data$markerX<input$X_axis_dot_dual & sc@meta.data$markerY> input$Y_axis_dot_dual, "Q1",
-                                   ifelse(sc@meta.data$markerX>input$X_axis_dot_dual & sc@meta.data$markerY> input$Y_axis_dot_dual,"Q2",
-                                          ifelse(sc@meta.data$markerX<input$X_axis_dot_dual & sc@meta.data$markerY< input$Y_axis_dot_dual,"Q3",
-                                                 ifelse(sc@meta.data$markerX>input$X_axis_dot_dual & sc@meta.data$markerY< input$Y_axis_dot_dual,"Q4","other"
+                                  ifelse(sc@meta.data$markerX>input$X_axis_dot_dual & sc@meta.data$markerY> input$Y_axis_dot_dual,"Q2",
+                                         ifelse(sc@meta.data$markerX<input$X_axis_dot_dual & sc@meta.data$markerY< input$Y_axis_dot_dual,"Q3",
+                                                ifelse(sc@meta.data$markerX>input$X_axis_dot_dual & sc@meta.data$markerY< input$Y_axis_dot_dual,"Q4","other"
 
-                                                 )
-                                          )
-                                   )
+                                                )
+                                         )
+                                  )
       )
 
       sc2 <- suppressWarnings(subset(sc,v_gene_AG != "NA"))
@@ -15871,8 +15834,8 @@ tabPanel("GEX -> TCR",
         } else {
           prior <- df7
           numericInput("priority_cutoff","Priority cut-off (AG)",value = 1,step = 0.01, min = 0,max = 1)
-           }
         }
+      }
 
       else {
         # numericInput("priority_cutoff","Priority cut-off (AG)",value = 1,step = 0.01, min = 0)
@@ -16086,144 +16049,142 @@ tabPanel("GEX -> TCR",
           markers.fm.list <- FindMarkers(sc, ident.1 = name.clone, min.pct = min.pct.expression,  logfc.threshold = min.logfc, only.pos=TRUE)
           markers.fm.list2 <- subset(markers.fm.list,markers.fm.list$p_val_adj < input$pval.ex.filter)
 
-
-
           if(length(markers.fm.list2$p_val_adj)>0) {
             ### download the dot plot -------
 
-          clonotype.name.stats <- paste("Prioritisation/ImmunoDom/",i,"_",gsub("[/]","",gsub("&","",name.clone)),"_stats_table","_",today(), ".csv", sep = "")
-          write.csv(markers.fm.list2,clonotype.name.stats,row.names = T)
+            clonotype.name.stats <- paste("Prioritisation/ImmunoDom/",i,"_",gsub("[/]","",gsub("&","",name.clone)),"_stats_table","_",today(), ".csv", sep = "")
+            write.csv(markers.fm.list2,clonotype.name.stats,row.names = T)
 
-          message(paste0("Saved csv",name.clone))
-          list.names <- rownames(markers.fm.list2)
-
-          if (length(rownames(markers.fm.list2))>40) {
-            list.names <- list.names[1:40]
-          } else {
+            message(paste0("Saved csv",name.clone))
             list.names <- rownames(markers.fm.list2)
-          }
 
-          size_legend = input$Bar_legend_size-2
-
-          plotdotplot <- DotPlot(sc, features = list.names) +
-            RotatedAxis() +
-            theme(
-              axis.title.y = element_blank(),
-              axis.text.y = element_text(colour="black",family=input$font_type,size = input$text_size),
-              axis.text.x = element_text(colour="black",family=input$font_type,size = input$text_size, angle = 90),
-              axis.title.x = element_blank(),
-              legend.title = element_text(colour="black", size=input$Bar_legend_size,family=input$font_type),
-              legend.text = element_text(colour="black", size=size_legend,family=input$font_type),
-              legend.position = input$legend_position,
-            ) +
-            scale_colour_gradient2(low = input$low.dotplot, mid = input$middle.dotplot, high = input$high.dotplot) +
-            scale_x_discrete(labels = label_wrap(20)) +
-            scale_y_discrete(labels = label_wrap(20))
-
-
-          file.name.clone <- paste("Prioritisation/ImmunoDom/",i,"_",gsub("[/]","",gsub("&","",name.clone)),"_dotplot_plot","_",today(), ".png", sep = "")
-
-
-          png(file.name.clone, width = input$width_png_all_expression_dotplot_top, height = input$height_png_all_expression_dotplot_top,res = input$resolution_PNG_all_expression_dotplot_top)
-          plot(plotdotplot)
-          dev.off()
-
-
-          ##### download the OverRep ------
-
-          df <- sc@meta.data
-          # require()
-
-          geneSet <- read.csv(system.file("OverRep","GeneSets.csv",package = "STEGO.R"),header = T)
-
-           background.genes.name <- as.data.frame(rownames(sc@assays$RNA$scale.data))
-          names(background.genes.name) <- "V1"
-          background.genes <- length(rownames(sc@assays$RNA$scale.data))
-
-
-          geneSet$background.genes <- background.genes
-
-          DEx.genes <- as.data.frame(rownames(markers.fm.list2))
-          names(DEx.genes) <- "V1"
-
-          total.sig <- length(DEx.genes$V1)
-          geneSet$total.sig <- length(DEx.genes$V1)
-
-          geneSet$background.geneset <- NA
-          geneSet$background.geneset.name <- NA
-          geneSet$in.geneset <- NA
-          geneSet$in.geneset.name <- NA
-
-          if(input$datasource == "BD_Rhapsody_Paired" || input$datasource == "BD_Rhapsody_AIRR") { # selectInput("datasource", "Data source",choices=c("10x_Genomics","BD_Rhapsody_Paired","BD_Rhapsody_AIRR")),
-            geneSet$GeneSet <- gsub("-",".",geneSet$GeneSet)
-          }
-
-          if(input$species_analysis == "mm") { # selectInput("datasource", "Data source",choices=c("10x_Genomics","BD_Rhapsody_Paired","BD_Rhapsody_AIRR")),
-            require(stringr)
-            geneSet$GeneSet <- str_to_title(geneSet$GeneSet)
-          }
-
-          for (j in 1:dim(geneSet)[1]) {
-            # listed GeneSet
-            message(paste("GeneSet: ", j))
-            Gene.set.testing <- as.data.frame(strsplit(geneSet$GeneSet,";")[j])
-            names(Gene.set.testing) <- "V1"
-            Gene.set.testing2 <- as.data.frame(unique(Gene.set.testing$V1))
-            names(Gene.set.testing2) <- "V1"
-            background.overlap <- merge(Gene.set.testing2,background.genes.name,by= "V1")
-            geneSet$background.geneset[j] <- length(background.overlap$V1)
-            geneSet$background.geneset.name[j] <- as.character(paste(unlist(background.overlap[1]), collapse=';'))
-            # in sig gene list
-            overlap <- merge(background.overlap,DEx.genes,by= "V1")
-
-            geneSet$in.geneset[j] <- length(overlap$V1)
-            geneSet$in.geneset.name[j] <- as.character(paste(unlist(overlap[1]), collapse=';'))
-
-          }
-
-          geneSet2 <- subset(geneSet,geneSet$in.geneset>0)
-          message(paste(i,"has", length(geneSet2$in.geneset),"GeneSets in ImmunoDom"))
-
-          if(length(geneSet2$in.geneset)>0) {
-          for (k in 1:dim(geneSet2)[1]) {
-            tota.gene.set <- geneSet2$background.geneset[k] # genes that are identified in background
-            tota.gene.set
-            in.geneset <-  geneSet2$in.geneset[k]# DEx in geneset
-
-            background.genes
-            not.in.total <- background.genes - tota.gene.set
-            not.in.geneset.sig <- total.sig - in.geneset
-            d <- data.frame( gene.in.interest=c( in.geneset, not.in.geneset.sig),gene.not.interest=c( tota.gene.set, not.in.total))
-            row.names(d) <- c("In_category", "not_in_category")
-
-            if (in.geneset>0) {
-              geneSet2$p.val[k] <- unlist(fisher.test(d, alternative = "greater")$p.value)[1]
-              geneSet2$lowerCI[k] <-  unlist(fisher.test(d, alternative = "greater")$conf.int)[1]
-              geneSet2$upperCI[k] <-unlist(fisher.test(d)$conf.int)[2]
-              geneSet2$OR[k] <- round(unlist(fisher.test(d, alternative = "greater")$estimate)[1],3)
+            if (length(rownames(markers.fm.list2))>40) {
+              list.names <- list.names[1:40]
+            } else {
+              list.names <- rownames(markers.fm.list2)
             }
 
-            else {
-              geneSet2$p.value[k] <- "-"
-              geneSet2$lowerCI[k] <-  "-"
-              geneSet2$upperCI[k] <- "-"
-              geneSet2$OR[k] <- "-"
+            size_legend = input$Bar_legend_size-2
+
+            plotdotplot <- DotPlot(sc, features = list.names) +
+              RotatedAxis() +
+              theme(
+                axis.title.y = element_blank(),
+                axis.text.y = element_text(colour="black",family=input$font_type,size = input$text_size),
+                axis.text.x = element_text(colour="black",family=input$font_type,size = input$text_size, angle = 90),
+                axis.title.x = element_blank(),
+                legend.title = element_text(colour="black", size=input$Bar_legend_size,family=input$font_type),
+                legend.text = element_text(colour="black", size=size_legend,family=input$font_type),
+                legend.position = input$legend_position,
+              ) +
+              scale_colour_gradient2(low = input$low.dotplot, mid = input$middle.dotplot, high = input$high.dotplot) +
+              scale_x_discrete(labels = label_wrap(20)) +
+              scale_y_discrete(labels = label_wrap(20))
+
+
+            file.name.clone <- paste("Prioritisation/ImmunoDom/",i,"_",gsub("[/]","",gsub("&","",name.clone)),"_dotplot_plot","_",today(), ".png", sep = "")
+
+
+            png(file.name.clone, width = input$width_png_all_expression_dotplot_top, height = input$height_png_all_expression_dotplot_top,res = input$resolution_PNG_all_expression_dotplot_top)
+            plot(plotdotplot)
+            dev.off()
+
+
+            ##### download the OverRep ------
+
+            df <- sc@meta.data
+            # require()
+
+            geneSet <- read.csv(system.file("OverRep","GeneSets.csv",package = "STEGO.R"),header = T)
+
+            background.genes.name <- as.data.frame(rownames(sc@assays$RNA$scale.data))
+            names(background.genes.name) <- "V1"
+            background.genes <- length(rownames(sc@assays$RNA$scale.data))
+
+
+            geneSet$background.genes <- background.genes
+
+            DEx.genes <- as.data.frame(rownames(markers.fm.list2))
+            names(DEx.genes) <- "V1"
+
+            total.sig <- length(DEx.genes$V1)
+            geneSet$total.sig <- length(DEx.genes$V1)
+
+            geneSet$background.geneset <- NA
+            geneSet$background.geneset.name <- NA
+            geneSet$in.geneset <- NA
+            geneSet$in.geneset.name <- NA
+
+            if(input$datasource == "BD_Rhapsody_Paired" || input$datasource == "BD_Rhapsody_AIRR") { # selectInput("datasource", "Data source",choices=c("10x_Genomics","BD_Rhapsody_Paired","BD_Rhapsody_AIRR")),
+              geneSet$GeneSet <- gsub("-",".",geneSet$GeneSet)
             }
-          }
 
-          geneSet2 <- geneSet2[order(geneSet2$p.val,decreasing = F),]
-          geneSet2 <- subset(geneSet2,geneSet2$in.geneset>=input$in.geneset.cutoff_top)
-          geneSet2 <- subset(geneSet2,geneSet2$p.val<=input$p.val_cutoff_top)
-          geneSet2$FDR <- p.adjust(geneSet2$p.val, method = "fdr")
-          geneSet2$Bonferroni <- p.adjust(geneSet2$p.val, method = "bonferroni")
+            if(input$species_analysis == "mm") { # selectInput("datasource", "Data source",choices=c("10x_Genomics","BD_Rhapsody_Paired","BD_Rhapsody_AIRR")),
+              require(stringr)
+              geneSet$GeneSet <- str_to_title(geneSet$GeneSet)
+            }
 
-          file.name.clone <- paste("Prioritisation/ImmunoDom/",i,"_",gsub("[/]","",gsub("&","",name.clone)),"_dotplot_plot","_",today(), ".png", sep = "")
-          top.name.overrep <- paste("Prioritisation/ImmunoDom/",i,"_",gsub("[/]","",gsub("&","",name.clone)),"_OverRep","_",today(), ".csv", sep = "")
-          write.csv(geneSet2,top.name.overrep, row.names = F)
+            for (j in 1:dim(geneSet)[1]) {
+              # listed GeneSet
+              message(paste("GeneSet: ", j))
+              Gene.set.testing <- as.data.frame(strsplit(geneSet$GeneSet,";")[j])
+              names(Gene.set.testing) <- "V1"
+              Gene.set.testing2 <- as.data.frame(unique(Gene.set.testing$V1))
+              names(Gene.set.testing2) <- "V1"
+              background.overlap <- merge(Gene.set.testing2,background.genes.name,by= "V1")
+              geneSet$background.geneset[j] <- length(background.overlap$V1)
+              geneSet$background.geneset.name[j] <- as.character(paste(unlist(background.overlap[1]), collapse=';'))
+              # in sig gene list
+              overlap <- merge(background.overlap,DEx.genes,by= "V1")
+
+              geneSet$in.geneset[j] <- length(overlap$V1)
+              geneSet$in.geneset.name[j] <- as.character(paste(unlist(overlap[1]), collapse=';'))
+
+            }
+
+            geneSet2 <- subset(geneSet,geneSet$in.geneset>0)
+            message(paste(i,"has", length(geneSet2$in.geneset),"GeneSets in ImmunoDom"))
+
+            if(length(geneSet2$in.geneset)>0) {
+              for (k in 1:dim(geneSet2)[1]) {
+                tota.gene.set <- geneSet2$background.geneset[k] # genes that are identified in background
+                tota.gene.set
+                in.geneset <-  geneSet2$in.geneset[k]# DEx in geneset
+
+                background.genes
+                not.in.total <- background.genes - tota.gene.set
+                not.in.geneset.sig <- total.sig - in.geneset
+                d <- data.frame( gene.in.interest=c( in.geneset, not.in.geneset.sig),gene.not.interest=c( tota.gene.set, not.in.total))
+                row.names(d) <- c("In_category", "not_in_category")
+
+                if (in.geneset>0) {
+                  geneSet2$p.val[k] <- unlist(fisher.test(d, alternative = "greater")$p.value)[1]
+                  geneSet2$lowerCI[k] <-  unlist(fisher.test(d, alternative = "greater")$conf.int)[1]
+                  geneSet2$upperCI[k] <-unlist(fisher.test(d)$conf.int)[2]
+                  geneSet2$OR[k] <- round(unlist(fisher.test(d, alternative = "greater")$estimate)[1],3)
+                }
+
+                else {
+                  geneSet2$p.value[k] <- "-"
+                  geneSet2$lowerCI[k] <-  "-"
+                  geneSet2$upperCI[k] <- "-"
+                  geneSet2$OR[k] <- "-"
+                }
+              }
+
+              geneSet2 <- geneSet2[order(geneSet2$p.val,decreasing = F),]
+              geneSet2 <- subset(geneSet2,geneSet2$in.geneset>=input$in.geneset.cutoff_top)
+              geneSet2 <- subset(geneSet2,geneSet2$p.val<=input$p.val_cutoff_top)
+              geneSet2$FDR <- p.adjust(geneSet2$p.val, method = "fdr")
+              geneSet2$Bonferroni <- p.adjust(geneSet2$p.val, method = "bonferroni")
+
+              file.name.clone <- paste("Prioritisation/ImmunoDom/",i,"_",gsub("[/]","",gsub("&","",name.clone)),"_dotplot_plot","_",today(), ".png", sep = "")
+              top.name.overrep <- paste("Prioritisation/ImmunoDom/",i,"_",gsub("[/]","",gsub("&","",name.clone)),"_OverRep","_",today(), ".csv", sep = "")
+              write.csv(geneSet2,top.name.overrep, row.names = F)
 
 
 
-          }
+            }
           }
         }
       })
@@ -16386,26 +16347,26 @@ tabPanel("GEX -> TCR",
       col.df <- as.data.frame(unique(df4[,names(df4) %in% input$Graph_type_bar]))
       names(col.df) <- "V1"
 
-        num <- length(col.df$V1)
+      num <- length(col.df$V1)
 
-        if (input$colourtype == "default") {
-          colorblind_vector <- c(gg_fill_hue(num))
-        } else if (input$colourtype == "hcl.colors") {
-          colorblind_vector <- c(hcl.colors(num, palette = "viridis"))
-        } else if (input$colourtype == "topo.colors") {
-          colorblind_vector <- c(topo.colors(num))
-        } else if (input$colourtype == "heat.colors") {
-          colorblind_vector <- c(heat.colors(num))
-        } else if (input$colourtype == "terrain.colors") {
-          colorblind_vector <- c(terrain.colors(num))
-        } else if (input$colourtype == "rainbow") {
-          colorblind_vector <- c(rainbow(num))
-        } else if (input$colourtype == "random") {
-          colorblind_vector <- distinctColorPalette(num)
+      if (input$colourtype == "default") {
+        colorblind_vector <- c(gg_fill_hue(num))
+      } else if (input$colourtype == "hcl.colors") {
+        colorblind_vector <- c(hcl.colors(num, palette = "viridis"))
+      } else if (input$colourtype == "topo.colors") {
+        colorblind_vector <- c(topo.colors(num))
+      } else if (input$colourtype == "heat.colors") {
+        colorblind_vector <- c(heat.colors(num))
+      } else if (input$colourtype == "terrain.colors") {
+        colorblind_vector <- c(terrain.colors(num))
+      } else if (input$colourtype == "rainbow") {
+        colorblind_vector <- c(rainbow(num))
+      } else if (input$colourtype == "random") {
+        colorblind_vector <- distinctColorPalette(num)
 
-        }  else {
+      }  else {
 
-        }
+      }
 
       col.df$col <- colorblind_vector
 
@@ -16446,109 +16407,109 @@ tabPanel("GEX -> TCR",
       BD_sum$cluster_name <- rownames(BD_sum)
       BD_sum
 
-      })
+    })
 
     Top_clonotypes_multiCounts_barplot <- reactive({
-        sc <- UMAP_metadata_with_labs()
-        validate(
-          need(nrow(sc)>0,
-               "Upload")
-        )
-        x = today()
-        req(input$Samp_col,input$V_gene_sc,input$cut.off_percent_repMulti)
-        df3.meta <- sc@meta.data
-        df3.meta$cluster_name <- df3.meta[,names(df3.meta) %in% input$V_gene_sc]
+      sc <- UMAP_metadata_with_labs()
+      validate(
+        need(nrow(sc)>0,
+             "Upload")
+      )
+      x = today()
+      req(input$Samp_col,input$V_gene_sc,input$cut.off_percent_repMulti)
+      df3.meta <- sc@meta.data
+      df3.meta$cluster_name <- df3.meta[,names(df3.meta) %in% input$V_gene_sc]
 
-        BD_sum <- Top_clonotypes_multiCounts()
+      BD_sum <- Top_clonotypes_multiCounts()
 
-        if (dim(BD_sum)[1]>0) {
-                BD_sum$obs <- 1
-                BD_sum <-  subset(BD_sum,BD_sum$priority<input$cut.off_percent_repMulti)
+      if (dim(BD_sum)[1]>0) {
+        BD_sum$obs <- 1
+        BD_sum <-  subset(BD_sum,BD_sum$priority<input$cut.off_percent_repMulti)
 
-                top.name.clonotypes.top_png <- paste("Prioritisation/Multi/PublicLike/","Selected_clones_",x,".csv",sep="")
-                write.csv(BD_sum,top.name.clonotypes.top_png)
-                observations <- sum(BD_sum$obs)
+        top.name.clonotypes.top_png <- paste("Prioritisation/Multi/PublicLike/","Selected_clones_",x,".csv",sep="")
+        write.csv(BD_sum,top.name.clonotypes.top_png)
+        observations <- sum(BD_sum$obs)
 
-      withProgress(message = 'Performing Multi Overlap Analysis (barplots)', value = 0, {
-        for (i in 1:observations) {
+        withProgress(message = 'Performing Multi Overlap Analysis (barplots)', value = 0, {
+          for (i in 1:observations) {
 
-          incProgress(1/observations, detail = paste("Clone", i,"of",observations))
-          message(BD_sum$cluster_name[i])
-          name.clone <- BD_sum$cluster_name[i]
-          top_BD_clonotype <- df3.meta[df3.meta$cluster_name %in% name.clone,]
-          # print(top_BD_clonotype)
+            incProgress(1/observations, detail = paste("Clone", i,"of",observations))
+            message(BD_sum$cluster_name[i])
+            name.clone <- BD_sum$cluster_name[i]
+            top_BD_clonotype <- df3.meta[df3.meta$cluster_name %in% name.clone,]
+            # print(top_BD_clonotype)
 
-          dtop_clonotype_bar_code <- top_BD_clonotype
+            dtop_clonotype_bar_code <- top_BD_clonotype
 
-          # req(input$Graph_split_order)
+            # req(input$Graph_split_order)
 
-          dtop_clonotype_bar_code$Selected_group <- dtop_clonotype_bar_code[,names(dtop_clonotype_bar_code) %in% input$Split_group_by_]
-          num <- 1
-          # num <- as.data.frame(num[complete.cases(num)==T,])
-          as.data.frame(length(num))
-          if (input$colourtype == "default") {
-            colorblind_vector <- gg_fill_hue(num)
-          } else if (input$colourtype == "hcl.colors") {
-            colorblind_vector <- c(hcl.colors(num, palette = "viridis"))
-          } else if (input$colourtype == "topo.colors") {
-            colorblind_vector <- c(topo.colors(num))
-          } else if (input$colourtype == "heat.colors") {
-            colorblind_vector <- c(heat.colors(num))
-          } else if (input$colourtype == "terrain.colors") {
-            colorblind_vector <- c(terrain.colors(num))
-          } else if (input$colourtype == "rainbow") {
-            colorblind_vector <- c(rainbow((num)))
-          } else if (input$colourtype == "random") {
-            colorblind_vector <- distinctColorPalette(num)
+            dtop_clonotype_bar_code$Selected_group <- dtop_clonotype_bar_code[,names(dtop_clonotype_bar_code) %in% input$Split_group_by_]
+            num <- 1
+            # num <- as.data.frame(num[complete.cases(num)==T,])
+            as.data.frame(length(num))
+            if (input$colourtype == "default") {
+              colorblind_vector <- gg_fill_hue(num)
+            } else if (input$colourtype == "hcl.colors") {
+              colorblind_vector <- c(hcl.colors(num, palette = "viridis"))
+            } else if (input$colourtype == "topo.colors") {
+              colorblind_vector <- c(topo.colors(num))
+            } else if (input$colourtype == "heat.colors") {
+              colorblind_vector <- c(heat.colors(num))
+            } else if (input$colourtype == "terrain.colors") {
+              colorblind_vector <- c(terrain.colors(num))
+            } else if (input$colourtype == "rainbow") {
+              colorblind_vector <- c(rainbow((num)))
+            } else if (input$colourtype == "random") {
+              colorblind_vector <- distinctColorPalette(num)
 
-          }  else {
+            }  else {
+
+            }
+
+
+            colorblind_vector <- as.data.frame(colorblind_vector)
+            names(colorblind_vector) <- "cols"
+
+            dtop_clonotype_bar_code$Selected_chain2 <- dtop_clonotype_bar_code[,names(dtop_clonotype_bar_code) %in% input$V_gene_sc]
+            dtop_clonotype_bar_code$Selected_chain3 <- gsub("_"," ",dtop_clonotype_bar_code$Selected_chain2)
+            dtop_clonotype_bar_code$Selected_chain3 <- gsub("[.]"," ",dtop_clonotype_bar_code$Selected_chain3)
+
+            dtop_clonotype_bar_code <- dtop_clonotype_bar_code[dtop_clonotype_bar_code$Selected_group %in% input$Graph_split_order,]
+            dtop_clonotype_bar_code$Selected_group <- factor(dtop_clonotype_bar_code$Selected_group,levels = input$Graph_split_order)
+
+            ggplot_plot <- ggplot(dtop_clonotype_bar_code, aes(x=Selected_group, fill=Selected_chain3,colour = Selected_chain3, label = Selected_chain3)) +
+              geom_bar() +
+              theme_bw()+
+              scale_color_manual(labels = ~ stringr::str_wrap(.x, width = 10), values = colorblind_vector$cols, na.value=input$NA_col_analysis)+
+              scale_fill_manual(labels = ~ stringr::str_wrap(.x, width = 10), values = colorblind_vector$cols, na.value=input$NA_col_analysis)+
+              # scale_alpha_manual(values = rep(1,length(unique(dtop_clonotype_bar_code$Selected_chain))), na.value=0.5)+
+              theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank())+
+              theme(
+                axis.title.y = element_text(colour="black",family=input$font_type,size = input$title.text.sizer2),
+                axis.text.y = element_text(colour="black",family=input$font_type,size = input$text_size),
+                axis.text.x = element_text(colour="black",family=input$font_type,size = input$text_size,angle=90),
+                axis.title.x = element_blank(),
+                legend.text = element_text(colour="black", size=input$Bar_legend_size,family=input$font_type),
+                legend.position = input$legend_position,
+                legend.title = element_blank()
+              ) +
+              guides(color = "none", size = "none")
+
+
+            top.name.clonotypes.top_png <- paste("Prioritisation/Multi/PublicLike/",i,"_top_clone_",gsub("[/]","",gsub("&","",name.clone)),"_",x,".png",sep="")
+
+            num_width <- length(unique(dtop_clonotype_bar_code$Selected_group))
+
+            png(top.name.clonotypes.top_png, width = (num_width*100+500),height = input$height_png_TCR.UMAP,res = input$resolution_PNG_TCR.UMAP)
+            plot(ggplot_plot)
+            dev.off()
 
           }
 
-
-          colorblind_vector <- as.data.frame(colorblind_vector)
-          names(colorblind_vector) <- "cols"
-
-          dtop_clonotype_bar_code$Selected_chain2 <- dtop_clonotype_bar_code[,names(dtop_clonotype_bar_code) %in% input$V_gene_sc]
-          dtop_clonotype_bar_code$Selected_chain3 <- gsub("_"," ",dtop_clonotype_bar_code$Selected_chain2)
-          dtop_clonotype_bar_code$Selected_chain3 <- gsub("[.]"," ",dtop_clonotype_bar_code$Selected_chain3)
-
-          dtop_clonotype_bar_code <- dtop_clonotype_bar_code[dtop_clonotype_bar_code$Selected_group %in% input$Graph_split_order,]
-          dtop_clonotype_bar_code$Selected_group <- factor(dtop_clonotype_bar_code$Selected_group,levels = input$Graph_split_order)
-
-          ggplot_plot <- ggplot(dtop_clonotype_bar_code, aes(x=Selected_group, fill=Selected_chain3,colour = Selected_chain3, label = Selected_chain3)) +
-            geom_bar() +
-            theme_bw()+
-            scale_color_manual(labels = ~ stringr::str_wrap(.x, width = 10), values = colorblind_vector$cols, na.value=input$NA_col_analysis)+
-            scale_fill_manual(labels = ~ stringr::str_wrap(.x, width = 10), values = colorblind_vector$cols, na.value=input$NA_col_analysis)+
-            # scale_alpha_manual(values = rep(1,length(unique(dtop_clonotype_bar_code$Selected_chain))), na.value=0.5)+
-            theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank())+
-            theme(
-              axis.title.y = element_text(colour="black",family=input$font_type,size = input$title.text.sizer2),
-              axis.text.y = element_text(colour="black",family=input$font_type,size = input$text_size),
-              axis.text.x = element_text(colour="black",family=input$font_type,size = input$text_size,angle=90),
-              axis.title.x = element_blank(),
-              legend.text = element_text(colour="black", size=input$Bar_legend_size,family=input$font_type),
-              legend.position = input$legend_position,
-              legend.title = element_blank()
-            ) +
-            guides(color = "none", size = "none")
-
-
-          top.name.clonotypes.top_png <- paste("Prioritisation/Multi/PublicLike/",i,"_top_clone_",gsub("[/]","",gsub("&","",name.clone)),"_",x,".png",sep="")
-
-          num_width <- length(unique(dtop_clonotype_bar_code$Selected_group))
-
-          png(top.name.clonotypes.top_png, width = (num_width*100+500),height = input$height_png_TCR.UMAP,res = input$resolution_PNG_TCR.UMAP)
-          plot(ggplot_plot)
-          dev.off()
-
-        }
-
-      })
-        } else {
-          withProgress(message = 'No multi-sample bar plots')
-        }
+        })
+      } else {
+        withProgress(message = 'No multi-sample bar plots')
+      }
     })
 
     top_clone_FindMaker_looped_Multi <- reactive({
@@ -16723,9 +16684,9 @@ tabPanel("GEX -> TCR",
             }
           }
         })
-            } else {
-            withProgress(message("No Markers"))
-          }
+      } else {
+        withProgress(message("No Markers"))
+      }
 
     })
 
@@ -16782,135 +16743,135 @@ tabPanel("GEX -> TCR",
           message(paste(length(markers.fm.list2$p_val_adj),"total markers for cluster",i))
 
           if(length(markers.fm.list2$p_val_adj)>0) {
-          clonotype.name.stats <- paste("Prioritisation/Multi/Unique/",i,"_",gsub("[/]","",gsub("&","",name.clone)),"_stats_table","_",today(), ".csv", sep = "")
-          write.csv(markers.fm.list2,clonotype.name.stats,row.names = T)
+            clonotype.name.stats <- paste("Prioritisation/Multi/Unique/",i,"_",gsub("[/]","",gsub("&","",name.clone)),"_stats_table","_",today(), ".csv", sep = "")
+            write.csv(markers.fm.list2,clonotype.name.stats,row.names = T)
 
-          message(paste0("Saved csv ",name.clone))
-          list.names <- rownames(markers.fm.list2)
-
-          if (length(rownames(markers.fm.list2))>40) {
-            list.names <- list.names[1:40]
-          } else {
+            message(paste0("Saved csv ",name.clone))
             list.names <- rownames(markers.fm.list2)
-          }
 
-          size_legend = input$Bar_legend_size-2
-
-
-          plotdotplot <- DotPlot(sc, features = list.names) +
-            RotatedAxis() +
-            theme(
-              axis.title.y = element_blank(),
-              axis.text.y = element_text(colour="black",family=input$font_type,size = input$text_size),
-              axis.text.x = element_text(colour="black",family=input$font_type,size = input$text_size, angle = 90),
-              axis.title.x = element_blank(),
-              legend.title = element_text(colour="black", size=input$Bar_legend_size,family=input$font_type),
-              legend.text = element_text(colour="black", size=size_legend,family=input$font_type),
-              legend.position = input$legend_position,
-            ) +
-            scale_colour_gradient2(low = input$low.dotplot, mid = input$middle.dotplot, high = input$high.dotplot) +
-            scale_x_discrete(labels = label_wrap(20)) +
-            scale_y_discrete(labels = label_wrap(20))
-
-
-          file.name.clone <- paste("Prioritisation/Multi/Unique/",i,"_",gsub("[/]","",gsub("&","",name.clone)),"_dotplot_plot","_",today(), ".png", sep = "")
-
-          ### download the dot plot -------
-          png(file.name.clone, width = input$width_png_all_expression_dotplot_top, height = input$height_png_all_expression_dotplot_top,res = input$resolution_PNG_all_expression_dotplot_top)
-          plot(plotdotplot)
-          dev.off()
-
-
-          ##### download the OverRep ------
-          geneSet <- read.csv(system.file("OverRep","GeneSets.csv",package = "STEGO.R"),header = T)
-
-          background.genes.name <- as.data.frame(rownames(sc@assays$RNA$scale.data))
-          names(background.genes.name) <- "V1"
-          background.genes <- length(rownames(sc@assays$RNA$scale.data))
-
-
-          geneSet$background.genes <- background.genes
-
-          DEx.genes <- as.data.frame(rownames(markers.fm.list2))
-          names(DEx.genes) <- "V1"
-
-          total.sig <- length(DEx.genes$V1)
-          geneSet$total.sig <- length(DEx.genes$V1)
-
-          geneSet$background.geneset <- NA
-          geneSet$background.geneset.name <- NA
-          geneSet$in.geneset <- NA
-          geneSet$in.geneset.name <- NA
-
-          if(input$datasource == "BD_Rhapsody_Paired" || input$datasource == "BD_Rhapsody_AIRR") { # selectInput("datasource", "Data source",choices=c("10x_Genomics","BD_Rhapsody_Paired","BD_Rhapsody_AIRR")),
-            geneSet$GeneSet <- gsub("-",".",geneSet$GeneSet)
-          }
-
-          if(input$species_analysis == "mm") { # selectInput("datasource", "Data source",choices=c("10x_Genomics","BD_Rhapsody_Paired","BD_Rhapsody_AIRR")),
-            require(stringr)
-            geneSet$GeneSet <- str_to_title(geneSet$GeneSet)
-          }
-          message(paste(i, "Performing Over rep analysis"))
-          for (j in 1:dim(geneSet)[1]) {
-            # listed GeneSet
-
-            Gene.set.testing <- as.data.frame(strsplit(geneSet$GeneSet,";")[j])
-            names(Gene.set.testing) <- "V1"
-            Gene.set.testing2 <- as.data.frame(unique(Gene.set.testing$V1))
-            names(Gene.set.testing2) <- "V1"
-            background.overlap <- merge(Gene.set.testing2,background.genes.name,by= "V1")
-            geneSet$background.geneset[j] <- length(background.overlap$V1)
-            geneSet$background.geneset.name[j] <- as.character(paste(unlist(background.overlap[1]), collapse=';'))
-            # in sig gene list
-            overlap <- merge(background.overlap,DEx.genes,by= "V1")
-
-            geneSet$in.geneset[j] <- length(overlap$V1)
-            geneSet$in.geneset.name[j] <- as.character(paste(unlist(overlap[1]), collapse=';'))
-
-          }
-
-          geneSet2 <- subset(geneSet,geneSet$in.geneset>0)
-
-          message(paste(i,"has", length(geneSet2$in.geneset),"GeneSets in Unique (private)"))
-
-          if(length(geneSet2$in.geneset)>0) {
-          for (k in 1:dim(geneSet2)[1]) {
-            tota.gene.set <- geneSet2$background.geneset[k] # genes that are identified in background
-            tota.gene.set
-            in.geneset <-  geneSet2$in.geneset[k]# DEx in geneset
-
-            background.genes
-            not.in.total <- background.genes - tota.gene.set
-            not.in.geneset.sig <- total.sig - in.geneset
-            d <- data.frame( gene.in.interest=c( in.geneset, not.in.geneset.sig),gene.not.interest=c( tota.gene.set, not.in.total))
-            row.names(d) <- c("In_category", "not_in_category")
-
-            if (in.geneset>0) {
-              geneSet2$p.val[k] <- unlist(fisher.test(d, alternative = "greater")$p.value)[1]
-              geneSet2$lowerCI[k] <-  unlist(fisher.test(d, alternative = "greater")$conf.int)[1]
-              geneSet2$upperCI[k] <-unlist(fisher.test(d)$conf.int)[2]
-              geneSet2$OR[k] <- round(unlist(fisher.test(d, alternative = "greater")$estimate)[1],3)
+            if (length(rownames(markers.fm.list2))>40) {
+              list.names <- list.names[1:40]
+            } else {
+              list.names <- rownames(markers.fm.list2)
             }
 
-            else {
-              geneSet2$p.value[k] <- "-"
-              geneSet2$lowerCI[k] <-  "-"
-              geneSet2$upperCI[k] <- "-"
-              geneSet2$OR[k] <- "-"
+            size_legend = input$Bar_legend_size-2
+
+
+            plotdotplot <- DotPlot(sc, features = list.names) +
+              RotatedAxis() +
+              theme(
+                axis.title.y = element_blank(),
+                axis.text.y = element_text(colour="black",family=input$font_type,size = input$text_size),
+                axis.text.x = element_text(colour="black",family=input$font_type,size = input$text_size, angle = 90),
+                axis.title.x = element_blank(),
+                legend.title = element_text(colour="black", size=input$Bar_legend_size,family=input$font_type),
+                legend.text = element_text(colour="black", size=size_legend,family=input$font_type),
+                legend.position = input$legend_position,
+              ) +
+              scale_colour_gradient2(low = input$low.dotplot, mid = input$middle.dotplot, high = input$high.dotplot) +
+              scale_x_discrete(labels = label_wrap(20)) +
+              scale_y_discrete(labels = label_wrap(20))
+
+
+            file.name.clone <- paste("Prioritisation/Multi/Unique/",i,"_",gsub("[/]","",gsub("&","",name.clone)),"_dotplot_plot","_",today(), ".png", sep = "")
+
+            ### download the dot plot -------
+            png(file.name.clone, width = input$width_png_all_expression_dotplot_top, height = input$height_png_all_expression_dotplot_top,res = input$resolution_PNG_all_expression_dotplot_top)
+            plot(plotdotplot)
+            dev.off()
+
+
+            ##### download the OverRep ------
+            geneSet <- read.csv(system.file("OverRep","GeneSets.csv",package = "STEGO.R"),header = T)
+
+            background.genes.name <- as.data.frame(rownames(sc@assays$RNA$scale.data))
+            names(background.genes.name) <- "V1"
+            background.genes <- length(rownames(sc@assays$RNA$scale.data))
+
+
+            geneSet$background.genes <- background.genes
+
+            DEx.genes <- as.data.frame(rownames(markers.fm.list2))
+            names(DEx.genes) <- "V1"
+
+            total.sig <- length(DEx.genes$V1)
+            geneSet$total.sig <- length(DEx.genes$V1)
+
+            geneSet$background.geneset <- NA
+            geneSet$background.geneset.name <- NA
+            geneSet$in.geneset <- NA
+            geneSet$in.geneset.name <- NA
+
+            if(input$datasource == "BD_Rhapsody_Paired" || input$datasource == "BD_Rhapsody_AIRR") { # selectInput("datasource", "Data source",choices=c("10x_Genomics","BD_Rhapsody_Paired","BD_Rhapsody_AIRR")),
+              geneSet$GeneSet <- gsub("-",".",geneSet$GeneSet)
             }
-          }
 
-          geneSet2 <- geneSet2[order(geneSet2$p.val,decreasing = F),]
-          geneSet2 <- subset(geneSet2,geneSet2$in.geneset>=input$in.geneset.cutoff_top)
-          geneSet2 <- subset(geneSet2,geneSet2$p.val<=input$p.val_cutoff_top)
-          geneSet2$FDR <- p.adjust(geneSet2$p.val, method = "fdr")
-          geneSet2$Bonferroni <- p.adjust(geneSet2$p.val, method = "bonferroni")
+            if(input$species_analysis == "mm") { # selectInput("datasource", "Data source",choices=c("10x_Genomics","BD_Rhapsody_Paired","BD_Rhapsody_AIRR")),
+              require(stringr)
+              geneSet$GeneSet <- str_to_title(geneSet$GeneSet)
+            }
+            message(paste(i, "Performing Over rep analysis"))
+            for (j in 1:dim(geneSet)[1]) {
+              # listed GeneSet
 
-          top.name.overrep <- paste("Prioritisation/Multi/Unique/",i,"_",gsub("[/]","",gsub("&","",name.clone)),"_OverRep","_",today(), ".csv", sep = "")
-          write.csv(geneSet2,top.name.overrep, row.names = F)
+              Gene.set.testing <- as.data.frame(strsplit(geneSet$GeneSet,";")[j])
+              names(Gene.set.testing) <- "V1"
+              Gene.set.testing2 <- as.data.frame(unique(Gene.set.testing$V1))
+              names(Gene.set.testing2) <- "V1"
+              background.overlap <- merge(Gene.set.testing2,background.genes.name,by= "V1")
+              geneSet$background.geneset[j] <- length(background.overlap$V1)
+              geneSet$background.geneset.name[j] <- as.character(paste(unlist(background.overlap[1]), collapse=';'))
+              # in sig gene list
+              overlap <- merge(background.overlap,DEx.genes,by= "V1")
 
-        }
-        }}
+              geneSet$in.geneset[j] <- length(overlap$V1)
+              geneSet$in.geneset.name[j] <- as.character(paste(unlist(overlap[1]), collapse=';'))
+
+            }
+
+            geneSet2 <- subset(geneSet,geneSet$in.geneset>0)
+
+            message(paste(i,"has", length(geneSet2$in.geneset),"GeneSets in Unique (private)"))
+
+            if(length(geneSet2$in.geneset)>0) {
+              for (k in 1:dim(geneSet2)[1]) {
+                tota.gene.set <- geneSet2$background.geneset[k] # genes that are identified in background
+                tota.gene.set
+                in.geneset <-  geneSet2$in.geneset[k]# DEx in geneset
+
+                background.genes
+                not.in.total <- background.genes - tota.gene.set
+                not.in.geneset.sig <- total.sig - in.geneset
+                d <- data.frame( gene.in.interest=c( in.geneset, not.in.geneset.sig),gene.not.interest=c( tota.gene.set, not.in.total))
+                row.names(d) <- c("In_category", "not_in_category")
+
+                if (in.geneset>0) {
+                  geneSet2$p.val[k] <- unlist(fisher.test(d, alternative = "greater")$p.value)[1]
+                  geneSet2$lowerCI[k] <-  unlist(fisher.test(d, alternative = "greater")$conf.int)[1]
+                  geneSet2$upperCI[k] <-unlist(fisher.test(d)$conf.int)[2]
+                  geneSet2$OR[k] <- round(unlist(fisher.test(d, alternative = "greater")$estimate)[1],3)
+                }
+
+                else {
+                  geneSet2$p.value[k] <- "-"
+                  geneSet2$lowerCI[k] <-  "-"
+                  geneSet2$upperCI[k] <- "-"
+                  geneSet2$OR[k] <- "-"
+                }
+              }
+
+              geneSet2 <- geneSet2[order(geneSet2$p.val,decreasing = F),]
+              geneSet2 <- subset(geneSet2,geneSet2$in.geneset>=input$in.geneset.cutoff_top)
+              geneSet2 <- subset(geneSet2,geneSet2$p.val<=input$p.val_cutoff_top)
+              geneSet2$FDR <- p.adjust(geneSet2$p.val, method = "fdr")
+              geneSet2$Bonferroni <- p.adjust(geneSet2$p.val, method = "bonferroni")
+
+              top.name.overrep <- paste("Prioritisation/Multi/Unique/",i,"_",gsub("[/]","",gsub("&","",name.clone)),"_OverRep","_",today(), ".csv", sep = "")
+              write.csv(geneSet2,top.name.overrep, row.names = F)
+
+            }
+          }}
 
       })
     })
@@ -17211,14 +17172,14 @@ tabPanel("GEX -> TCR",
 
 
 
-          dir.create(dirName)
-          cluster$colour <- cluster[,names(cluster) %in% input$Colour_By_this]
-          cluster$colour <- gsub("_"," ",cluster$colour)
-          cluster$colour <- factor(cluster$colour, levels = unique(cluster$colour))
-          cluster$colour <- gsub("NA",NA,cluster$colour)
+            dir.create(dirName)
+            cluster$colour <- cluster[,names(cluster) %in% input$Colour_By_this]
+            cluster$colour <- gsub("_"," ",cluster$colour)
+            cluster$colour <- factor(cluster$colour, levels = unique(cluster$colour))
+            cluster$colour <- gsub("NA",NA,cluster$colour)
 
-          len.colour <- length(unique(cluster$colour))
-          col.df <- as.data.frame(unique(cluster$colour))
+            len.colour <- length(unique(cluster$colour))
+            col.df <- as.data.frame(unique(cluster$colour))
 
             num <- (length(unlist(col.df)))
 
@@ -17242,195 +17203,195 @@ tabPanel("GEX -> TCR",
             }
 
 
-          col.df$col <- colorblind_vector
+            col.df$col <- colorblind_vector
 
-          figure <- ggplot(data=cluster,aes(x=UMAP_1,UMAP_2,colour=colour))+
-            geom_point(size = input$size.dot.umap)+
-            scale_color_manual(labels = ~ stringr::str_wrap(.x, width = 20),values = col.df$col,na.value=input$NA_col_analysis) +
-            theme_bw()+
-            theme(
-              legend.text = element_text(colour="black", size=input$Bar_legend_size,family=input$font_type),
-              legend.title = element_blank(),
-              legend.position = input$legend_position,
-              # strip.text = element_text(size = input$Strip_text_size, family = input$font_type),
-              axis.title.y = element_text(colour="black",family=input$font_type,size = input$title.text.sizer2),
-              axis.text.y = element_text(colour="black",family=input$font_type,size = input$text_size),
-              axis.text.x = element_text(colour="black",family=input$font_type,size = input$text_size,angle=0),
-              axis.title.x = element_text(colour="black",family=input$font_type,size = input$title.text.sizer2),
-            )
+            figure <- ggplot(data=cluster,aes(x=UMAP_1,UMAP_2,colour=colour))+
+              geom_point(size = input$size.dot.umap)+
+              scale_color_manual(labels = ~ stringr::str_wrap(.x, width = 20),values = col.df$col,na.value=input$NA_col_analysis) +
+              theme_bw()+
+              theme(
+                legend.text = element_text(colour="black", size=input$Bar_legend_size,family=input$font_type),
+                legend.title = element_blank(),
+                legend.position = input$legend_position,
+                # strip.text = element_text(size = input$Strip_text_size, family = input$font_type),
+                axis.title.y = element_text(colour="black",family=input$font_type,size = input$title.text.sizer2),
+                axis.text.y = element_text(colour="black",family=input$font_type,size = input$text_size),
+                axis.text.x = element_text(colour="black",family=input$font_type,size = input$text_size,angle=0),
+                axis.title.x = element_text(colour="black",family=input$font_type,size = input$title.text.sizer2),
+              )
 
-          message(paste(i," Downloading the count UMAP"))
-          x = today()
-          top.name.clonotypes.top_png <- paste(dirName,i,"_",Vgene,"_AG_cluster_UMAP_",x,".png",sep="")
-          png(top.name.clonotypes.top_png, width = input$width_png_TCR.UMAP,height = input$height_png_TCR.UMAP,res = input$resolution_PNG_TCR.UMAP)
-          plot(figure)
-          dev.off()
-          ## Motif plot -----
+            message(paste(i," Downloading the count UMAP"))
+            x = today()
+            top.name.clonotypes.top_png <- paste(dirName,i,"_",Vgene,"_AG_cluster_UMAP_",x,".png",sep="")
+            png(top.name.clonotypes.top_png, width = input$width_png_TCR.UMAP,height = input$height_png_TCR.UMAP,res = input$resolution_PNG_TCR.UMAP)
+            plot(figure)
+            dev.off()
+            ## Motif plot -----
 
-          Network_df <- cluster[order(cluster$Updated_order),]
-          Network_df <- Network_df %>% distinct(CDR3_Vgene, .keep_all = TRUE) # make Unique
-          motifplot <- Motif_from_cluster_file(Network_df,Clust_selected = i,selected_cluster_column = "Updated_order")
+            Network_df <- cluster[order(cluster$Updated_order),]
+            Network_df <- Network_df %>% distinct(CDR3_Vgene, .keep_all = TRUE) # make Unique
+            motifplot <- Motif_from_cluster_file(Network_df,Clust_selected = i,selected_cluster_column = "Updated_order")
 
-          message(paste(i," Downloading motif plot"))
-          top.name.clonotypes.top_png <- paste(dirName,i,"_",Vgene,"_AG_motif_",x,".png",sep="")
-          png(top.name.clonotypes.top_png, width = input$width_png_Motif_ClusTCR2_cluster,
-              height = input$height_png_Motif_ClusTCR2_cluster,
-              res = input$resolution_PNG_Motif_ClusTCR2_cluster)
-          plot(motifplot)
-          dev.off()
+            message(paste(i," Downloading motif plot"))
+            top.name.clonotypes.top_png <- paste(dirName,i,"_",Vgene,"_AG_motif_",x,".png",sep="")
+            png(top.name.clonotypes.top_png, width = input$width_png_Motif_ClusTCR2_cluster,
+                height = input$height_png_Motif_ClusTCR2_cluster,
+                res = input$resolution_PNG_Motif_ClusTCR2_cluster)
+            plot(motifplot)
+            dev.off()
 
-          # Stats table ------
-          cluster <- clusterAG
+            # Stats table ------
+            cluster <- clusterAG
 
-          names(cluster)[names(cluster) %in% input$Samp_col_cluster] <- "ID_Column"
-          cluster <- cluster[order(cluster$Updated_order),]
+            names(cluster)[names(cluster) %in% input$Samp_col] <- "ID_Column"
+            cluster <- cluster[order(cluster$Updated_order),]
 
-          rownames(cluster) <- cluster$Cell_Index
+            rownames(cluster) <- cluster$Cell_Index
 
-          checking <- cluster[,names(cluster) %in% c("Updated_order","Cell_Index")]
-          md.checking <- merge(md,checking,by="Cell_Index",all.x=T)
-          md.checking <- md.checking[order(md.checking$order),]
-          rownames(md.checking) <- md.checking$Cell_Index
+            checking <- cluster[,names(cluster) %in% c("Updated_order","Cell_Index")]
+            md.checking <- merge(md,checking,by="Cell_Index",all.x=T)
+            md.checking <- md.checking[order(md.checking$order),]
+            rownames(md.checking) <- md.checking$Cell_Index
 
-          md.checking$Clust_selected <- ifelse(md.checking$Updated_order == i,i,"NS")
-          md.checking$Clust_selected[is.na(md.checking$Clust_selected)] <- "NS"
-          md.checking <- md.checking[order(md.checking$order),]
+            md.checking$Clust_selected <- ifelse(md.checking$Updated_order == i,i,"NS")
+            md.checking$Clust_selected[is.na(md.checking$Clust_selected)] <- "NS"
+            md.checking <- md.checking[order(md.checking$order),]
 
-          sc@meta.data <- md.checking
-          Idents(object = sc) <- sc@meta.data$Clust_selected
+            sc@meta.data <- md.checking
+            Idents(object = sc) <- sc@meta.data$Clust_selected
 
-          name.check.clust <- i
-          min.pct.expression<- input$min_point_ #standard setting: 0.25
-          min.logfc<-  input$LogFC_ #0.25 is standard
+            name.check.clust <- i
+            min.pct.expression<- input$min_point_ #standard setting: 0.25
+            min.logfc<-  input$LogFC_ #0.25 is standard
 
-          markers.fm.list <- FindMarkers(sc, ident.1 = name.check.clust, min.pct = min.pct.expression,  logfc.threshold = min.logfc, only.pos=TRUE)
-          markers.fm.list2 <- subset(markers.fm.list,markers.fm.list$p_val_adj < input$pval.ex.filter)
+            markers.fm.list <- FindMarkers(sc, ident.1 = name.check.clust, min.pct = min.pct.expression,  logfc.threshold = min.logfc, only.pos=TRUE)
+            markers.fm.list2 <- subset(markers.fm.list,markers.fm.list$p_val_adj < input$pval.ex.filter)
 
-          message(paste(length(markers.fm.list2$p_val_adj),"total markers for AG cluster",i))
+            message(paste(length(markers.fm.list2$p_val_adj),"total markers for AG cluster",i))
 
-          if(length(markers.fm.list2$p_val_adj)>0) {
-          message(paste(i," Downloading stats table"))
-          Exp_stats_cutoff_count.name <- paste(dirName,i,"_",Vgene,"_AG_cluster_statsTab_",x,".csv",sep="")
+            if(length(markers.fm.list2$p_val_adj)>0) {
+              message(paste(i," Downloading stats table"))
+              Exp_stats_cutoff_count.name <- paste(dirName,i,"_",Vgene,"_AG_cluster_statsTab_",x,".csv",sep="")
 
-          write.csv(markers.fm.list2,Exp_stats_cutoff_count.name, row.names = T)
+              write.csv(markers.fm.list2,Exp_stats_cutoff_count.name, row.names = T)
 
-          # stats dotplot ----
+              # stats dotplot ----
 
-          if (length(rownames(markers.fm.list2))<40) {
-            list.names <- rownames(markers.fm.list2)
-          } else {
-            list.names <- rownames(markers.fm.list2)
-            list.names <- list.names[1:40]
-          }
+              if (length(rownames(markers.fm.list2))<40) {
+                list.names <- rownames(markers.fm.list2)
+              } else {
+                list.names <- rownames(markers.fm.list2)
+                list.names <- list.names[1:40]
+              }
 
-          size_legend = input$Bar_legend_size-2
+              size_legend = input$Bar_legend_size-2
 
-          dotplotClust <- DotPlot(sc, features = list.names) +
-            RotatedAxis() +
-            theme(
-              axis.title.y = element_blank(),
-              axis.text.y = element_text(colour="black",family=input$font_type,size = input$text_size),
-              axis.text.x = element_text(colour="black",family=input$font_type,size = input$text_size, angle = 90),
-              axis.title.x = element_blank(),
-              legend.title = element_text(colour="black", size=input$Bar_legend_size,family=input$font_type),
-              legend.text = element_text(colour="black", size=size_legend,family=input$font_type),
-              legend.position = input$legend_position,
-            ) +
-            scale_colour_gradient2(low = input$low.dotplot.clust, mid = input$middle.dotplot.clust, high = input$high.dotplot.clust)+
-            scale_x_discrete(labels = label_wrap(20)) +
-            scale_y_discrete(labels = label_wrap(20))
+              dotplotClust <- DotPlot(sc, features = list.names) +
+                RotatedAxis() +
+                theme(
+                  axis.title.y = element_blank(),
+                  axis.text.y = element_text(colour="black",family=input$font_type,size = input$text_size),
+                  axis.text.x = element_text(colour="black",family=input$font_type,size = input$text_size, angle = 90),
+                  axis.title.x = element_blank(),
+                  legend.title = element_text(colour="black", size=input$Bar_legend_size,family=input$font_type),
+                  legend.text = element_text(colour="black", size=size_legend,family=input$font_type),
+                  legend.position = input$legend_position,
+                ) +
+                scale_colour_gradient2(low = input$low.dotplot.clust, mid = input$middle.dotplot.clust, high = input$high.dotplot.clust)+
+                scale_x_discrete(labels = label_wrap(20)) +
+                scale_y_discrete(labels = label_wrap(20))
 
-          top.name.clonotypes.top_png <- paste(dirName,i,"_",Vgene,"_AG_dot.plot_",x,".png",sep="")
-          png(top.name.clonotypes.top_png, width = input$width_png_all_expression_dotplot_clust,
-              height = input$height_png_all_expression_dotplot_clust,
-              res = input$resolution_PNG_all_expression_dotplot_clust)
-          plot(dotplotClust)
-          dev.off()
+              top.name.clonotypes.top_png <- paste(dirName,i,"_",Vgene,"_AG_dot.plot_",x,".png",sep="")
+              png(top.name.clonotypes.top_png, width = input$width_png_all_expression_dotplot_clust,
+                  height = input$height_png_all_expression_dotplot_clust,
+                  res = input$resolution_PNG_all_expression_dotplot_clust)
+              plot(dotplotClust)
+              dev.off()
 
-          # column(2,style = "margin-top: 25px;",downloadButton('downloadPlot_all_expression_dotplot_clust','Download PDF')),
-          # column(2,numericInput("width_png_all_expression_dotplot_clust","Width of PNG", value = 2400)),
-          # column(2,numericInput("height_png_all_expression_dotplot_clust","Height of PNG", value = 700)),
-          # column(2,numericInput("resolution_PNG_all_expression_dotplot_clust","Resolution of PNG", value = 144)),
-          # column(2,style = "margin-top: 25px;",downloadButton('downloadPlotPNG_all_expression_dotplot_clust','Download PNG'))
+              # column(2,style = "margin-top: 25px;",downloadButton('downloadPlot_all_expression_dotplot_clust','Download PDF')),
+              # column(2,numericInput("width_png_all_expression_dotplot_clust","Width of PNG", value = 2400)),
+              # column(2,numericInput("height_png_all_expression_dotplot_clust","Height of PNG", value = 700)),
+              # column(2,numericInput("resolution_PNG_all_expression_dotplot_clust","Resolution of PNG", value = 144)),
+              # column(2,style = "margin-top: 25px;",downloadButton('downloadPlotPNG_all_expression_dotplot_clust','Download PNG'))
 
-          # stats OverRep analysis ----
-          geneSet <- read.csv(system.file("OverRep","GeneSets.csv",package = "STEGO.R"),header = T)
+              # stats OverRep analysis ----
+              geneSet <- read.csv(system.file("OverRep","GeneSets.csv",package = "STEGO.R"),header = T)
 
-          background.genes.name <- as.data.frame(rownames(sc@assays$RNA$scale.data))
-          names(background.genes.name) <- "V1"
-          background.genes <- length(rownames(sc@assays$RNA$scale.data))
+              background.genes.name <- as.data.frame(rownames(sc@assays$RNA$scale.data))
+              names(background.genes.name) <- "V1"
+              background.genes <- length(rownames(sc@assays$RNA$scale.data))
 
-          #
-          geneSet$background.genes <- background.genes
+              #
+              geneSet$background.genes <- background.genes
 
-          DEx.genes <- as.data.frame(rownames(markers.fm.list2))
-          names(DEx.genes) <- "V1"
-          total.sig <- length(DEx.genes$V1)
-          geneSet$total.sig <- length(DEx.genes$V1)
-          # geneSet
-          geneSet$background.geneset <- NA
-          geneSet$background.geneset.name <- NA
-          geneSet$in.geneset <- NA
-          geneSet$in.geneset.name <- NA
+              DEx.genes <- as.data.frame(rownames(markers.fm.list2))
+              names(DEx.genes) <- "V1"
+              total.sig <- length(DEx.genes$V1)
+              geneSet$total.sig <- length(DEx.genes$V1)
+              # geneSet
+              geneSet$background.geneset <- NA
+              geneSet$background.geneset.name <- NA
+              geneSet$in.geneset <- NA
+              geneSet$in.geneset.name <- NA
 
-          if(input$datasource == "BD_Rhapsody_Paired" || input$datasource == "BD_Rhapsody_AIRR") { # selectInput("datasource", "Data source",choices=c("10x_Genomics","BD_Rhapsody_Paired","BD_Rhapsody_AIRR")),
-            geneSet$GeneSet <- gsub("-",".",geneSet$GeneSet)
-          }
+              if(input$datasource == "BD_Rhapsody_Paired" || input$datasource == "BD_Rhapsody_AIRR") { # selectInput("datasource", "Data source",choices=c("10x_Genomics","BD_Rhapsody_Paired","BD_Rhapsody_AIRR")),
+                geneSet$GeneSet <- gsub("-",".",geneSet$GeneSet)
+              }
 
-          if(input$species_analysis == "mm") { # selectInput("datasource", "Data source",choices=c("10x_Genomics","BD_Rhapsody_Paired","BD_Rhapsody_AIRR")),
-            require(stringr)
-            geneSet$GeneSet <- str_to_title(geneSet$GeneSet)
-          }
-          message(paste(i, "Starting OverRep analysis of Epitope "))
-          for (j in 1:dim(geneSet)[1]) {
-            # listed GeneSet
+              if(input$species_analysis == "mm") { # selectInput("datasource", "Data source",choices=c("10x_Genomics","BD_Rhapsody_Paired","BD_Rhapsody_AIRR")),
+                require(stringr)
+                geneSet$GeneSet <- str_to_title(geneSet$GeneSet)
+              }
+              message(paste(i, "Starting OverRep analysis of Epitope "))
+              for (j in 1:dim(geneSet)[1]) {
+                # listed GeneSet
 
-            Gene.set.testing <- as.data.frame(strsplit(geneSet$GeneSet,";")[j])
-            names(Gene.set.testing) <- "V1"
-            Gene.set.testing2 <- as.data.frame(unique(Gene.set.testing$V1))
-            names(Gene.set.testing2) <- "V1"
-            background.overlap <- merge(Gene.set.testing2,background.genes.name,by= "V1")
-            geneSet$background.geneset[j] <- length(background.overlap$V1)
-            geneSet$background.geneset.name[j] <- as.character(paste(unlist(background.overlap[1]), collapse=';'))
-            # in sig gene list
-            overlap <- merge(background.overlap,DEx.genes,by= "V1")
+                Gene.set.testing <- as.data.frame(strsplit(geneSet$GeneSet,";")[j])
+                names(Gene.set.testing) <- "V1"
+                Gene.set.testing2 <- as.data.frame(unique(Gene.set.testing$V1))
+                names(Gene.set.testing2) <- "V1"
+                background.overlap <- merge(Gene.set.testing2,background.genes.name,by= "V1")
+                geneSet$background.geneset[j] <- length(background.overlap$V1)
+                geneSet$background.geneset.name[j] <- as.character(paste(unlist(background.overlap[1]), collapse=';'))
+                # in sig gene list
+                overlap <- merge(background.overlap,DEx.genes,by= "V1")
 
-            geneSet$in.geneset[j] <- length(overlap$V1)
-            geneSet$in.geneset.name[j] <- as.character(paste(unlist(overlap[1]), collapse=';'))
+                geneSet$in.geneset[j] <- length(overlap$V1)
+                geneSet$in.geneset.name[j] <- as.character(paste(unlist(overlap[1]), collapse=';'))
 
-          }
-          geneSet2 <- subset(geneSet,geneSet$in.geneset>0)
-          message(paste(i,"has", length(geneSet2$in.geneset),"GeneSets in Cluster"))
+              }
+              geneSet2 <- subset(geneSet,geneSet$in.geneset>0)
+              message(paste(i,"has", length(geneSet2$in.geneset),"GeneSets in Cluster"))
 
-        if(length(geneSet2$in.geneset)>0) {
-          for (j in 1:dim(geneSet2)[1]) {
-            tota.gene.set <- geneSet2$background.geneset[j] # genes that are identified in background
-            in.geneset <-  geneSet2$in.geneset[j]# DEx in geneset
-            not.in.total <- background.genes - tota.gene.set
-            not.in.geneset.sig <- total.sig - in.geneset
-            d <- data.frame( gene.in.interest=c( in.geneset, not.in.geneset.sig),gene.not.interest=c(tota.gene.set, not.in.total))
-            row.names(d) <- c("In_category", "not_in_category")
+              if(length(geneSet2$in.geneset)>0) {
+                for (j in 1:dim(geneSet2)[1]) {
+                  tota.gene.set <- geneSet2$background.geneset[j] # genes that are identified in background
+                  in.geneset <-  geneSet2$in.geneset[j]# DEx in geneset
+                  not.in.total <- background.genes - tota.gene.set
+                  not.in.geneset.sig <- total.sig - in.geneset
+                  d <- data.frame( gene.in.interest=c( in.geneset, not.in.geneset.sig),gene.not.interest=c(tota.gene.set, not.in.total))
+                  row.names(d) <- c("In_category", "not_in_category")
 
-            if (in.geneset>0) {
-              geneSet2$p.val[j] <- unlist(fisher.test(d, alternative = "greater")$p.value)[1]
-              geneSet2$lowerCI[j] <-  unlist(fisher.test(d, alternative = "greater")$conf.int)[1]
-              geneSet2$upperCI[j] <-unlist(fisher.test(d)$conf.int)[2]
-              geneSet2$OR[j] <- round(unlist(fisher.test(d, alternative = "greater")$estimate)[1],3)
-            } else {
-              geneSet2$p.value[j] <- "-"
-              geneSet2$lowerCI[j] <-  "-"
-              geneSet2$upperCI[j] <- "-"
-              geneSet2$OR[j] <- "-"
-            }
-          }
-          geneSet2 <- geneSet2[order(geneSet2$p.val,decreasing = F),]
-          geneSet2$FDR <- p.adjust(geneSet2$p.val, method = "fdr")
-          geneSet2$Bonferroni <- p.adjust(geneSet2$p.val, method = "bonferroni")
-          message("Downloading the Summary table...")
-          top.name.clonotypes <- paste(dirName,i,"_",Vgene,"_AG_OverRep_",x,".csv",sep="")
-          write.csv(geneSet2,top.name.clonotypes, row.names = F)
+                  if (in.geneset>0) {
+                    geneSet2$p.val[j] <- unlist(fisher.test(d, alternative = "greater")$p.value)[1]
+                    geneSet2$lowerCI[j] <-  unlist(fisher.test(d, alternative = "greater")$conf.int)[1]
+                    geneSet2$upperCI[j] <-unlist(fisher.test(d)$conf.int)[2]
+                    geneSet2$OR[j] <- round(unlist(fisher.test(d, alternative = "greater")$estimate)[1],3)
+                  } else {
+                    geneSet2$p.value[j] <- "-"
+                    geneSet2$lowerCI[j] <-  "-"
+                    geneSet2$upperCI[j] <- "-"
+                    geneSet2$OR[j] <- "-"
+                  }
+                }
+                geneSet2 <- geneSet2[order(geneSet2$p.val,decreasing = F),]
+                geneSet2$FDR <- p.adjust(geneSet2$p.val, method = "fdr")
+                geneSet2$Bonferroni <- p.adjust(geneSet2$p.val, method = "bonferroni")
+                message("Downloading the Summary table...")
+                top.name.clonotypes <- paste(dirName,i,"_",Vgene,"_AG_OverRep_",x,".csv",sep="")
+                write.csv(geneSet2,top.name.clonotypes, row.names = F)
 
-        }}}}
+              }}}}
       })
 
     })
@@ -17538,227 +17499,227 @@ tabPanel("GEX -> TCR",
           } else {
 
 
-          # if(file.exists(dirName)) break;
-          dir.create(dirName)
+            # if(file.exists(dirName)) break;
+            dir.create(dirName)
 
-          ## ggplot UMAP -----
-          cluster$colour <- cluster[,names(cluster) %in% input$Colour_By_this]
-          cluster$colour <- gsub("_"," ",cluster$colour)
-          cluster$colour <- factor(cluster$colour, levels = unique(cluster$colour))
-          cluster$colour <- gsub("NA",NA,cluster$colour)
+            ## ggplot UMAP -----
+            cluster$colour <- cluster[,names(cluster) %in% input$Colour_By_this]
+            cluster$colour <- gsub("_"," ",cluster$colour)
+            cluster$colour <- factor(cluster$colour, levels = unique(cluster$colour))
+            cluster$colour <- gsub("NA",NA,cluster$colour)
 
-          len.colour <- length(unique(cluster$colour))
-          col.df <- as.data.frame(unique(cluster$colour))
+            len.colour <- length(unique(cluster$colour))
+            col.df <- as.data.frame(unique(cluster$colour))
 
-          num <- (length(unlist(col.df)))
+            num <- (length(unlist(col.df)))
 
-          if (input$colourtype == "default") {
-            colorblind_vector <- c(gg_fill_hue(num))
-          } else if (input$colourtype == "hcl.colors") {
-            colorblind_vector <- c(hcl.colors(num, palette = "viridis"))
-          } else if (input$colourtype == "topo.colors") {
-            colorblind_vector <- c(topo.colors(num))
-          } else if (input$colourtype == "heat.colors") {
-            colorblind_vector <- c(heat.colors(num))
-          } else if (input$colourtype == "terrain.colors") {
-            colorblind_vector <- c(terrain.colors(num))
-          } else if (input$colourtype == "rainbow") {
-            colorblind_vector <- c(rainbow(num))
-          } else if (input$colourtype == "random") {
-            colorblind_vector <- distinctColorPalette(num)
+            if (input$colourtype == "default") {
+              colorblind_vector <- c(gg_fill_hue(num))
+            } else if (input$colourtype == "hcl.colors") {
+              colorblind_vector <- c(hcl.colors(num, palette = "viridis"))
+            } else if (input$colourtype == "topo.colors") {
+              colorblind_vector <- c(topo.colors(num))
+            } else if (input$colourtype == "heat.colors") {
+              colorblind_vector <- c(heat.colors(num))
+            } else if (input$colourtype == "terrain.colors") {
+              colorblind_vector <- c(terrain.colors(num))
+            } else if (input$colourtype == "rainbow") {
+              colorblind_vector <- c(rainbow(num))
+            } else if (input$colourtype == "random") {
+              colorblind_vector <- distinctColorPalette(num)
 
-          }  else {
+            }  else {
 
-          }
-
-
-          col.df$col <- colorblind_vector
-
-          figure <- ggplot(data=cluster,aes(x=UMAP_1,UMAP_2,colour=colour))+
-            geom_point(size = input$size.dot.umap)+
-            scale_color_manual(labels = ~ stringr::str_wrap(.x, width = 20),values = col.df$col,na.value=input$NA_col_analysis) +
-            theme_bw()+
-            theme(
-              legend.text = element_text(colour="black", size=input$Bar_legend_size,family=input$font_type),
-              legend.title = element_blank(),
-              legend.position = input$legend_position,
-              # strip.text = element_text(size = input$Strip_text_size, family = input$font_type),
-              axis.title.y = element_text(colour="black",family=input$font_type,size = input$title.text.sizer2),
-              axis.text.y = element_text(colour="black",family=input$font_type,size = input$text_size),
-              axis.text.x = element_text(colour="black",family=input$font_type,size = input$text_size,angle=0),
-              axis.title.x = element_text(colour="black",family=input$font_type,size = input$title.text.sizer2),
-            )
-
-          message(paste(i," Downloading the count UMAP"))
-          x = today()
-          top.name.clonotypes.top_png <- paste(dirName,i,"_",Vgene,"_BD_cluster_UMAP_",x,".png",sep="")
-          png(top.name.clonotypes.top_png, width = input$width_png_TCR.UMAP,height = input$height_png_TCR.UMAP,res = input$resolution_PNG_TCR.UMAP)
-          plot(figure)
-          dev.off()
-          ## Motif plot -----
-          Network_df <- cluster[order(cluster$Updated_order),]
-          Network_df <- Network_df %>% distinct(CDR3_Vgene, .keep_all = TRUE) # make Unique
-          motifplot <- Motif_from_cluster_file(Network_df,Clust_selected = i,selected_cluster_column = "Updated_order")
-
-          message(paste(i," Downloading motif plot"))
-          top.name.clonotypes.top_png <- paste(dirName,i,"_",Vgene,"_BD_motif_",x,".png",sep="")
-          png(top.name.clonotypes.top_png, width = input$width_png_Motif_ClusTCR2_cluster,
-              height = input$height_png_Motif_ClusTCR2_cluster,
-              res = input$resolution_PNG_Motif_ClusTCR2_cluster)
-          plot(motifplot)
-          dev.off()
-
-          # Stats table ------
-          cluster <- clusterBD
-
-          names(cluster)[names(cluster) %in% input$Samp_col_cluster] <- "ID_Column"
-          cluster <- cluster[order(cluster$Updated_order),]
-
-          rownames(cluster) <- cluster$Cell_Index
-
-          checking <- cluster[,names(cluster) %in% c("Updated_order","Cell_Index")]
-          md.checking <- merge(md,checking,by="Cell_Index",all.x=T)
-          md.checking <- md.checking[order(md.checking$order),]
-          rownames(md.checking) <- md.checking$Cell_Index
-
-          md.checking$Clust_selected <- ifelse(md.checking$Updated_order == i,i,"NS")
-          md.checking$Clust_selected[is.na(md.checking$Clust_selected)] <- "NS"
-          md.checking <- md.checking[order(md.checking$order),]
-
-          sc@meta.data <- md.checking
-          Idents(object = sc) <- sc@meta.data$Clust_selected
-
-          name.check.clust <- i
-          min.pct.expression<- input$min_point_ #standard setting: 0.25
-          min.logfc<-  input$LogFC_ #0.25 is standard
-
-          markers.fm.list <- FindMarkers(sc, ident.1 = name.check.clust, min.pct = min.pct.expression,  logfc.threshold = min.logfc, only.pos=TRUE)
-          markers.fm.list2 <- subset(markers.fm.list,markers.fm.list$p_val_adj < input$pval.ex.filter)
-
-          message(paste(i,"BD cluster has",length(markers.fm.list2$p_val_adj),"total markers"))
-
-          if(length(markers.fm.list2$p_val_adj)>0) {
-          message(paste(i," Downloading stats table"))
-          Exp_stats_cutoff_count.name <- paste(dirName,i,"_",Vgene,"_BD_cluster_statsTab_",x,".csv",sep="")
-          write.csv(markers.fm.list2,Exp_stats_cutoff_count.name, row.names = T)
-
-          # stats dotplot ----
-
-          if (length(rownames(markers.fm.list2))<40) {
-            list.names <- rownames(markers.fm.list2)
-          } else {
-            list.names <- rownames(markers.fm.list2)
-            list.names <- list.names[1:40]
-          }
-
-          size_legend = input$Bar_legend_size-2
-
-          dotplotClust <- DotPlot(sc, features = list.names) +
-            RotatedAxis() +
-            theme(
-              axis.title.y = element_blank(),
-              axis.text.y = element_text(colour="black",family=input$font_type,size = input$text_size),
-              axis.text.x = element_text(colour="black",family=input$font_type,size = input$text_size, angle = 90),
-              axis.title.x = element_blank(),
-              legend.title = element_text(colour="black", size=input$Bar_legend_size,family=input$font_type),
-              legend.text = element_text(colour="black", size=size_legend,family=input$font_type),
-              legend.position = input$legend_position,
-            ) +
-            scale_colour_gradient2(low = input$low.dotplot.clust, mid = input$middle.dotplot.clust, high = input$high.dotplot.clust)+
-            scale_x_discrete(labels = label_wrap(20)) +
-            scale_y_discrete(labels = label_wrap(20))
-
-          top.name.clonotypes.top_png <- paste(dirName,i,"_",Vgene,"_BD_dot.plot_",x,".png",sep="")
-          png(top.name.clonotypes.top_png, width = input$width_png_all_expression_dotplot_clust,
-              height = input$height_png_all_expression_dotplot_clust,
-              res = input$resolution_PNG_all_expression_dotplot_clust)
-          plot(dotplotClust)
-          dev.off()
-
-          # stats OverRep analysis ----
-
-          if(dim(markers.fm.list2)[1]>0) {
-
-          geneSet <- read.csv(system.file("OverRep","GeneSets.csv",package = "STEGO.R"),header = T)
-
-          background.genes.name <- as.data.frame(rownames(sc@assays$RNA$scale.data))
-          names(background.genes.name) <- "V1"
-          background.genes <- length(rownames(sc@assays$RNA$scale.data))
-
-          #
-          geneSet$background.genes <- background.genes
-
-          DEx.genes <- as.data.frame(rownames(markers.fm.list2))
-          names(DEx.genes) <- "V1"
-          total.sig <- length(DEx.genes$V1)
-          geneSet$total.sig <- length(DEx.genes$V1)
-          # geneSet
-          geneSet$background.geneset <- NA
-          geneSet$background.geneset.name <- NA
-          geneSet$in.geneset <- NA
-          geneSet$in.geneset.name <- NA
-
-          if(input$datasource == "BD_Rhapsody_Paired" || input$datasource == "BD_Rhapsody_AIRR") { # selectInput("datasource", "Data source",choices=c("10x_Genomics","BD_Rhapsody_Paired","BD_Rhapsody_AIRR")),
-            geneSet$GeneSet <- gsub("-",".",geneSet$GeneSet)
-          }
-
-          if(input$species_analysis == "mm") { # selectInput("datasource", "Data source",choices=c("10x_Genomics","BD_Rhapsody_Paired","BD_Rhapsody_AIRR")),
-            require(stringr)
-            geneSet$GeneSet <- str_to_title(geneSet$GeneSet)
-          }
-          message(paste("Starting OverRep analysis of cluster ", i))
-          for (j in 1:dim(geneSet)[1]) {
-            # listed GeneSet
-
-            Gene.set.testing <- as.data.frame(strsplit(geneSet$GeneSet,";")[j])
-            names(Gene.set.testing) <- "V1"
-            Gene.set.testing2 <- as.data.frame(unique(Gene.set.testing$V1))
-            names(Gene.set.testing2) <- "V1"
-            background.overlap <- merge(Gene.set.testing2,background.genes.name,by= "V1")
-            geneSet$background.geneset[j] <- length(background.overlap$V1)
-            geneSet$background.geneset.name[j] <- as.character(paste(unlist(background.overlap[1]), collapse=';'))
-            # in sig gene list
-            overlap <- merge(background.overlap,DEx.genes,by= "V1")
-
-            geneSet$in.geneset[j] <- length(overlap$V1)
-            geneSet$in.geneset.name[j] <- as.character(paste(unlist(overlap[1]), collapse=';'))
-
-          }
-
-          geneSet2 <- subset(geneSet,geneSet$in.geneset>0)
-          message(paste(i,"has", length(geneSet2$in.geneset),"GeneSets in Epitope"))
-          if(length(geneSet2$in.geneset)>0) {
-
-          for (j in 1:dim(geneSet2)[1]) {
-            tota.gene.set <- geneSet2$background.geneset[j] # genes that are identified in background
-            in.geneset <-  geneSet2$in.geneset[j]# DEx in geneset
-            not.in.total <- background.genes - tota.gene.set
-            not.in.geneset.sig <- total.sig - in.geneset
-            d <- data.frame( gene.in.interest=c( in.geneset, not.in.geneset.sig),gene.not.interest=c(tota.gene.set, not.in.total))
-            row.names(d) <- c("In_category", "not_in_category")
-
-            if (in.geneset>0) {
-              geneSet2$p.val[j] <- unlist(fisher.test(d, alternative = "greater")$p.value)[1]
-              geneSet2$lowerCI[j] <-  unlist(fisher.test(d, alternative = "greater")$conf.int)[1]
-              geneSet2$upperCI[j] <-unlist(fisher.test(d)$conf.int)[2]
-              geneSet2$OR[j] <- round(unlist(fisher.test(d, alternative = "greater")$estimate)[1],3)
-            } else {
-              geneSet2$p.value[j] <- "-"
-              geneSet2$lowerCI[j] <-  "-"
-              geneSet2$upperCI[j] <- "-"
-              geneSet2$OR[j] <- "-"
             }
-          }
-          geneSet2 <- geneSet2[order(geneSet2$p.val,decreasing = F),]
-          geneSet2$FDR <- p.adjust(geneSet2$p.val, method = "fdr")
-          geneSet2$Bonferroni <- p.adjust(geneSet2$p.val, method = "bonferroni")
-          message("Downloading over-rep table...")
-          top.name.clonotypes <- paste(dirName,i,"_",Vgene,"_BD_OverRep_",x,".csv",sep="")
-          write.csv(geneSet2,top.name.clonotypes, row.names = F)
 
-          }
-          } }
-        }}
+
+            col.df$col <- colorblind_vector
+
+            figure <- ggplot(data=cluster,aes(x=UMAP_1,UMAP_2,colour=colour))+
+              geom_point(size = input$size.dot.umap)+
+              scale_color_manual(labels = ~ stringr::str_wrap(.x, width = 20),values = col.df$col,na.value=input$NA_col_analysis) +
+              theme_bw()+
+              theme(
+                legend.text = element_text(colour="black", size=input$Bar_legend_size,family=input$font_type),
+                legend.title = element_blank(),
+                legend.position = input$legend_position,
+                # strip.text = element_text(size = input$Strip_text_size, family = input$font_type),
+                axis.title.y = element_text(colour="black",family=input$font_type,size = input$title.text.sizer2),
+                axis.text.y = element_text(colour="black",family=input$font_type,size = input$text_size),
+                axis.text.x = element_text(colour="black",family=input$font_type,size = input$text_size,angle=0),
+                axis.title.x = element_text(colour="black",family=input$font_type,size = input$title.text.sizer2),
+              )
+
+            message(paste(i," Downloading the count UMAP"))
+            x = today()
+            top.name.clonotypes.top_png <- paste(dirName,i,"_",Vgene,"_BD_cluster_UMAP_",x,".png",sep="")
+            png(top.name.clonotypes.top_png, width = input$width_png_TCR.UMAP,height = input$height_png_TCR.UMAP,res = input$resolution_PNG_TCR.UMAP)
+            plot(figure)
+            dev.off()
+            ## Motif plot -----
+            Network_df <- cluster[order(cluster$Updated_order),]
+            Network_df <- Network_df %>% distinct(CDR3_Vgene, .keep_all = TRUE) # make Unique
+            motifplot <- Motif_from_cluster_file(Network_df,Clust_selected = i,selected_cluster_column = "Updated_order")
+
+            message(paste(i," Downloading motif plot"))
+            top.name.clonotypes.top_png <- paste(dirName,i,"_",Vgene,"_BD_motif_",x,".png",sep="")
+            png(top.name.clonotypes.top_png, width = input$width_png_Motif_ClusTCR2_cluster,
+                height = input$height_png_Motif_ClusTCR2_cluster,
+                res = input$resolution_PNG_Motif_ClusTCR2_cluster)
+            plot(motifplot)
+            dev.off()
+
+            # Stats table ------
+            cluster <- clusterBD
+
+            names(cluster)[names(cluster) %in% input$Samp_col] <- "ID_Column"
+            cluster <- cluster[order(cluster$Updated_order),]
+
+            rownames(cluster) <- cluster$Cell_Index
+
+            checking <- cluster[,names(cluster) %in% c("Updated_order","Cell_Index")]
+            md.checking <- merge(md,checking,by="Cell_Index",all.x=T)
+            md.checking <- md.checking[order(md.checking$order),]
+            rownames(md.checking) <- md.checking$Cell_Index
+
+            md.checking$Clust_selected <- ifelse(md.checking$Updated_order == i,i,"NS")
+            md.checking$Clust_selected[is.na(md.checking$Clust_selected)] <- "NS"
+            md.checking <- md.checking[order(md.checking$order),]
+
+            sc@meta.data <- md.checking
+            Idents(object = sc) <- sc@meta.data$Clust_selected
+
+            name.check.clust <- i
+            min.pct.expression<- input$min_point_ #standard setting: 0.25
+            min.logfc<-  input$LogFC_ #0.25 is standard
+
+            markers.fm.list <- FindMarkers(sc, ident.1 = name.check.clust, min.pct = min.pct.expression,  logfc.threshold = min.logfc, only.pos=TRUE)
+            markers.fm.list2 <- subset(markers.fm.list,markers.fm.list$p_val_adj < input$pval.ex.filter)
+
+            message(paste(i,"BD cluster has",length(markers.fm.list2$p_val_adj),"total markers"))
+
+            if(length(markers.fm.list2$p_val_adj)>0) {
+              message(paste(i," Downloading stats table"))
+              Exp_stats_cutoff_count.name <- paste(dirName,i,"_",Vgene,"_BD_cluster_statsTab_",x,".csv",sep="")
+              write.csv(markers.fm.list2,Exp_stats_cutoff_count.name, row.names = T)
+
+              # stats dotplot ----
+
+              if (length(rownames(markers.fm.list2))<40) {
+                list.names <- rownames(markers.fm.list2)
+              } else {
+                list.names <- rownames(markers.fm.list2)
+                list.names <- list.names[1:40]
+              }
+
+              size_legend = input$Bar_legend_size-2
+
+              dotplotClust <- DotPlot(sc, features = list.names) +
+                RotatedAxis() +
+                theme(
+                  axis.title.y = element_blank(),
+                  axis.text.y = element_text(colour="black",family=input$font_type,size = input$text_size),
+                  axis.text.x = element_text(colour="black",family=input$font_type,size = input$text_size, angle = 90),
+                  axis.title.x = element_blank(),
+                  legend.title = element_text(colour="black", size=input$Bar_legend_size,family=input$font_type),
+                  legend.text = element_text(colour="black", size=size_legend,family=input$font_type),
+                  legend.position = input$legend_position,
+                ) +
+                scale_colour_gradient2(low = input$low.dotplot.clust, mid = input$middle.dotplot.clust, high = input$high.dotplot.clust)+
+                scale_x_discrete(labels = label_wrap(20)) +
+                scale_y_discrete(labels = label_wrap(20))
+
+              top.name.clonotypes.top_png <- paste(dirName,i,"_",Vgene,"_BD_dot.plot_",x,".png",sep="")
+              png(top.name.clonotypes.top_png, width = input$width_png_all_expression_dotplot_clust,
+                  height = input$height_png_all_expression_dotplot_clust,
+                  res = input$resolution_PNG_all_expression_dotplot_clust)
+              plot(dotplotClust)
+              dev.off()
+
+              # stats OverRep analysis ----
+
+              if(dim(markers.fm.list2)[1]>0) {
+
+                geneSet <- read.csv(system.file("OverRep","GeneSets.csv",package = "STEGO.R"),header = T)
+
+                background.genes.name <- as.data.frame(rownames(sc@assays$RNA$scale.data))
+                names(background.genes.name) <- "V1"
+                background.genes <- length(rownames(sc@assays$RNA$scale.data))
+
+                #
+                geneSet$background.genes <- background.genes
+
+                DEx.genes <- as.data.frame(rownames(markers.fm.list2))
+                names(DEx.genes) <- "V1"
+                total.sig <- length(DEx.genes$V1)
+                geneSet$total.sig <- length(DEx.genes$V1)
+                # geneSet
+                geneSet$background.geneset <- NA
+                geneSet$background.geneset.name <- NA
+                geneSet$in.geneset <- NA
+                geneSet$in.geneset.name <- NA
+
+                if(input$datasource == "BD_Rhapsody_Paired" || input$datasource == "BD_Rhapsody_AIRR") { # selectInput("datasource", "Data source",choices=c("10x_Genomics","BD_Rhapsody_Paired","BD_Rhapsody_AIRR")),
+                  geneSet$GeneSet <- gsub("-",".",geneSet$GeneSet)
+                }
+
+                if(input$species_analysis == "mm") { # selectInput("datasource", "Data source",choices=c("10x_Genomics","BD_Rhapsody_Paired","BD_Rhapsody_AIRR")),
+                  require(stringr)
+                  geneSet$GeneSet <- str_to_title(geneSet$GeneSet)
+                }
+                message(paste("Starting OverRep analysis of cluster ", i))
+                for (j in 1:dim(geneSet)[1]) {
+                  # listed GeneSet
+
+                  Gene.set.testing <- as.data.frame(strsplit(geneSet$GeneSet,";")[j])
+                  names(Gene.set.testing) <- "V1"
+                  Gene.set.testing2 <- as.data.frame(unique(Gene.set.testing$V1))
+                  names(Gene.set.testing2) <- "V1"
+                  background.overlap <- merge(Gene.set.testing2,background.genes.name,by= "V1")
+                  geneSet$background.geneset[j] <- length(background.overlap$V1)
+                  geneSet$background.geneset.name[j] <- as.character(paste(unlist(background.overlap[1]), collapse=';'))
+                  # in sig gene list
+                  overlap <- merge(background.overlap,DEx.genes,by= "V1")
+
+                  geneSet$in.geneset[j] <- length(overlap$V1)
+                  geneSet$in.geneset.name[j] <- as.character(paste(unlist(overlap[1]), collapse=';'))
+
+                }
+
+                geneSet2 <- subset(geneSet,geneSet$in.geneset>0)
+                message(paste(i,"has", length(geneSet2$in.geneset),"GeneSets in Epitope"))
+                if(length(geneSet2$in.geneset)>0) {
+
+                  for (j in 1:dim(geneSet2)[1]) {
+                    tota.gene.set <- geneSet2$background.geneset[j] # genes that are identified in background
+                    in.geneset <-  geneSet2$in.geneset[j]# DEx in geneset
+                    not.in.total <- background.genes - tota.gene.set
+                    not.in.geneset.sig <- total.sig - in.geneset
+                    d <- data.frame( gene.in.interest=c( in.geneset, not.in.geneset.sig),gene.not.interest=c(tota.gene.set, not.in.total))
+                    row.names(d) <- c("In_category", "not_in_category")
+
+                    if (in.geneset>0) {
+                      geneSet2$p.val[j] <- unlist(fisher.test(d, alternative = "greater")$p.value)[1]
+                      geneSet2$lowerCI[j] <-  unlist(fisher.test(d, alternative = "greater")$conf.int)[1]
+                      geneSet2$upperCI[j] <-unlist(fisher.test(d)$conf.int)[2]
+                      geneSet2$OR[j] <- round(unlist(fisher.test(d, alternative = "greater")$estimate)[1],3)
+                    } else {
+                      geneSet2$p.value[j] <- "-"
+                      geneSet2$lowerCI[j] <-  "-"
+                      geneSet2$upperCI[j] <- "-"
+                      geneSet2$OR[j] <- "-"
+                    }
+                  }
+                  geneSet2 <- geneSet2[order(geneSet2$p.val,decreasing = F),]
+                  geneSet2$FDR <- p.adjust(geneSet2$p.val, method = "fdr")
+                  geneSet2$Bonferroni <- p.adjust(geneSet2$p.val, method = "bonferroni")
+                  message("Downloading over-rep table...")
+                  top.name.clonotypes <- paste(dirName,i,"_",Vgene,"_BD_OverRep_",x,".csv",sep="")
+                  write.csv(geneSet2,top.name.clonotypes, row.names = F)
+
+                }
+              } }
+          }}
       })
     })
     output$Cluster_dowload_button_prior <- renderUI({
@@ -17794,37 +17755,37 @@ tabPanel("GEX -> TCR",
 
     # epitope prioritisation ------
     observeEvent(input$EpitopePrior_Download_Bt,{
-                   x = today()
-                   message(paste("Downloading sumamry table of",input$Prior_AddInEpiUI_1,"vs",input$Prior_AddInEpiUI_2))
-                   Exp_stats_cutoff_count.name <- paste("Prioritisation/EpitopePred/Epitope_summary_table_",input$Prior_AddInEpiUI_1,"vs",input$Prior_AddInEpiUI_2,"_",x,".csv",sep="")
-                   write.csv(Prior_Epitope_dt_process(),Exp_stats_cutoff_count.name, row.names = F)
+      x = today()
+      message(paste("Downloading sumamry table of",input$Prior_AddInEpiUI_1,"vs",input$Prior_AddInEpiUI_2))
+      Exp_stats_cutoff_count.name <- paste("Prioritisation/EpitopePred/Epitope_summary_table_",input$Prior_AddInEpiUI_1,"vs",input$Prior_AddInEpiUI_2,"_",x,".csv",sep="")
+      write.csv(Prior_Epitope_dt_process(),Exp_stats_cutoff_count.name, row.names = F)
 
-                  message(paste("Downloading heatmap",input$Prior_AddInEpiUI_1," vs ",input$Prior_AddInEpiUI_2))
+      message(paste("Downloading heatmap",input$Prior_AddInEpiUI_1," vs ",input$Prior_AddInEpiUI_2))
 
-                  name.epitope <- paste("Prioritisation/EpitopePred/",input$Prior_AddInEpiUI_1,"_",input$Prior_AddInEpiUI_2,"_Heatmap_", x, ".png", sep = "")
+      name.epitope <- paste("Prioritisation/EpitopePred/",input$Prior_AddInEpiUI_1,"_",input$Prior_AddInEpiUI_2,"_Heatmap_", x, ".png", sep = "")
 
-                  Common_Epitope_code <- Common_Epitope_code()
-                  total_X <- length(unique(Common_Epitope_code$Selected_function))
-                  total_Y <- length(unique(Common_Epitope_code$Selected_group))
+      Common_Epitope_code <- Common_Epitope_code()
+      total_X <- length(unique(Common_Epitope_code$Selected_function))
+      total_Y <- length(unique(Common_Epitope_code$Selected_group))
 
-                  png(name.epitope, width = 20*total_Y+400,height = 20*total_X+400,res = 144)
-                  plot(Prior_heatmap_epitope())
-                  dev.off()
+      png(name.epitope, width = 20*total_Y+400,height = 20*total_X+400,res = 144)
+      plot(Prior_heatmap_epitope())
+      dev.off()
 
-                  message(paste("Downloading UMAP",input$Prior_AddInEpiUI_1," vs ",input$Prior_AddInEpiUI_2))
-                  name.epitope.UMAP <-   paste("Prioritisation/EpitopePred/","Epitope_UMAP_coloredby.",input$Prior_AddInEpiUI_1,"_", x, ".png", sep = "")
+      message(paste("Downloading UMAP",input$Prior_AddInEpiUI_1," vs ",input$Prior_AddInEpiUI_2))
+      name.epitope.UMAP <-   paste("Prioritisation/EpitopePred/","Epitope_UMAP_coloredby.",input$Prior_AddInEpiUI_1,"_", x, ".png", sep = "")
 
-                  len.colour <- length(unique(Common_Epitope_code$ID_Column))
-                  nCol <- round(sqrt(len.colour),0)
+      len.colour <- length(unique(Common_Epitope_code$ID_Column))
+      nCol <- round(sqrt(len.colour),0)
 
-                  png(name.epitope.UMAP, width = 400*nCol+400,height = 400*nCol,res = 144)
-                  plot(Prior_UMAP_Epitope())
-                  dev.off()
+      png(name.epitope.UMAP, width = 400*nCol+400,height = 400*nCol,res = 144)
+      plot(Prior_UMAP_Epitope())
+      dev.off()
 
-                  message(paste("Starting Stats download..."))
-                  Prior_Stats_Epitope()
+      message(paste("Starting Stats download..."))
+      Prior_Stats_Epitope()
 
-                 })
+    })
 
     # epitope code for automated analysis ------
     df_tcrex2 <- reactive({
@@ -17838,28 +17799,28 @@ tabPanel("GEX -> TCR",
 
       if (input$epitope_uploaded) {
 
-      epi <- input.data_sc_TCRex()
-      validate(
-        need(nrow(sc)>0 & nrow(epi)>0,
-             "Upload Files")
-      )
-      df3.meta <- sc@meta.data
-      if(input$datasource == "BD_Rhapsody_Paired") {
-        df3.meta$CDR3_beta <- paste("C",df3.meta$cdr3_BD,"F",sep="")
-      }
+        epi <- input.data_sc_TCRex()
+        validate(
+          need(nrow(sc)>0 & nrow(epi)>0,
+               "Upload Files")
+        )
+        df3.meta <- sc@meta.data
+        if(input$datasource == "BD_Rhapsody_Paired") {
+          df3.meta$CDR3_beta <- paste("C",df3.meta$cdr3_BD,"F",sep="")
+        }
 
-      else if (input$datasource == "BD_Rhapsody_AIRR") {
-        df3.meta$CDR3_beta <- df3.meta$junction_aa_BD
-      }
+        else if (input$datasource == "BD_Rhapsody_AIRR") {
+          df3.meta$CDR3_beta <- df3.meta$junction_aa_BD
+        }
 
-      else {
-        df3.meta$CDR3_beta <- df3.meta$cdr3_BD
-      }
-      req(df3.meta$CDR3_beta)
-      epi$beta <- epi$CDR3_beta
+        else {
+          df3.meta$CDR3_beta <- df3.meta$cdr3_BD
+        }
+        req(df3.meta$CDR3_beta)
+        epi$beta <- epi$CDR3_beta
 
-      df3.meta <- merge(df3.meta,epi,by="CDR3_beta")
-      selectInput("Prior_AddInEpiUI_1","Colour Pie by (hm = y-axis):",choices = names(df3.meta),selected="pathology")
+        df3.meta <- merge(df3.meta,epi,by="CDR3_beta")
+        selectInput("Prior_AddInEpiUI_1","Colour Pie by (hm = y-axis):",choices = names(df3.meta),selected="pathology")
       } else {
         df3.meta <- sc@meta.data
         selectInput("Prior_AddInEpiUI_1","Colour Pie by (hm = y-axis):",choices = names(df3.meta),selected="Sample_Name")
@@ -17892,10 +17853,10 @@ tabPanel("GEX -> TCR",
         epi$beta <- epi$CDR3_beta
         df3.meta <- merge(df3.meta,epi,by="CDR3_beta")
         selectInput("Prior_AddInEpiUI_2","Split Pie by (hm = x-axis):",choices = names(df3.meta),selected="epitope")
-        } else {
-          df3.meta <- sc@meta.data
-          selectInput("Prior_AddInEpiUI_2","Split Pie by (hm = x-axis):",choices = names(df3.meta),selected="Tcellfunction")
-        }
+      } else {
+        df3.meta <- sc@meta.data
+        selectInput("Prior_AddInEpiUI_2","Split Pie by (hm = x-axis):",choices = names(df3.meta),selected="Tcellfunction")
+      }
 
 
 
@@ -17907,28 +17868,28 @@ tabPanel("GEX -> TCR",
       sc <- UMAP_metadata_with_labs()
 
       if (input$epitope_uploaded) {
-      epi <- df_tcrex2()
-      validate(
-        need(nrow(sc)>0 & nrow(epi)>0,
-             "Upload Files")
-      )
-      df3.meta <- sc@meta.data
+        epi <- df_tcrex2()
+        validate(
+          need(nrow(sc)>0 & nrow(epi)>0,
+               "Upload Files")
+        )
+        df3.meta <- sc@meta.data
 
-      if(input$datasource == "BD_Rhapsody_Paired") {
-        df3.meta$CDR3_beta <- paste("C",df3.meta$cdr3_BD,"F",sep="")
-      }
+        if(input$datasource == "BD_Rhapsody_Paired") {
+          df3.meta$CDR3_beta <- paste("C",df3.meta$cdr3_BD,"F",sep="")
+        }
 
-      else if (input$datasource == "BD_Rhapsody_AIRR") {
-        df3.meta$CDR3_beta <- df3.meta$junction_aa_BD
-      }
-      else {
-        df3.meta$CDR3_beta <- df3.meta$cdr3_BD
-      }
+        else if (input$datasource == "BD_Rhapsody_AIRR") {
+          df3.meta$CDR3_beta <- df3.meta$junction_aa_BD
+        }
+        else {
+          df3.meta$CDR3_beta <- df3.meta$cdr3_BD
+        }
 
-      req(df3.meta$CDR3_beta)
+        req(df3.meta$CDR3_beta)
 
-      epi$beta <- epi$CDR3_beta
-      df3.meta <- merge(df3.meta,epi,by="CDR3_beta",all.x=T)
+        epi$beta <- epi$CDR3_beta
+        df3.meta <- merge(df3.meta,epi,by="CDR3_beta",all.x=T)
       } else {
         df3.meta <- sc@meta.data
       }
@@ -18099,221 +18060,221 @@ tabPanel("GEX -> TCR",
 
       len.order <- length(Selected_group)
       if(length(df2$Percent)>0) {
-      withProgress(message = 'Peforming stats on selected Epitope', value = 0, {
+        withProgress(message = 'Peforming stats on selected Epitope', value = 0, {
 
-        for (i in 1:len.order) {
-          ##### UMAP ------
-          message(Selected_group[i])
-          incProgress(1/len.order, detail = paste("Epitope", i,"of",len.order))
+          for (i in 1:len.order) {
+            ##### UMAP ------
+            message(Selected_group[i])
+            incProgress(1/len.order, detail = paste("Epitope", i,"of",len.order))
 
-          Epi.selected <- subset(md,md$Selected_Function_group==df2$Selected_Function_group[i])
+            Epi.selected <- subset(md,md$Selected_Function_group==df2$Selected_Function_group[i])
 
-          # dirName <- paste0("Prioritisation/Clustering/BD/",i,"_",Vgene,"_",sample_size,"/")
+            # dirName <- paste0("Prioritisation/Clustering/BD/",i,"_",Vgene,"_",sample_size,"/")
 
-          selected.epitope.name <- df2$Selected_group[i]
-          Epi.selected.function.name <- df2$Selected_function[i]
+            selected.epitope.name <- df2$Selected_group[i]
+            Epi.selected.function.name <- df2$Selected_function[i]
 
-          top.name.clonotypes.top_csv <- paste("Prioritisation/EpitopePred/",i,"_",selected.epitope.name,"_",Epi.selected.function.name,"_Epitope_summary_table_",x,".csv",sep="")
+            top.name.clonotypes.top_csv <- paste("Prioritisation/EpitopePred/",i,"_",selected.epitope.name,"_",Epi.selected.function.name,"_Epitope_summary_table_",x,".csv",sep="")
 
-          write.csv(Epi.selected,top.name.clonotypes.top_csv)
+            write.csv(Epi.selected,top.name.clonotypes.top_csv)
 
-          num <- as.data.frame(unique(Epi.selected$colouring_col))
-          num <- as.data.frame(num[complete.cases(num)==T,])
+            num <- as.data.frame(unique(Epi.selected$colouring_col))
+            num <- as.data.frame(num[complete.cases(num)==T,])
 
-          col.df <- num
+            col.df <- num
 
-          num <- (length(unlist(col.df)))
-          num <- num[!is.na(num)]
+            num <- (length(unlist(col.df)))
+            num <- num[!is.na(num)]
 
-          if (input$colourtype == "default") {
-            colorblind_vector <- c(gg_fill_hue(num))
-          } else if (input$colourtype == "hcl.colors") {
-            colorblind_vector <- c(hcl.colors(num, palette = "viridis"))
-          } else if (input$colourtype == "topo.colors") {
-            colorblind_vector <- c(topo.colors(num))
-          } else if (input$colourtype == "heat.colors") {
-            colorblind_vector <- c(heat.colors(num))
-          } else if (input$colourtype == "terrain.colors") {
-            colorblind_vector <- c(terrain.colors(num))
-          } else if (input$colourtype == "rainbow") {
-            colorblind_vector <- c(rainbow(num))
-          } else if (input$colourtype == "random") {
-            colorblind_vector <- distinctColorPalette(num)
+            if (input$colourtype == "default") {
+              colorblind_vector <- c(gg_fill_hue(num))
+            } else if (input$colourtype == "hcl.colors") {
+              colorblind_vector <- c(hcl.colors(num, palette = "viridis"))
+            } else if (input$colourtype == "topo.colors") {
+              colorblind_vector <- c(topo.colors(num))
+            } else if (input$colourtype == "heat.colors") {
+              colorblind_vector <- c(heat.colors(num))
+            } else if (input$colourtype == "terrain.colors") {
+              colorblind_vector <- c(terrain.colors(num))
+            } else if (input$colourtype == "rainbow") {
+              colorblind_vector <- c(rainbow(num))
+            } else if (input$colourtype == "random") {
+              colorblind_vector <- distinctColorPalette(num)
 
-          }  else {
+            }  else {
 
-          }
-
-
-          col.df$col <- colorblind_vector
-
-          df <- ggplot(data=Epi.selected,aes(x=UMAP_1,UMAP_2,colour=colouring_col,size= colouring_col,alpha = colouring_col))+
-            geom_point()+
-            scale_color_manual(na.value=input$NA_col_analysis, values = col.df$col)+
-            scale_size_manual(na.value=0.25,values = rep(2,num))+
-            scale_alpha_manual(na.value=0.25,values = rep(1,num))+
-            theme(
-              legend.text = element_text(colour="black", size=input$Bar_legend_size,family=input$font_type),
-              legend.title = element_blank(),
-              legend.position = input$legend_position,
-            )+
-            theme_bw()
-
-          message(paste(i," Downloading the count UMAP"))
-          x = today()
-          top.name.clonotypes.top_png <- paste("Prioritisation/EpitopePred/",i,"_",selected.epitope.name,"_",Epi.selected.function.name,"_Epitope_UMAP_",x,".png",sep="")
-          png(top.name.clonotypes.top_png, width = input$width_png_TCR.UMAP,height = input$height_png_TCR.UMAP,res = input$resolution_PNG_TCR.UMAP)
-          plot(df)
-          dev.off()
-
-          # Stats table ------
-          md.checking <- Common_Epitope_code()
-          md.checking <- md.checking[order(md.checking$order),]
-          rownames(md.checking) <- md.checking$Cell_Index
-
-
-          md.checking$selected <- ifelse(md.checking$Selected_Function_group == df2$Selected_Function_group[i],df2$Selected_Function_group[i],"NS")
-          md.checking$selected[is.na(md.checking$selected)] <- "NS"
-          md.checking <- md.checking[order(md.checking$order),]
-          md.checking
-          sc@meta.data <- md.checking
-          Idents(object = sc) <- sc@meta.data$selected
-
-          name.check.epi <- df2$Selected_Function_group[i]
-          min.pct.expression<- input$min_point_ #standard setting: 0.25
-          min.logfc<-  input$LogFC_ #0.25 is standard
-
-          markers.fm.list <- FindMarkers(sc, ident.1 = name.check.epi, min.pct = min.pct.expression,  logfc.threshold = min.logfc, only.pos=TRUE)
-          markers.fm.list2 <- subset(markers.fm.list,markers.fm.list$p_val_adj < input$pval.ex.filter)
-
-          message(paste(i,selected.epitope.name,"has",length(markers.fm.list2$p_val_adj),"total markers"))
-
-          if(length(markers.fm.list2$p_val_adj)>0) {
-            message(paste(i," Downloading stats table"))
-            Exp_stats_cutoff_count.name <-paste("Prioritisation/EpitopePred/",i,"_",selected.epitope.name,"_",Epi.selected.function.name,"_Epitope_statsTab_",x,".csv",sep="")
-            write.csv(markers.fm.list2,Exp_stats_cutoff_count.name, row.names = T)
-
-          #   # stats dotplot ----
-            if (length(rownames(markers.fm.list2))<40) {
-              list.names <- rownames(markers.fm.list2)
-            } else {
-              list.names <- rownames(markers.fm.list2)
-              list.names <- list.names[1:40]
             }
 
-            size_legend = input$Bar_legend_size-2
 
-            dotplotClust <- DotPlot(sc, features = list.names) +
-              RotatedAxis() +
+            col.df$col <- colorblind_vector
+
+            df <- ggplot(data=Epi.selected,aes(x=UMAP_1,UMAP_2,colour=colouring_col,size= colouring_col,alpha = colouring_col))+
+              geom_point()+
+              scale_color_manual(na.value=input$NA_col_analysis, values = col.df$col)+
+              scale_size_manual(na.value=0.25,values = rep(2,num))+
+              scale_alpha_manual(na.value=0.25,values = rep(1,num))+
               theme(
-                axis.title.y = element_blank(),
-                axis.text.y = element_text(colour="black",family=input$font_type,size = input$text_size),
-                axis.text.x = element_text(colour="black",family=input$font_type,size = input$text_size, angle = 90),
-                axis.title.x = element_blank(),
-                legend.title = element_text(colour="black", size=input$Bar_legend_size,family=input$font_type),
-                legend.text = element_text(colour="black", size=size_legend,family=input$font_type),
+                legend.text = element_text(colour="black", size=input$Bar_legend_size,family=input$font_type),
+                legend.title = element_blank(),
                 legend.position = input$legend_position,
-              ) +
-              scale_colour_gradient2(low = input$low.dotplot.clust, mid = input$middle.dotplot.clust, high = input$high.dotplot.clust)+
-              scale_x_discrete(labels = label_wrap(20)) +
-              scale_y_discrete(labels = label_wrap(20))
+              )+
+              theme_bw()
 
-            top.name.clonotypes.top_png <- paste("Prioritisation/EpitopePred/",i,"_",selected.epitope.name,"_",Epi.selected.function.name,"_Epitope_dot.plot_",x,".png",sep="")
-            png(top.name.clonotypes.top_png, width = input$width_png_all_expression_dotplot_clust,
-                height = input$height_png_all_expression_dotplot_clust,
-                res = input$resolution_PNG_all_expression_dotplot_clust)
-            plot(dotplotClust)
+            message(paste(i," Downloading the count UMAP"))
+            x = today()
+            top.name.clonotypes.top_png <- paste("Prioritisation/EpitopePred/",i,"_",selected.epitope.name,"_",Epi.selected.function.name,"_Epitope_UMAP_",x,".png",sep="")
+            png(top.name.clonotypes.top_png, width = input$width_png_TCR.UMAP,height = input$height_png_TCR.UMAP,res = input$resolution_PNG_TCR.UMAP)
+            plot(df)
             dev.off()
-          # stats OverRep analysis ----
-          if(dim(markers.fm.list2)[1]>0) {
 
-            geneSet <- read.csv(system.file("OverRep","GeneSets.csv",package = "STEGO.R"),header = T)
+            # Stats table ------
+            md.checking <- Common_Epitope_code()
+            md.checking <- md.checking[order(md.checking$order),]
+            rownames(md.checking) <- md.checking$Cell_Index
 
-            background.genes.name <- as.data.frame(rownames(sc@assays$RNA$scale.data))
-            names(background.genes.name) <- "V1"
-            background.genes <- length(rownames(sc@assays$RNA$scale.data))
 
-            #
-            geneSet$background.genes <- background.genes
+            md.checking$selected <- ifelse(md.checking$Selected_Function_group == df2$Selected_Function_group[i],df2$Selected_Function_group[i],"NS")
+            md.checking$selected[is.na(md.checking$selected)] <- "NS"
+            md.checking <- md.checking[order(md.checking$order),]
+            md.checking
+            sc@meta.data <- md.checking
+            Idents(object = sc) <- sc@meta.data$selected
 
-            DEx.genes <- as.data.frame(rownames(markers.fm.list2))
-            names(DEx.genes) <- "V1"
-            total.sig <- length(DEx.genes$V1)
-            geneSet$total.sig <- length(DEx.genes$V1)
-            # geneSet
-            geneSet$background.geneset <- NA
-            geneSet$background.geneset.name <- NA
-            geneSet$in.geneset <- NA
-            geneSet$in.geneset.name <- NA
+            name.check.epi <- df2$Selected_Function_group[i]
+            min.pct.expression<- input$min_point_ #standard setting: 0.25
+            min.logfc<-  input$LogFC_ #0.25 is standard
 
-            if(input$datasource == "BD_Rhapsody_Paired" || input$datasource == "BD_Rhapsody_AIRR") { # selectInput("datasource", "Data source",choices=c("10x_Genomics","BD_Rhapsody_Paired","BD_Rhapsody_AIRR")),
-              geneSet$GeneSet <- gsub("-",".",geneSet$GeneSet)
-            }
+            markers.fm.list <- FindMarkers(sc, ident.1 = name.check.epi, min.pct = min.pct.expression,  logfc.threshold = min.logfc, only.pos=TRUE)
+            markers.fm.list2 <- subset(markers.fm.list,markers.fm.list$p_val_adj < input$pval.ex.filter)
 
-            if(input$species_analysis == "mm") { # selectInput("datasource", "Data source",choices=c("10x_Genomics","BD_Rhapsody_Paired","BD_Rhapsody_AIRR")),
-              require(stringr)
-              geneSet$GeneSet <- str_to_title(geneSet$GeneSet)
-            }
-            message(paste("Starting OverRep analysis of cluster ", i))
-            for (j in 1:dim(geneSet)[1]) {
-              # listed GeneSet
+            message(paste(i,selected.epitope.name,"has",length(markers.fm.list2$p_val_adj),"total markers"))
 
-              Gene.set.testing <- as.data.frame(strsplit(geneSet$GeneSet,";")[j])
-              names(Gene.set.testing) <- "V1"
-              Gene.set.testing2 <- as.data.frame(unique(Gene.set.testing$V1))
-              names(Gene.set.testing2) <- "V1"
-              background.overlap <- merge(Gene.set.testing2,background.genes.name,by= "V1")
-              geneSet$background.geneset[j] <- length(background.overlap$V1)
-              geneSet$background.geneset.name[j] <- as.character(paste(unlist(background.overlap[1]), collapse=';'))
-              # in sig gene list
-              overlap <- merge(background.overlap,DEx.genes,by= "V1")
+            if(length(markers.fm.list2$p_val_adj)>0) {
+              message(paste(i," Downloading stats table"))
+              Exp_stats_cutoff_count.name <-paste("Prioritisation/EpitopePred/",i,"_",selected.epitope.name,"_",Epi.selected.function.name,"_Epitope_statsTab_",x,".csv",sep="")
+              write.csv(markers.fm.list2,Exp_stats_cutoff_count.name, row.names = T)
 
-              geneSet$in.geneset[j] <- length(overlap$V1)
-              geneSet$in.geneset.name[j] <- as.character(paste(unlist(overlap[1]), collapse=';'))
+              #   # stats dotplot ----
+              if (length(rownames(markers.fm.list2))<40) {
+                list.names <- rownames(markers.fm.list2)
+              } else {
+                list.names <- rownames(markers.fm.list2)
+                list.names <- list.names[1:40]
+              }
 
-            }
+              size_legend = input$Bar_legend_size-2
 
-            geneSet2 <- subset(geneSet,geneSet$in.geneset>0)
-            message(paste("there are", length(geneSet2$in.geneset),"GeneSets in Epitope",i))
+              dotplotClust <- DotPlot(sc, features = list.names) +
+                RotatedAxis() +
+                theme(
+                  axis.title.y = element_blank(),
+                  axis.text.y = element_text(colour="black",family=input$font_type,size = input$text_size),
+                  axis.text.x = element_text(colour="black",family=input$font_type,size = input$text_size, angle = 90),
+                  axis.title.x = element_blank(),
+                  legend.title = element_text(colour="black", size=input$Bar_legend_size,family=input$font_type),
+                  legend.text = element_text(colour="black", size=size_legend,family=input$font_type),
+                  legend.position = input$legend_position,
+                ) +
+                scale_colour_gradient2(low = input$low.dotplot.clust, mid = input$middle.dotplot.clust, high = input$high.dotplot.clust)+
+                scale_x_discrete(labels = label_wrap(20)) +
+                scale_y_discrete(labels = label_wrap(20))
 
-            if(length(geneSet2$in.geneset)>0) {
-              for (j in 1:dim(geneSet2)[1]) {
-                tota.gene.set <- geneSet2$background.geneset[j] # genes that are identified in background
-                in.geneset <-  geneSet2$in.geneset[j]# DEx in geneset
-                not.in.total <- background.genes - tota.gene.set
-                not.in.geneset.sig <- total.sig - in.geneset
-                d <- data.frame( gene.in.interest=c( in.geneset, not.in.geneset.sig),gene.not.interest=c(tota.gene.set, not.in.total))
-                row.names(d) <- c("In_category", "not_in_category")
+              top.name.clonotypes.top_png <- paste("Prioritisation/EpitopePred/",i,"_",selected.epitope.name,"_",Epi.selected.function.name,"_Epitope_dot.plot_",x,".png",sep="")
+              png(top.name.clonotypes.top_png, width = input$width_png_all_expression_dotplot_clust,
+                  height = input$height_png_all_expression_dotplot_clust,
+                  res = input$resolution_PNG_all_expression_dotplot_clust)
+              plot(dotplotClust)
+              dev.off()
+              # stats OverRep analysis ----
+              if(dim(markers.fm.list2)[1]>0) {
 
-                if (in.geneset>0) {
-                  geneSet2$p.val[j] <- unlist(fisher.test(d, alternative = "greater")$p.value)[1]
-                  geneSet2$lowerCI[j] <-  unlist(fisher.test(d, alternative = "greater")$conf.int)[1]
-                  geneSet2$upperCI[j] <-unlist(fisher.test(d)$conf.int)[2]
-                  geneSet2$OR[j] <- round(unlist(fisher.test(d, alternative = "greater")$estimate)[1],3)
-                } else {
-                  geneSet2$p.value[j] <- "-"
-                  geneSet2$lowerCI[j] <-  "-"
-                  geneSet2$upperCI[j] <- "-"
-                  geneSet2$OR[j] <- "-"
+                geneSet <- read.csv(system.file("OverRep","GeneSets.csv",package = "STEGO.R"),header = T)
+
+                background.genes.name <- as.data.frame(rownames(sc@assays$RNA$scale.data))
+                names(background.genes.name) <- "V1"
+                background.genes <- length(rownames(sc@assays$RNA$scale.data))
+
+                #
+                geneSet$background.genes <- background.genes
+
+                DEx.genes <- as.data.frame(rownames(markers.fm.list2))
+                names(DEx.genes) <- "V1"
+                total.sig <- length(DEx.genes$V1)
+                geneSet$total.sig <- length(DEx.genes$V1)
+                # geneSet
+                geneSet$background.geneset <- NA
+                geneSet$background.geneset.name <- NA
+                geneSet$in.geneset <- NA
+                geneSet$in.geneset.name <- NA
+
+                if(input$datasource == "BD_Rhapsody_Paired" || input$datasource == "BD_Rhapsody_AIRR") { # selectInput("datasource", "Data source",choices=c("10x_Genomics","BD_Rhapsody_Paired","BD_Rhapsody_AIRR")),
+                  geneSet$GeneSet <- gsub("-",".",geneSet$GeneSet)
+                }
+
+                if(input$species_analysis == "mm") { # selectInput("datasource", "Data source",choices=c("10x_Genomics","BD_Rhapsody_Paired","BD_Rhapsody_AIRR")),
+                  require(stringr)
+                  geneSet$GeneSet <- str_to_title(geneSet$GeneSet)
+                }
+                message(paste("Starting OverRep analysis of cluster ", i))
+                for (j in 1:dim(geneSet)[1]) {
+                  # listed GeneSet
+
+                  Gene.set.testing <- as.data.frame(strsplit(geneSet$GeneSet,";")[j])
+                  names(Gene.set.testing) <- "V1"
+                  Gene.set.testing2 <- as.data.frame(unique(Gene.set.testing$V1))
+                  names(Gene.set.testing2) <- "V1"
+                  background.overlap <- merge(Gene.set.testing2,background.genes.name,by= "V1")
+                  geneSet$background.geneset[j] <- length(background.overlap$V1)
+                  geneSet$background.geneset.name[j] <- as.character(paste(unlist(background.overlap[1]), collapse=';'))
+                  # in sig gene list
+                  overlap <- merge(background.overlap,DEx.genes,by= "V1")
+
+                  geneSet$in.geneset[j] <- length(overlap$V1)
+                  geneSet$in.geneset.name[j] <- as.character(paste(unlist(overlap[1]), collapse=';'))
+
+                }
+
+                geneSet2 <- subset(geneSet,geneSet$in.geneset>0)
+                message(paste("there are", length(geneSet2$in.geneset),"GeneSets in Epitope",i))
+
+                if(length(geneSet2$in.geneset)>0) {
+                  for (j in 1:dim(geneSet2)[1]) {
+                    tota.gene.set <- geneSet2$background.geneset[j] # genes that are identified in background
+                    in.geneset <-  geneSet2$in.geneset[j]# DEx in geneset
+                    not.in.total <- background.genes - tota.gene.set
+                    not.in.geneset.sig <- total.sig - in.geneset
+                    d <- data.frame( gene.in.interest=c( in.geneset, not.in.geneset.sig),gene.not.interest=c(tota.gene.set, not.in.total))
+                    row.names(d) <- c("In_category", "not_in_category")
+
+                    if (in.geneset>0) {
+                      geneSet2$p.val[j] <- unlist(fisher.test(d, alternative = "greater")$p.value)[1]
+                      geneSet2$lowerCI[j] <-  unlist(fisher.test(d, alternative = "greater")$conf.int)[1]
+                      geneSet2$upperCI[j] <-unlist(fisher.test(d)$conf.int)[2]
+                      geneSet2$OR[j] <- round(unlist(fisher.test(d, alternative = "greater")$estimate)[1],3)
+                    } else {
+                      geneSet2$p.value[j] <- "-"
+                      geneSet2$lowerCI[j] <-  "-"
+                      geneSet2$upperCI[j] <- "-"
+                      geneSet2$OR[j] <- "-"
+                    }
+                  }
+                  geneSet2 <- geneSet2[order(geneSet2$p.val,decreasing = F),]
+                  geneSet2$FDR <- p.adjust(geneSet2$p.val, method = "fdr")
+                  geneSet2$Bonferroni <- p.adjust(geneSet2$p.val, method = "bonferroni")
+                  message("Downloading the Summary table...")
+                  # top.name.clonotypes.top_png <- paste("Prioritisation/EpitopePred/",i,"_",selected.epitope.name,"_dot.plot_",x,".png",sep="")
+                  top.name.clonotypes <- paste("Prioritisation/EpitopePred/",i,"_",selected.epitope.name,"_",Epi.selected.function.name,"_Epitope_OverRep_",x,".csv",sep="")
+                  write.csv(geneSet2,top.name.clonotypes, row.names = F)
                 }
               }
-              geneSet2 <- geneSet2[order(geneSet2$p.val,decreasing = F),]
-              geneSet2$FDR <- p.adjust(geneSet2$p.val, method = "fdr")
-              geneSet2$Bonferroni <- p.adjust(geneSet2$p.val, method = "bonferroni")
-              message("Downloading the Summary table...")
-              # top.name.clonotypes.top_png <- paste("Prioritisation/EpitopePred/",i,"_",selected.epitope.name,"_dot.plot_",x,".png",sep="")
-              top.name.clonotypes <- paste("Prioritisation/EpitopePred/",i,"_",selected.epitope.name,"_",Epi.selected.function.name,"_Epitope_OverRep_",x,".csv",sep="")
-              write.csv(geneSet2,top.name.clonotypes, row.names = F)
-            }
+            } # loop to find
+            ######
           }
-        } # loop to find
-          ######
+
+        })} else {
+          message("No epitopes to analyse")
+
         }
-
-      })} else {
-        message("No epitopes to analyse")
-
-      }
     })
 
     output$Test_table_1 <- DT::renderDataTable(escape = FALSE, options = list(autoWidth = FALSE, lengthMenu = c(2,5,10,20,50,100), pageLength = 10, scrollX = TRUE),{
@@ -18411,10 +18372,6 @@ tabPanel("GEX -> TCR",
       markers.fm.list2 <- subset(markers.fm.list,markers.fm.list$p_val_adj < input$pval.ex.filter)
       as.data.frame(length(markers.fm.list2$p_val_adj))
     })
-
-
-
-
     ### end -----
   }
   shinyApp(ui, server)
