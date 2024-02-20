@@ -6,13 +6,15 @@
 #' @param TcellFunction T or F; set to T if you want to include the current T cell model
 #' @param file Seurat object file. This requires the file to have the scaled data available for annotation purposes.
 #' @param generic generic annotations to identify T cells vs other immune cells.
-#' @param stress T cell based stress models of exhaustion and Senescence
+#' @param exhausted T cell based stress models of exhaustion
+#' @param senescence T cell based stress models of Senescence
+#' @param Th1_cytokines T cell based stress models of IFNG and TNF
 #' @param cycling uses TOP2A and MKI67
 #' @param threshold Set the scGate threshold; default is 0.2 for full models and 0.5 for focused models.
 #' @param reductionType Chose the time of dimentional reduction to use; default = harmony
 #' @export
 
-scGate_annotating <- function(file = file, TcellFunction = F,generic = F, stress = F, cycling = F, threshold = 0.2, reductionType = "harmony") {
+scGate_annotating <- function(file = file, TcellFunction = F,generic = F, exhausted = F, senescence =F, cycling = F, Th1_cytokines = F, threshold = 0.2, reductionType = "harmony") {
   source(system.file("scGATE","custom_df_scGATE.R",package = "STEGO.R"))
   require(Seurat)
   require(scGate)
@@ -20,10 +22,10 @@ scGate_annotating <- function(file = file, TcellFunction = F,generic = F, stress
   sc <- file
   len.obj <- dim(sc@meta.data)[1]
 
-  if (len.obj>120000) {
-    message(paste0("Cannot annotate larger >120K cells. Down sampling required"))
+  # if (len.obj>120000) {
+    # message(paste0("Cannot annotate larger >120K cells. Down sampling required"))
     sc
-  } else {
+  # } else {
 
   threshold_scGate = threshold
   len <- length(rownames(sc@assays$RNA$scale.data))
@@ -46,12 +48,28 @@ scGate_annotating <- function(file = file, TcellFunction = F,generic = F, stress
     sc@meta.data <- sc@meta.data[!grepl("scGate_multi",names(sc@meta.data))]
   }
 
-  if (stress)  {
-    models.list <- custom_db_scGATE(system.file("scGATE","human/stress",package = "STEGO.R"))
+  if (exhausted)  {
+    models.list <- custom_db_scGATE(system.file("scGATE","human/exhausted",package = "STEGO.R"))
     sc <- scGate(sc, model = models.list,pos.thr = threshold_scGate,neg.thr = threshold_scGate,nfeatures = len, reduction = reductionType, ncores = 4, min.cells = 1)
-    sc@meta.data$stress <- sc@meta.data$scGate_multi
-    sc@meta.data$stress <- ifelse(grepl("Exhau",sc@meta.data$stress),"Exhausted",sc@meta.data$stress)
-    sc@meta.data$stress <- ifelse(grepl("Multi",sc@meta.data$stress),"Exhausted.Senescence",sc@meta.data$stress)
+    sc@meta.data$exhausted <- sc@meta.data$scGate_multi
+    sc@meta.data <- sc@meta.data[!grepl("_UCell",names(sc@meta.data))]
+    sc@meta.data <- sc@meta.data[!grepl("is.pure_",names(sc@meta.data))]
+    sc@meta.data <- sc@meta.data[!grepl("scGate_multi",names(sc@meta.data))]
+  }
+
+  if (senescence)  {
+    models.list <- custom_db_scGATE(system.file("scGATE","human/senescence",package = "STEGO.R"))
+    sc <- scGate(sc, model = models.list,pos.thr = threshold_scGate,neg.thr = threshold_scGate,nfeatures = len, reduction = reductionType, ncores = 4, min.cells = 1)
+    sc@meta.data$senescence <- sc@meta.data$scGate_multi
+    sc@meta.data <- sc@meta.data[!grepl("_UCell",names(sc@meta.data))]
+    sc@meta.data <- sc@meta.data[!grepl("is.pure_",names(sc@meta.data))]
+    sc@meta.data <- sc@meta.data[!grepl("scGate_multi",names(sc@meta.data))]
+  }
+
+  if (Th1_cytokines)  {
+    models.list <- custom_db_scGATE(system.file("scGATE","human/Th1_cytokines",package = "STEGO.R"))
+    sc <- scGate(sc, model = models.list,pos.thr = threshold_scGate,neg.thr = threshold_scGate,nfeatures = len, reduction = reductionType, ncores = 4, min.cells = 1)
+    sc@meta.data$Th1_cytokines <- sc@meta.data$scGate_multi
     sc@meta.data <- sc@meta.data[!grepl("_UCell",names(sc@meta.data))]
     sc@meta.data <- sc@meta.data[!grepl("is.pure_",names(sc@meta.data))]
     sc@meta.data <- sc@meta.data[!grepl("scGate_multi",names(sc@meta.data))]
@@ -67,5 +85,5 @@ scGate_annotating <- function(file = file, TcellFunction = F,generic = F, stress
     sc@meta.data <- sc@meta.data[!grepl("scGate_multi",names(sc@meta.data))]
   }
     sc
-  }
+  # }
 }
