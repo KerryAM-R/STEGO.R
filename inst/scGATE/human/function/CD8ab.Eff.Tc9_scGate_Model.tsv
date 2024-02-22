@@ -1,8 +1,0 @@
-levels	use_as	name	signature
-level1	positive	CD8A	
-level2	positive	CD8B	
-level4	positive	Cyto	
-level5	negative	RORC	
-level6	negative	CCR4	
-level7	negative	CCR10	
-level8	positive	IRF4	
