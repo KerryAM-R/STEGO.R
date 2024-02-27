@@ -8,8 +8,11 @@ scGate_annotating(
   file = file,
   TcellFunction = F,
   generic = F,
-  stress = F,
+  exhausted = F,
+  senescence = F,
   cycling = F,
+  Th1_cytokines = F,
+  TCRseq = F,
   threshold = 0.2,
   reductionType = "harmony"
 )
@@ -21,9 +24,15 @@ scGate_annotating(
 
 \item{generic}{generic annotations to identify T cells vs other immune cells.}
 
-\item{stress}{T cell based stress models of exhaustion and Senescence}
+\item{exhausted}{T cell based stress models of exhaustion}
+
+\item{senescence}{T cell based stress models of Senescence}
 
 \item{cycling}{uses TOP2A and MKI67}
+
+\item{Th1_cytokines}{T cell based stress models of IFNG and TNF}
+
+\item{TCRseq}{Uses the meta data TCR-seq to call MAIT, iNKT, potential CD1 restricted, gd T cells and ab T cells}
 
 \item{threshold}{Set the scGate threshold; default is 0.2 for full models and 0.5 for focused models.}
 
