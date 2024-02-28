@@ -10,11 +10,20 @@
 #' @param senescence T cell based stress models of Senescence
 #' @param Th1_cytokines T cell based stress models of IFNG and TNF
 #' @param cycling uses TOP2A and MKI67
+#' @param TCRseq Uses the meta data TCR-seq to call MAIT, iNKT, potential CD1 restricted, gd T cells and ab T cells
 #' @param threshold Set the scGate threshold; default is 0.2 for full models and 0.5 for focused models.
 #' @param reductionType Chose the time of dimentional reduction to use; default = harmony
 #' @export
 
-scGate_annotating <- function(file = file, TcellFunction = F,generic = F, exhausted = F, senescence =F, cycling = F, Th1_cytokines = F, threshold = 0.2, reductionType = "harmony") {
+scGate_annotating <- function(file = file,
+                              TcellFunction = F,
+                              generic = F,
+                              exhausted = F,
+                              senescence = F,
+                              cycling = F,
+                              Th1_cytokines = F,
+                              TCRseq = F,
+                              threshold = 0.2, reductionType = "harmony") {
   source(system.file("scGATE","custom_df_scGATE.R",package = "STEGO.R"))
   require(Seurat)
   require(scGate)
@@ -84,6 +93,22 @@ scGate_annotating <- function(file = file, TcellFunction = F,generic = F, exhaus
     sc@meta.data <- sc@meta.data[!grepl("is.pure_",names(sc@meta.data))]
     sc@meta.data <- sc@meta.data[!grepl("scGate_multi",names(sc@meta.data))]
   }
+
+  if (TCRseq) {
+    sc@meta.data$unconventional <- ifelse(sc@meta.data$vj_gene_AG == "TRAV1-2.TRAJ33","MAIT",
+                                          ifelse(sc@meta.data$vj_gene_AG == "TRAV1-2.TRAJ12","MAIT",
+                                                 ifelse(sc@meta.data$vj_gene_AG == "TRAV1-2.TRAJ23","MAIT",
+                                                        ifelse(sc@meta.data$vj_gene_AG == "TRAV1-2.TRAJ9","CD1b-restricted(poss)",
+                                                               ifelse(sc@meta.data$vj_gene_AG == "TRAV10.TRAJ18","iNKT",
+                                                                      ifelse(sc@meta.data$v_gene_BD == "TRBV4-1" & sc@meta.data$v_gene_AG == "TRAV17","CD1b-restricted(poss)",
+                                                                             ifelse(sc@meta.data$v_gene_BD == "TRBV4-1" & sc@meta.data$v_gene_AG != "TRAV17","CD1c-restricted(poss)",
+                                                                                    # ifelse(sc@meta.data$chain_AG == 'TRG' & sc@meta.data$chain_BD == 'TRB',"gb T cell",
+                                                                                    ifelse(sc@meta.data$chain_AG == 'TRG' & sc@meta.data$chain_BD == 'TRD',"gd T cell",
+                                                                                           ifelse(sc@meta.data$chain_AG == 'TRA' & sc@meta.data$chain_BD == 'TRB',"ab T cell",""
+                                                                                           ) ))))))))
+
+  }
+
     sc
   # }
 }
