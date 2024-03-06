@@ -203,7 +203,6 @@ runSTEGO <- function(){
   }
 
   ###################
-  ###################
   # UI page -----
   ui <- fluidPage(
 
@@ -11257,7 +11256,7 @@ navbarPage(
     vals_Ridge_top <- reactiveValues(output_stats = NULL)
 
     compare.stat <- reactive({
-      sc <- input.data_sc_pro()
+      sc <- UMAP_metadata_with_labs()
 
       validate(
         need(
@@ -11270,8 +11269,8 @@ navbarPage(
       df
       unique.df <- (df[, names(df) %in% c(input$Samp_col, input$V_gene_sc)])
       names(unique.df) <- c("group", "chain")
+      print(head(unique.df))
 
-      # unique.df <- unique.df[unique.df$group %in% "LTR35-12",]
 
       unique.df <- subset(unique.df, unique.df$chain != "NA")
       unique.df <- subset(unique.df, unique.df$group != "NA")
@@ -18759,5 +18758,7 @@ navbarPage(
   }
 
   shinyApp(ui, server)
+  # runGadget(ui, server, viewer = dialogViewer(dialogName = "", width = 1600))
+
 
 }
