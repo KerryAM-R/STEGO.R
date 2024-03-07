@@ -9,6 +9,10 @@ runSTEGO <- function(){
   font
   names(font) <- "Fonts"
 
+
+
+
+
   ### packages ------
   suppressWarnings(require("DescTools"))
   suppressMessages(require("bslib"))
@@ -66,8 +70,31 @@ runSTEGO <- function(){
   suppressMessages(require("VLF"))
   require("chisq.posthoc.test")
 
-  suppressWarnings(source(system.file("scGATE","custom_df_scGATE.R",package = "STEGO.R")))
-  suppressWarnings(source(system.file("scGATE","custom_annotation_models.R",package = "STEGO.R")))
+  if (dir.exists("custom_db/")) {
+
+    suppressWarnings(source(system.file("scGATE","custom_df_scGATE.R",package = "STEGO.R")))
+
+    suppressWarnings(source(system.file("scGATE","custom_annotation_models.R",package = "STEGO.R")))
+  } else {
+    message("To use the custom scGate models, please open STEGO.R in the Directory_for_project")
+    message("Open the STEGO.Rproj, as this sets the working directory for your project to the current folder. ")
+
+  }
+
+  if (!dir.exists("Prioritisation/")) {
+    message("Creating folders for the prioritisation, as the program wasn't loaded from the STEGO.Rproj file")
+    dir.create("Prioritisation")
+    dir.create("Prioritisation/Multi")
+    dir.create("Prioritisation/Multi/PublicLike")
+    dir.create("Prioritisation/Multi/Unique")
+    dir.create("Prioritisation/Clustering")
+    dir.create("Prioritisation/Clustering/AG")
+    dir.create("Prioritisation/Clustering/BD")
+    dir.create("Prioritisation/EpitopePred")
+    } else {
+  }
+
+
 
   col_markers <- c("Blues", "BuGn", "BuPu", "GnBu", "Greens", "Greys", "Oranges", "OrRd", "PuBu", "PuBuGn", "PuRd", "Purples", "RdPu", "Reds", "YlGn", "YlGnBu","YlOrBr", "YlOrRd")
   options(shiny.maxRequestSize = 100000*1024^2)
@@ -82,26 +109,23 @@ runSTEGO <- function(){
   error_message_val_sc <- "Upload raw processed count matrix for Seurat"
   error_message_val_UMAP <- "Upload .h5Seurat file"
 
-  # cellTypist -----
-  cellTypistModels <- c("Immune_All_Low.pkl",   #immune sub-populations combined from 20 tissues of 18 studies
-                        "Immune_All_High.pkl" , # immune populations combined from 20 tissues of 18 studies
-                        "Adult_Mouse_Gut.pkl"  , #cell types in the adult mouse gut combined from eight datasets
-                        "Autopsy_COVID19_Lung.pkl" , # cell types from the lungs of 16 SARS-CoV-2 infected COVID-19 autopsy adult donors
-                        "COVID19_Immune_Landscape.pkl" ,  #immune subtypes from lung and blood of COVID-19 patients and healthy controls
-                        "Cells_Fetal_Lung.pkl"  ,# cell types from human embryonic and fetal lungs
-                        "Cells_Intestinal_Tract.pkl",  # intestinal cells from fetal, pediatric (healthy and Crohn's disease) and adult human gut
-                        "Cells_Lung_Airway.pkl" ,  #cell populations from scRNA-seq of five locations of the human lungs and airways
-                        "Developing_Human_Brain.pkl"  ,# cell types from the first-trimester developing human brain
-                        "Developing_Human_Thymus.pkl" ,# cell populations in embryonic, fetal, pediatric, and adult stages of the human thymus
-                        "Developing_Mouse_Brain.pkl"  ,# cell types from the embryonic mouse brain between gastrulation and birth
-                        "Healthy_COVID19_PBMC.pkl" ,#  peripheral blood mononuclear cell types from healthy and COVID-19 individuals
-                        "Human_IPF_Lung.pkl" ,#  cell types from idiopathic pulmonary fibrosis, chronic obstructive pulmonary disease, and healthy lungs of adult humans
-                        "Human_Lung_Atlas.pkl" ,#  integrated Human Lung Cell Atlas (HLCA) combining 46 datasets of the human respiratory system
-                        "Human_PF_Lung.pkl"  ,# cell types from different forms of pulmonary fibrosis lungs of adult humans
-                        "Lethal_COVID19_Lung.pkl" ,#  cell types from the lungs of individuals who died of COVID-19 and control individuals
-                        "Nuclei_Lung_Airway.pkl",#   cell populations from snRNA-seq of five locations of the human lungs and airways
-                        "Pan_Fetal_Human.pkl"  # stromal and immune populations from the human fetus
-  )
+  #### check if OLGA is installed ----
+  require(reticulate)
+    olgafunction_AG <- function(y) {
+      olga <- system2('olga-compute_pgen', args=c("--humanTRA ",
+                                                  y),
+                      wait=TRUE, stdout=TRUE)
+      olga
+    }
+
+    olgafunction_BD <- function(y) {
+      olga <- system2('olga-compute_pgen', args=c("--humanTRB ",
+                                                  y),
+                      wait=TRUE, stdout=TRUE)
+      olga
+
+    }
+
 
   # functions -----
   test_fun <- function() {
@@ -206,7 +230,7 @@ runSTEGO <- function(){
   # UI page -----
   ui <- fluidPage(
 
-    # progress bar colouring, position
+    # progress bar colouring, position --------
     tags$head(tags$style(HTML(".progress-bar {background-color: #6F00B0}"))),
     tags$head(
       tags$style(
@@ -246,8 +270,9 @@ runSTEGO <- function(){
 .dropdown-menu > li > a:hover {
     color: white !important;
     background-color: #6F00B0 !important;
-}
+                          }
   '))),
+
 tags$head(tags$style(HTML('
   ".navbar-default .navbar-nav>li>a {background-color: white}"
   '))),
@@ -255,7 +280,7 @@ tags$head(tags$style(HTML('
 navbarPage(
   title = "STEGO.R",
 
-
+  #### step 1 ------
   navbarMenu(
     "STEP 1.",
     # 10x_Genomics ----
@@ -2555,22 +2580,96 @@ navbarPage(
     )
   ),
   # end of Integration -----
-  tabPanel(
+  navbarMenu(
     "Post Analysis",
-    sidebarLayout(
-      sidebarPanel(width = 3),
-      mainPanel(
-        width = 9,
-        tabsetPanel(
-          id = "Other_post_analysis",
-          tabPanel("Contig design"), # upload the unfiltered AIRR file and clonotypes for designing TCR contigs
-          tabPanel("Cluster Post analysis",
-                   value = "",
-                   # p("Convert .h5Seurat to .rds")
-          )
-        )
-      )
-    )
+    tabPanel("Cluster Post analysis",
+             value = "",
+             sidebarLayout(
+               sidebarPanel(width = 3),
+               mainPanel(
+                 width = 9,
+                 tabsetPanel(
+                   id = "Other_post_analysis",
+
+                 )
+               )
+             )
+             # p("Convert .h5Seurat to .rds")
+    ),
+    # post analysis OLGA ------
+
+
+
+    tabPanel("OLGA",
+             selectInput("Olga_installed","OLGA installed",""),
+             conditionalPanel(
+               condition = "input.Olga_installed == 'installed'",
+
+               sidebarLayout(
+                 sidebarPanel(width = 3,
+
+                              fileInput("file1_rds_OLGA",
+                                        "Choose .rds files from merging",
+                                        multiple = FALSE,
+                                        accept = c("rds", ".rds")
+                              ),
+                              selectInput("chain_type_olga","Chain type: ",choices = c("TRB","TRA")),
+                              downloadButton("downloaddf_pgen_dt", "Download Table (.csv)")
+                 ),
+
+                 mainPanel(
+                   width = 9,
+                   tabsetPanel(
+                     id = "OLGA_analysis",
+
+
+                     tabPanel("Loaded Table",
+                              add_busy_spinner(spin = "fading-circle", position = "top-right",  height = "150px", width = "150px", color = "blue"),
+                              div(DT::dataTableOutput("Pgen_Selected")),
+
+
+
+                     ),
+                     tabPanel("Pgen",
+                              add_busy_spinner(spin = "fading-circle", position = "top-right",  height = "150px", width = "150px", color = "blue"),
+                              div(DT::dataTableOutput("Pgen_BD")),
+                     )
+
+
+                   )
+                 )
+               )
+             ),
+             conditionalPanel(
+               condition = "input.Olga_installed != 'installed'",
+               tabPanel("Instructions",
+
+                        p("Require the user to install python and olga from the command line"),
+                        p("Install OLGA via the following website"),
+                        p("https://github.com/statbiophys/OLGA")
+
+               ),
+               # p("Please install OLGA")
+
+             )
+
+    ),
+    tabPanel("Contig design",
+
+             sidebarLayout(
+               sidebarPanel(width = 3),
+               mainPanel(
+                 width = 9,
+                 tabsetPanel(
+                   id = "Other_post_analysis",
+
+                 )
+               )
+             )
+    ), # upload the unfiltered AIRR file and clonotypes for designing TCR contigs
+
+
+
   ),
 
   # tabPanel("Epitope")
@@ -18755,10 +18854,188 @@ navbarPage(
       as.data.frame(length(markers.fm.list2$p_val_adj))
     })
     ### end -----
+    ### pgen -----
+
+    observe({
+      pylist <- py_list_packages()
+      if("olga" %in% pylist$package) {
+        message("OLGA is installed")
+
+        updateSelectInput(
+          session,
+          "Olga_installed",
+          choices = "installed"
+        )
+
+      } else{
+        message("Please Install OLGA, if you want to do the post analysis section")
+        updateSelectInput(
+          session,
+          "Olga_installed",
+          choices = "Unavailable"
+        )
+      }
+
+
+
+    })
+
+
+    OLGA_data <- reactive({
+      inFile_sc_OLGA <- input$file1_rds_OLGA
+      if (is.null(inFile_sc_OLGA)) {
+        return(NULL)
+      }
+
+      LoadSeuratRds(inFile_sc_OLGA$datapath)
+    })
+
+    observe({
+      sc <- OLGA_data()
+      validate(
+        need(
+          nrow(sc) > 0,
+          error_message_val1
+        )
+      )
+      meta.data <- sc@meta.data
+      updateSelectInput(
+        session,
+        "Samp_col_OLGA",
+        choices = names(meta.data),
+        selected = "Sample_Name"
+      )
+    })
+
+    # observe({
+    #   sc <- OLGA_data()
+    #   validate(
+    #     need(
+    #       nrow(sc) > 0,
+    #       error_message_val1
+    #     )
+    #   )
+    #   meta.data <- sc@meta.data
+    #   updateSelectInput(
+    #     session,
+    #     "cdr3_aa_olga",
+    #     choices = names(meta.data),
+    #     selected = "junction_aa_BD"
+    #   )
+    # })
+
+
+    output$Pgen_Selected <- DT::renderDataTable(escape = FALSE, options = list(autoWidth = FALSE, lengthMenu = c(2, 5, 10, 20, 50, 100), pageLength = 2, scrollX = TRUE), {
+      sc <- OLGA_data()
+      validate(
+        need(
+          nrow(sc) > 0,
+          "Upload .RDS file"
+        )
+      )
+      md <- sc@meta.data
+      req(input$chain_type_olga)
+      md2 <- md[,names(md) %in% c("junction_aa_BD","junction_aa_AG","chain_AG","chain_BD")]
+
+      if(input$chain_type_olga == "TRB") {
+        md2 <- subset(md2,md2$chain_BD == "TRB")
+        md2 <- md2[,names(md2) %in% c("chain_BD","junction_aa_BD")]
+      } else {
+        md2 <- subset(md2,md2$chain_AG == "TRA")
+        md2 <- md2[,names(md2) %in% c("chain_AG","junction_aa_AG")]
+      }
+
+      md2 <- md2[complete.cases(md2),]
+      as.data.frame(md2)
+      # df <-  md2[,names(md2) %in% c(input$cdr3_aa_olga)]
+
+    })
+
+
+    pgen_dt <- reactive({
+      sc <- OLGA_data()
+      validate(
+        need(
+          nrow(sc) > 0,
+          "upload file"
+        )
+      )
+
+      md <- sc@meta.data
+      req(input$chain_type_olga)
+
+      md2 <- md[,names(md) %in% c("junction_aa_BD","junction_aa_AG","chain_AG","chain_BD")]
+
+      if(input$chain_type_olga == "TRB") {
+        md2 <- subset(md2,md2$chain_BD == "TRB")
+        md2 <- md2[,names(md2) %in% c("chain_BD","junction_aa_BD")]
+        df <- unique(md2$junction_aa_BD)
+        pgen_dat <- as.data.frame(matrix(ncol = 2, nrow = length(df)))
+
+      } else {
+        md2 <- subset(md2,md2$chain_AG == "TRA")
+        md2 <- md2[,names(md2) %in% c("chain_AG","junction_aa_AG")]
+        df <- unique(md2$junction_aa_AG)
+        pgen_dat <- as.data.frame(matrix(ncol = 2, nrow = length(df)))
+
+      }
+
+      colnames(pgen_dat) = c("cdr3_aa","pgen")
+      print(head(pgen_dat))
+      print(dim(pgen_dat))
+
+      for (i in 1:length(df)) {
+
+        if(input$chain_type_olga == "TRB") {
+          dfoutput <- foreach(dfrow=iter(df[i], by='row'), .combine=rbind) %do%
+            olgafunction_BD(dfrow)
+        } else {
+          dfoutput <- foreach(dfrow=iter(df[i], by='row'), .combine=rbind) %do%
+            olgafunction_AG(dfrow)
+        }
+        text <- dfoutput[2]
+        split_substring <- str_split(text, " ")[[1]]
+
+
+        # Remove the colon character from the first element
+        split_substring[7] <- str_replace_all(split_substring[7], ":", "")
+        split_substring
+
+        pgen_dat[i,1] <- split_substring[7]
+        pgen_dat[i,2] <- as.numeric(split_substring[8])
+        message(paste("Compeleted",i,"of",length(df)))
+        print(pgen_dat[i,])
+      }
+
+      pgen_dat
+
+    })
+
+    output$Pgen_BD <- DT::renderDataTable(escape = FALSE, options = list(autoWidth = FALSE, lengthMenu = c(2, 5, 10, 20, 50, 100), pageLength = 20, scrollX = TRUE), {
+      sc <- OLGA_data()
+      validate(
+        need(
+          nrow(sc) > 0,
+          "Upload .RDS file"
+        )
+      )
+      pgen_dt()
+
+    })
+
+    output$downloaddf_pgen_dt <- downloadHandler(
+      filename = function() {
+        paste(input$chain_type_olga,"_pgen", ".csv", sep = "")
+      },
+      content = function(file) {
+        df <- as.data.frame(pgen_dt())
+        write.csv(df, file, row.names = F)
+      }
+    )
+
   }
 
   shinyApp(ui, server)
-  # runGadget(ui, server, viewer = dialogViewer(dialogName = "", width = 1600))
-
 
 }
+
