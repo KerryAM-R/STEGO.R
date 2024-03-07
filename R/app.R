@@ -9,6 +9,10 @@ runSTEGO <- function(){
   font
   names(font) <- "Fonts"
 
+
+
+
+
   ### packages ------
   suppressWarnings(require("DescTools"))
   suppressMessages(require("bslib"))
@@ -66,8 +70,14 @@ runSTEGO <- function(){
   suppressMessages(require("VLF"))
   require("chisq.posthoc.test")
 
-  suppressWarnings(source(system.file("scGATE","custom_df_scGATE.R",package = "STEGO.R")))
-  suppressWarnings(source(system.file("scGATE","custom_annotation_models.R",package = "STEGO.R")))
+  if (dir.exists("custom_db/")) {
+    suppressWarnings(source(system.file("scGATE","custom_df_scGATE.R",package = "STEGO.R")))
+
+    suppressWarnings(source(system.file("scGATE","custom_annotation_models.R",package = "STEGO.R")))
+  } else {
+    message("To use the custom scGate models, please open STEGO.R in the Directory_for_project")
+
+  }
 
   col_markers <- c("Blues", "BuGn", "BuPu", "GnBu", "Greens", "Greys", "Oranges", "OrRd", "PuBu", "PuBuGn", "PuRd", "Purples", "RdPu", "Reds", "YlGn", "YlGnBu","YlOrBr", "YlOrRd")
   options(shiny.maxRequestSize = 100000*1024^2)
@@ -82,26 +92,6 @@ runSTEGO <- function(){
   error_message_val_sc <- "Upload raw processed count matrix for Seurat"
   error_message_val_UMAP <- "Upload .h5Seurat file"
 
-  # cellTypist -----
-  cellTypistModels <- c("Immune_All_Low.pkl",   #immune sub-populations combined from 20 tissues of 18 studies
-                        "Immune_All_High.pkl" , # immune populations combined from 20 tissues of 18 studies
-                        "Adult_Mouse_Gut.pkl"  , #cell types in the adult mouse gut combined from eight datasets
-                        "Autopsy_COVID19_Lung.pkl" , # cell types from the lungs of 16 SARS-CoV-2 infected COVID-19 autopsy adult donors
-                        "COVID19_Immune_Landscape.pkl" ,  #immune subtypes from lung and blood of COVID-19 patients and healthy controls
-                        "Cells_Fetal_Lung.pkl"  ,# cell types from human embryonic and fetal lungs
-                        "Cells_Intestinal_Tract.pkl",  # intestinal cells from fetal, pediatric (healthy and Crohn's disease) and adult human gut
-                        "Cells_Lung_Airway.pkl" ,  #cell populations from scRNA-seq of five locations of the human lungs and airways
-                        "Developing_Human_Brain.pkl"  ,# cell types from the first-trimester developing human brain
-                        "Developing_Human_Thymus.pkl" ,# cell populations in embryonic, fetal, pediatric, and adult stages of the human thymus
-                        "Developing_Mouse_Brain.pkl"  ,# cell types from the embryonic mouse brain between gastrulation and birth
-                        "Healthy_COVID19_PBMC.pkl" ,#  peripheral blood mononuclear cell types from healthy and COVID-19 individuals
-                        "Human_IPF_Lung.pkl" ,#  cell types from idiopathic pulmonary fibrosis, chronic obstructive pulmonary disease, and healthy lungs of adult humans
-                        "Human_Lung_Atlas.pkl" ,#  integrated Human Lung Cell Atlas (HLCA) combining 46 datasets of the human respiratory system
-                        "Human_PF_Lung.pkl"  ,# cell types from different forms of pulmonary fibrosis lungs of adult humans
-                        "Lethal_COVID19_Lung.pkl" ,#  cell types from the lungs of individuals who died of COVID-19 and control individuals
-                        "Nuclei_Lung_Airway.pkl",#   cell populations from snRNA-seq of five locations of the human lungs and airways
-                        "Pan_Fetal_Human.pkl"  # stromal and immune populations from the human fetus
-  )
 
   # functions -----
   test_fun <- function() {
@@ -18760,5 +18750,5 @@ navbarPage(
   shinyApp(ui, server)
   # runGadget(ui, server, viewer = dialogViewer(dialogName = "", width = 1600))
 
-
 }
+
