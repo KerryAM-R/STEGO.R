@@ -12,7 +12,7 @@ gg_fill_hue <- function(n) {
 #' This function will add in the additional labels required for the analysis if needed. this process is also required to add in the reductions to the meta.data
 #'
 #' @param sc Add the merged and annotated file
-#' @param add_additional_lables If you have added in the additional labels if required
+#' @param update_sc If you have added in the additional labels if required
 #' @param updateID file with the new id's based on '[colName]
 #' @param colName for the merging of the meta data with the updated ID, and will default to 'Sample_Name'
 #' @export
@@ -135,7 +135,6 @@ ID_Column_factor_function <- function (sc = sc, Samp_col = "Sample_Name") {
   df3
 
 }
-
 
 #' Creating the summary table in the form of an UPSET plot
 #' @name Upset_plot_multi

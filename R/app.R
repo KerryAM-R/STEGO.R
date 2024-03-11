@@ -3,22 +3,12 @@
 #' @export
 
 runSTEGO <- function(){
-  require(sysfonts)
-  # font ------
-  font <- as.data.frame(font_families())
-  font
-  names(font) <- "Fonts"
-
-
-
-
-
   ### packages ------
   suppressWarnings(require("DescTools"))
   suppressMessages(require("bslib"))
   suppressMessages(require("circlize")) # colorRamp2
   suppressMessages(suppressWarnings(require("ClusTCR2")))
-  suppressMessages(require("colourpicker")) # select visual colour
+
   suppressMessages(require("ComplexHeatmap"))
   suppressMessages(require("corrplot"))
   suppressMessages(require("doParallel"))
@@ -68,7 +58,21 @@ runSTEGO <- function(){
   suppressMessages(require("tibble"))
   suppressMessages(require("tidyr"))
   suppressMessages(require("VLF"))
+
+  suppressWarnings(suppressMessages(require("shinyjs")))
+
+  # needs to be loaded after shinyjs to prevent the colourpicker issue...
+  suppressMessages(require("colourpicker")) # select visual colour
+
   require("chisq.posthoc.test")
+
+
+  # font ------
+  fonts <- fonttable()
+  font <- as.data.frame(unique(fonts$FamilyName))
+  names(font) <- "Fonts"
+
+  #####
 
   if (dir.exists("custom_db/")) {
 
@@ -111,20 +115,20 @@ runSTEGO <- function(){
 
   #### check if OLGA is installed ----
   require(reticulate)
-    olgafunction_AG <- function(y) {
-      olga <- system2('olga-compute_pgen', args=c("--humanTRA ",
-                                                  y),
-                      wait=TRUE, stdout=TRUE)
-      olga
-    }
+  olgafunction_BD <- function(y) {
+    olga <- system2('olga-compute_pgen', args=c("--humanTRB ",
+                                                y),
+                    wait=TRUE, stdout=TRUE)
+    olga
 
-    olgafunction_BD <- function(y) {
-      olga <- system2('olga-compute_pgen', args=c("--humanTRB ",
-                                                  y),
-                      wait=TRUE, stdout=TRUE)
-      olga
+  }
 
-    }
+  olgafunction_AG <- function(y) {
+    olga <- system2('olga-compute_pgen', args=c("--humanTRA ",
+                                                y),
+                    wait=TRUE, stdout=TRUE)
+    olga
+  }
 
 
   # functions -----
@@ -1376,7 +1380,10 @@ navbarPage(
         selectInput("species_analysis", "Species", choices = ""),
         selectInput("Samp_col", "Selected Individual", choices = ""),
         selectInput("V_gene_sc", "V gene with/without CDR3", choices = ""),
+        selectInput("font_type", label = "Type of font", choices = font, selected = "Times New Roman"),
         selectInput("colourtype", "Type of colouring", choices = c("default", "rainbow", "random", "heat.colors", "terrain.colors", "topo.colors", "hcl.colors", "one colour")),
+
+
         conditionalPanel(
           condition = "input.check_up_files != 'up'",
           conditionalPanel(
@@ -1460,7 +1467,7 @@ navbarPage(
             column(6, selectInput("by_indiv_pie_epi", "Display one individual?", choices = c("no", "yes"))),
             column(6, selectInput("selected_Indiv", "Display one individual", choices = ""), )
           ),
-          selectInput("font_type", label = h4("Type of font"), choices = font, selected = "serif"),
+
           fluidRow(
             column(6, numericInput("text_size", "Size of #", value = 16)),
             column(6, numericInput("title.text.sizer2", "Axis text size", value = 30)),
@@ -1582,8 +1589,6 @@ navbarPage(
                               ),
                      ),
                      # TCR overview ontop of UMAP -----
-
-
                      tabPanel(
                        "TCR",
                        tabsetPanel(
@@ -1592,7 +1597,16 @@ navbarPage(
                            "Overlap",
                            tabsetPanel(
                              tabPanel(
-                               "Table",
+                               "Summary Table",
+                               selectInput("other_selected_summary_columns","Add other sumamry columns", multiple = T, "",width = "1200px"),
+
+                               div(DT::dataTableOutput("Summary_TCR_tb")),
+                               downloadButton("downloaddf_Summary_TCR_tb", "Download table")
+                             ),
+
+                             tabPanel(
+                               "Upset_table",
+
                                div(DT::dataTableOutput("Upset_plot_overlap_Tb")),
                                downloadButton("downloaddf_Upset_plot_overlap_Tb", "Download table")
                              ),
@@ -1851,7 +1865,7 @@ navbarPage(
                                            column(2, style = "margin-top: 25px;", downloadButton("downloadPlotPNG_heatmap_topclone_plot", "Download PNG"))
                                          ),
                                 ),
-                                #####
+                                #####.
                                 tabPanel(
                                   "Pie/UMAP chart",
                                   add_busy_spinner(spin = "fading-circle", position = "top-right", margins = c(10, 10), height = "150px", width = "150px", color = "blue"),
@@ -2601,7 +2615,17 @@ navbarPage(
 
 
     tabPanel("OLGA",
-             selectInput("Olga_installed","OLGA installed",""),
+             fluidRow(
+
+               add_busy_spinner(spin = "fading-circle", position = "top-right",  height = "150px", width = "150px", color = "blue"),
+               column(3,actionButton("load_olga","Use OLGA if present")),
+               conditionalPanel(
+                 condition = "input.load_olga",
+                 add_busy_spinner(spin = "fading-circle", position = "top-right",  height = "150px", width = "150px", color = "blue"),
+                 column(3,selectInput("Olga_installed","OLGA installed","")),
+
+               )),
+
              conditionalPanel(
                condition = "input.Olga_installed == 'installed'",
 
@@ -2641,7 +2665,7 @@ navbarPage(
                )
              ),
              conditionalPanel(
-               condition = "input.Olga_installed != 'installed'",
+               condition = "input.Olga_installed == 'Unavailable' && input.load_olga",
                tabPanel("Instructions",
 
                         p("Require the user to install python and olga from the command line"),
@@ -8958,6 +8982,93 @@ navbarPage(
       topclones_col
     })
 
+
+    ### summary table for publications -----
+
+    observe({
+      sc <- UMAP_metadata_with_labs()
+      req(sc)
+      md <- sc@meta.data
+      # if (input$type.chain == 'ab') {
+      updateSelectInput(
+        session,
+        "other_selected_summary_columns",
+        choices=names(md),
+        selected = c("v_gene_AG","j_gene_AG","junction_aa_AG","v_gene_BD","j_gene_BD","junction_aa_BD"))
+      # }
+    })
+
+    Summary_TCR_table <- reactive({
+      sc <- UMAP_metadata_with_labs()
+      validate(
+        need(
+          nrow(sc) > 0,
+          error_message_val_UMAP
+        )
+      )
+      req(sc,input$V_gene_sc,input$Samp_col,input$other_selected_summary_columns)
+
+      md <- as.data.frame(sc@meta.data)
+
+      md$cloneCount <- 1
+
+      df <- as.data.frame(md)
+
+      TCR <- df[!is.na(df[,names(df) %in% input$V_gene_sc]),]
+      TCR$ID_Column <- TCR[,names(TCR) %in% input$Samp_col]
+
+      select_cols <- c(input$V_gene_sc, input$other_selected_summary_columns, "ID_Column")
+      print(select_cols)
+      TCR_input <- TCR[, names(TCR) %in% c("cloneCount",select_cols)]
+      TCR_input <- TCR_input %>%
+        select("cloneCount","ID_Column", everything())
+      # print( head(TCR_input))
+
+      TCR_total <- as.data.frame(ddply(TCR_input,c(input$V_gene_sc),numcolwise(sum)))
+
+      meta2.names <- names(TCR_input)
+      # print(meta2.names)
+      total.condition <- as.data.frame(ddply(TCR_input, "ID_Column", numcolwise(sum)))
+      # print(head(total.condition))
+      emtpy <- matrix(nrow = dim(TCR_input)[1], ncol = dim(total.condition)[1])
+      # print(dim(emtpy))
+
+      for (i in 1:dim(TCR_input)[1]) {
+        emtpy[i, ] <- ifelse(TCR_input$ID_Column[i] == total.condition$ID_Column[1:dim(total.condition)[1]],
+                             total.condition[total.condition$ID_Column == total.condition$ID_Column[1:dim(total.condition)[1]], 2], F
+        )
+      }
+      # as.data.frame(emtpy)
+      # print(rowSums(emtpy))
+      TCR_input$row_sum <- rowSums(emtpy)
+
+      TCR_input$frequency <- TCR_input$cloneCount / TCR_input$row_sum
+      TCR_input$percent <- TCR_input$frequency * 100
+
+      df3 <- as.data.frame(ddply(TCR_input, c(select_cols,"row_sum"), numcolwise(sum)))
+      df3 <- df3[order(df3$frequency, decreasing = T), ]
+      df3 <- df3[order(df3$ID_Column, decreasing = T), ]
+      df3$count_div_total <-paste("freq: ",df3$cloneCount,"/",df3$row_sum,sep = "")
+      df3
+
+    })
+
+    output$Summary_TCR_tb <- DT::renderDataTable(escape = FALSE, filter = list(position = "top", clear = FALSE), options = list(autoWidth = FALSE, lengthMenu = c(2, 5, 10, 20, 50, 100), pageLength = 5, scrollX = TRUE), {
+      Summary_TCR_table()
+    })
+
+    output$downloaddf_Summary_TCR_tb <- downloadHandler(
+      filename = function() {
+        paste("Summary_TCR_Table.csv", sep = "")
+      },
+      content = function(file) {
+        df <- as.data.frame(Summary_TCR_table())
+        write.csv(df, file, row.names = F)
+      }
+    )
+
+
+
     ## TCR expansion ----
     TCR_Expanded <- reactive({
       sc <- UMAP_metadata_with_labs()
@@ -10174,12 +10285,15 @@ navbarPage(
 
       names(totals) <- c("groups", "Function")
       tab <- table(totals$Function, totals$groups)
-      as.matrix(round(t(tab) / colSums(tab) * 100, 2))
+      as.matrix(t(tab) / colSums(tab) * 100)
     })
 
     # output$Percent_tab <- renderPrint(escape = FALSE, filter = list(position = 'top', clear = FALSE), options = list(autoWidth = FALSE, lengthMenu = c(2,5,10,20,50,100), pageLength = 10, scrollX = TRUE),{
     output$Percent_tab <- renderPrint({
-      Percent_tab_df()
+      percent <- Percent_tab_df()
+
+      round(percent,4)
+
     })
     output$downloaddf_Percent_tab <- downloadHandler(
       filename = function() {
@@ -11432,13 +11546,21 @@ navbarPage(
           "Upload file for annotation"
         )
       )
-      df <- as.data.frame(sc@assays$RNA$scale.data)
+
+      # if(grepl(5, sc@version)) {
+      #
+      #
+      # }
+
+      df <- as.data.frame(rownames(sc@assays$RNA$scale.data))
+      names(df) <- "V1"
+
       req(df)
       updateSelectInput(
         session,
         "string.data_Exp_top",
-        choices = df,
-        selected = df[1]
+        choices = df$V1,
+        selected = df$V1[1]
       )
     })
 
@@ -18856,9 +18978,10 @@ navbarPage(
     ### end -----
     ### pgen -----
 
-    observe({
-      pylist <- py_list_packages()
-      if("olga" %in% pylist$package) {
+    observeEvent(input$load_olga,{
+      require(reticulate)
+
+      if(py_module_available("olga")) {
         message("OLGA is installed")
 
         updateSelectInput(
@@ -18867,16 +18990,18 @@ navbarPage(
           choices = "installed"
         )
 
-      } else{
+      } else {
         message("Please Install OLGA, if you want to do the post analysis section")
         updateSelectInput(
           session,
           "Olga_installed",
           choices = "Unavailable"
         )
+
+
       }
-
-
+      hide(id = "load_olga")
+      hide(id = "Olga_installed")
 
     })
 
@@ -18906,23 +19031,6 @@ navbarPage(
         selected = "Sample_Name"
       )
     })
-
-    # observe({
-    #   sc <- OLGA_data()
-    #   validate(
-    #     need(
-    #       nrow(sc) > 0,
-    #       error_message_val1
-    #     )
-    #   )
-    #   meta.data <- sc@meta.data
-    #   updateSelectInput(
-    #     session,
-    #     "cdr3_aa_olga",
-    #     choices = names(meta.data),
-    #     selected = "junction_aa_BD"
-    #   )
-    # })
 
 
     output$Pgen_Selected <- DT::renderDataTable(escape = FALSE, options = list(autoWidth = FALSE, lengthMenu = c(2, 5, 10, 20, 50, 100), pageLength = 2, scrollX = TRUE), {
@@ -19036,6 +19144,7 @@ navbarPage(
   }
 
   shinyApp(ui, server)
+  # runGadget(ui, server, viewer = dialogViewer(dialogName = "", width = 1600))
 
 }
 
