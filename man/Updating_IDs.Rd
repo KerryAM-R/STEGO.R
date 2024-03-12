@@ -15,11 +15,11 @@ update_sc(
 \arguments{
 \item{sc}{Add the merged and annotated file}
 
-\item{add_additional_lables}{If you have added in the additional labels if required}
-
 \item{updateID}{file with the new id's based on '\link{colName}}
 
 \item{colName}{for the merging of the meta data with the updated ID, and will default to 'Sample_Name'}
+
+\item{update_sc}{If you have added in the additional labels if required}
 }
 \description{
 This function will add in the additional labels required for the analysis if needed. this process is also required to add in the reductions to the meta.data

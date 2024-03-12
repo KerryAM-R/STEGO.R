@@ -3,22 +3,12 @@
 #' @export
 
 runSTEGO <- function(){
-  require(sysfonts)
-  # font ------
-  font <- as.data.frame(font_families())
-  font
-  names(font) <- "Fonts"
-
-
-
-
-
   ### packages ------
   suppressWarnings(require("DescTools"))
   suppressMessages(require("bslib"))
   suppressMessages(require("circlize")) # colorRamp2
   suppressMessages(suppressWarnings(require("ClusTCR2")))
-  suppressMessages(require("colourpicker")) # select visual colour
+
   suppressMessages(require("ComplexHeatmap"))
   suppressMessages(require("corrplot"))
   suppressMessages(require("doParallel"))
@@ -68,7 +58,21 @@ runSTEGO <- function(){
   suppressMessages(require("tibble"))
   suppressMessages(require("tidyr"))
   suppressMessages(require("VLF"))
+
+  suppressWarnings(suppressMessages(require("shinyjs")))
+
+  # needs to be loaded after shinyjs to prevent the colourpicker issue...
+  suppressMessages(require("colourpicker")) # select visual colour
+
   require("chisq.posthoc.test")
+
+
+  # font ------
+  fonts <- fonttable()
+  font <- as.data.frame(unique(fonts$FamilyName))
+  names(font) <- "Fonts"
+
+  #####
 
   if (dir.exists("custom_db/")) {
 
@@ -111,20 +115,20 @@ runSTEGO <- function(){
 
   #### check if OLGA is installed ----
   require(reticulate)
-    olgafunction_AG <- function(y) {
-      olga <- system2('olga-compute_pgen', args=c("--humanTRA ",
-                                                  y),
-                      wait=TRUE, stdout=TRUE)
-      olga
-    }
+  olgafunction_BD <- function(y) {
+    olga <- system2('olga-compute_pgen', args=c("--humanTRB ",
+                                                y),
+                    wait=TRUE, stdout=TRUE)
+    olga
 
-    olgafunction_BD <- function(y) {
-      olga <- system2('olga-compute_pgen', args=c("--humanTRB ",
-                                                  y),
-                      wait=TRUE, stdout=TRUE)
-      olga
+  }
 
-    }
+  olgafunction_AG <- function(y) {
+    olga <- system2('olga-compute_pgen', args=c("--humanTRA ",
+                                                y),
+                    wait=TRUE, stdout=TRUE)
+    olga
+  }
 
 
   # functions -----
@@ -231,11 +235,24 @@ runSTEGO <- function(){
   ui <- fluidPage(
 
     # progress bar colouring, position --------
-    tags$head(tags$style(HTML(".progress-bar {background-color: #6F00B0}"))),
-    tags$head(
-      tags$style(
-        HTML(
-          ".shiny-notification {
+    tags$style(HTML("
+  .dataTables_wrapper .dataTable td {
+    white-space: nowrap;
+  }
+")),
+
+tags$head(
+  tags$style(HTML("
+    .my-selectize .selectize-input {
+      width: 900px !important;  /* Set the width as needed */
+    }
+  "))
+),
+tags$head(tags$style(HTML(".progress-bar {background-color: #6F00B0}"))),
+tags$head(
+  tags$style(
+    HTML(
+      ".shiny-notification {
               height: 200px;
               width: 800px;
               position:fixed;
@@ -246,22 +263,22 @@ runSTEGO <- function(){
               background-color: #E9C2FF;
              color: black
             }"
-        )
-      )
-    ),
-    tags$style(HTML("
+    )
+  )
+),
+tags$style(HTML("
     .tabbable > .nav > li > a {background-color: #E9C2FF; color:#6F00B0}
     .tabbable > .nav > li.active > a {background-color: #6F00B0; color:#E9C2FF}
   ")),
 
-  tags$head(
-    tags$style(type='text/css',"
+tags$head(
+  tags$style(type='text/css',"
                .navbar-nav {font-size: 16px}
                .navbar-nav > li > a {background-color: #E9C2FF; color:#6F00B0}
 
                ")),
 
-  tags$head(tags$style(HTML('
+tags$head(tags$style(HTML('
   .navbar-nav > li > .dropdown-menu {font-size: 16px}
   .navbar-nav > li > .dropdown-menu {background-color: white}
   .navbar-nav > li.active > .dropdown-menu {background-color: #E9C2FF; color:black}
@@ -1376,7 +1393,10 @@ navbarPage(
         selectInput("species_analysis", "Species", choices = ""),
         selectInput("Samp_col", "Selected Individual", choices = ""),
         selectInput("V_gene_sc", "V gene with/without CDR3", choices = ""),
+        selectInput("font_type", label = "Type of font", choices = font, selected = "Times New Roman"),
         selectInput("colourtype", "Type of colouring", choices = c("default", "rainbow", "random", "heat.colors", "terrain.colors", "topo.colors", "hcl.colors", "one colour")),
+
+
         conditionalPanel(
           condition = "input.check_up_files != 'up'",
           conditionalPanel(
@@ -1460,7 +1480,7 @@ navbarPage(
             column(6, selectInput("by_indiv_pie_epi", "Display one individual?", choices = c("no", "yes"))),
             column(6, selectInput("selected_Indiv", "Display one individual", choices = ""), )
           ),
-          selectInput("font_type", label = h4("Type of font"), choices = font, selected = "serif"),
+
           fluidRow(
             column(6, numericInput("text_size", "Size of #", value = 16)),
             column(6, numericInput("title.text.sizer2", "Axis text size", value = 30)),
@@ -1582,8 +1602,6 @@ navbarPage(
                               ),
                      ),
                      # TCR overview ontop of UMAP -----
-
-
                      tabPanel(
                        "TCR",
                        tabsetPanel(
@@ -1592,7 +1610,16 @@ navbarPage(
                            "Overlap",
                            tabsetPanel(
                              tabPanel(
-                               "Table",
+                               "Summary Table",
+                               selectInput("other_selected_summary_columns","Add other sumamry columns", multiple = T, "",width = "1200px"),
+
+                               div(DT::dataTableOutput("Summary_TCR_tb")),
+                               downloadButton("downloaddf_Summary_TCR_tb", "Download table")
+                             ),
+
+                             tabPanel(
+                               "Upset_table",
+
                                div(DT::dataTableOutput("Upset_plot_overlap_Tb")),
                                downloadButton("downloaddf_Upset_plot_overlap_Tb", "Download table")
                              ),
@@ -1851,7 +1878,7 @@ navbarPage(
                                            column(2, style = "margin-top: 25px;", downloadButton("downloadPlotPNG_heatmap_topclone_plot", "Download PNG"))
                                          ),
                                 ),
-                                #####
+                                #####.
                                 tabPanel(
                                   "Pie/UMAP chart",
                                   add_busy_spinner(spin = "fading-circle", position = "top-right", margins = c(10, 10), height = "150px", width = "150px", color = "blue"),
@@ -2585,13 +2612,39 @@ navbarPage(
     tabPanel("Cluster Post analysis",
              value = "",
              sidebarLayout(
-               sidebarPanel(width = 3),
+               sidebarPanel(width = 3,
+                            fileInput("file1_FilteringCluster",
+                                      "Upload .csv file",
+                                      multiple = F,
+                                      accept = c(".csv", "csv")
+                            ),
+
+                            downloadButton("download_button_filtered_data_df", "Download Filtered Data"),
+                            # downloadButton("download_filters_button", "Download filter parameters"),
+
+                            uiOutput("filter_checkboxes"),
+                            # Add download button
+
+
+
+               ),
                mainPanel(
                  width = 9,
-                 tabsetPanel(
-                   id = "Other_post_analysis",
+                 # tabsetPanel(
+                 id = "Other_post_analysis",
+                 useShinyjs(),  # Initialize shinyjs
+                 extendShinyjs(
+                   text = "shinyjs.showThinking = function() {$('#thinking_spinner').show();};",
+                   functions = c("showThinking")
+                 ),
+                 extendShinyjs(
+                   text = "shinyjs.hideThinking = function() {$('#thinking_spinner').hide();};",
+                   functions = c("hideThinking")
+                 ),
+                 uiOutput("filter_inputs"),
+                 dataTableOutput("filtered_table")
 
-                 )
+                 # )
                )
              )
              # p("Convert .h5Seurat to .rds")
@@ -2601,7 +2654,17 @@ navbarPage(
 
 
     tabPanel("OLGA",
-             selectInput("Olga_installed","OLGA installed",""),
+             fluidRow(
+
+               add_busy_spinner(spin = "fading-circle", position = "top-right",  height = "150px", width = "150px", color = "blue"),
+               column(3,actionButton("load_olga","Use OLGA if present")),
+               conditionalPanel(
+                 condition = "input.load_olga",
+                 add_busy_spinner(spin = "fading-circle", position = "top-right",  height = "150px", width = "150px", color = "blue"),
+                 column(3,selectInput("Olga_installed","OLGA installed","")),
+
+               )),
+
              conditionalPanel(
                condition = "input.Olga_installed == 'installed'",
 
@@ -2641,7 +2704,7 @@ navbarPage(
                )
              ),
              conditionalPanel(
-               condition = "input.Olga_installed != 'installed'",
+               condition = "input.Olga_installed == 'Unavailable' && input.load_olga",
                tabPanel("Instructions",
 
                         p("Require the user to install python and olga from the command line"),
@@ -2843,7 +2906,6 @@ navbarPage(
         )
       }
     })
-    # human BD rhapsody data -----
     # three files required for BD data: Sample Tag calls, TCR file and count ----
     input.data.calls.bd <- reactive({
       inFile12 <- input$file_calls_BD
@@ -8958,6 +9020,93 @@ navbarPage(
       topclones_col
     })
 
+
+    ### summary table for publications -----
+
+    observe({
+      sc <- UMAP_metadata_with_labs()
+      req(sc)
+      md <- sc@meta.data
+      # if (input$type.chain == 'ab') {
+      updateSelectInput(
+        session,
+        "other_selected_summary_columns",
+        choices=names(md),
+        selected = c("v_gene_AG","j_gene_AG","junction_aa_AG","v_gene_BD","j_gene_BD","junction_aa_BD"))
+      # }
+    })
+
+    Summary_TCR_table <- reactive({
+      sc <- UMAP_metadata_with_labs()
+      validate(
+        need(
+          nrow(sc) > 0,
+          error_message_val_UMAP
+        )
+      )
+      req(sc,input$V_gene_sc,input$Samp_col,input$other_selected_summary_columns)
+
+      md <- as.data.frame(sc@meta.data)
+
+      md$cloneCount <- 1
+
+      df <- as.data.frame(md)
+
+      TCR <- df[!is.na(df[,names(df) %in% input$V_gene_sc]),]
+      TCR$ID_Column <- TCR[,names(TCR) %in% input$Samp_col]
+
+      select_cols <- c(input$V_gene_sc, input$other_selected_summary_columns, "ID_Column")
+      print(select_cols)
+      TCR_input <- TCR[, names(TCR) %in% c("cloneCount",select_cols)]
+      TCR_input <- TCR_input %>%
+        select("cloneCount","ID_Column", everything())
+      # print( head(TCR_input))
+
+      TCR_total <- as.data.frame(ddply(TCR_input,c(input$V_gene_sc),numcolwise(sum)))
+
+      meta2.names <- names(TCR_input)
+      # print(meta2.names)
+      total.condition <- as.data.frame(ddply(TCR_input, "ID_Column", numcolwise(sum)))
+      # print(head(total.condition))
+      emtpy <- matrix(nrow = dim(TCR_input)[1], ncol = dim(total.condition)[1])
+      # print(dim(emtpy))
+
+      for (i in 1:dim(TCR_input)[1]) {
+        emtpy[i, ] <- ifelse(TCR_input$ID_Column[i] == total.condition$ID_Column[1:dim(total.condition)[1]],
+                             total.condition[total.condition$ID_Column == total.condition$ID_Column[1:dim(total.condition)[1]], 2], F
+        )
+      }
+      # as.data.frame(emtpy)
+      # print(rowSums(emtpy))
+      TCR_input$row_sum <- rowSums(emtpy)
+
+      TCR_input$frequency <- TCR_input$cloneCount / TCR_input$row_sum
+      TCR_input$percent <- TCR_input$frequency * 100
+
+      df3 <- as.data.frame(ddply(TCR_input, c(select_cols,"row_sum"), numcolwise(sum)))
+      df3 <- df3[order(df3$frequency, decreasing = T), ]
+      df3 <- df3[order(df3$ID_Column, decreasing = T), ]
+      df3$count_div_total <-paste("freq: ",df3$cloneCount,"/",df3$row_sum,sep = "")
+      df3
+
+    })
+
+    output$Summary_TCR_tb <- DT::renderDataTable(escape = FALSE, filter = list(position = "top", clear = FALSE), options = list(autoWidth = FALSE, lengthMenu = c(2, 5, 10, 20, 50, 100), pageLength = 5, scrollX = TRUE), {
+      Summary_TCR_table()
+    })
+
+    output$downloaddf_Summary_TCR_tb <- downloadHandler(
+      filename = function() {
+        paste("Summary_TCR_Table.csv", sep = "")
+      },
+      content = function(file) {
+        df <- as.data.frame(Summary_TCR_table())
+        write.csv(df, file, row.names = F)
+      }
+    )
+
+
+
     ## TCR expansion ----
     TCR_Expanded <- reactive({
       sc <- UMAP_metadata_with_labs()
@@ -10174,12 +10323,15 @@ navbarPage(
 
       names(totals) <- c("groups", "Function")
       tab <- table(totals$Function, totals$groups)
-      as.matrix(round(t(tab) / colSums(tab) * 100, 2))
+      as.matrix(t(tab) / colSums(tab) * 100)
     })
 
     # output$Percent_tab <- renderPrint(escape = FALSE, filter = list(position = 'top', clear = FALSE), options = list(autoWidth = FALSE, lengthMenu = c(2,5,10,20,50,100), pageLength = 10, scrollX = TRUE),{
     output$Percent_tab <- renderPrint({
-      Percent_tab_df()
+      percent <- Percent_tab_df()
+
+      round(percent,4)
+
     })
     output$downloaddf_Percent_tab <- downloadHandler(
       filename = function() {
@@ -11432,13 +11584,21 @@ navbarPage(
           "Upload file for annotation"
         )
       )
-      df <- as.data.frame(sc@assays$RNA$scale.data)
+
+      # if(grepl(5, sc@version)) {
+      #
+      #
+      # }
+
+      df <- as.data.frame(rownames(sc@assays$RNA$scale.data))
+      names(df) <- "V1"
+
       req(df)
       updateSelectInput(
         session,
         "string.data_Exp_top",
-        choices = df,
-        selected = df[1]
+        choices = df$V1,
+        selected = df$V1[1]
       )
     })
 
@@ -18856,9 +19016,10 @@ navbarPage(
     ### end -----
     ### pgen -----
 
-    observe({
-      pylist <- py_list_packages()
-      if("olga" %in% pylist$package) {
+    observeEvent(input$load_olga,{
+      require(reticulate)
+
+      if(py_module_available("olga")) {
         message("OLGA is installed")
 
         updateSelectInput(
@@ -18867,16 +19028,18 @@ navbarPage(
           choices = "installed"
         )
 
-      } else{
+      } else {
         message("Please Install OLGA, if you want to do the post analysis section")
         updateSelectInput(
           session,
           "Olga_installed",
           choices = "Unavailable"
         )
+
+
       }
-
-
+      hide(id = "load_olga")
+      hide(id = "Olga_installed")
 
     })
 
@@ -18906,23 +19069,6 @@ navbarPage(
         selected = "Sample_Name"
       )
     })
-
-    # observe({
-    #   sc <- OLGA_data()
-    #   validate(
-    #     need(
-    #       nrow(sc) > 0,
-    #       error_message_val1
-    #     )
-    #   )
-    #   meta.data <- sc@meta.data
-    #   updateSelectInput(
-    #     session,
-    #     "cdr3_aa_olga",
-    #     choices = names(meta.data),
-    #     selected = "junction_aa_BD"
-    #   )
-    # })
 
 
     output$Pgen_Selected <- DT::renderDataTable(escape = FALSE, options = list(autoWidth = FALSE, lengthMenu = c(2, 5, 10, 20, 50, 100), pageLength = 2, scrollX = TRUE), {
@@ -19033,9 +19179,163 @@ navbarPage(
       }
     )
 
+
+    ### filtering clustering table in post analysis ------
+    getData_FilteringCluster <- reactive({
+      inFile_sc_FilteringCluster <- input$file1_FilteringCluster
+      if (is.null(inFile_sc_FilteringCluster)) {
+        return(NULL)
+      }
+
+      read.csv(inFile_sc_FilteringCluster$datapath,header = T)
+    })
+
+    output$filter_checkboxes <- renderUI({
+
+      data_filtered <- getData_FilteringCluster()
+      req(data_filtered)
+
+      selectizeInput(
+        inputId = "selected_filters",
+        label = "Select Filters to Include:",
+        choices = names(data_filtered),
+        selected = NULL,
+        multiple = TRUE,
+        options = list(placeholder = "Select filters")
+      )
+    })
+
+    output$filter_inputs <- renderUI({
+      # Create a list to store selectizeInput and checkbox widgets
+      filter_inputs <- list()
+      data_filtered <- getData_FilteringCluster()
+      req(data_filtered)
+
+      # Loop through the selected filters
+      selected_filters <- input$selected_filters
+
+
+      for (i in seq_along(selected_filters)) {
+        selected_filter <- selected_filters[i]
+        print(paste0("filter_ui_", selected_filter))
+
+        filter_inputs[[selected_filter]] <- tagList(
+          column(
+            width = 2,
+            checkboxInput(
+              inputId = paste0("all_none_", selected_filter),
+              label = paste0("All/None ", selected_filter),
+              value = FALSE
+            )
+          ),
+
+
+          column(
+            width = 10,  # Set width to 10 units (adjust as needed)
+            uiOutput(paste0("filter_ui_", selected_filter))  # Ensure unique IDs
+          )
+        )
+      }
+
+      # Wrap the list of selectizeInput and checkbox widgets in a tagList
+      tagList(filter_inputs)
+    })
+
+    # Update the server logic to dynamically generate selectizeInput based on checkbox value
+    observe({
+      data_filtered <- getData_FilteringCluster()
+      req(data_filtered)
+
+      selected_filters <- input$selected_filters
+
+      # Use lapply to generate all output elements at once
+      lapply(seq_along(selected_filters), function(i) {
+        selected_filter <- selected_filters[i]
+        print(selected_filter)
+        output[[paste0("filter_ui_", selected_filter)]] <- renderUI({
+          checkbox_value <- input[[paste0("all_none_", selected_filter)]]
+          selectizeInput(
+            inputId = paste0("filter_", selected_filter),  # Ensure unique IDs
+            label = selected_filter,
+            choices = unique(data_filtered[[selected_filter]]),
+            selected = if (checkbox_value) unique(data_filtered[[selected_filter]]) else NULL,
+            multiple = TRUE,
+            width = "900px",  # Set the width here
+            options = list(
+              placeholder = "Select values"
+            )
+          )
+        })
+      })
+    })
+
+    # Update the filtered_data reactive to handle the checkbox value
+    filtered_data <- reactive({
+      data_filtered <- getData_FilteringCluster()
+      req(data_filtered)
+
+      selected_filters <- input$selected_filters
+      # print(selected_filters)
+      # If no filters selected, return the original data
+      if (length(selected_filters) == 0) {
+        return(data_filtered)
+      }
+
+      # Apply filters based on user selection
+      filtered_data <- data_filtered
+      for (i in seq_along(selected_filters)) {
+        filter <- selected_filters[i]
+        checkbox_value <- input[[paste0("all_none_", filter)]]
+        selected_values <- input[[paste0("filter_", filter)]]
+        # print(selected_values)
+        if (!checkbox_value && length(selected_values) > 0) {
+          filtered_data <- filtered_data[filtered_data[[filter]] %in% selected_values, ]
+        } else if (checkbox_value && length(selected_values) > 0) {
+
+          filtered_data <- filtered_data[filtered_data[[filter]] %in% selected_values, ]
+        }
+      }
+
+      filtered_data
+    })
+
+
+
+    # Render the filtered table
+    output$filtered_table <- renderDataTable({
+      filtered_data()
+    }, options = list(
+      scrollX = TRUE,
+      columnDefs = list(list(targets = "_all", className = "dt-no-wrap"))
+    ))
+
+    # Add a download button
+    output$download_button_filtered_data_df <- downloadHandler(
+      filename = function() {
+        selected_filters <- paste(input$selected_filters, collapse = "_")
+        paste("filtered_data_", selected_filters, "_", Sys.Date(), ".csv", sep = "")
+      },
+      content = function(file) {
+        filtered_data_df <- filtered_data()
+        write.csv(filtered_data_df, file, row.names = FALSE)
+      }
+    )
+
+    # output$download_filters_button <- downloadHandler(
+    #   filename = function() {
+    #     paste("selected_filters", Sys.Date(), ".txt", sep = "_")
+    #   },
+    #   content = function(file) {
+    #     selected_filters <- input$selected_filters
+    #     writeLines(selected_filters, file)
+    #   }
+    # )
+
+
   }
 
   shinyApp(ui, server)
+  # runGadget(ui, server, viewer = dialogViewer(dialogName = "", width = 1600))
 
 }
 
