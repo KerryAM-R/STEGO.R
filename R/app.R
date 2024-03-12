@@ -235,11 +235,24 @@ runSTEGO <- function(){
   ui <- fluidPage(
 
     # progress bar colouring, position --------
-    tags$head(tags$style(HTML(".progress-bar {background-color: #6F00B0}"))),
-    tags$head(
-      tags$style(
-        HTML(
-          ".shiny-notification {
+    tags$style(HTML("
+  .dataTables_wrapper .dataTable td {
+    white-space: nowrap;
+  }
+")),
+
+tags$head(
+  tags$style(HTML("
+    .my-selectize .selectize-input {
+      width: 900px !important;  /* Set the width as needed */
+    }
+  "))
+),
+tags$head(tags$style(HTML(".progress-bar {background-color: #6F00B0}"))),
+tags$head(
+  tags$style(
+    HTML(
+      ".shiny-notification {
               height: 200px;
               width: 800px;
               position:fixed;
@@ -250,22 +263,22 @@ runSTEGO <- function(){
               background-color: #E9C2FF;
              color: black
             }"
-        )
-      )
-    ),
-    tags$style(HTML("
+    )
+  )
+),
+tags$style(HTML("
     .tabbable > .nav > li > a {background-color: #E9C2FF; color:#6F00B0}
     .tabbable > .nav > li.active > a {background-color: #6F00B0; color:#E9C2FF}
   ")),
 
-  tags$head(
-    tags$style(type='text/css',"
+tags$head(
+  tags$style(type='text/css',"
                .navbar-nav {font-size: 16px}
                .navbar-nav > li > a {background-color: #E9C2FF; color:#6F00B0}
 
                ")),
 
-  tags$head(tags$style(HTML('
+tags$head(tags$style(HTML('
   .navbar-nav > li > .dropdown-menu {font-size: 16px}
   .navbar-nav > li > .dropdown-menu {background-color: white}
   .navbar-nav > li.active > .dropdown-menu {background-color: #E9C2FF; color:black}
@@ -2599,13 +2612,39 @@ navbarPage(
     tabPanel("Cluster Post analysis",
              value = "",
              sidebarLayout(
-               sidebarPanel(width = 3),
+               sidebarPanel(width = 3,
+                            fileInput("file1_FilteringCluster",
+                                      "Upload .csv file",
+                                      multiple = F,
+                                      accept = c(".csv", "csv")
+                            ),
+
+                            downloadButton("download_button_filtered_data_df", "Download Filtered Data"),
+                            # downloadButton("download_filters_button", "Download filter parameters"),
+
+                            uiOutput("filter_checkboxes"),
+                            # Add download button
+
+
+
+               ),
                mainPanel(
                  width = 9,
-                 tabsetPanel(
-                   id = "Other_post_analysis",
+                 # tabsetPanel(
+                 id = "Other_post_analysis",
+                 useShinyjs(),  # Initialize shinyjs
+                 extendShinyjs(
+                   text = "shinyjs.showThinking = function() {$('#thinking_spinner').show();};",
+                   functions = c("showThinking")
+                 ),
+                 extendShinyjs(
+                   text = "shinyjs.hideThinking = function() {$('#thinking_spinner').hide();};",
+                   functions = c("hideThinking")
+                 ),
+                 uiOutput("filter_inputs"),
+                 dataTableOutput("filtered_table")
 
-                 )
+                 # )
                )
              )
              # p("Convert .h5Seurat to .rds")
@@ -2867,7 +2906,6 @@ navbarPage(
         )
       }
     })
-    # human BD rhapsody data -----
     # three files required for BD data: Sample Tag calls, TCR file and count ----
     input.data.calls.bd <- reactive({
       inFile12 <- input$file_calls_BD
@@ -19140,6 +19178,159 @@ navbarPage(
         write.csv(df, file, row.names = F)
       }
     )
+
+
+    ### filtering clustering table in post analysis ------
+    getData_FilteringCluster <- reactive({
+      inFile_sc_FilteringCluster <- input$file1_FilteringCluster
+      if (is.null(inFile_sc_FilteringCluster)) {
+        return(NULL)
+      }
+
+      read.csv(inFile_sc_FilteringCluster$datapath,header = T)
+    })
+
+    output$filter_checkboxes <- renderUI({
+
+      data_filtered <- getData_FilteringCluster()
+      req(data_filtered)
+
+      selectizeInput(
+        inputId = "selected_filters",
+        label = "Select Filters to Include:",
+        choices = names(data_filtered),
+        selected = NULL,
+        multiple = TRUE,
+        options = list(placeholder = "Select filters")
+      )
+    })
+
+    output$filter_inputs <- renderUI({
+      # Create a list to store selectizeInput and checkbox widgets
+      filter_inputs <- list()
+      data_filtered <- getData_FilteringCluster()
+      req(data_filtered)
+
+      # Loop through the selected filters
+      selected_filters <- input$selected_filters
+
+
+      for (i in seq_along(selected_filters)) {
+        selected_filter <- selected_filters[i]
+        print(paste0("filter_ui_", selected_filter))
+
+        filter_inputs[[selected_filter]] <- tagList(
+          column(
+            width = 2,
+            checkboxInput(
+              inputId = paste0("all_none_", selected_filter),
+              label = paste0("All/None ", selected_filter),
+              value = FALSE
+            )
+          ),
+
+
+          column(
+            width = 10,  # Set width to 10 units (adjust as needed)
+            uiOutput(paste0("filter_ui_", selected_filter))  # Ensure unique IDs
+          )
+        )
+      }
+
+      # Wrap the list of selectizeInput and checkbox widgets in a tagList
+      tagList(filter_inputs)
+    })
+
+    # Update the server logic to dynamically generate selectizeInput based on checkbox value
+    observe({
+      data_filtered <- getData_FilteringCluster()
+      req(data_filtered)
+
+      selected_filters <- input$selected_filters
+
+      # Use lapply to generate all output elements at once
+      lapply(seq_along(selected_filters), function(i) {
+        selected_filter <- selected_filters[i]
+        print(selected_filter)
+        output[[paste0("filter_ui_", selected_filter)]] <- renderUI({
+          checkbox_value <- input[[paste0("all_none_", selected_filter)]]
+          selectizeInput(
+            inputId = paste0("filter_", selected_filter),  # Ensure unique IDs
+            label = selected_filter,
+            choices = unique(data_filtered[[selected_filter]]),
+            selected = if (checkbox_value) unique(data_filtered[[selected_filter]]) else NULL,
+            multiple = TRUE,
+            width = "900px",  # Set the width here
+            options = list(
+              placeholder = "Select values"
+            )
+          )
+        })
+      })
+    })
+
+    # Update the filtered_data reactive to handle the checkbox value
+    filtered_data <- reactive({
+      data_filtered <- getData_FilteringCluster()
+      req(data_filtered)
+
+      selected_filters <- input$selected_filters
+      # print(selected_filters)
+      # If no filters selected, return the original data
+      if (length(selected_filters) == 0) {
+        return(data_filtered)
+      }
+
+      # Apply filters based on user selection
+      filtered_data <- data_filtered
+      for (i in seq_along(selected_filters)) {
+        filter <- selected_filters[i]
+        checkbox_value <- input[[paste0("all_none_", filter)]]
+        selected_values <- input[[paste0("filter_", filter)]]
+        # print(selected_values)
+        if (!checkbox_value && length(selected_values) > 0) {
+          filtered_data <- filtered_data[filtered_data[[filter]] %in% selected_values, ]
+        } else if (checkbox_value && length(selected_values) > 0) {
+
+          filtered_data <- filtered_data[filtered_data[[filter]] %in% selected_values, ]
+        }
+      }
+
+      filtered_data
+    })
+
+
+
+    # Render the filtered table
+    output$filtered_table <- renderDataTable({
+      filtered_data()
+    }, options = list(
+      scrollX = TRUE,
+      columnDefs = list(list(targets = "_all", className = "dt-no-wrap"))
+    ))
+
+    # Add a download button
+    output$download_button_filtered_data_df <- downloadHandler(
+      filename = function() {
+        selected_filters <- paste(input$selected_filters, collapse = "_")
+        paste("filtered_data_", selected_filters, "_", Sys.Date(), ".csv", sep = "")
+      },
+      content = function(file) {
+        filtered_data_df <- filtered_data()
+        write.csv(filtered_data_df, file, row.names = FALSE)
+      }
+    )
+
+    # output$download_filters_button <- downloadHandler(
+    #   filename = function() {
+    #     paste("selected_filters", Sys.Date(), ".txt", sep = "_")
+    #   },
+    #   content = function(file) {
+    #     selected_filters <- input$selected_filters
+    #     writeLines(selected_filters, file)
+    #   }
+    # )
+
 
   }
 
