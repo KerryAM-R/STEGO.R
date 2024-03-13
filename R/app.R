@@ -231,6 +231,7 @@ runSTEGO <- function(){
   }
 
   ###################
+  ###################
   # UI page -----
   ui <- fluidPage(
 
@@ -2650,9 +2651,6 @@ navbarPage(
              # p("Convert .h5Seurat to .rds")
     ),
     # post analysis OLGA ------
-
-
-
     tabPanel("OLGA",
              fluidRow(
 
@@ -19081,15 +19079,29 @@ navbarPage(
       )
       md <- sc@meta.data
       req(input$chain_type_olga)
-      md2 <- md[,names(md) %in% c("junction_aa_BD","junction_aa_AG","chain_AG","chain_BD")]
+      md2 <- md[,names(md) %in% c("junction_aa_BD","cdr3_BD","junction_aa_AG","cdr3_AG","chain_AG","chain_BD")]
+      print(names(md2))
+      print("cdr3_BD"  %in% names(md2))
+      if("cdr3_BD"  %in% names(md2)) {
+        if(input$chain_type_olga == "TRB") {
+          md2 <- subset(md2,md2$chain_BD == "TRB")
+          md2 <- md2[,names(md2) %in% c("chain_BD","cdr3_BD")]
+        } else {
+          md2 <- subset(md2,md2$chain_AG == "TRA")
+          md2 <- md2[,names(md2) %in% c("chain_AG","cdr3_AG")]
+        }
 
-      if(input$chain_type_olga == "TRB") {
-        md2 <- subset(md2,md2$chain_BD == "TRB")
-        md2 <- md2[,names(md2) %in% c("chain_BD","junction_aa_BD")]
       } else {
-        md2 <- subset(md2,md2$chain_AG == "TRA")
-        md2 <- md2[,names(md2) %in% c("chain_AG","junction_aa_AG")]
+        if(input$chain_type_olga == "TRB") {
+          md2 <- subset(md2,md2$chain_BD == "TRB")
+          md2 <- md2[,names(md2) %in% c("chain_BD","junction_aa_BD")]
+        } else {
+          md2 <- subset(md2,md2$chain_AG == "TRA")
+          md2 <- md2[,names(md2) %in% c("chain_AG","junction_aa_AG")]
+        }
       }
+
+
 
       md2 <- md2[complete.cases(md2),]
       as.data.frame(md2)
@@ -19110,20 +19122,38 @@ navbarPage(
       md <- sc@meta.data
       req(input$chain_type_olga)
 
-      md2 <- md[,names(md) %in% c("junction_aa_BD","junction_aa_AG","chain_AG","chain_BD")]
+      md2 <- md[,names(md) %in% c("junction_aa_BD","cdr3_BD","junction_aa_AG","cdr3_AG","chain_AG","chain_BD")]
+      if("cdr3_BD"  %in% names(md2)) {
 
-      if(input$chain_type_olga == "TRB") {
-        md2 <- subset(md2,md2$chain_BD == "TRB")
-        md2 <- md2[,names(md2) %in% c("chain_BD","junction_aa_BD")]
-        df <- unique(md2$junction_aa_BD)
-        pgen_dat <- as.data.frame(matrix(ncol = 2, nrow = length(df)))
+        if(input$chain_type_olga == "TRB") {
+          md2 <- subset(md2,md2$chain_BD == "TRB")
+          md2 <- md2[,names(md2) %in% c("chain_BD","cdr3_BD")]
+          df <- unique(md2$cdr3_BD)
+          pgen_dat <- as.data.frame(matrix(ncol = 2, nrow = length(df)))
 
-      } else {
-        md2 <- subset(md2,md2$chain_AG == "TRA")
-        md2 <- md2[,names(md2) %in% c("chain_AG","junction_aa_AG")]
-        df <- unique(md2$junction_aa_AG)
-        pgen_dat <- as.data.frame(matrix(ncol = 2, nrow = length(df)))
+        } else {
+          md2 <- subset(md2,md2$chain_AG == "TRA")
+          md2 <- md2[,names(md2) %in% c("chain_AG","cdr3_AG")]
+          df <- unique(md2$cdr3_AG)
+          pgen_dat <- as.data.frame(matrix(ncol = 2, nrow = length(df)))
+        }
 
+      }
+
+      else {
+        if(input$chain_type_olga == "TRB") {
+          md2 <- subset(md2,md2$chain_BD == "TRB")
+          md2 <- md2[,names(md2) %in% c("chain_BD","junction_aa_BD")]
+          df <- unique(md2$junction_aa_BD)
+          pgen_dat <- as.data.frame(matrix(ncol = 2, nrow = length(df)))
+
+        } else {
+          md2 <- subset(md2,md2$chain_AG == "TRA")
+          md2 <- md2[,names(md2) %in% c("chain_AG","junction_aa_AG")]
+          df <- unique(md2$junction_aa_AG)
+          pgen_dat <- as.data.frame(matrix(ncol = 2, nrow = length(df)))
+
+        }
       }
 
       colnames(pgen_dat) = c("cdr3_aa","pgen")
@@ -19142,15 +19172,12 @@ navbarPage(
         text <- dfoutput[2]
         split_substring <- str_split(text, " ")[[1]]
 
-
         # Remove the colon character from the first element
         split_substring[7] <- str_replace_all(split_substring[7], ":", "")
-        split_substring
-
         pgen_dat[i,1] <- split_substring[7]
         pgen_dat[i,2] <- as.numeric(split_substring[8])
         message(paste("Compeleted",i,"of",length(df)))
-        print(pgen_dat[i,])
+        # print(pgen_dat[i,])
       }
 
       pgen_dat
@@ -19178,7 +19205,6 @@ navbarPage(
         write.csv(df, file, row.names = F)
       }
     )
-
 
     ### filtering clustering table in post analysis ------
     getData_FilteringCluster <- reactive({
