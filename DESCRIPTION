@@ -1,6 +1,6 @@
 Package: STEGO.R
 Title: Analysis of single cell RNA-seq with paired T cell receptor repertiore datasets
-Version: 1.9.5-05
+Version: 1.9.5-15
 Authors@R: 
     person("Kerry", "Mullan", , "Kerry.Mullan@uantwerpen.be", role = c("aut", "cre"),
            comment = c(ORCID = "0000-0003-4400-1198"))
@@ -17,7 +17,6 @@ Imports:
     ComplexHeatmap,
     corrplot,
     dplyr,
-    dior,
     DT,
     extrafont,
     forcats,
@@ -70,7 +69,6 @@ Imports:
     stringi,
     stats4
 Remotes:
-  github::JiekaiLab/dior,
   github::mojaveazure/seurat-disk,
   github::satijalab/seurat-data,
   github::KerryAM-R/ClusTCR2,
