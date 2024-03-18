@@ -8,12 +8,11 @@ runSTEGO <- function(){
   suppressMessages(require("bslib"))
   suppressMessages(require("circlize")) # colorRamp2
   suppressMessages(suppressWarnings(require("ClusTCR2")))
-
   suppressMessages(require("ComplexHeatmap"))
   suppressMessages(require("corrplot"))
   suppressMessages(require("doParallel"))
   suppressMessages(require("dplyr"))
-  suppressMessages(require("dior"))
+  # suppressMessages(require("dior"))
   suppressMessages(require("DT"))
   suppressMessages(require("extrafont"))
   suppressMessages(require("forcats"))

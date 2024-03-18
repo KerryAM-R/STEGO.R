@@ -17,7 +17,6 @@ Imports:
     ComplexHeatmap,
     corrplot,
     dplyr,
-    dior,
     DT,
     extrafont,
     forcats,
@@ -70,7 +69,6 @@ Imports:
     stringi,
     stats4
 Remotes:
-  github::JiekaiLab/dior,
   github::mojaveazure/seurat-disk,
   github::satijalab/seurat-data,
   github::KerryAM-R/ClusTCR2,
