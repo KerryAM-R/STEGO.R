@@ -231,7 +231,6 @@ runSTEGO <- function(){
   }
 
   ###################
-  ###################
   # UI page -----
   ui <- fluidPage(
 
@@ -398,8 +397,8 @@ navbarPage(
           conditionalPanel(
             condition = "input.Format_bd=='Barcode_features_matrix'",
             fileInput("file_barcode_bd", "Barcode file (.tsv.gz or .tsv)"),
-            fileInput("file_matrix_bd", "Matrix file"),
             fileInput("file_features_bd", "Features file (.tsv.gz or .tsv)"),
+            fileInput("file_matrix_bd", "Matrix file"),
           ),
           conditionalPanel(
             condition = "input.Format_bd=='cellXgene'",
@@ -411,7 +410,7 @@ navbarPage(
             ),
           ),
           h5("Upload the TCR Contig file"),
-          selectInput("filtered_list", "Contig Format", choices = c("Paired", "Dominant", "Unfiltered")),
+          selectInput("filtered_list", "Contig Format", choices = c("Paired", "Dominant", "Unfiltered"), selected = "Dominant"),
           conditionalPanel(
             condition = "input.filtered_list=='Paired'",
             fluidRow(
@@ -423,8 +422,8 @@ navbarPage(
           ),
           conditionalPanel(
             condition = "input.filtered_list=='Dominant' || input.filtered_list=='Unfiltered'",
-            fileInput("file_TCR_bd2", "Contig AIRR file (.tsv)",
-                      accept = c(".tsv", "tsv")
+            fileInput("file_TCR_bd2", "Contig AIRR file (tsv or tsv.gz)",
+                      accept = c(".tsv", "tsv",".tsv.gz","tsv.gz")
             )
           ),
           ### filter out non-function TCR and un-paired TCR
@@ -443,6 +442,7 @@ navbarPage(
           ),
           fluidRow(
             column(6, checkboxInput("filtering_TCR", "paired chains?", value = FALSE, width = NULL), ),
+            column(6, checkboxInput("TCR_present", "TCR present?", value = TRUE, width = NULL), ),
             column(6, checkboxInput("BCR_present", "BCR present?", value = FALSE, width = NULL), ),
           ),
         ),
@@ -589,6 +589,7 @@ navbarPage(
         )
       )
     ),
+
 
 
 
@@ -3162,8 +3163,7 @@ navbarPage(
       }
     })
 
-
-    filtering_required <- reactive({
+    filtering_required_TCR <- reactive({
       contigs <- input.data.TCR.bd2()
 
       validate(
@@ -3176,6 +3176,14 @@ navbarPage(
       TCR_unfiltered <- contigs
       TCR_unfiltered$seq_issue <- ifelse(grepl("[*]", TCR_unfiltered$sequence_alignment_aa), "stop-codon", "productive")
       TCR_unfiltered_prod <- subset(TCR_unfiltered, TCR_unfiltered$seq_issue == "productive")
+      print(names(TCR_unfiltered_prod))
+      if(length(TCR_unfiltered_prod$cdr3_length)>0) {
+      } else {
+        message("adding junction length")
+        TCR_unfiltered_prod$cdr3_length <- nchar(TCR_unfiltered_prod$junction_aa)
+
+      }
+
       TCR_unfiltered_prod <- subset(TCR_unfiltered_prod, TCR_unfiltered_prod$cdr3_length < 30)
       TCR_unfiltered_prod <- subset(TCR_unfiltered_prod, TCR_unfiltered_prod$cdr3_length > 5)
       df_unique <- TCR_unfiltered_prod[, names(TCR_unfiltered_prod) %in% c("locus", "junction_aa")]
@@ -3193,6 +3201,8 @@ navbarPage(
                                                       )
                                                )
       )
+
+
 
       TCR_unfiltered_prod_junc <- subset(TCR_unfiltered_prod, TCR_unfiltered_prod$juct_issue != "blank")
 
@@ -3296,13 +3306,15 @@ navbarPage(
       )
 
       if (input$filtered_list == "Unfiltered") {
-        contigs <- filtering_required()
+        contigs <- filtering_required_TCR()
       } else {
         contigs <- contigs
       }
       names(contigs)[names(contigs) %in% "cell_id"] <- "Cell_Index"
-      contigs_merge <- merge(contigs, sample_tags, by = "Cell_Index")
+      print(head(contigs))
 
+      contigs_merge <- merge(contigs, sample_tags, by = "Cell_Index")
+      print(head(contigs_merge))
       # remove non-functional sequences
       if (nrow(contigs_merge[-c(grep("[*]", contigs_merge$junction_aa)), ] > 0)) {
         contigs_merge <- contigs_merge[-c(grep("[*]", contigs_merge$junction_aa)), ]
@@ -3328,8 +3340,6 @@ navbarPage(
       contigs_lim$v_gene <- gsub("[*]0.", "", contigs_lim$v_call)
       contigs_lim$j_gene <- gsub("[*]0.", "", contigs_lim$j_call)
       contigs_lim$d_gene <- gsub("[*]0.", "", contigs_lim$d_call)
-      # contigs_lim$v_gene_BD <- gsub("[*]0.","",calls_TCR_paired.fun$TCR_Beta_Delta_V_gene_Dominant)
-      # names(contigs_lim)   <-  gsub("_call","_gene",names(contigs_lim))
       contigs_lim
 
       names(contigs_lim)[names(contigs_lim) %in% input$locus_column] <- "chain"
@@ -3451,66 +3461,52 @@ navbarPage(
         }
       }
 
-
-      contig_BD
-
       if (input$filtered_list == "Unfiltered") {
         contig_paired <- merge(contig_AG, contig_BD, by = c("Cell_Index", "Sample_Name", names(contig_BD[grep("seq_", names(contig_BD))]), "Clonality", "pairing_type"), all = T)
       } else {
-        contig_paired <- merge(contig_AG, contig_BD, by = c("cell_id", "Sample_Name"), all = T)
+        contig_paired <- merge(contig_AG, contig_BD, by = c("Cell_Index", "Sample_Name"), all = T)
       }
-      contig_paired
-
-      # if (input$filtered_list == "Unfiltered") {
-      #   if (length(contigs_lim$Clonality[contigs_lim$Clonality == "B D"])>0) {
-      contig_paired$pairing <- ifelse(contig_paired$Clonality == "AB", "abTCR Paired",
-                                      ifelse(contig_paired$Clonality == "GD", "gdTCR Paired",
-                                             ifelse(contig_paired$Clonality == "B D", "bdTCR Paired",
-                                                    ifelse(contig_paired$Clonality == "B G", "bgTCR Paired",
-                                                           ifelse(contig_paired$Clonality == "A D", "adTCR Paired",
-                                                                  ifelse(contig_paired$Clonality == "B", "orphan B",
-                                                                         ifelse(contig_paired$Clonality == "A", "orphan A",
-                                                                                ifelse(contig_paired$Clonality == "G", "orphan G",
-                                                                                       ifelse(contig_paired$Clonality == "D", "orphan D", NA)
-                                                                                )
-                                                                         )
-                                                                  )
-                                                           )
-                                                    )
-                                             )
-                                      )
-      )
-
-      # }} else {
-      #   contig_paired$pairing <- ifelse(contig_paired$chain_BD=="TRB" & contig_paired$chain_AG=="TRA","abTCR Paired",
-      #   ifelse(contig_paired$chain_BD=="TRD" & contig_paired$chain_AG=="TRG","gdTCR Paired",NA
-      #   ))
-      #   }
+      print("merged AG and BD")
 
 
-
-
-      contig_paired$pairing[is.na(contig_paired$pairing)] <- "OTHER"
-
-      # name.list2 <- names(contig_paired)[!names(contig_paired)%in% c("d_gene_AG", "c_gene_AG","c_gene_BD")]
-      # contig_paired <- contig_paired[,names(contig_paired) %in% name.list2]
-      contig_paired
+      if (input$filtered_list == "Unfiltered") {
+        contig_paired$pairing <- ifelse(contig_paired$Clonality == "AB", "abTCR Paired",
+                                        ifelse(contig_paired$Clonality == "GD", "gdTCR Paired",
+                                               ifelse(contig_paired$Clonality == "B D", "bdTCR Paired",
+                                                      ifelse(contig_paired$Clonality == "B G", "bgTCR Paired",
+                                                             ifelse(contig_paired$Clonality == "A D", "adTCR Paired",
+                                                                    ifelse(contig_paired$Clonality == "B", "orphan B",
+                                                                           ifelse(contig_paired$Clonality == "A", "orphan A",
+                                                                                  ifelse(contig_paired$Clonality == "G", "orphan G",
+                                                                                         ifelse(contig_paired$Clonality == "D", "orphan D", NA)
+                                                                                  )
+                                                                           )
+                                                                    )
+                                                             )
+                                                      )
+                                               )
+                                        )
+        )
+        print(table(contig_paired$pairing))
+        contig_paired$pairing[is.na(contig_paired$pairing)] <- "OTHER"
+        print(table(contig_paired$pairing))
+      }
 
       contig_paired_only <- contig_paired
       contig_paired_only[is.na(contig_paired_only)] <- "None"
       contig_paired_only[contig_paired_only == ""] <- "None"
       contig_paired_only$d_gene_BD[contig_paired_only$d_gene_BD == "None"] <- "_"
       # contig_paired_only$d_gene_AG[contig_paired_only$d_gene_AG == 'None'] <- "_"
-      contig_paired_only
+
       if (input$filtering_TCR == T) {
         contig_paired_only <- subset(contig_paired_only, contig_paired_only$junction_AG != "None")
         contig_paired_only <- subset(contig_paired_only, contig_paired_only$junction_BD != "None")
-        contig_paired_only
+        print(dim(contig_paired_only))
       }
-      contig_paired_only
+
       contig_paired_only$vj_gene_AG <- paste(contig_paired_only$v_gene_AG, contig_paired_only$j_gene_AG, sep = ".")
       contig_paired_only$vj_gene_AG <- gsub("None.None", "", contig_paired_only$vj_gene_AG)
-      contig_paired_only
+
       contig_paired_only$vj_gene_BD <- paste(contig_paired_only$v_gene_BD, contig_paired_only$j_gene_BD, sep = ".")
       contig_paired_only$vj_gene_BD <- gsub(".NA.", ".", contig_paired_only$vj_gene_BD)
       contig_paired_only$vj_gene_BD <- gsub("[.]None[.]", ".", contig_paired_only$vj_gene_BD)
@@ -3562,7 +3558,7 @@ navbarPage(
         contig_paired_only <- contig_paired_only %>%
           select(
             all_of(c(
-              "Cell_Index", "Sample_Name", "Sample_Tag", "pairing", "cell_type_experimental_AG", "cell_type_experimental_BD", "chain_AG", "chain_BD",
+              "Cell_Index", "Sample_Name", "Sample_Tag", "cell_type_experimental_AG", "cell_type_experimental_BD", "chain_AG", "chain_BD",
               names(contig_paired_only[grep("call", names(contig_paired_only))])
             )),
             everything()
@@ -3575,6 +3571,344 @@ navbarPage(
       # merge(sample_tags,contig_paired_only,by.x="cell_id",by.y="Cell_Index",all=T)
     }
 
+    filtering_required_BCR <- reactive({
+      contigs <- input.data.TCR.bd2()
+
+      validate(
+        need(
+          nrow(contigs) > 0,
+          "Upload files"
+        )
+      )
+
+      TCR_unfiltered <- contigs
+      TCR_unfiltered$seq_issue <- ifelse(grepl("[*]", TCR_unfiltered$sequence_alignment_aa), "stop-codon", "productive")
+      TCR_unfiltered_prod <- subset(TCR_unfiltered, TCR_unfiltered$seq_issue == "productive")
+      print(names(TCR_unfiltered_prod))
+      if(length(TCR_unfiltered_prod$cdr3_length)>0) {
+      } else {
+        message("adding junction length")
+        TCR_unfiltered_prod$cdr3_length <- nchar(TCR_unfiltered_prod$junction_aa)
+      }
+
+      TCR_unfiltered_prod <- subset(TCR_unfiltered_prod, TCR_unfiltered_prod$cdr3_length < 30)
+      TCR_unfiltered_prod <- subset(TCR_unfiltered_prod, TCR_unfiltered_prod$cdr3_length > 5)
+      df_unique <- TCR_unfiltered_prod[, names(TCR_unfiltered_prod) %in% c("locus", "junction_aa")]
+      df_unique$Clonal_Expanded <- 1
+      df_unique_sum <- ddply(df_unique, names(df_unique)[-c(3)], numcolwise(sum))
+
+      count.chain <- as.data.frame(table(TCR_unfiltered_prod_junc$cell_id))
+      names(count.chain) <- c("cell_id", "seq_identified")
+
+      TCR_unfiltered_prod_junc_seq <- merge(TCR_unfiltered_prod_junc, count.chain, by = "cell_id")
+      sum_tab <- TCR_unfiltered_prod_junc_seq[, names(TCR_unfiltered_prod_junc_seq) %in% c("locus", "cell_id")]
+      sum_tab$count <- 1
+      sum_tab_2 <- as.data.frame(ddply(sum_tab, names(sum_tab)[1:2], numcolwise(sum)))
+      count.chain <- as.data.frame(table(TCR_unfiltered_prod_junc_seq$cell_id, TCR_unfiltered_prod_junc_seq$locus))
+      names(count.chain) <- c("cell_id", "chain", "seq_identified")
+
+      IGH <- subset(count.chain, count.chain$chain == "IgH")
+      names(IGH)[2:3] <- paste0(names(IGH), "_IGH")[2:3]
+      IGL <- subset(count.chain, count.chain$chain == "IGL")
+      names(IGL)[2:3] <- paste0(names(TRB), "_IGL")[2:3]
+      IGK <- subset(count.chain, count.chain$chain == "IGK")
+      names(IGK)[2:3] <- paste0(names(TRD), "_IGK")[2:3]
+
+      IgHL <- merge(IGH, IGL, by = "cell_id")
+      IgHK <- merge(IGH, IGK, by = "cell_id")
+      IgHL_IgHK <- merge(IgHL, IgHK, by = "cell_id")
+      names(IgHL_IgHK)
+      print(head(IgHL_IgHK))
+      # TRAB_TRGD_2 <- TRAB_TRGD %>%
+      #   mutate(Clonality = case_when(
+      #     seq_identified_TRA > 0 & seq_identified_TRB > 0 & seq_identified_TRG > 0 & seq_identified_TRD > 0 ~ "AB GD", # all
+      #     # three chains called
+      #     seq_identified_TRA > 0 & seq_identified_TRB > 0 & seq_identified_TRG > 0 & seq_identified_TRD == 0 ~ "AB G",
+      #     seq_identified_TRA > 0 & seq_identified_TRB > 0 & seq_identified_TRG == 0 & seq_identified_TRD > 0 ~ "AB D",
+      #     seq_identified_TRA > 0 & seq_identified_TRB == 0 & seq_identified_TRG > 0 & seq_identified_TRD > 0 ~ "A GD",
+      #     seq_identified_TRA == 0 & seq_identified_TRB > 0 & seq_identified_TRG > 0 & seq_identified_TRD > 0 ~ "B GD",
+      #     # two chains called
+      #     seq_identified_TRA > 0 & seq_identified_TRB > 0 & seq_identified_TRG == 0 & seq_identified_TRD == 0 ~ "AB",
+      #     seq_identified_TRA == 0 & seq_identified_TRB == 0 & seq_identified_TRG > 0 & seq_identified_TRD > 0 ~ "GD",
+      #     seq_identified_TRA == 0 & seq_identified_TRB > 0 & seq_identified_TRG > 0 & seq_identified_TRD == 0 ~ "B G",
+      #     seq_identified_TRA == 0 & seq_identified_TRB > 0 & seq_identified_TRG == 0 & seq_identified_TRD > 0 ~ "B D",
+      #     seq_identified_TRA > 0 & seq_identified_TRB == 0 & seq_identified_TRG == 0 & seq_identified_TRD > 0 ~ "A D",
+      #     seq_identified_TRA > 0 & seq_identified_TRB == 0 & seq_identified_TRG > 0 & seq_identified_TRD == 0 ~ "A G",
+      #     # one chains called
+      #     seq_identified_TRA > 0 & seq_identified_TRB == 0 & seq_identified_TRG == 0 & seq_identified_TRD == 0 ~ "A",
+      #     seq_identified_TRA == 0 & seq_identified_TRB > 0 & seq_identified_TRG == 0 & seq_identified_TRD == 0 ~ "B",
+      #     seq_identified_TRA == 0 & seq_identified_TRB == 0 & seq_identified_TRG > 0 & seq_identified_TRD == 0 ~ "G",
+      #     seq_identified_TRA == 0 & seq_identified_TRB == 0 & seq_identified_TRG == 0 & seq_identified_TRD > 0 ~ "D",
+      #     TRUE ~ "Other"
+      #   ))
+      # TRAB_TRGD_paired <- TRAB_TRGD_2
+      # TRAB_TRGD_paired <- TRAB_TRGD_paired[, !grepl("chain_", names(TRAB_TRGD_paired))]
+      # TRAB_TRGD_paired$sum <- rowSums(TRAB_TRGD_paired[2:5])
+      # names(TRAB_TRGD_paired)
+      # head(TRAB_TRGD_paired)
+      # TRAB_TRGD_paired$pairing_type <- ifelse(TRAB_TRGD_paired$Clonality == "AB" & TRAB_TRGD_paired$sum == 2, "standard AB",
+      #                                         ifelse(TRAB_TRGD_paired$Clonality == "GD" & TRAB_TRGD_paired$sum == 2, "standard GD",
+      #                                                ifelse(TRAB_TRGD_paired$sum == 1, "Unpaired",
+      #                                                       "non-standard"
+      #                                                )
+      #                                         )
+      # )
+      #
+      # df <- merge(TCR_unfiltered_prod_junc_seq, TRAB_TRGD_paired, by = "cell_id")
+      # df_2 <- df
+      # Standard_AB <- subset(df_2, df_2$pairing_type == "standard AB")
+      # Standard_GD <- subset(df_2, df_2$pairing_type == "standard GD")
+      # non_standard <- subset(df_2, df_2$pairing_type == "non-standard")
+      # non_standard <- non_standard[order(non_standard$consensus_count, decreasing = T), ]
+      # non_standard$filter <- paste(non_standard$cell_id, non_standard$locus)
+      # non_standard2 <- non_standard[!duplicated(non_standard$filter), ]
+      # non_standard2 <- non_standard2[order(non_standard2$cell_id, decreasing = F), ]
+      # unique(non_standard2$Clonality)
+      # non_standard2$Standard_to_keep <- ifelse(non_standard2$Clonality == "AB G" & non_standard2$locus == "TRG", "remove_G",
+      #                                          ifelse(non_standard2$Clonality == "AB D" & non_standard2$locus == "TRD", "remove_D",
+      #                                                 ifelse(non_standard2$Clonality == "B GD" & non_standard2$locus == "TRB", "remove_B",
+      #                                                        ifelse(non_standard2$Clonality == "A GD" & non_standard2$locus == "TRA", "remove_A",
+      #                                                               ifelse(non_standard2$Clonality == "AB GD" & c(non_standard2$locus == "TRG" | non_standard2$locus == "TRD"), "remove_GD", "keep")
+      #                                                        )
+      #                                                 )
+      #                                          )
+      # )
+      #
+      # non_standard <- subset(non_standard2, non_standard2$Standard_to_keep == "keep")
+      # non_standard <- non_standard[, !names(non_standard) %in% c("filter", "Standard_to_keep")]
+      # dim(non_standard)
+      #
+      #
+      # Filtered_TCR_list <- rbind(Standard_AB, Standard_GD, non_standard)
+      # Filtered_TCR_list <- Filtered_TCR_list[order(Filtered_TCR_list$cell_id, decreasing = F), ]
+      # contigs <- Filtered_TCR_list
+      # contigs
+    })
+
+    tb_bd_meta.data_BCR <- function() {
+      contigs <- input.data.TCR.bd2()
+      sample_tags <- input.data.calls.bd()
+      validate(
+        need(
+          nrow(contigs) > 0 && nrow(sample_tags) > 0,
+          "Upload files"
+        )
+      )
+
+      if (input$filtered_list == "Unfiltered") {
+        contigs <- filtering_required_BCR()
+      } else {
+        contigs <- contigs
+      }
+      names(contigs)[names(contigs) %in% "cell_id"] <- "Cell_Index"
+      contigs_merge <- merge(contigs, sample_tags, by = "Cell_Index")
+
+      if (nrow(contigs_merge[-c(grep("[*]", contigs_merge$junction_aa)), ] > 0)) {
+        contigs_merge <- contigs_merge[-c(grep("[*]", contigs_merge$junction_aa)), ]
+      }
+
+      # removed undefined sequences
+
+      contigs_merge <- subset(contigs_merge, contigs_merge$Sample_Name != "Multiplet")
+      contigs_merge <- subset(contigs_merge, contigs_merge$Sample_Name != "Undetermined")
+
+      if (input$filtered_list == "Unfiltered") {
+        contigs_lim <- contigs_merge[!names(contigs_merge) %in% c(
+          "consensus_count", "sequence_id", "duplicate_count", "germline_alignment", "reads", "length", "cdr3", "rev_comp", "complete_vdj", names(contigs_merge[grep("fwr", names(contigs_merge))]), "cdr1", "cdr2", "productive", names(contigs_merge[grep("sequence", names(contigs_merge))]), names(contigs_merge[grep("cigar", names(contigs_merge))]), names(contigs_merge[grep("support", names(contigs_merge))]), "Sample_Tag", "sum", "dominant", "putative_cell", "juct_issue", "seq_issue", "c_call"
+          # "sum","dominant","putative_cell","seq_issue","juct_issue"
+        )]
+      } else {
+        contigs_lim <- contigs_merge[!names(contigs_merge) %in% c(
+          "consensus_count", "sequence_id", "duplicate_count", "germline_alignment", "reads", "length", "cdr3", "rev_comp", "complete_vdj", names(contigs_merge[grep("fwr", names(contigs_merge))]), "cdr1", "cdr2", "productive", names(contigs_merge[grep("sequence", names(contigs_merge))]), names(contigs_merge[grep("cigar", names(contigs_merge))]), names(contigs_merge[grep("support", names(contigs_merge))]), "Sample_Tag"
+          # "sum","dominant","putative_cell","seq_issue","juct_issue"
+        )]
+      }
+
+      contigs_lim$v_gene <- gsub("[*]0.", "", contigs_lim$v_call)
+      contigs_lim$j_gene <- gsub("[*]0.", "", contigs_lim$j_call)
+      contigs_lim$d_gene <- gsub("[*]0.", "", contigs_lim$d_call)
+
+      names(contigs_lim)[names(contigs_lim) %in% input$locus_column] <- "chain"
+
+      contig_IgH <- subset(contigs_lim, contigs_lim$chain == "IGH")
+
+      if (input$filtered_list == "Unfiltered") {
+        contig_IgH <- contig_IgH[!duplicated(contig_IgH$Cell_Index), ]
+        name.list <- names(contig_IgH[c(
+          names(contig_IgH[grep("gene", names(contig_IgH))]),
+          names(contig_IgH[grep("call", names(contig_IgH))]),
+          names(contig_IgH[grep("cdr3", names(contig_IgH))]),
+          names(contig_IgH[grep("cdr2", names(contig_IgH))]),
+          names(contig_IgH[grep("cdr1", names(contig_IgH))]),
+          names(contig_IgH[grep("junction", names(contig_IgH))]),
+          "chain",
+          "cell_type_experimental",
+          "Clonal_Expanded"
+        )])
+      } else {
+        name.list <- names(contig_IgH[c(
+          names(contig_IgH[grep("gene", names(contig_IgH))]),
+          names(contig_IgH[grep("call", names(contig_IgH))]),
+          names(contig_IgH[grep("cdr3", names(contig_IgH))]),
+          names(contig_IgH[grep("cdr2", names(contig_IgH))]),
+          names(contig_IgH[grep("cdr1", names(contig_IgH))]),
+          names(contig_IgH[grep("junction", names(contig_IgH))]),
+          "chain",
+          "cell_type_experimental"
+        )])
+      }
+
+      contig_IgH <- contig_IgH %>%
+        select(all_of(name.list), everything())
+      names(contig_IgH)[1:summary(name.list)[1]] <- paste(names(contig_IgH[names(contig_IgH) %in% name.list]), "_IgH", sep = "")
+
+
+      contig_IgLK <- subset(contigs_lim, contigs_lim$chain == "IGK" | contigs_lim$chain == "IGL")
+
+      if (input$filtered_list == "Unfiltered") {
+        name.list <- names(contig_IgLK[c(
+          names(contig_IgLK[grep("gene", names(contig_IgLK))]),
+          names(contig_IgLK[grep("call", names(contig_IgLK))]),
+          names(contig_IgLK[grep("cdr3", names(contig_IgLK))]),
+          names(contig_IgLK[grep("cdr2", names(contig_IgLK))]),
+          names(contig_IgLK[grep("cdr1", names(contig_IgLK))]),
+          names(contig_IgLK[grep("junction", names(contig_IgLK))]),
+          "chain",
+          "cell_type_experimental",
+          "Clonal_Expanded"
+        )])
+      } else {
+        name.list <- names(contig_IgLK[c(
+          names(contig_IgLK[grep("gene", names(contig_IgLK))]),
+          names(contig_IgLK[grep("call", names(contig_IgLK))]),
+          names(contig_IgLK[grep("cdr3", names(contig_IgLK))]),
+          names(contig_IgLK[grep("cdr2", names(contig_IgLK))]),
+          names(contig_IgLK[grep("cdr1", names(contig_IgLK))]),
+          names(contig_IgLK[grep("junction", names(contig_IgLK))]),
+          "chain",
+          "cell_type_experimental"
+        )])
+      }
+
+      contig_IgLK <- contig_IgLK %>%
+        select(all_of(name.list), everything())
+      names(contig_IgLK)[1:summary(name.list)[1]] <- paste(names(contig_IgLK[names(contig_IgLK) %in% name.list]), "_IgLK", sep = "")
+
+      if (input$filtered_list == "Unfiltered") {
+        contig_paired <- merge(contig_IgH, contig_IgLK, by = c("Cell_Index", "Sample_Name"), all = T)
+        # contig_paired <- merge(contig_AG, contig_BD, by = c("Cell_Index", "Sample_Name", names(contig_BD[grep("seq_", names(contig_BD))]), "Clonality", "pairing_type"), all = T)
+      } else {
+        contig_paired <- merge(contig_IgH, contig_IgLK, by = c("Cell_Index", "Sample_Name"), all = T)
+      }
+      print("merged IgH and IgLK")
+
+
+
+      contig_paired_only <- contig_paired
+      contig_paired_only[is.na(contig_paired_only)] <- "None"
+      contig_paired_only[contig_paired_only == ""] <- "None"
+      contig_paired_only$d_gene_IgH[contig_paired_only$d_gene_IgH == "None"] <- "_"
+      print(names(contig_paired_only))
+      if (input$filtering_TCR == T) {
+        contig_paired_only <- subset(contig_paired_only, contig_paired_only$junction_IgH != "None")
+        contig_paired_only <- subset(contig_paired_only, contig_paired_only$junction_IgLK != "None")
+        print(dim(contig_paired_only))
+      }
+
+
+      # heavy chain
+      contig_paired_only$vj_gene_IgH <- paste(contig_paired_only$v_gene_IgH, contig_paired_only$j_gene_IgH, sep = ".")
+      if (length(gsub("None.None", "", contig_paired_only$vj_gene_IgLK))>0) {
+        contig_paired_only$vj_gene_IgH <- gsub("None.None", "", contig_paired_only$vj_gene_IgH)
+      }
+      contig_paired_only$vj_gene_IgH <- paste(contig_paired_only$v_gene_IgH, contig_paired_only$j_gene_IgH, sep = ".")
+      contig_paired_only$vj_gene_IgH <- gsub(".NA.", ".", contig_paired_only$vj_gene_IgH)
+      contig_paired_only$vj_gene_IgH <- gsub("[.]None[.]", ".", contig_paired_only$vj_gene_IgH)
+      contig_paired_only$vj_gene_IgH <- gsub("None.None", "", contig_paired_only$vj_gene_IgH)
+      print(names(contig_paired_only))
+      contig_paired_only$vj_gene_cdr3_IgH <- paste(contig_paired_only$vj_gene_IgH, contig_paired_only$junction_aa_IgH, sep = "_")
+      contig_paired_only$vj_gene_cdr3_IgH <- gsub("_None", "", contig_paired_only$vj_gene_cdr3_IgH)
+      print(names(contig_paired_only))
+      contig_paired_only$vdj_gene_IgH <- paste(contig_paired_only$v_gene_IgH,contig_paired_only$d_gene_IgH, contig_paired_only$j_gene_IgH, sep = ".")
+      contig_paired_only$vdj_gene_IgH <- gsub(".NA.", ".", contig_paired_only$vdj_gene_IgH)
+      contig_paired_only$vdj_gene_IgH <- gsub("[.]None[.]", ".", contig_paired_only$vdj_gene_IgH)
+      contig_paired_only$vdj_gene_IgH <- gsub("None.None", "", contig_paired_only$vdj_gene_IgH)
+      print(names(contig_paired_only))
+      contig_paired_only$vdj_gene_cdr3_IgH <- paste(contig_paired_only$vdj_gene_IgH, contig_paired_only$junction_aa_IgH, sep = "_")
+      contig_paired_only$vdj_gene_cdr3_IgH <- gsub("_None", "", contig_paired_only$vdj_gene_cdr3_IgH)
+
+      print(names(contig_paired_only))
+      # light and kappa
+
+
+      contig_paired_only$vj_gene_IgLK <- paste(contig_paired_only$v_gene_IgLK, contig_paired_only$j_gene_IgLK, sep = ".")
+      if (length(gsub("None.None", "", contig_paired_only$vj_gene_IgLK))>0) {
+        contig_paired_only$vj_gene_IgLK <- gsub("None.None", "", contig_paired_only$vj_gene_IgLK)
+      }
+
+      #
+      contig_paired_only$vj_gene_IgLK <- paste(contig_paired_only$v_gene_IgLK, contig_paired_only$j_gene_IgLK, sep = ".")
+      contig_paired_only$vj_gene_IgLK <- gsub(".NA.", ".", contig_paired_only$vj_gene_IgLK)
+      contig_paired_only$vj_gene_IgLK <- gsub("[.]None[.]", ".", contig_paired_only$vj_gene_IgLK)
+      contig_paired_only$vj_gene_IgLK <- gsub("None.None", "", contig_paired_only$vj_gene_IgLK)
+      contig_paired_only$vj_gene_cdr3_IgLK <- paste(contig_paired_only$vj_gene_IgLK, contig_paired_only$junction_aa_IgLK, sep = "_")
+      contig_paired_only$vj_gene_cdr3_IgLK <- gsub("_None", "", contig_paired_only$vj_gene_cdr3_IgLK)
+
+      contig_paired_only$vj_gene_IgH_IgLK <- paste(contig_paired_only$vj_gene_IgH, contig_paired_only$vj_gene_IgLK, sep = " & ")
+      contig_paired_only$vdj_gene_IgH_IgLK <- paste(contig_paired_only$vdj_gene_IgH, contig_paired_only$vj_gene_IgLK, sep = " & ")
+      contig_paired_only$vdj_gene_IgH_IgLK <- gsub("^ & ", "", contig_paired_only$vdj_gene_IgH_IgLK)
+      contig_paired_only$vdj_gene_IgH_IgLK <- gsub(" & $", "", contig_paired_only$vdj_gene_IgH_IgLK)
+
+      #updating names to be consistant....
+      contig_paired_only$vj_gene_cdr3_IgH_IgLK <- paste(contig_paired_only$vj_gene_cdr3_IgH, contig_paired_only$vj_gene_cdr3_IgLK, sep = " & ")
+      contig_paired_only$vj_gene_cdr3_IgH_IgLK <- gsub("^ & ", "", contig_paired_only$vj_gene_cdr3_IgH_IgLK)
+      contig_paired_only$vj_gene_cdr3_IgH_IgLK <- gsub(" & $", "", contig_paired_only$vj_gene_cdr3_IgH_IgLK)
+
+      contig_paired_only$vdj_gene_cdr3_IgH_IgLK <- paste(contig_paired_only$vdj_gene_cdr3_IgH, contig_paired_only$vj_gene_cdr3_IgLK, sep = " & ")
+      contig_paired_only$vdj_gene_cdr3_IgH_IgLK <- gsub("^ & ", "", contig_paired_only$vdj_gene_cdr3_IgH_IgLK)
+      contig_paired_only$vdj_gene_cdr3_IgH_IgLK <- gsub(" & $", "", contig_paired_only$vdj_gene_cdr3_IgH_IgLK)
+
+      names(contig_paired_only)[names(contig_paired_only) %in% "cell_id"] <- "Cell_Index"
+      print(names(contig_paired_only))
+
+      contig_paired_only <- contig_paired_only[!duplicated(contig_paired_only$Cell_Index), ] # remove duplicates
+
+      # asdf
+      contig_paired_only <- merge(contig_paired_only, sample_tags, by = c("Cell_Index", "Sample_Name"), all = T)
+
+      if (input$filtered_list == "Unfiltered") {
+        contig_paired_only <- contig_paired_only %>%
+          select(
+            all_of(c(
+              "Cell_Index", "Sample_Name", "Sample_Tag", "pairing", "pairing_type", "Clonality", "seq_identified", "seq_identified_TRA", "seq_identified_TRB", "seq_identified_TRG", "seq_identified_TRD", "cell_type_experimental_IgH", "cell_type_experimental_IgLK", "chain_IgH", "chain_IgLK",
+              names(contig_paired_only[grep("call", names(contig_paired_only))])
+            )),
+            everything()
+          )
+      } else {
+        contig_paired_only <- contig_paired_only %>%
+          select(
+            all_of(c(
+              "Cell_Index", "Sample_Name", "Sample_Tag", "cell_type_experimental_IgH", "cell_type_experimental_IgLK", "chain_IgH", "chain_IgLK",
+              names(contig_paired_only[grep("call", names(contig_paired_only))])
+            )),
+            everything()
+          )
+      }
+
+      contig_paired_only
+      # merge(sample_tags,contig_paired_only,by.x="cell_id",by.y="Cell_Index",all=T)
+    }
+
+    BCR_TCR_md <- reactive({
+      TCR <- tb_bd_meta.data_TCR()
+      BCR <- tb_bd_meta.data_BCR()
+
+      TCR_BCR <- merge(TCR,BCR,by=c("Cell_Index","Sample_Name","Sample_Tag"),all = T)
+      TCR_BCR
+
+
+    })
 
     ## create Sample_tags file =====
 
@@ -3966,7 +4300,26 @@ navbarPage(
           contig_paired_only
         }
       } else {
-        tb_bd_meta.data_TCR()
+
+        if(!input$BCR_present && input$TCR_present){
+          tb_bd_meta.data_TCR()
+        } else if (input$BCR_present && !input$TCR_present) {
+          tb_bd_meta.data_BCR()
+        } else if (input$BCR_present && input$TCR_present) {
+          BCR <-as.data.frame(tb_bd_meta.data_BCR())
+
+          TCR <- tb_bd_meta.data_TCR()
+
+          merge(TCR,BCR,by = c("Cell_Index","Sample_Name","Sample_Tag"),all = T)
+
+
+        } else {
+          as.data.frame("Select TCR and/or BCR")
+
+        }
+
+
+
       }
     }
 
