@@ -13,15 +13,7 @@
 #' \code{new("pcm", mat, name, alphabet, color, background)}.
 #' @keywords classes
 #' @export
-#' @examples
-#'
-#' pcm <- read.table(file.path(find.package("motifStack"), "extdata", "bin_SOLEXA.pcm"))
-#' pcm <- pcm[,3:ncol(pcm)]
-#' rownames(pcm) <- c("A","C","G","T")
-#' motif <- new("pcm", mat=as.matrix(pcm), name="bin_SOLEXA")
-#' plot(motif)
-#' pcm2pfm(pcm)
-#' pcm2pssm(pcm)
+
 setClass(
   "pcm",
   representation(mat="matrix", name="character", alphabet="character",

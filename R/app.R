@@ -45,7 +45,7 @@ runSTEGO <- function(){
   suppressMessages(require("Seurat"))
   suppressMessages(require("SeuratObject"))
   suppressMessages(require("SeuratData"))
-  suppressMessages(require("SeuratDisk"))
+  # suppressMessages(require("SeuratDisk"))
   suppressMessages(require("shiny"))
   suppressMessages(require("shinyBS"))
   suppressMessages(require("shinybusy"))

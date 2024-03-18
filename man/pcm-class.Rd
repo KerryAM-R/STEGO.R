@@ -127,14 +127,6 @@ pcm <- read.table(file.path(find.package("motifStack"), "extdata", "bin_SOLEXA.p
 pcm <- pcm[,3:ncol(pcm)]
 rownames(pcm) <- c("A","C","G","T")
 motif <- new("pcm", mat=as.matrix(pcm), name="bin_SOLEXA")
-plot(motif)
-pcm2pfm(pcm)
-pcm2pssm(pcm)
-
-pcm <- read.table(file.path(find.package("motifStack"), "extdata", "bin_SOLEXA.pcm"))
-pcm <- pcm[,3:ncol(pcm)]
-rownames(pcm) <- c("A","C","G","T")
-motif <- new("pcm", mat=as.matrix(pcm), name="bin_SOLEXA")
 getIC(motif)
 matrixReverseComplement(motif)
 as(motif,"matrix")
