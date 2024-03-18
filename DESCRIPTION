@@ -51,7 +51,6 @@ Imports:
     Seurat,
     SeuratObject,
     SeuratData,
-    SeuratDisk,
     shiny,
     shinyBS,
     shinybusy,
@@ -69,7 +68,6 @@ Imports:
     stringi,
     stats4
 Remotes:
-  github::mojaveazure/seurat-disk,
   github::satijalab/seurat-data,
   github::KerryAM-R/ClusTCR2,
   github::briatte/ggnet,
