@@ -18,6 +18,7 @@ Imports:
     corrplot,
     dplyr,
     DT,
+    DescTools,
     extrafont,
     forcats,
     foreach,
