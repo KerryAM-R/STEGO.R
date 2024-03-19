@@ -4399,6 +4399,7 @@ navbarPage(
       contigs2$cloneCount <- 1
       calls_TCR_paired.fun3 <- ddply(contigs2, names(contigs2)[-c(4)], numcolwise(sum))
       calls_TCR_paired.fun3 <- calls_TCR_paired.fun3[grepl("TRB", calls_TCR_paired.fun3$TRBV_gene), ]
+      calls_TCR_paired.fun3 <- calls_TCR_paired.fun3[,!names(calls_TCR_paired.fun3) %in% "cloneCount"]
       calls_TCR_paired.fun3
     })
 
@@ -6568,6 +6569,7 @@ navbarPage(
         })
         sl <- object.size(merged_object)
         message("The merged object is ", round(sl[1] / 1000^3, 1), " Gb in R env.")
+        getData
         merging_sc_ob$Val2 <- merged_object
       }
     })
@@ -6612,6 +6614,11 @@ navbarPage(
           "Run Variable"
         )
       )
+
+
+
+
+
       gene.names <- rownames(sc@assays$RNA$counts)
 
       gene.names_hs <- gene.names[str_detect(gene.names, "^[A-Z][A-Z/0-9][A-Z/0-9]") &
@@ -6690,6 +6697,15 @@ navbarPage(
           "Run Variable"
         )
       )
+
+      if (input$Seruat_version_merge == "V4") {
+        # var.genes <- as.data.frame(sc@assays$RNA@var.features)
+      } else if (input$Seruat_version_merge == "V5") {
+        sc <- JoinLayers(sc,  assay = "RNA")
+      } else {
+
+      }
+
       all.genes <- rownames(sc)
 
       if (length(all.genes) < 3001) {
