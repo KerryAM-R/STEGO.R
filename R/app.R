@@ -240,6 +240,84 @@ runSTEGO <- function(){
   }
 ")),
 
+# change spinner position -----
+tags$head(
+  tags$style(HTML(
+    ".centered-spinner {
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+      }"
+  ))
+),
+
+# change highlighted text in dropdown menue ------
+tags$head(tags$style(
+  HTML("
+                  .selectize-dropdown-content .active {
+                  background: #E9C2FF !important;
+                  color: #6F00B0 !important;
+                  }
+                  .select-dropdown-content .active {
+                  background: #E9C2FF !important;
+                  color: #6F00B0 !important;
+                  }
+       .selectize-dropdown-content {
+                  background: #6F00B0;
+                  color: #E9C2FF;
+                  }
+                  .select-dropdown-content {
+                  background: #6F00B0;
+                  color: #E9C2FF;
+                  }
+       .selectize-dropdown-content .selected {
+              background: #d8ffc2 !important; /* Red background for selected item */
+              color: #41b000  !important; /* White text color for selected item */
+            }
+
+
+")
+)),
+
+# if I want to update the grey colour of the side bar panel
+tags$head(tags$style(
+  HTML('
+         .well {
+
+        }
+
+        ')
+)),
+
+# change the button colours and hover
+tags$head(
+  tags$style(HTML("
+                  .btn {
+                    border: 2px solid #6F00B0;
+                    color: #6F00B0;
+                    background-color: #E9C2FF;
+                    border-color: #6F00B0
+                    }
+
+                    "))),
+tags$head(tags$style(HTML("
+                  .btn:hover {
+                      border: 2px solid #6F00B0;
+                      color: #E9C2FF;
+                      background-color: #6F00B0;
+                  }
+"))),
+
+tags$head(tags$style(HTML("
+                  .btn:active {
+                        border: 2px solid #41b000 !important;
+                        background: #d8ffc2 !important;
+                        color: #41b000 !important;
+
+                  }
+"))),
+
 tags$head(
   tags$style(HTML("
     .my-selectize .selectize-input {
@@ -247,6 +325,8 @@ tags$head(
     }
   "))
 ),
+
+# progress bar for to be purple and in the centre
 tags$head(tags$style(HTML(".progress-bar {background-color: #6F00B0}"))),
 tags$head(
   tags$style(
@@ -279,11 +359,11 @@ tags$head(
 
 tags$head(tags$style(HTML('
   .navbar-nav > li > .dropdown-menu {font-size: 16px}
-  .navbar-nav > li > .dropdown-menu {background-color: white}
+  .navbar-nav > li > .dropdown-menu {background-color: #E9C2FF}
   .navbar-nav > li.active > .dropdown-menu {background-color: #E9C2FF; color:black}
-.dropdown-menu > li.hover > a {background-color:#6F00B0;}
+  .dropdown-menu > li.hover > a {background-color:#6F00B0;}
   .dropdown-menu > li.active > a {background-color:#6F00B0;}
-.dropdown-menu > li > a:hover {
+  .dropdown-menu > li > a:hover {
     color: white !important;
     background-color: #6F00B0 !important;
                           }
@@ -341,14 +421,14 @@ navbarPage(
             ),
             tabPanel(
               "TCRex",
-              add_busy_spinner(spin = "fading-circle", position = "top-right", margins = c(10, 10), height = "150px", width = "150px", color = "blue"),
+              div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
               div(DT::dataTableOutput("tb_TCRex_10x_df")),
               downloadButton("downloaddf_TCRex_10x", "Download table")
             ),
             tabPanel("Seurat QC",
                      value = 2,
                      tags$head(tags$style("#tb_10x_matrix2  {white-space: nowrap;  }")),
-                     add_busy_spinner(spin = "fading-circle", position = "top-right", margins = c(10, 10), height = "150px", width = "150px", color = "blue"),
+                     div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
                      div(DT::dataTableOutput("tb_10x_matrix2")),
                      tags$head(tags$style("#sum_tb_10x1  {white-space: nowrap;  }")),
                      div(DT::dataTableOutput("sum_tb_10x1")),
@@ -451,30 +531,30 @@ navbarPage(
           tabsetPanel(
             tabPanel(
               "Imported data",
-              add_busy_spinner(spin = "fading-circle", position = "top-right", margins = c(10, 10), height = "150px", width = "150px", color = "blue"),
+              div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
               div(DT::dataTableOutput("test.files")),
               conditionalPanel(
                 condition = "input.Format_bd=='cellXgene'",
-                add_busy_spinner(spin = "fading-circle", position = "top-right", margins = c(10, 10), height = "150px", width = "150px", color = "blue"),
+                div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
                 div(DT::dataTableOutput("test.files3"))
               ),
               conditionalPanel(
                 condition = "input.Format_bd=='Barcode_features_matrix'",
-                add_busy_spinner(spin = "fading-circle", position = "top-right", margins = c(10, 10), height = "150px", width = "150px", color = "blue"),
+                div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
                 div(DT::dataTableOutput("test.files.bd1")),
-                add_busy_spinner(spin = "fading-circle", position = "top-right", margins = c(10, 10), height = "150px", width = "150px", color = "blue"),
+                div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
                 div(DT::dataTableOutput("test.files.bd2")),
-                add_busy_spinner(spin = "fading-circle", position = "top-right", margins = c(10, 10), height = "150px", width = "150px", color = "blue"),
+                div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
                 div(DT::dataTableOutput("test.files.bd3")),
               ),
               conditionalPanel(
                 condition = "input.filtered_list=='Paired'",
-                add_busy_spinner(spin = "fading-circle", position = "top-right", margins = c(10, 10), height = "150px", width = "150px", color = "blue"),
+                div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
                 div(DT::dataTableOutput("test.files2"))
               ),
               conditionalPanel(
                 condition = "input.filtered_list=='Dominant' || input.filtered_list=='Unfiltered'",
-                add_busy_spinner(spin = "fading-circle", position = "top-right", margins = c(10, 10), height = "150px", width = "150px", color = "blue"),
+                div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
                 div(DT::dataTableOutput("test.files.bd4")),
               ),
             ),
@@ -486,23 +566,23 @@ navbarPage(
             tabPanel(
               "clusTCR2",
               tags$head(tags$style("#tb_clusTCR  {white-space: nowrap;  }")),
-              add_busy_spinner(spin = "fading-circle", position = "top-right", margins = c(10, 10), height = "150px", width = "150px", color = "blue"),
+              div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
               div(DT::dataTableOutput("tb_clusTCR")),
               selectInput("chain_clusTCR2_bd", "Select to download", choices = c("AG", "BD", "IgH", "IgLK")),
               downloadButton("downloaddf_clusTCR", "Download table")
             ),
             tabPanel(
               "TCRex",
-              add_busy_spinner(spin = "fading-circle", position = "top-right", margins = c(10, 10), height = "150px", width = "150px", color = "blue"),
+              div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
               div(DT::dataTableOutput("tb_TCRex_BDrap_df")),
               downloadButton("downloaddf_TCRex_BDrap", "Download table")
             ),
             tabPanel(
               "For Seurat",
               tags$head(tags$style("#tb_count_matrix  {white-space: nowrap;  }")),
-              add_busy_spinner(spin = "fading-circle", position = "top-right", margins = c(10, 10), height = "150px", width = "150px", color = "blue"),
+              div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
               div(DT::dataTableOutput("tb_count_matrix")),
-              add_busy_spinner(spin = "fading-circle", position = "top-right", margins = c(10, 10), height = "150px", width = "150px", color = "blue"),
+              div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
               div(DT::dataTableOutput("tb_metadata_sc")),
               fluidRow(
                 column(3, downloadButton("downloadtb_count_matrix", "Download count table")),
@@ -513,7 +593,7 @@ navbarPage(
             tabPanel(
               "TCR_Explore",
               tags$head(tags$style("#tb_TCR_Explore  {white-space: nowrap;  }")),
-              add_busy_spinner(spin = "fading-circle", position = "top-right", margins = c(10, 10), height = "150px", width = "150px", color = "blue"),
+              div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
               div(DT::dataTableOutput("tb_TCR_Explore")),
               downloadButton("downloadtb_TCR_Explore", "Download table")
             ),
@@ -556,26 +636,26 @@ navbarPage(
           tabsetPanel(
             tabPanel(
               "Check files",
-              add_busy_spinner(spin = "fading-circle", position = "top-right", margins = c(10, 10), height = "150px", width = "150px", color = "blue"),
+              div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
               div(DT::dataTableOutput("test.files_array_Matrix")),
-              add_busy_spinner(spin = "fading-circle", position = "top-right", margins = c(10, 10), height = "150px", width = "150px", color = "blue"),
+              div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
               div(DT::dataTableOutput("test.files_array_contig")),
             ),
             tabPanel(
               "Filtering",
-              add_busy_spinner(spin = "fading-circle", position = "top-right", margins = c(10, 10), height = "150px", width = "150px", color = "blue"),
+              div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
               div(DT::dataTableOutput("test.files_array_contig_Filtered")),
             ),
             tabPanel(
               "clusTCR",
-              add_busy_spinner(spin = "fading-circle", position = "top-right", margins = c(10, 10), height = "150px", width = "150px", color = "blue"),
+              div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
               div(DT::dataTableOutput("test.files_ClusTCR2_array")),
               downloadButton("download_ClusTCR2_labs_array"),
             ),
             tabPanel("TCRex"),
             tabPanel(
               "Seurat",
-              add_busy_spinner(spin = "fading-circle", position = "top-right", margins = c(10, 10), height = "150px", width = "150px", color = "blue"),
+              div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
               div(DT::dataTableOutput("tb_array_matrix2")),
               div(DT::dataTableOutput("tb_Array_meta1")),
               fluidRow(
@@ -603,7 +683,7 @@ navbarPage(
                     multiple = TRUE,
                     accept = c(".h5Seurat", "h5Seurat")
           ),
-          add_busy_spinner(spin = "fading-circle", position = "top-right", margins = c(10, 10), height = "150px", width = "150px", color = "blue"),
+          div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
           textInput("project_name5", "Name of Project", value = ""),
           downloadButton("downloaddf_SeruatObj_Convert_to_RDS", "Download converted .rds Seurat Obj")
         ),
@@ -694,13 +774,13 @@ navbarPage(
             id = "clusTCR2_tabs",
             tabPanel("Merge Multiple Files",
                      value = "merge",
-                     add_busy_spinner(spin = "fading-circle", position = "top-right", margins = c(10, 10), height = "150px", width = "150px", color = "blue"),
+                     div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
                      div(DT::dataTableOutput("DEx_multiple_ClusTCR2")),
                      downloadButton("downloaddf_multiple_ClusTCR2", "Download table")
             ),
             tabPanel("Clustering inputs",
                      value = "processing1",
-                     add_busy_spinner(spin = "fading-circle", position = "top-right", margins = c(10, 10), height = "150px", width = "150px", color = "blue"),
+                     div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
                      div(DT::dataTableOutput("clust_dt2_table")),
             ),
             tabPanel("Outputs",
@@ -708,21 +788,15 @@ navbarPage(
                      tabsetPanel(
                        tabPanel(
                          "Processing",
-                         add_busy_spinner(spin = "fading-circle", position = "top-right", margins = c(10, 10), height = "150px", width = "150px", color = "blue"),
+                         div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
                          verbatimTextOutput("ClusTCR2_Time"),
                          verbatimTextOutput("verbatum_ClusTCR2")
                        ),
-
-
-                       # div(DT::dataTableOutput("")),
                        tabPanel(
                          "Table for analysis",
-                         add_busy_spinner(spin = "fading-circle", position = "top-right", margins = c(10, 10), height = "150px", width = "150px", color = "blue"),
+                         div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
                          div(DT::dataTableOutput("ClusTCR2_lab")),
                          p(" "),
-
-                         # verbatimTextOutput('ClusTCR2_lab'),
-                         # div(DT::dataTableOutput("")),
                        ),
                        tabPanel(
                          "Figures",
@@ -822,7 +896,7 @@ navbarPage(
                      ),
                      conditionalPanel(
                        condition = ("input.run_metadata != 0"),
-                       add_busy_spinner(spin = "fading-circle", position = "top-right", margins = c(10, 10), height = "150px", width = "150px", color = "blue"),
+                       div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
                        downloadButton("downloaddf_SeruatObj", "Download Seurat")
                      ),
                      tags$hr(),
@@ -843,7 +917,7 @@ navbarPage(
               tabsetPanel(
                 tabPanel(
                   "Before",
-                  add_busy_spinner(spin = "fading-circle", position = "top-right", margins = c(10, 10), height = "150px", width = "150px", color = "blue"),
+                  div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
                   plotOutput("before_plot_sc", height = "600px"),
                   fluidRow(
                     column(1, numericInput("width_before_plot_sc", "Width of PDF", value = 10)),
@@ -858,7 +932,7 @@ navbarPage(
                 tabPanel(
                   "After",
                   p("hit 'update Violin plot' to check cut-offs"),
-                  add_busy_spinner(spin = "fading-circle", position = "top-right", margins = c(10, 10), height = "150px", width = "150px", color = "blue"),
+                  div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
                   plotOutput("after_plot_sc", height = "600px"),
                   fluidRow(
                     column(1, numericInput("width_after_plot_sc", "Width of PDF", value = 10)),
@@ -875,7 +949,7 @@ navbarPage(
             # Variable features -----
             tabPanel(
               "Top variable features",
-              add_busy_spinner(spin = "fading-circle", position = "top-right", margins = c(10, 10), height = "150px", width = "150px", color = "blue"),
+              div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
               plotOutput("plot_10_features_sc", height = "600px"),
               fluidRow(
                 column(1, numericInput("width_plot_10_features_sc", "Width of PDF", value = 10)),
@@ -890,6 +964,7 @@ navbarPage(
             # Elbow and heatmap  -----
             tabPanel(
               "Elbow Plot",
+              div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
               plotOutput("create_elbowPlot_sc", height = "600px"),
               fluidRow(
                 column(1, numericInput("width_create_elbowPlot_sc", "Width of PDF", value = 10)),
@@ -903,7 +978,7 @@ navbarPage(
             ),
             tabPanel(
               "DimHeatmap",
-              add_busy_spinner(spin = "fading-circle", position = "top-right", margins = c(10, 10), height = "150px", width = "150px", color = "blue"),
+              div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
               plotOutput("create_PCA_heatmap_sc", height = "1000px"),
               fluidRow(
                 column(1, numericInput("width_heatmap_sc", "Width of PDF", value = 10)),
@@ -919,14 +994,14 @@ navbarPage(
             # UMAP  -----
             tabPanel(
               "UMAP",
-              add_busy_spinner(spin = "fading-circle", position = "top-right", margins = c(10, 10), height = "150px", width = "150px", color = "blue"),
+              div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
               plotOutput("create_UMAP_sc", height = "600px")
             ), # Export a table with meta.data and expression.
             tabPanel(
               "Add metadata",
-              add_busy_spinner(spin = "fading-circle", position = "top-right", margins = c(10, 10), height = "150px", width = "150px", color = "blue"),
+              div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
               div(DT::dataTableOutput("DEx_view.meta.dt")),
-              add_busy_spinner(spin = "fading-circle", position = "top-right", margins = c(10, 10), height = "150px", width = "150px", color = "blue"),
+              div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
               div(DT::dataTableOutput("DEx_table_meta.data")),
               # selectInput("","comaprison 1")
             ),
@@ -974,7 +1049,7 @@ navbarPage(
             id = "Merging_and_batching",
             tabPanel("Merge Files",
                      value = "Merging_Harmony",
-                     add_busy_spinner(spin = "fading-circle", position = "top-right", margins = c(10, 10), height = "150px", width = "150px", color = "blue"),
+                     div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
                      tabsetPanel(
                        tabPanel(
                          "uploaded",
@@ -990,32 +1065,32 @@ navbarPage(
             tabPanel(
               "Variable data",
               verbatimTextOutput("testing_mult3"),
-              add_busy_spinner(spin = "fading-circle", position = "top-right", margins = c(10, 10), height = "150px", width = "150px", color = "blue"),
+              div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
               verbatimTextOutput("Scaling_check_output"),
               actionButton("run_var", "Run VariableFeatures"),
-              add_busy_spinner(spin = "fading-circle", position = "top-right", margins = c(10, 10), height = "150px", width = "150px", color = "blue"),
+              div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
               verbatimTextOutput("var_harmony_verbrose")
             ),
             tabPanel(
               "Scale data",
-              add_busy_spinner(spin = "fading-circle", position = "top-right", margins = c(10, 10), height = "150px", width = "150px", color = "blue"),
+              div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
               actionButton("run_scale", "Run Scale"),
               div(DT::dataTableOutput("Tb_scaling_features_for_annotation")),
-              add_busy_spinner(spin = "fading-circle", position = "top-right", margins = c(10, 10), height = "150px", width = "150px", color = "blue"),
+              div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
               verbatimTextOutput("scale_harmony_verbrose")
             ),
             tabPanel(
               "PCA",
-              add_busy_spinner(spin = "fading-circle", position = "top-right", margins = c(10, 10), height = "150px", width = "150px", color = "blue"),
+              div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
               actionButton("run_PCA", "Run PCA"),
-              add_busy_spinner(spin = "fading-circle", position = "top-right", margins = c(10, 10), height = "150px", width = "150px", color = "blue"),
+              div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
               verbatimTextOutput("PCA_harmony_verbrose")
             ),
             tabPanel(
               "harmony",
-              add_busy_spinner(spin = "fading-circle", position = "top-right", margins = c(10, 10), height = "150px", width = "150px", color = "blue"),
+              div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
               actionButton("run_harmony", "Run Harmony"),
-              add_busy_spinner(spin = "fading-circle", position = "top-right", margins = c(10, 10), height = "150px", width = "150px", color = "blue"),
+              div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
               verbatimTextOutput("harmony_verbrose"),
             ),
             tabPanel(
@@ -1025,12 +1100,12 @@ navbarPage(
                 column(6, numericInput("res_merged", "Resolution of clusters", value = 0.5)),
               ),
               actionButton("run_reduction_harmony", "Run Dimentional reduction"),
-              add_busy_spinner(spin = "fading-circle", position = "top-right", margins = c(10, 10), height = "150px", width = "150px", color = "blue"),
+              div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
               verbatimTextOutput("testing_mult4"),
             ),
             tabPanel(
               "UMAP",
-              add_busy_spinner(spin = "fading-circle", position = "top-right", margins = c(10, 10), height = "150px", width = "150px", color = "blue"),
+              div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
               plotOutput("create_UMAP_merged", height = "600px"),
               fluidRow(
                 column(1, numericInput("width_sc_merged", "Width of PDF", value = 10)),
@@ -1073,7 +1148,7 @@ navbarPage(
           tabsetPanel(
             tabPanel(
               "Upload",
-              add_busy_spinner(spin = "fading-circle", position = "top-right", margins = c(10, 10), height = "150px", width = "150px", color = "blue"),
+              div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
               verbatimTextOutput("testing_mult_anno")
             ),
             tabPanel(
@@ -1109,9 +1184,9 @@ navbarPage(
               # human 10x annotations -----
               conditionalPanel(
                 condition = "input.Data_types == '10x_HS' || input.Data_types == 'BD_HS.Full.Panel' || 'BD_HS.Immune.Panel'",
-                add_busy_spinner(spin = "fading-circle", position = "top-right", margins = c(10, 10), height = "150px", width = "150px", color = "blue"),
+                div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
                 fluidRow(
-                  add_busy_spinner(spin = "fading-circle", position = "top-right", margins = c(10, 10), height = "150px", width = "150px", color = "blue"),
+                  div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
                   column(3, checkboxInput("hs_function_scGATE", "Function (Human)", value = F)),
                   column(3, checkboxInput("hs_generic_scGATE", "Generic (Human)", value = F)),
                   column(3, checkboxInput("hs_exhausted_scGATE", "Exhausted (Human)", value = F)),
@@ -1125,7 +1200,7 @@ navbarPage(
               conditionalPanel(
                 "input.Data_types == 'BD_MM_Full.Panel' || input.Data_types =='10x_MM'",
                 h5("Under development"),
-                add_busy_spinner(spin = "fading-circle", position = "top-right", margins = c(10, 10), height = "150px", width = "150px", color = "blue"),
+                div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
                 h6("Curated from Sharland lab"),
                 fluidRow(
                   column(3, checkboxInput("BDrhapsody_scGATE.MM.Tcell", "Major T cell popualtions", value = F)),
@@ -1160,17 +1235,17 @@ navbarPage(
               # human 10x annotations Verbatium -----
               conditionalPanel(
                 condition = "input.Data_types == '10x_HS' || input.Data_types == 'BD_HS.Full.Panel' || 'BD_HS.Immune.Panel'",
-                add_busy_spinner(spin = "fading-circle", position = "top-right", margins = c(10, 10), height = "150px", width = "150px", color = "blue"),
+                div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
                 verbatimTextOutput("scGATE_verbatum_function"),
-                add_busy_spinner(spin = "fading-circle", position = "top-right", margins = c(10, 10), height = "150px", width = "150px", color = "blue"),
+                div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
                 verbatimTextOutput("scGATE_verbatum_generic2"),
-                add_busy_spinner(spin = "fading-circle", position = "top-right", margins = c(10, 10), height = "150px", width = "150px", color = "blue"),
+                div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
                 verbatimTextOutput("scGATE_verbatum_exhausted"),
-                add_busy_spinner(spin = "fading-circle", position = "top-right", margins = c(10, 10), height = "150px", width = "150px", color = "blue"),
+                div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
                 verbatimTextOutput("scGATE_verbatum_senescence"),
-                add_busy_spinner(spin = "fading-circle", position = "top-right", margins = c(10, 10), height = "150px", width = "150px", color = "blue"),
+                div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
                 verbatimTextOutput("scGATE_verbatum_cycling"),
-                add_busy_spinner(spin = "fading-circle", position = "top-right", margins = c(10, 10), height = "150px", width = "150px", color = "blue"),
+                div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
                 verbatimTextOutput("scGATE_verbatum_TCRseq"),
               ),
               conditionalPanel(
@@ -1204,7 +1279,7 @@ navbarPage(
 
             tabPanel(
               "TCR-seq",
-              add_busy_spinner(spin = "fading-circle", position = "top-right", margins = c(10, 10), height = "150px", width = "150px", color = "purple"),
+              add_busy_spinner(spin = "fading-circle", position = "top-right",  height = "200px", width = "200px", color = "purple"),
               div(DT::dataTableOutput("TCR_seq_classification_df")),
             ),
             # display metadata -----
@@ -1285,7 +1360,7 @@ navbarPage(
                 ),
                 tabPanel("Cluster differences (All markers)",
                          value = 5,
-                         add_busy_spinner(spin = "fading-circle", position = "top-right", margins = c(10, 10), height = "150px", width = "150px", color = "blue"),
+                         div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
                          div(DT::dataTableOutput("DEx_table_clusters")),
                          downloadButton("downloaddf_DEx_table_clusters", "Download Table (.csv)")
                 ),
@@ -1299,7 +1374,7 @@ navbarPage(
                 # column(3,checkboxInput("add.kmeans","Add K-means classification", value = F)),
                 # column(3,checkboxInput("add.scGATE","Add scGATE classifications", value = T))
               ),
-              add_busy_spinner(spin = "fading-circle", position = "top-right", margins = c(10, 10), height = "150px", width = "150px", color = "blue"),
+              div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
               div(DT::dataTableOutput("DEx_table_TcellClass_scGATE")),
             )
           ),
@@ -1502,7 +1577,7 @@ navbarPage(
           id = "check_up_files",
           tabPanel("Check files uploaded",
                    value = "up",
-                   add_busy_spinner(spin = "fading-circle", position = "top-right", margins = c(10, 10), height = "150px", width = "150px", color = "blue"),
+                   div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
                    fluidRow(
                      column(12, div(DT::dataTableOutput("meta.data_check_upload"))),
                      column(12, div(DT::dataTableOutput("Sample_names_merging_sc"))),
@@ -1517,7 +1592,7 @@ navbarPage(
           tabPanel("Overview",
                    value = "up2",
                    fluidRow(
-                     add_busy_spinner(spin = "fading-circle", position = "top-right", margins = c(10, 10), height = "150px", width = "150px", color = "blue"),
+                     div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
                      column(12, selectInput("ID_Column_factor", "Order of graph", choices = "", multiple = T, width = "1200px")),
                    ),
                    fluidRow(
@@ -1532,7 +1607,7 @@ navbarPage(
                                 id = "Panel_class",
                                 tabPanel("Percentage",
                                          value = 16,
-                                         add_busy_spinner(spin = "fading-circle", position = "top-right", margins = c(10, 10), height = "150px", width = "150px", color = "blue"),
+                                         div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
                                          verbatimTextOutput("Percent_tab"),
                                          downloadButton("downloaddf_Percent_tab", "Download table")
                                 ),
@@ -1548,7 +1623,7 @@ navbarPage(
                                            column(2, numericInput("Filter_lower_UMAP2_marker_GEX", "UMAP_2 >", value = -20)),
                                            column(2, numericInput("Filter_lower_UMAP2_marker2_GEX", "UMAP_2 <", value = 20)),
                                          ),
-                                         add_busy_spinner(spin = "fading-circle", position = "top-right", margins = c(10, 10), height = "150px", width = "150px", color = "blue"),
+                                         div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
                                          fluidRow(
                                            column(
                                              3,
@@ -1571,7 +1646,7 @@ navbarPage(
                                 ),
                                 tabPanel("Pie chart",
                                          value = 15,
-                                         add_busy_spinner(spin = "fading-circle", position = "top-right", margins = c(10, 10), height = "150px", width = "150px", color = "blue"),
+                                         div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
                                          fluidRow(
                                            # column(3,numericInput("strip_size","Size of header",value = 10)),
                                            column(9, p("Fill = Select function type; Group = Select cluster"))
@@ -1641,7 +1716,7 @@ navbarPage(
                          ),
                          tabPanel("Clonal expansion plots",
                                   value = 2,
-                                  add_busy_spinner(spin = "fading-circle", position = "top-right", margins = c(10, 10), height = "150px", width = "150px", color = "blue"),
+                                  div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
                                   fluidRow(
                                     # uiOutput('myPanel_top_clonal_plot'),
                                     conditionalPanel(
@@ -1691,7 +1766,7 @@ navbarPage(
                                     ),
                                     tabPanel(
                                       "UMAP",
-                                      add_busy_spinner(spin = "fading-circle", position = "top-right", margins = c(10, 10), height = "150px", width = "150px", color = "blue"),
+                                      div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
                                       fluidRow(
                                         column(3, selectInput("filter_umap_expand", "Filter plot", choices = c("no", "yes"))),
                                       ),
@@ -1735,7 +1810,7 @@ navbarPage(
                                           column(4, selectInput("display_all_samps", "Display all sample", choices = c("yes", "no"))),
                                         ),
                                         column(12, selectInput("ID_Column_metadata", "Select to display", choices = "", multiple = T, width = "1200px")),
-                                        add_busy_spinner(spin = "fading-circle", position = "top-right", margins = c(10, 10), height = "150px", width = "150px", color = "blue"),
+                                        div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
                                         fluidRow(
                                           column(
                                             3,
@@ -1826,19 +1901,19 @@ navbarPage(
                               ),
                               tabsetPanel(
                                 # tabPanel("Table",
-                                #          add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
+                                #          add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "200px",width = "200px", color = "#6F00B0"),
                                 #          div(DT::dataTableOutput("test.table_ridge")),
                                 #
                                 # ),
                                 tabPanel(
                                   "Summary table",
-                                  add_busy_spinner(spin = "fading-circle", position = "top-right", margins = c(10, 10), height = "150px", width = "150px", color = "blue"),
+                                  div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
                                   div(DT::dataTableOutput("Top_clonotype_sum")),
                                   downloadButton("download_Top_clonotype_sum", "Download table")
                                 ),
                                 tabPanel(
                                   "Bar graph",
-                                  add_busy_spinner(spin = "fading-circle", position = "top-right", margins = c(10, 10), height = "150px", width = "150px", color = "blue"),
+                                  div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
                                   fluidRow(
                                     column(
                                       3,
@@ -1860,7 +1935,7 @@ navbarPage(
                                   ),
                                 ),
                                 # tabPanel("Pie labs",
-                                #          add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
+                                #          add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "200px",width = "200px", color = "#6F00B0"),
                                 #          div(DT::dataTableOutput("Top_clonotype_Labs")),
                                 #
                                 # ),
@@ -1868,6 +1943,7 @@ navbarPage(
                                 tabPanel("heatmap",
                                          value = "TopHeat",
                                          p("Colour by: = x-axis; Split graph by: = y-axis for this heatmap"),
+                                         div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
                                          plotOutput("heatmap_topclone_plot", height = "600px"),
                                          fluidRow(
                                            column(1, numericInput("width_heatmap_topclone_plot", "Width of PDF", value = 10)),
@@ -1882,10 +1958,9 @@ navbarPage(
                                 #####.
                                 tabPanel(
                                   "Pie/UMAP chart",
-                                  add_busy_spinner(spin = "fading-circle", position = "top-right", margins = c(10, 10), height = "150px", width = "150px", color = "blue"),
+                                  div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
                                   fluidRow(
                                     column(3, selectInput("Plot_type_selected", "Plot", choices = c("pie", "UMAP"))),
-                                    # column(3,numericInput("strip_size_pie","Size of header",value = 10)),
                                     column(3, numericInput("size_selected_top", "Size of Point", value = 2)),
                                   ),
                                   fluidRow(
@@ -1918,6 +1993,7 @@ navbarPage(
                                 # tabsetPanel(
                                 tabPanel(
                                   "Ridge/Violin plots",
+                                  div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
                                   actionButton("run_string.data_Exp_top", "View Ridge plot"),
                                   fluidRow(column(12, selectInput("string.data_Exp_top", "column names for summary", "", multiple = F, width = "1200px"))),
                                   fluidRow(
@@ -1925,7 +2001,7 @@ navbarPage(
                                     column(3, numericInput("Gre_ex", "Expression above:", value = 0)),
                                     column(3, selectInput("plot_type_ridgvi", "Plot type", choices = c("Ridge (selected clonotype)", "Ridge (compare)", "Violin (selected clonotype)", "Violin (compare)"))),
                                   ),
-                                  add_busy_spinner(spin = "fading-circle", position = "top-right", margins = c(10, 10), height = "150px", width = "150px", color = "blue"),
+                                  div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
                                   fluidRow(
                                     column(6, div(DT::dataTableOutput("Ridge_chart_alpha_gamma_stat"))),
                                     column(6, plotOutput("Ridge_chart_alpha_gamma_plot_out", height = "600px"))
@@ -1943,7 +2019,7 @@ navbarPage(
                                 ),
                                 tabPanel(
                                   "Stats",
-                                  add_busy_spinner(spin = "fading-circle", position = "top-right", margins = c(10, 10), height = "150px", width = "150px", color = "blue"),
+                                  div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
                                   div(DT::dataTableOutput("Ridge_chart_alpha_gamma_stat_comp")),
                                   downloadButton("downloaddf_FindMarker_Top", "Download stat (Right)")
                                 ),
@@ -1957,7 +2033,7 @@ navbarPage(
                                     column(2, checkboxInput("restict_no_points", "Restrict Label", value = F)),
                                     column(2, numericInput("pval.ex.top_genes", "Top genes to display", value = 40)),
                                   ),
-                                  add_busy_spinner(spin = "fading-circle", position = "top-right", margins = c(10, 10), height = "150px", width = "150px", color = "blue"),
+                                  div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
                                   plotOutput("all_expression_dotplot_top", height = "400px"),
                                   textInput("name_clonotype_selected", "Name of clone", "clone 1"),
                                   fluidRow(
@@ -1977,7 +2053,7 @@ navbarPage(
                                     column(3, numericInput("p.val_cutoff_top", "p-val cut-off", value = 0.05, min = 0, max = 1)),
                                     # column(3,numericInput("adjust_cutoff_top","BH cut-off",value = 1, min = 0, max = 1)),
                                   ),
-                                  add_busy_spinner(spin = "fading-circle", position = "top-right", margins = c(10, 10), height = "150px", width = "150px", color = "blue"),
+                                  div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
                                   div(DT::dataTableOutput("Over_rep_Top_clones_Tab")),
                                   downloadButton("downloadtb_over.rep.Top_Ex", "Download table")
                                   #
@@ -1994,13 +2070,13 @@ navbarPage(
                                 id = "ExPan",
                                 tabPanel(
                                   "Table",
-                                  add_busy_spinner(spin = "fading-circle", position = "top-right", margins = c(10, 10), height = "150px", width = "150px", color = "blue"),
+                                  div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
                                   div(DT::dataTableOutput("Expansion_check")),
                                 ),
                                 tabPanel("ex.UMAP",
                                          value = "ExPan_UMAP",
                                          fluidRow(
-                                           add_busy_spinner(spin = "fading-circle", position = "top-right", margins = c(10, 10), height = "150px", width = "150px", color = "blue"),
+                                           div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
                                            column(
                                              3,
                                              wellPanel(
@@ -2022,7 +2098,7 @@ navbarPage(
                                 ),
                                 tabPanel("Stats",
                                          value = "ExPan_stat",
-                                         add_busy_spinner(spin = "fading-circle", position = "top-right", margins = c(10, 10), height = "150px", width = "150px", color = "blue"),
+                                         div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
                                          div(DT::dataTableOutput("compare.stat_Ex")),
                                          downloadButton("downloadtb_compare.stat_Ex", "Download table")
                                 ),
@@ -2033,7 +2109,7 @@ navbarPage(
                                            column(2, colourInput("middle.dotplot.ex", "Middle color:", "white")),
                                            column(2, colourInput("high.dotplot.ex", "High color:", "darkred")),
                                          ),
-                                         add_busy_spinner(spin = "fading-circle", position = "top-right", margins = c(10, 10), height = "150px", width = "150px", color = "blue"),
+                                         div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
                                          plotOutput("relative_expression_dotplot_ex", height = "600px"),
                                          fluidRow(
                                            column(1, numericInput("width_all_expression_dotplot_ex", "Width of PDF", value = 20)),
@@ -2050,13 +2126,10 @@ navbarPage(
                                          fluidRow(
                                            column(3, numericInput("in.geneset.cutoff_Exp", "Min number of genes in GeneSet", value = 1, min = 0, step = 1, max = 60000)),
                                            column(3, numericInput("p.val_cutoff_Exp", "p-val cut-off", value = 0.05, min = 0, max = 1)),
-                                           # column(3,numericInput("adjust_cutoff_Exp","BH cut-off",value = 1, min = 0, max = 1)),
-                                           # column(3,numericInput("adjust_cutoff_Exp","BH cut-off",value = 0.05, min = 0, max = 1)),
                                          ),
-                                         add_busy_spinner(spin = "fading-circle", position = "top-right", margins = c(10, 10), height = "150px", width = "150px", color = "blue"),
+                                         div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
                                          div(DT::dataTableOutput("Over_rep_Exp_Tab")),
                                          downloadButton("downloadtb_over.rep_Exp", "Download table")
-                                         #
                                 )
                               )
                      ),
@@ -2067,12 +2140,13 @@ navbarPage(
                               tabsetPanel(
                                 tabPanel(
                                   "Table.Clust",
-                                  add_busy_spinner(spin = "fading-circle", position = "top-right", margins = c(10, 10), height = "150px", width = "150px", color = "blue"),
+                                  div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
                                   div(DT::dataTableOutput("Tb_ClusTCR_selected")),
                                   downloadButton("downloadtb_Tb_ClusTCR_selected", "Download table")
                                 ),
                                 tabPanel(
                                   "UMAP",
+                                  div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
                                   fluidRow(
                                     column(
                                       3,
@@ -2095,10 +2169,9 @@ navbarPage(
                                 ),
                                 tabPanel(
                                   "motif",
+                                  div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
                                   plotOutput("Motif_ClusTCR2_cluster", height = "300px"),
                                   verbatimTextOutput("print_unique_cases"),
-                                  # div(DT::dataTableOutput("Tb_motif_cluster")),
-
                                   fluidRow(
                                     column(1, numericInput("width_Motif_ClusTCR2_cluster", "Width of PDF", value = 10)),
                                     column(1, numericInput("height_Motif_ClusTCR2_cluster", "Height of PDF", value = 4)),
@@ -2109,10 +2182,10 @@ navbarPage(
                                     column(2, style = "margin-top: 25px;", downloadButton("downloadPlotPNG_Motif_ClusTCR2_cluster", "Download PNG"))
                                   ),
                                 ),
-
                                 #####
                                 tabPanel("heatmap",
                                          value = "ClustHeat",
+                                         div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
                                          p("Colour by: = x-axis; Split graph by: = y-axis for this heatmap"),
                                          plotOutput("Pie_ClusTCR2_plot", height = "600px"),
                                          fluidRow(
@@ -2126,21 +2199,9 @@ navbarPage(
                                          ),
                                 ),
 
-                                # tabPanel("Pie (Expression)", value = "ClusPie",
-                                #          fluidRow(
-                                #            column(3,
-                                #   wellPanel(id = "tPanel23",style = "overflow-y:scroll; max-height: 600px",
-                                #             uiOutput('myPanel_cols_clusTCR2_pie')
-                                #   )
-                                #            ),
-                                #            column(9, )
-                                #          ),
-
-                                # ),
-
                                 tabPanel("Stats",
                                          value = "ClusPan_stat",
-                                         add_busy_spinner(spin = "fading-circle", position = "top-right", margins = c(10, 10), height = "150px", width = "150px", color = "blue"),
+                                         div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
                                          div(DT::dataTableOutput("compare.stat_Cluster_DT")),
                                          downloadButton("downloadtb_compare.stat_Cluster", "Download table")
                                 ),
@@ -2155,7 +2216,7 @@ navbarPage(
                                            column(2, checkboxInput("restrict.dotpot.clust", "Restrict to top list", value = F)),
                                            column(2, numericInput("restrict.dotpot.num.clust", "Total genes to display:", value = 10))
                                          ),
-                                         add_busy_spinner(spin = "fading-circle", position = "top-right", margins = c(10, 10), height = "150px", width = "150px", color = "blue"),
+                                         div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
                                          plotOutput("all_expression_dotplot_cluster", height = "400px"),
                                          fluidRow(
                                            column(1, numericInput("width_all_expression_dotplot_clust", "Width of PDF", value = 20)),
@@ -2174,7 +2235,7 @@ navbarPage(
                                            column(3, numericInput("p.val_cutoff_Clust", "p-val cut-off", value = 0.05, min = 0, max = 1)),
                                            # column(3,numericInput("adjust_cutoff_Clust","BH cut-off",value = 1, min = 0, max = 1)),
                                          ),
-                                         add_busy_spinner(spin = "fading-circle", position = "top-right", margins = c(10, 10), height = "150px", width = "150px", color = "blue"),
+                                         div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
                                          div(DT::dataTableOutput("Over_rep_Cluster_Tab")),
                                          downloadButton("downloadtb_over.rep.cluster", "Download table")
                                 )
@@ -2195,18 +2256,18 @@ navbarPage(
                               tabsetPanel(
                                 id = "EpitipeTabs",
                                 # tabPanel("Uploaded Epitope file",
-                                #          add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "blue"),
+                                #          add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "200px",width = "200px", color = "#6F00B0"),
                                 #          div(DT::dataTableOutput("MainTcell_Check")),
                                 # ),
                                 tabPanel(
                                   "Summary Table",
-                                  add_busy_spinner(spin = "fading-circle", position = "top-right", margins = c(10, 10), height = "150px", width = "150px", color = "blue"),
+                                  div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
                                   div(DT::dataTableOutput("Pie_Epitope_dt")),
                                   downloadButton("downloaddf_Pie_Epitope_dt", "Download table")
                                 ),
                                 tabPanel(
                                   "Heatmap",
-                                  add_busy_spinner(spin = "fading-circle", position = "top-right", margins = c(10, 10), height = "150px", width = "150px", color = "blue"),
+                                  div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
                                   plotOutput("Heatmap_epi_plot", height = "600px"),
                                   fluidRow(
                                     column(1, numericInput("width_Heatmap_epi_plot", "Width of PDF", value = 10)),
@@ -2223,7 +2284,7 @@ navbarPage(
                                   numericInput("value_size_epi_umap", "Size of epitope dots", value = 2),
 
                                   # column(3,selectInput("epitope_umap_selected","Select",choices = c("beta","epitope","pathology"),selected = "pathology")),
-                                  add_busy_spinner(spin = "fading-circle", position = "top-right", margins = c(10, 10), height = "150px", width = "150px", color = "blue"),
+                                  div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
                                   fluidRow(
                                     column(
                                       3,
@@ -2246,7 +2307,7 @@ navbarPage(
                                 ),
                                 tabPanel(
                                   "Pie (Expression)",
-                                  add_busy_spinner(spin = "fading-circle", position = "top-right", margins = c(10, 10), height = "150px", width = "150px", color = "blue"),
+                                  div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
                                   fluidRow(
                                     column(
                                       3,
@@ -2269,7 +2330,7 @@ navbarPage(
                                 ),
                                 tabPanel("Stats",
                                          value = "EpiPan_stat",
-                                         add_busy_spinner(spin = "fading-circle", position = "top-right", margins = c(10, 10), height = "150px", width = "150px", color = "blue"),
+                                         div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
                                          div(DT::dataTableOutput("Epi_of_interest_DF")),
                                          div(DT::dataTableOutput("compare.stat_Epi_DT")),
                                          downloadButton("downloadtb_compare.stat_Epi", "Download table")
@@ -2283,11 +2344,7 @@ navbarPage(
                                            column(2, checkboxInput("restrict.dotpot.epi", "Restrict to top list", value = F)),
                                            column(2, numericInput("restrict.dotpot.num.epi", "Total genes to display:", value = 10))
                                          ),
-                                         add_busy_spinner(spin = "fading-circle", position = "top-right", margins = c(10, 10), height = "150px", width = "150px", color = "blue"),
-
-
-                                         # div(DT::dataTableOutput("checking_epi_dot_issue")),
-
+                                         div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
                                          plotOutput("all_expression_dotplot_epi", height = "400px"),
                                          fluidRow(
                                            column(1, numericInput("width_all_expression_dotplot_epi", "Width of PDF", value = 20)),
@@ -2305,7 +2362,7 @@ navbarPage(
                                            column(3, numericInput("in.geneset.cutoff_Epi", "Min number of genes in GeneSet", value = 1, min = 0, step = 1, max = 60000)),
                                            column(3, numericInput("p.val_cutoff_Epi", "p-val cut-off", value = 0.05, min = 0, max = 1)),
                                          ),
-                                         add_busy_spinner(spin = "fading-circle", position = "top-right", margins = c(10, 10), height = "150px", width = "150px", color = "blue"),
+                                         div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
                                          div(DT::dataTableOutput("Over_rep_Epi_Tab")),
                                          downloadButton("downloadtb_over.rep.Epi", "Download table")
                                          #
@@ -2346,10 +2403,10 @@ navbarPage(
                                 column(3, checkboxInput("Download_private_overlapping", "Download Private clone analysis", value = F)),
                                 column(3, checkboxInput("restrict_to_expanded", "Restrict to expanded", value = F))
                               ),
-                              add_busy_spinner(spin = "fading-circle", position = "top-right", margins = c(10, 10), height = "150px", width = "150px", color = "purple"),
+                              add_busy_spinner(spin = "fading-circle", position = "top-right",  height = "200px", width = "200px", color = "purple"),
                               verbatimTextOutput("Simple_workflow_step1"),
                               verbatimTextOutput("Number_of_clonotypes_to_"),
-                              add_busy_spinner(spin = "fading-circle", position = "top-right", margins = c(10, 10), height = "150px", width = "150px", color = "purple"),
+                              add_busy_spinner(spin = "fading-circle", position = "top-right",  height = "200px", width = "200px", color = "purple"),
                               div(DT::dataTableOutput("PriorClono_Tab")),
                               uiOutput("Module_case_statements"),
                               div(DT::dataTableOutput("private_clonotypes")),
@@ -2368,18 +2425,18 @@ navbarPage(
                                 column(3, numericInput("Sample_count_clusterBD", "BD Sample count >=", value = 3, min = 3)),
                                 column(3, numericInput("Total_cloneCount_clusterBD", "BD Clone count >=", value = 2)),
                               ),
-                              add_busy_spinner(spin = "fading-circle", position = "top-right", margins = c(10, 10), height = "150px", width = "150px", color = "purple"),
+                              add_busy_spinner(spin = "fading-circle", position = "top-right",  height = "200px", width = "200px", color = "purple"),
                               verbatimTextOutput("number_clusters_to_analyse_AG"),
-                              add_busy_spinner(spin = "fading-circle", position = "top-right", margins = c(10, 10), height = "150px", width = "150px", color = "purple"),
+                              add_busy_spinner(spin = "fading-circle", position = "top-right",  height = "200px", width = "200px", color = "purple"),
                               verbatimTextOutput("number_clusters_to_analyse_BD"),
-                              add_busy_spinner(spin = "fading-circle", position = "top-right", margins = c(10, 10), height = "150px", width = "150px", color = "purple"),
+                              add_busy_spinner(spin = "fading-circle", position = "top-right",  height = "200px", width = "200px", color = "purple"),
                               uiOutput("Cluster_dowload_button_prior"),
                               # div(DT::dataTableOutput("colors.top_dt")),
                      ),
                      # modules of priority Epitope ------
                      tabPanel("Epitope/Annotation",
                               value = "PriorEpiTB",
-                              add_busy_spinner(spin = "fading-circle", position = "top-right", margins = c(10, 10), height = "150px", width = "150px", color = "purple"),
+                              add_busy_spinner(spin = "fading-circle", position = "top-right",  height = "200px", width = "200px", color = "purple"),
                               checkboxInput("epitope_uploaded", "Add in Epitope data", value = T),
                               fluidRow(
                                 column(3, uiOutput("AddInEpiUI_1")),
@@ -2396,12 +2453,12 @@ navbarPage(
           # GEX -> TCR --------
           tabPanel(
             "GEX -> TCR",
-            h5("Under Development..."),
+            # h5("Under Development..."),
             tabsetPanel(
               ##### annotation GEX -> TCR --------
               tabPanel("Annotation",
                        value = "PanelAnno_GEXTCR",
-                       h5("Under Active Development..."),
+                       h5("Under Active Development... Only Table is complete"),
                        fluidRow(
                          column(3, uiOutput("AddInAnnoUI_man_1")),
                          column(3, uiOutput("AddInAnnoUI_man_2")),
@@ -2410,6 +2467,7 @@ navbarPage(
                        tabsetPanel(
                          tabPanel(
                            "Table",
+                           div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
                            div(DT::dataTableOutput("AnnoTable_perMarkers")),
                            downloadButton("downloaddf_AnnoTable_perMarkers", "Download table"),
                          ),
@@ -2452,14 +2510,14 @@ navbarPage(
                            tabsetPanel(
                              tabPanel("Table",
                                       value = "Marker_Panel_table",
-                                      add_busy_spinner(spin = "fading-circle", position = "top-right", margins = c(10, 10), height = "150px", width = "150px", color = "blue"),
+                                      div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
                                       div(DT::dataTableOutput("marker_selected_tab")),
                              ),
                              tabPanel("UMAP plot",
                                       value = "Marker_Panel_plot_UMAP",
                                       h4("Select area of the plot to keep for the specific marker"),
                                       h6("Recommended to filter to broad populations based on UMAP e.g., CD4, CD8 or other"),
-                                      add_busy_spinner(spin = "fading-circle", position = "top-right", margins = c(10, 10), height = "150px", width = "150px", color = "blue"),
+                                      div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
                                       numericInput("max_scale", "MAX scale", value = ""),
                                       plotOutput("marker_selected_UMAP_plot", height = "600px"),
                                       fluidRow(
@@ -2481,26 +2539,26 @@ navbarPage(
                                       fluidRow(
                                         column(3, selectInput("select_plot_vio.ridge", "Plot type", choices = c("Violin", "Ridge")))
                                       ),
-                                      add_busy_spinner(spin = "fading-circle", position = "top-right", margins = c(10, 10), height = "150px", width = "150px", color = "blue"),
+                                      div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
                                       plotOutput("marker_selected_VioRidge_plot", height = "600px")
                              ),
                              # tabPanel("UMAP"),
                              tabPanel("TCR/BCR mapped",
                                       value = "Marker_Panel_plot_TCR",
                                       h4("TCR and/or BCR seqeunces that are positive for that marker"),
-                                      add_busy_spinner(spin = "fading-circle", position = "top-right", margins = c(10, 10), height = "150px", width = "150px", color = "blue"),
+                                      div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
                                       fluidRow(
                                         column(6, div(DT::dataTableOutput("TCR_marker_positive_count"))),
                                         column(6, div(DT::dataTableOutput("TCR_marker_neg_count")))
                                       ),
                                       div(DT::dataTableOutput("merged_marker_hist_table")),
                                       downloadButton("downloaddf_clonotype_distribution", "Download table"),
-                                      add_busy_spinner(spin = "fading-circle", position = "top-right", margins = c(10, 10), height = "150px", width = "150px", color = "blue"),
+                                      div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
                                       plotOutput("marker_selected_histogram_plot", height = "600px")
                              ),
                              tabPanel("Stats",
                                       value = "MP_plot_stats",
-                                      add_busy_spinner(spin = "fading-circle", position = "top-right", margins = c(10, 10), height = "150px", width = "150px", color = "blue"),
+                                      div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
                                       div(DT::dataTableOutput("Compare.stat_marker")),
                                       downloadButton("downloaddf_Marker_stats", "Download table")
 
@@ -2541,17 +2599,17 @@ navbarPage(
                            tabsetPanel(
                              tabPanel(
                                "table",
-                               add_busy_spinner(spin = "fading-circle", position = "top-right", margins = c(10, 10), height = "150px", width = "150px", color = "blue"),
+                               div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
                                div(DT::dataTableOutput("meta_data_for_features_scale2_df")),
                              ),
                              tabPanel(
                                "Feature plots",
-                               add_busy_spinner(spin = "fading-circle", position = "top-right", margins = c(10, 10), height = "150px", width = "150px", color = "blue"),
+                               div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
                                fluidRow(
                                  column(3, numericInput("max_scale2", "MAX scale (left)", value = "")),
                                  column(3, numericInput("max_scale3", "MAX scale (right)", value = "")),
                                ),
-                               add_busy_spinner(spin = "fading-circle", position = "top-right", margins = c(10, 10), height = "150px", width = "150px", color = "blue"),
+                               div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
                                fluidRow(
                                  column(6, plotOutput("marker_selected_UMAP_plot2", height = "600px")),
                                  column(6, plotOutput("marker_selected_UMAP_plot3", height = "600px")),
@@ -2559,7 +2617,7 @@ navbarPage(
                              ),
                              tabPanel(
                                "X by Y plot",
-                               add_busy_spinner(spin = "fading-circle", position = "top-right", margins = c(10, 10), height = "150px", width = "150px", color = "blue"),
+                               div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
                                plotOutput("df_dotplot_marker_plot", height = "600px"),
                                fluidRow(
                                  column(1, numericInput("width_df_dotplot_marker_plot", "Width of PDF", value = 10)),
@@ -2575,13 +2633,13 @@ navbarPage(
                              # tabPanel("UMAP"),
                              tabPanel(
                                "TCR table",
-                               add_busy_spinner(spin = "fading-circle", position = "top-right", margins = c(10, 10), height = "150px", width = "150px", color = "blue"),
+                               div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
                                div(DT::dataTableOutput("dual_maker_TCR_Sum_DT")),
                                downloadButton("Dule_marker_TCRsummary_DT", "Download table")
                              ),
                              tabPanel(
                                "Stats",
-                               add_busy_spinner(spin = "fading-circle", position = "top-right", margins = c(10, 10), height = "150px", width = "150px", color = "blue"),
+                               div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
                                selectInput("quad_dualmarker", "Quadrant to compute", choices = c("Q1", "Q2", "Q3", "Q4")),
                                div(DT::dataTableOutput("dual_maker_TCR_statsTB")),
                                downloadButton("Dule_marker_statsTBDownload", "Download table")
@@ -2590,17 +2648,6 @@ navbarPage(
                          )
                        )
               ),
-              # modules of priority Annotations ------
-              # tabPanel("Automation of Annotations",value = "PrioAnnoTB",
-              #          add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "150px",width = "150px", color = "purple"),
-              #          fluidRow(
-              #            column(3,uiOutput("AddInAnnoUI_1")),
-              #            column(3,uiOutput("AddInAnnoUI_2")),
-              #          ),
-              #          # actionButton("AnnoPrior_Download_Bt","Automated Annotation analysis"),
-              #          div(DT::dataTableOutput("Prior_Test_annoTb")),
-              #
-              # ),
             )
           )
         )
@@ -2633,15 +2680,7 @@ navbarPage(
                  width = 9,
                  # tabsetPanel(
                  id = "Other_post_analysis",
-                 useShinyjs(),  # Initialize shinyjs
-                 extendShinyjs(
-                   text = "shinyjs.showThinking = function() {$('#thinking_spinner').show();};",
-                   functions = c("showThinking")
-                 ),
-                 extendShinyjs(
-                   text = "shinyjs.hideThinking = function() {$('#thinking_spinner').hide();};",
-                   functions = c("hideThinking")
-                 ),
+                 div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
                  uiOutput("filter_inputs"),
                  dataTableOutput("filtered_table")
 
@@ -2654,11 +2693,11 @@ navbarPage(
     tabPanel("OLGA",
              fluidRow(
 
-               add_busy_spinner(spin = "fading-circle", position = "top-right",  height = "150px", width = "150px", color = "blue"),
+               add_busy_spinner(spin = "fading-circle", position = "top-right",  height = "200px", width = "200px", color = "#6F00B0"),
                column(3,actionButton("load_olga","Use OLGA if present")),
                conditionalPanel(
                  condition = "input.load_olga",
-                 add_busy_spinner(spin = "fading-circle", position = "top-right",  height = "150px", width = "150px", color = "blue"),
+                 add_busy_spinner(spin = "fading-circle", position = "top-right",  height = "200px", width = "200px", color = "#6F00B0"),
                  column(3,selectInput("Olga_installed","OLGA installed","")),
 
                )),
@@ -2682,21 +2721,14 @@ navbarPage(
                    width = 9,
                    tabsetPanel(
                      id = "OLGA_analysis",
-
-
                      tabPanel("Loaded Table",
-                              add_busy_spinner(spin = "fading-circle", position = "top-right",  height = "150px", width = "150px", color = "blue"),
+                              add_busy_spinner(spin = "fading-circle", position = "top-right",  height = "200px", width = "200px", color = "#6F00B0"),
                               div(DT::dataTableOutput("Pgen_Selected")),
-
-
-
                      ),
                      tabPanel("Pgen",
-                              add_busy_spinner(spin = "fading-circle", position = "top-right",  height = "150px", width = "150px", color = "blue"),
+                              add_busy_spinner(spin = "fading-circle", position = "top-right",  height = "200px", width = "200px", color = "#6F00B0"),
                               div(DT::dataTableOutput("Pgen_BD")),
                      )
-
-
                    )
                  )
                )
@@ -2710,8 +2742,6 @@ navbarPage(
                         p("https://github.com/statbiophys/OLGA")
 
                ),
-               # p("Please install OLGA")
-
              )
 
     ),
@@ -2728,12 +2758,7 @@ navbarPage(
                )
              )
     ), # upload the unfiltered AIRR file and clonotypes for designing TCR contigs
-
-
-
   ),
-
-  # tabPanel("Epitope")
 ) # nav page
   )
 
@@ -6941,7 +6966,7 @@ navbarPage(
     output$downloaddf_SeruatObj_merged <- downloadHandler(
       filename = function() {
         x <- today()
-        paste(input$project_name2, "_merged_", x, ".rds", sep = "")
+        paste(input$project_name2, "_harmony_", x, ".rds", sep = "")
       },
       content = function(file) {
         SaveSeuratRds(Vals_norm$Norm1, file)
