@@ -17,6 +17,8 @@ preprocessing <- function (downloadTCRex=F, downloadClusTCR = F, downloadTCR_Exp
   require(plyr)
   require(dplyr)
   require(lubridate)
+  require(readr)
+
   main_directory = "0_RAW_files/"
   main_directory <- main_directory
   main_folders <- list.files(paste(main_directory))
