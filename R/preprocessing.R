@@ -1,5 +1,5 @@
 #' Automated preprocessing
-#' @name preprocessing
+#' @name preprocessing_10x
 #' @description
 #' This function performs the pre-processing equivalent to STEP 1. This requires the user to name their folders indiv_group. Please use the _ to separate the values, this particularly important for the TCR_Explore as it will separate out the indiv from the group column.
 #' Each folder should contain one of each that have the following words: barcode, features, matrix and contig
@@ -12,7 +12,7 @@
 #' @param main_directory This is the location of the raw data from 10x outputs
 #' @export
 
-preprocessing <- function (downloadTCRex=F, downloadClusTCR = F, downloadTCR_Explore = F, downloadSeurat = F, csv_contig_file = "csv", main_directory = "0_RAW_files/") {
+preprocessing_10x <- function (downloadTCRex=F, downloadClusTCR = F, downloadTCR_Explore = F, downloadSeurat = F, csv_contig_file = "csv", main_directory = "0_RAW_files/") {
   require(magrittr)
   require(plyr)
   require(dplyr)
@@ -433,11 +433,22 @@ preprocessing <- function (downloadTCRex=F, downloadClusTCR = F, downloadTCR_Exp
   }
 }
 
+#' Automated preprocessing
+#' @name preprocessing_bd_rap
+#' @description
+#' This function performs the pre-processing equivalent to STEP 1. This requires the user to name their folders indiv_group. Please use the _ to separate the values, this particularly important for the TCR_Explore as it will separate out the indiv from the group column.
+#' Each folder should contain one of each that have the following words: barcode, features, matrix, Sample Tag and contig
+#'
+#' @param downloadSeurat T or F; set to T if you want to include the current T cell model
+#' @param downloadTCRex Seurat object file. This requires the file to have the scaled data available for annotation purposes.
+#' @param downloadClusTCR generic annotations to identify T cells vs other immune cells.
+#' @param downloadTCR_Explore T cell based stress models of exhaustion
+#' @param create_sample_tag_file If not multiplexed, this will create the sample tag file.
+#' @param csv_contig_file T cell based stress models of Senescence
+#' @param main_directory This is the location of the raw data from 10x outputs
+#' @export
 
+preprocessing_bd_rap <- function () {
 
-
-
-
-
-
-
+  message("Under Development, use the interface instead...")
+}
