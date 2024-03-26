@@ -10,9 +10,9 @@ runSTEGO <- function(){
   suppressMessages(suppressWarnings(require("ClusTCR2")))
   suppressMessages(require("ComplexHeatmap"))
   suppressMessages(require("corrplot"))
+  suppressMessages(require("cowplot"))
   suppressMessages(require("doParallel"))
   suppressMessages(require("dplyr"))
-  # suppressMessages(require("dior"))
   suppressMessages(require("DT"))
   suppressMessages(require("extrafont"))
   suppressMessages(require("forcats"))
@@ -25,6 +25,7 @@ runSTEGO <- function(){
   suppressMessages(require("ggrepel"))
   suppressMessages(require("ggridges")) # ridges plot
   suppressMessages(require("ggseqlogo")) # create logo figure
+  suppressMessages(require("grid"))
   suppressMessages(require("gridExtra"))
   suppressMessages(require("harmony"))
   suppressMessages(require("igraph"))
@@ -57,14 +58,14 @@ runSTEGO <- function(){
   suppressMessages(require("tibble"))
   suppressMessages(require("tidyr"))
   suppressMessages(require("VLF"))
-
+  # needs to be called before the colour picker due to a dependency issue
   suppressWarnings(suppressMessages(require("shinyjs")))
 
   # needs to be loaded after shinyjs to prevent the colourpicker issue...
   suppressMessages(require("colourpicker")) # select visual colour
 
-  require("chisq.posthoc.test")
-
+  suppressMessages(require("chisq.posthoc.test"))
+  message("All packages loaded")
 
   # font ------
   fonts <- fonttable()
@@ -84,20 +85,18 @@ runSTEGO <- function(){
 
   }
 
-  if (!dir.exists("Prioritisation/")) {
-    message("Creating folders for the prioritisation, as the program wasn't loaded from the STEGO.Rproj file")
-    dir.create("Prioritisation")
-    dir.create("Prioritisation/Multi")
-    dir.create("Prioritisation/Multi/PublicLike")
-    dir.create("Prioritisation/Multi/Unique")
-    dir.create("Prioritisation/Clustering")
-    dir.create("Prioritisation/Clustering/AG")
-    dir.create("Prioritisation/Clustering/BD")
-    dir.create("Prioritisation/EpitopePred")
+  if (!dir.exists("Prioritization/")) {
+    message("Creating folders for the Prioritization, as the program wasn't loaded from the STEGO.Rproj file")
+    dir.create("Prioritization")
+    dir.create("Prioritization/Multi")
+    dir.create("Prioritization/Multi/PublicLike")
+    dir.create("Prioritization/Multi/Unique")
+    dir.create("Prioritization/Clustering")
+    dir.create("Prioritization/Clustering/AG")
+    dir.create("Prioritization/Clustering/BD")
+    dir.create("Prioritization/EpitopePred")
     } else {
   }
-
-
 
   col_markers <- c("Blues", "BuGn", "BuPu", "GnBu", "Greens", "Greys", "Oranges", "OrRd", "PuBu", "PuBuGn", "PuRd", "Purples", "RdPu", "Reds", "YlGn", "YlGnBu","YlOrBr", "YlOrRd")
   options(shiny.maxRequestSize = 100000*1024^2)
@@ -1275,7 +1274,6 @@ navbarPage(
               )
               # plotOutput("create_custom_1", height = "600px"),
             ),
-
             # classification based on TCR_seq -----
             # display metadata -----
             tabPanel(
@@ -1454,20 +1452,27 @@ navbarPage(
           numericInput("skip_TCRex_up", "Skip # of lines for TCRex file", value = 7),
           fileInput("upload_TCRex_file", "Upload TCRex (.tsv)",
                     accept = c("tsv", ".tsv")
-          )
-        ),
-        selectInput("datasource", "Data source", choices = ""),
-        selectInput("species_analysis", "Species", choices = ""),
-
-        fluidRow(
-          column(6,  selectInput("Samp_col", "Selected Individual", choices = "")),
-          column(6, selectInput("Split_by_group", "Display by Selected Individual", choices = c("no", "yes"))),
-          column(6, numericInput("wrap_row", h5("Number of plot rows"), value = 2)),
+          ),
+          selectInput("datasource", "Data source", choices = ""),
+          selectInput("species_analysis", "Species", choices = ""),
         ),
         selectInput("V_gene_sc", "V gene with/without CDR3", choices = ""),
 
-        selectInput("colourtype", "Type of colouring", choices = c("default", "rainbow", "random", "heat.colors", "terrain.colors", "topo.colors", "hcl.colors", "one colour")),
+        conditionalPanel(
+          condition = "input.check_up_files != 'up'",
+          fluidRow(
+            column(6,  selectInput("Samp_col", "Selected Individual", choices = "")),
+            column(6, selectInput("Split_by_group", "Display by Selected Individual", choices = c("no", "yes"))),
+            column(6, numericInput("wrap_row", h5("Number of plot rows"), value = 2)),
+            conditionalPanel(
+              condition = "input.Panel_TCRUMAP != 'TCR_and_GEX_tb'",
+              column(6, selectInput("Split_group_by_", "Split graph by:", choices = ""))
 
+            ),
+
+          ),
+          selectInput("colourtype", "Colouring Palettes", choices = c("default", "rainbow", "random", "heat.colors", "terrain.colors", "topo.colors", "hcl.colors", "one")),
+        ),
 
         conditionalPanel(
           condition = "input.check_up_files != 'up'",
@@ -1485,19 +1490,23 @@ navbarPage(
           uiOutput("classification_to_add_overview")
         ),
 
-        # side bar layoutexpansion priority UI -------
+        # side bar layout expansion priority UI -------
         conditionalPanel(
           condition = "input.check_up_files == 'Prior' || input.check_up_files == 'TCR_and_GEX_tb' ",
-          fluidRow(
-            column(6, selectInput("Split_group_by_", "Split graph by:", choices = "")),
-            column(6, numericInput("cutoff.expanded", "Cut off greater than", value = 0.5, step = 0.01, min = 0, max = 0.99)),
-            column(6, uiOutput("cut.off_expanded2")),
-            column(6, uiOutput("classification_to_add2")),
+          conditionalPanel(
+            condition = "input.Panel_TCRUMAP == 'Expanded'",
+            h4("Expanded cut-offs and colouring"),
+            fluidRow(
+
+              column(6, numericInput("cutoff.expanded", "Cut off greater than", value = 0.5, step = 0.01, min = 0, max = 0.99)),
+              column(6, uiOutput("cut.off_expanded2")),
+              column(6, uiOutput("classification_to_add2")),
+            ),
+            fluidRow(
+              column(6, numericInput("cut.off_percent_rep", "Percent of Repertoire", value = 1, step = 1, min = 1, max = 100)),
+              column(6, numericInput("size.dot.umap", "size of UMAP dot's", value = 2, step = 1, min = 1))
+            )
           ),
-          fluidRow(
-            column(6, numericInput("cut.off_percent_rep", "Percent of Repertoire", value = 1, step = 1, min = 1, max = 100)),
-            column(6, numericInput("size.dot.umap", "size of UMAP dot's", value = 2, step = 1, min = 1))
-          )
         ),
         conditionalPanel(
           condition = "input.PriorTBMods == 'PriorRepertoireTB' || input.Panel_TCRUMAP == 'Expanded'",
@@ -1591,13 +1600,9 @@ navbarPage(
                    value = "up2",
                    fluidRow(
                      div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
-                     column(12, selectInput("ID_Column_factor", "Order of graph", choices = "", multiple = T, width = "1200px")),
+                     column(12, selectInput("ID_Column_factor", "Order of graph (Selected Individual)", choices = "", multiple = T, width = "1200px")),
                    ),
-                   fluidRow(
 
-                     # need to figure out if I can use only one split graph by...
-                     column(3, selectInput("Split_group_by_overview", "Split graph by:", choices = "")),
-                   ),
                    tabsetPanel(
                      id = "QC_panel",
                      # T cell classification ------
@@ -1648,8 +1653,8 @@ navbarPage(
                                          value = 15,
                                          div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
                                          fluidRow(
-                                           # column(3,numericInput("strip_size","Size of header",value = 10)),
-                                           column(9, p("Fill = Select function type; Group = Select cluster"))
+                                           # column(3),
+                                           # column(9, h5("pie segments (Colour by:) & separation (Split graph by:)"))
                                          ),
                                          fluidRow(
                                            column(
@@ -1721,9 +1726,10 @@ navbarPage(
                                     column(2,selectInput("separator_input", "Select Separators:",
                                                          choices = c("_" = "_.*", "-" = "-.*", "." = "\\..*", "|" = "\\|.*", "#" = "#*", "^" = "\\^*", "&" = "&.*"),
                                                          multiple = F),),
-                                    column(2,selectInput("comparison_operator", "Choose comparison operator:",
-                                                         choices = c("Equal to" = "==", "Greater than or equal to" = ">=")),),
-                                    column(2,numericInput("cutoff_upset", "Enter cutoff value:", value = 0),),
+                                    column(4,selectInput("comparison_operator", "Choose comparison operator:",
+                                                         choices = c("Equal to" = "==", "Greater than or equal to" = ">="),
+                                                         selected = c("Greater than or equal to" = ">=")),),
+                                    column(2,numericInput("cutoff_upset", "Enter cutoff value:", value = 2),),
                                     column(2,numericInput("max_number_lines_to","Maximum to display",value = 20)),
                                     column(2,numericInput("Total_count_Cutoff","Min count threshold",value = 1))
                                   ),
@@ -1739,12 +1745,45 @@ navbarPage(
                                              div(DT::dataTableOutput("Line_graph_table")),
                                     ),
                                     tabPanel("Line graph",
-                                             column(2,selectInput("separator_input2", "Select Separators:",
-                                                                  choices = c("_" = "_", "-" = "-", "." = "\\.", "|" = "\\|", "#" = "#", "^" = "\\^", "&" = "&"),
-                                                                  selected = "_",
-                                                                  multiple = T),),
+                                             fluidRow(
+                                               column(2,sliderInput("number_of_conditions","Number of conditions",value = 2, min = 2 , max = 3)),
+                                               column(2,selectInput("separator_input2", "Select Separators:",
+                                                                    choices = c("_" = "_", "-" = "-", "." = "\\.", "|" = "\\|", "#" = "#", "^" = "\\^", "&" = "&"),
+                                                                    selected = "_",
+                                                                    multiple = T)),
+                                               column(2,selectInput("display_all_samps_line","Display all?",choices = c("no","yes"))),
 
-                                             plotOutput("line_graph_output"),
+                                               column(3,
+                                                      conditionalPanel(
+                                                        condition = "input.number_of_conditions == 3",textInput("shape_legend_name","Shape legend name",value = ""))
+                                               ),
+                                             ),
+
+                                             conditionalPanel(
+                                               condition = "input.display_all_samps_line == 'no'",
+
+                                               plotOutput("line_graph_output"),
+
+                                             ),
+
+                                             conditionalPanel(
+                                               condition = "input.display_all_samps_line == 'yes'",
+
+                                               plotOutput("line_graph_all_output"),
+
+                                             ),
+
+
+
+                                             fluidRow(
+                                               column(1, numericInput("width_line_graph_output", "Width of PDF", value = 10)),
+                                               column(1, numericInput("height_line_graph_output", "Height of PDF", value = 8)),
+                                               column(2, style = "margin-top: 25px;", downloadButton("downloadPlot_line_graph_output", "Download PDF")),
+                                               column(2, numericInput("width_png_line_graph_output", "Width of PNG", value = 1200)),
+                                               column(2, numericInput("height_png_line_graph_output", "Height of PNG", value = 1000)),
+                                               column(2, numericInput("resolution_PNG_line_graph_output", "Resolution of PNG", value = 144)),
+                                               column(2, style = "margin-top: 25px;", downloadButton("downloadPlotPNG_line_graph_output", "Download PNG"))
+                                             ),
                                     )
                                   ),
 
@@ -1892,18 +1931,14 @@ navbarPage(
                      ),
                      column(3,colourInput("min_FC_col", "Zero colour", value = "white")),
                      column(3,colourInput("med_FC_col", "from one colour", value = "#E9C2FF")),
-                     column(3,colourInput("max_FC_col", "Max colour", value = "purple")),
+                     column(3,colourInput("max_FC_col", "Max colour", value = "#6F00B0")),
                      # ),
                    ),
-
-
-
-
                    # Classification to include ------
                    tabsetPanel(
                      id = "Panel_TCRUMAP",
                      # top clonotypes plot -----
-                     tabPanel("Top clonotypes",
+                     tabPanel("Clone abundance",
                               value = "top_clone",
                               fluidRow(
                                 column(
@@ -2422,7 +2457,7 @@ navbarPage(
                      id = "PriorTBMods",
                      tabPanel("Analysis steps",
                               value = "ModstoConsid",
-                              p("The prioritisation section automates the analysis based on certain thresholds"),
+                              p("The prioritization section automates the analysis based on certain thresholds"),
                               p("There are three section"),
                               p("1. Clonotype"),
                               p("    - Single sample: immunodominant based on percentage threshold"),
@@ -9078,13 +9113,13 @@ navbarPage(
         session,
         "string.data3",
         choices = name.df$Gene_Name,
-        selected = c("GZMB", "CD4", "CD8A")
+        selected = c("GZMB", "CD4", "CD8A","SELL")
       )
     })
 
     #
     markers_featurePlot <- reactive({
-      sc <- df_sc_clust()
+      sc <- getData_2()
       Feture_plots <- list()
       feature_name <- c(input$string.data3)
       req(input$string.data3)
@@ -9143,22 +9178,22 @@ navbarPage(
 
 
     # Analysis -----
-    observe({
-      sc <- UMAP_metadata_with_labs()
-      validate(
-        need(
-          nrow(sc) > 0,
-          error_message_val1
-        )
-      )
-      meta.data <- sc@meta.data
-      updateSelectInput(
-        session,
-        "Split_group_by_overview",
-        choices = names(meta.data),
-        selected = "Sample_Name"
-      )
-    })
+    # observe({
+    #
+    #
+    #   # if (input$colourtype == "Paired") {
+    #     updateSelectInput(
+    #       session,
+    #       "colourtype",
+    #       choices = names(input.data.TCR.BD()),
+    #       selected = "chain"
+    #     )
+    #   # } else {
+    #
+    #   # }
+    # })
+    #
+
     observe({
       sc <- input.data_sc_pro()
       validate(
@@ -9469,6 +9504,7 @@ navbarPage(
           colorblind_vector <- distinctColorPalette(dim(num)[1])
         } else {
 
+          colorblind_vector <- rep(input$one.colour.default,dim(num)[1])
         }
       }
       colorblind_vector <- as.data.frame(colorblind_vector)
@@ -9639,9 +9675,6 @@ navbarPage(
         ))
       df4
     })
-
-
-
     ## Umap -----
     create_UMAP2 <- reactive({
       sc <- sc()
@@ -9749,7 +9782,7 @@ navbarPage(
         lapply(1:dim(num)[1], function(i) {
           colourInput(paste("col.clonotype", i, sep = "_"), paste(num[i, ]), palette1[i])
         })
-      } else {
+      } else if (input$colourtype == "one") {
         lapply(1:dim(num)[1], function(i) {
           colourInput(paste("col.clonotype", i, sep = "_"), paste(num[i, ]), input$one.colour.default)
         })
@@ -11151,7 +11184,7 @@ navbarPage(
       top_BD_cluster$Selected_function <- top_BD_cluster[, names(top_BD_cluster) %in% input$Colour_By_this_overview]
       top_BD_cluster$Selected_function <- ifelse(top_BD_cluster$Selected_function == "NA", "-", top_BD_cluster$Selected_function)
       top_BD_cluster <- top_BD_cluster[order(top_BD_cluster$Selected_function), ]
-      top_BD_cluster$Selected_group <- top_BD_cluster[, names(top_BD_cluster) %in% input$Split_group_by_overview]
+      top_BD_cluster$Selected_group <- top_BD_cluster[, names(top_BD_cluster) %in% input$Split_group_by_]
 
       df.col <- unlist(colors_pie())
       names(top_BD_cluster)[names(top_BD_cluster) %in% input$Samp_col] <- "ID_Column"
@@ -11240,7 +11273,7 @@ navbarPage(
         )
       )
       meta.data <- sc@meta.data
-      totals <- meta.data[, names(meta.data) %in% c(input$Samp_col, input$Split_group_by_overview)]
+      totals <- meta.data[, names(meta.data) %in% c(input$Samp_col, input$Split_group_by_)]
 
       totals %>%
         select(all_of(input$Samp_col), everything())
@@ -11497,6 +11530,7 @@ navbarPage(
       col.terrain <- terrain.colors(dim(num)[1])
       col.topo <- topo.colors(dim(num)[1])
       col.hcl <- hcl.colors(dim(num)[1], palette = "viridis")
+      one <- rep(input$one.colour.default,dim(num)[1])
 
       if (input$colourtype == "default") {
         lapply(1:dim(num)[1], function(i) {
@@ -11529,7 +11563,7 @@ navbarPage(
         })
       } else {
         lapply(1:dim(num)[1], function(i) {
-          colourInput(paste("col.pie", i, sep = "_"), paste(num[i, ]), input$one.colour.default)
+          colourInput(paste("col.pie", i, sep = "_"), paste(num[i, ]), one[i])
         })
       } # one colour
     })
@@ -15502,8 +15536,6 @@ navbarPage(
 
     })
 
-
-
     select_top_five <- reactive({
 
       clones <- Upset_plot_overlap()
@@ -15625,12 +15657,12 @@ navbarPage(
 
         # Convert row names into a regular column
         top_5_transposed$Sample_ID <- rownames(top_5_transposed)
-        top_5_transposed
         # Split Sample_ID into separate columns for Group and Time
 
         # as.data.frame(do.call(rbind, strsplit(as.character(top_5_transposed$Sample_ID), "[.]")))
 
         sample_parts <- strsplit(top_5_transposed$Sample_ID, input$separator_input2)
+        print(sample_parts)
         #   # Loop over each part and assign them to new columns
         for (i in 1:length(names(top_5_data_list))) {  # Assuming there are 3 parts after splitting
           # Create new column names V1, V2, V3
@@ -15639,71 +15671,126 @@ navbarPage(
           # Extract the ith part from each split
           top_5_transposed[[new_col_name]] <- sapply(sample_parts, function(x) ifelse(length(x) >= i, x[i], NA))
         }
-
-        print(top_5_transposed)
-        print(grep("V",top_5_transposed))
+        all_names <- names(top_5_transposed)
+        print(all_names)
+        v_gene_names <- all_names[grep("TRAV|TRBV|TRGV|TRDV", all_names)]
+        print(v_gene_names)
+        # non_tr_names <- setdiff(all_names, v_gene_names)
+        # print(non_tr_names)
         #
         #   top_5_transposed
         # Reshape the data into long format
         data_long <- pivot_longer(top_5_transposed,
-                                  cols = -c(Sample_ID, ID,grep("V",top_5_transposed)),   # Exclude the Sample_ID, Group, and Time columns
+                                  cols = v_gene_names,   # Exclude the Sample_ID, Group, and Time columns
                                   names_to = "VDJ",  # New column name for time points
                                   values_to = "Count")     # New column name for values
-        # print(data_long)
-        #   # Replace underscores with spaces in the VDJ variable
-        #   data_long$VDJ <- gsub("_", " ", data_long$VDJ)
-        #   data_long$VDJ <- gsub(" & ", " ", data_long$VDJ)
+        # data_long
+        print(data_long)
+        # Replace underscores with spaces in the VDJ variable
+        data_long$VDJ <- gsub("_", " ", data_long$VDJ)
+        data_long$VDJ <- gsub(" & ", " ", data_long$VDJ)
         #   # Wrap the Time_Point variable based on spaces
-        #   data_long$VDJ <- str_wrap(data_long$VDJ, width = 10)  # Adjust width as needed
+        data_long$VDJ <- str_wrap(data_long$VDJ, width = 10)  # Adjust width as needed
         #
         #   # Determine unique levels of VDJ
-        #   unique_vdj <- as.data.frame(unique(data_long$VDJ))
-        #   names(unique_vdj) <- "unique_vdj"
-        #
-        #   unique_vdj
-        #   set.seed(200)
-        #   unique_vdj$shape <- sample(1:25, nrow(unique_vdj))
-        #   data_long
-        #
-        #   # Create the plot
-        #   p <- ggplot(data_long, aes(x = V2, y = Count, color = VDJ, shape = V3)) +
-        #     geom_point(size = 7) +  # Increased point size
-        #     geom_line(aes(group = paste(VDJ, V1)), linewidth = 1.25) +
-        #     scale_color_viridis_d(option = "C", begin = 0.2, end = 0.8) +
-        #
-        #     scale_shape_manual(values = unique_vdj$shape) +  # Use default shapes
-        #     labs(x = "", y = "", title = "", color = year, shape = "ACR") +
-        #     theme_minimal() +
-        #     theme(legend.title = element_text(face = "bold", size = 16, family = "Times New Roman"),
-        #           legend.text = element_text(size = 12, family = "Times New Roman"),
-        #           axis.text = element_text(size = 16, family = "Times New Roman"),
-        #           axis.title = element_blank(),
-        #           plot.title = element_blank()
-        #     ) +
-        #     # guides(color = guide_legend(
-        #     #
-        #     #   override.aes = list(size = 7)# Increase margin between items
-        #     # )) +
-        #     guides(colour = guide_legend(order = 1,
-        #                                  title.theme = element_text(margin = margin(b = 0)),  # Increase margin between title and items
-        #                                  label.theme = element_text(margin = margin(t = 15)),
-        #
-        #     ),
-        #     shape = guide_legend(order = 2,
-        #                          title.theme = element_text(margin = margin(b = 0)),  # Increase margin between title and items
-        #                          label.theme = element_text(margin = margin(t = 15)),
-        #     )) +
-        #     ylim(0, max_count)  # Set y-axis limits
-        #
-        #   # Store the plot in the list
-        #   plot_list[[year]] <- p
+        unique_vdj <- as.data.frame(unique(data_long$VDJ))
+        names(unique_vdj) <- "unique_vdj"
+
+        set.seed(200)
+        unique_vdj$shape <- sample(1:25, nrow(unique_vdj))
+        data_long
+
+        # Create the plot
+
+        if(input$number_of_conditions == 2) {
+
+          req(length(data_long$V2>0))
+
+          p <- ggplot(data_long, aes(x = V2, y = Count, color = VDJ, shape = VDJ)) +
+            geom_point(size = 7) +  # Increased point size
+            geom_line(aes(group = paste(VDJ, V1)), linewidth = 1.25) +
+            scale_color_viridis_d(option = "C", begin = 0.2, end = 0.8) +
+            scale_shape_manual(values = unique_vdj$shape) +  # Use default shapes
+            labs(x = "", y = "", title = "", color = year, shape = year) +
+            theme_minimal() +
+            theme(legend.title = element_text(face = "bold", size = 16, family = "Times New Roman"),
+                  legend.text = element_text(size = 12, family = "Times New Roman"),
+                  axis.text = element_text(size = 16, family = "Times New Roman"),
+                  axis.title = element_blank(),
+                  plot.title = element_blank()
+            ) +
+            guides(color = guide_legend(
+              title.theme = element_text(margin = margin(b = 0)),  # Increase margin between title and items
+              label.theme = element_text(margin = margin(t = 15)),
+              override.aes = list(size = 7)# Increase margin between items
+            )) +
+            ylim(0, max_count)  # Set y-axis limits
+
+          # Store the plot in the list
+          plot_list[[year]] <- p
+        } else if (input$number_of_conditions == 3) {
+
+          req(length(data_long$V2>0), length(data_long$V3>0))
+
+          p <- ggplot(data_long, aes(x = V2, y = Count, color = VDJ, shape = V3)) +
+            geom_point(size = 7) +  # Increased point size
+            geom_line(aes(group = paste(VDJ, V1)), linewidth = 1.25) +
+            scale_color_viridis_d(option = "C", begin = 0.2, end = 0.8) +
+            scale_shape_manual(values = unique_vdj$shape) +  # Use default shapes
+            labs(x = "", y = "", title = "", color = year, shape = input$shape_legend_name) +
+            theme_minimal() +
+            theme(legend.title = element_text(face = "bold", size = 16, family = "Times New Roman"),
+                  legend.text = element_text(size = 12, family = "Times New Roman"),
+                  axis.text = element_text(size = 16, family = "Times New Roman"),
+                  axis.title = element_blank(),
+                  plot.title = element_blank()
+            ) +
+            guides(colour = guide_legend(order = 1,
+                                         title.theme = element_text(margin = margin(b = 0)),  # Increase margin between title and items
+                                         label.theme = element_text(margin = margin(t = 15)),
+
+            ),
+            shape = guide_legend(order = 1,
+                                 title.theme = element_text(margin = margin(b = 0)),  # Increase margin between title and items
+                                 label.theme = element_text(margin = margin(t = 15)),
+            )) +
+            ylim(0, max_count)  # Set y-axis limits
+
+          # Store the plot in the list
+          plot_list[[year]] <- p
+
+
+        }
+
+
       }
-      # plot_list
+      plot_list
     })
 
 
     output$line_graph_output <- renderPlot({
-      Line_graph_for_tracing()
+      plot_list <- Line_graph_for_tracing()
+      req(plot_list)
+      print(names(plot_list))
+      plot_list[[input$Group_for_line_graph]]
+    })
+
+
+
+    output$line_graph_all_output <- renderPlot({
+      require(cowplot)
+      require(grid)
+      require(gridExtra)
+      plot_list <- Line_graph_for_tracing()
+      req(plot_list)
+      combined_plots <- plot_grid(plotlist = plot_list, nrow = input$wrap_row)
+      y.grob <- textGrob("TCR counts",
+                         gp=gpar(fontface="bold", col="black", fontfamily="Times New Roman", fontsize=30), rot=90)
+
+      x.grob <- textGrob("Time",
+                         gp=gpar(fontface="bold", col="black", fontfamily="Times New Roman", fontsize=30))
+
+      grid.arrange(arrangeGrob(combined_plots, left = y.grob, bottom = x.grob))
     })
 
 
@@ -15722,16 +15809,22 @@ navbarPage(
       UMAP$Cell_Index <- rownames(UMAP)
       meta.data <- as.data.frame(sc@meta.data)
       umap.meta <- merge(UMAP, meta.data, by = "Cell_Index")
-      names(umap.meta)[names(umap.meta) %in% input$V_gene_sc] <- "chain"
-      names(umap.meta)[names(umap.meta) %in% input$Samp_col] <- "ID_Column"
-      names(umap.meta)[names(umap.meta) %in% input$Colour_By_this] <- "Selected_function"
-      names(umap.meta)[names(umap.meta) %in% input$Split_group_by_overview] <- "Selected_group"
+
+      umap.meta$chain <- umap.meta[,names(umap.meta) %in% input$V_gene_sc]
+      umap.meta$ID_Column <- umap.meta[,names(umap.meta) %in% input$Samp_col]
+      umap.meta$Selected_function <- umap.meta[,names(umap.meta) %in% input$Colour_By_this]
+      umap.meta$Selected_group <- umap.meta[,names(umap.meta) %in% input$Split_group_by_]
+
+      # names(umap.meta)[names(umap.meta) %in% input$Samp_col] <- "ID_Column"
+      # names(umap.meta)[names(umap.meta) %in% input$Colour_By_this] <- "Selected_function"
+      # names(umap.meta)[names(umap.meta) %in% input$Split_group_by_] <- "Selected_group"
       # sc <- merge(umap.meta,TCR_Expanded(),by=c("v_gene_selected","ID_Column"),all.x=T)
 
       Upset_plot_overlap <- Upset_plot_overlap()
       Upset_plot_overlap_top <- subset(Upset_plot_overlap, Upset_plot_overlap$sum > 1)
       Upset_plot_overlap_top$chain <- rownames(Upset_plot_overlap_top)
-      umap.meta.overlap <- merge(Upset_plot_overlap_top, umap.meta, by = "chain")
+      umap.meta.overlap <- merge(Upset_plot_overlap_top, umap.meta, by = c("chain",map.meta$ID_Column))
+      print(names(umap.meta.overlap))
       umap.meta.overlap
     })
 
@@ -16972,7 +17065,7 @@ navbarPage(
 
     #
 
-    # updating the UI for prioritisation -------
+    # updating the UI for prioritization -------
     output$Top_clone_number <- renderUI({
       sc <- UMAP_metadata_with_labs()
 
@@ -17221,17 +17314,17 @@ navbarPage(
 
       x <- today()
       message("Downloading the Summary table...")
-      top.name.clonotypes <- paste("Prioritisation/ImmunoDom/Expansion_summary_table_", x, ".csv", sep = "")
+      top.name.clonotypes <- paste("prioritization/ImmunoDom/Expansion_summary_table_", x, ".csv", sep = "")
       write.csv(Top_clonotype_df2(), top.name.clonotypes, row.names = F)
 
       message("Downloading the top UMAP...")
-      top.name.clonotypes.count_png <- paste("Prioritisation/ImmunoDom/Expansion_UMAP_top_", x, ".png", sep = "")
+      top.name.clonotypes.count_png <- paste("prioritization/ImmunoDom/Expansion_UMAP_top_", x, ".png", sep = "")
       png(top.name.clonotypes.count_png, width = input$width_png_TCR.UMAP_top, height = input$height_png_TCR.UMAP_top, res = input$resolution_PNG_TCR.UMAP_top)
       plot(Topclonotypes())
       dev.off()
 
       message("Downloading the count UMAP...")
-      top.name.clonotypes.top_png <- paste("Prioritisation/ImmunoDom/Expansion_UMAP_count_", x, ".png", sep = "")
+      top.name.clonotypes.top_png <- paste("prioritization/ImmunoDom/Expansion_UMAP_count_", x, ".png", sep = "")
       png(top.name.clonotypes.top_png, width = input$width_png_TCR.UMAP, height = input$height_png_TCR.UMAP, res = input$resolution_PNG_TCR.UMAP)
       plot(UMAP.TCRclonalit2())
       dev.off()
@@ -17244,7 +17337,7 @@ navbarPage(
 
       message("Downloading AG cluster table")
 
-      top.name.clonotypes <- paste("Prioritisation/ImmunoDom/Cluster_summary_table_AG", x, ".csv", sep = "")
+      top.name.clonotypes <- paste("prioritization/ImmunoDom/Cluster_summary_table_AG", x, ".csv", sep = "")
       write.csv(clusTCR2_df(), top.name.clonotypes, row.names = F)
     })
     top_clonotype_bar_code_immdom <- reactive({
@@ -17343,7 +17436,7 @@ navbarPage(
             guides(color = "none", size = "none")
 
           x <- today()
-          top.name.clonotypes.top_png <- paste("Prioritisation/ImmunoDom/", i, "_top_clone_", gsub("[/]", "", gsub("&", "", name.clone)), "_", x, ".png", sep = "")
+          top.name.clonotypes.top_png <- paste("prioritization/ImmunoDom/", i, "_top_clone_", gsub("[/]", "", gsub("&", "", name.clone)), "_", x, ".png", sep = "")
 
           num_width <- length(unique(dtop_clonotype_bar_code$Selected_group))
 
@@ -17397,7 +17490,7 @@ navbarPage(
           if (length(markers.fm.list2$p_val_adj) > 0) {
             ### download the dot plot -------
 
-            clonotype.name.stats <- paste("Prioritisation/ImmunoDom/", i, "_", gsub("[/]", "", gsub("&", "", name.clone)), "_stats_table", "_", today(), ".csv", sep = "")
+            clonotype.name.stats <- paste("prioritization/ImmunoDom/", i, "_", gsub("[/]", "", gsub("&", "", name.clone)), "_stats_table", "_", today(), ".csv", sep = "")
             write.csv(markers.fm.list2, clonotype.name.stats, row.names = T)
 
             message(paste0("Saved csv", name.clone))
@@ -17427,7 +17520,7 @@ navbarPage(
               scale_y_discrete(labels = label_wrap(20))
 
 
-            file.name.clone <- paste("Prioritisation/ImmunoDom/", i, "_", gsub("[/]", "", gsub("&", "", name.clone)), "_dotplot_plot", "_", today(), ".png", sep = "")
+            file.name.clone <- paste("prioritization/ImmunoDom/", i, "_", gsub("[/]", "", gsub("&", "", name.clone)), "_dotplot_plot", "_", today(), ".png", sep = "")
 
 
             png(file.name.clone, width = input$width_png_all_expression_dotplot_top, height = input$height_png_all_expression_dotplot_top, res = input$resolution_PNG_all_expression_dotplot_top)
@@ -17520,8 +17613,8 @@ navbarPage(
               geneSet2$FDR <- p.adjust(geneSet2$p.val, method = "fdr")
               geneSet2$Bonferroni <- p.adjust(geneSet2$p.val, method = "bonferroni")
 
-              file.name.clone <- paste("Prioritisation/ImmunoDom/", i, "_", gsub("[/]", "", gsub("&", "", name.clone)), "_dotplot_plot", "_", today(), ".png", sep = "")
-              top.name.overrep <- paste("Prioritisation/ImmunoDom/", i, "_", gsub("[/]", "", gsub("&", "", name.clone)), "_OverRep", "_", today(), ".csv", sep = "")
+              file.name.clone <- paste("prioritization/ImmunoDom/", i, "_", gsub("[/]", "", gsub("&", "", name.clone)), "_dotplot_plot", "_", today(), ".png", sep = "")
+              top.name.overrep <- paste("prioritization/ImmunoDom/", i, "_", gsub("[/]", "", gsub("&", "", name.clone)), "_OverRep", "_", today(), ".csv", sep = "")
               write.csv(geneSet2, top.name.overrep, row.names = F)
             }
           }
@@ -17546,17 +17639,17 @@ navbarPage(
 
       x <- today()
       message("Downloading contig summary table...")
-      top.name.clonotypes <- paste("Prioritisation/PolyClonal/Expansion_summary_table_", x, ".csv", sep = "")
+      top.name.clonotypes <- paste("prioritization/PolyClonal/Expansion_summary_table_", x, ".csv", sep = "")
       write.csv(Top_clonotype_df2(), top.name.clonotypes, row.names = F)
 
       message("Downloading the count UMAP...")
-      top.name.clonotypes.top_png <- paste("Prioritisation/PolyClonal/Expansion_UMAP_count_", x, ".png", sep = "")
+      top.name.clonotypes.top_png <- paste("prioritization/PolyClonal/Expansion_UMAP_count_", x, ".png", sep = "")
       png(top.name.clonotypes.top_png, width = input$width_png_TCR.UMAP, height = input$height_png_TCR.UMAP, res = input$resolution_PNG_TCR.UMAP)
       plot(UMAP.TCRclonalit2())
       dev.off()
 
       message("Downloading the expansion UMAP...")
-      top.name.clonotypes.top_png <- paste("Prioritisation/PolyClonal/Exp_UMAP_cutoff_count.", input$cut.off_expanded, ".and.freq", input$cutoff.expanded, "_", x, ".png", sep = "")
+      top.name.clonotypes.top_png <- paste("prioritization/PolyClonal/Exp_UMAP_cutoff_count.", input$cut.off_expanded, ".and.freq", input$cutoff.expanded, "_", x, ".png", sep = "")
       # png(top.name.clonotypes.top_png, width = input$width_png_TCR.UMAP,height = input$height_png_TCR.UMAP,res = input$resolution_PNG_TCR.UMAP)
       png(top.name.clonotypes.top_png,
           width = input$width_png_UMAP_Expanded,
@@ -17567,11 +17660,11 @@ navbarPage(
       dev.off()
 
       message("Downloading stats table...")
-      Exp_stats_cutoff_count.name <- paste("Prioritisation/PolyClonal/Exp_stats_cutoff_count.", input$cut.off_expanded, ".and.freq", input$cutoff.expanded, "_", x, ".csv", sep = "")
+      Exp_stats_cutoff_count.name <- paste("prioritization/PolyClonal/Exp_stats_cutoff_count.", input$cut.off_expanded, ".and.freq", input$cutoff.expanded, "_", x, ".csv", sep = "")
       write.csv(Vals_expanded.stats(), Exp_stats_cutoff_count.name, row.names = T)
 
       message("Downloading the expansion stats dotplot...")
-      top.name.clonotypes.top_png <- paste("Prioritisation/PolyClonal/Exp_dotplot.", input$cut.off_expanded, ".and.freq", input$cutoff.expanded, "_", x, ".png", sep = "")
+      top.name.clonotypes.top_png <- paste("prioritization/PolyClonal/Exp_dotplot.", input$cut.off_expanded, ".and.freq", input$cutoff.expanded, "_", x, ".png", sep = "")
       png(top.name.clonotypes.top_png,
           width = input$width_png_all_expression_dotplot_ex,
           height = input$height_png_all_expression_dotplot_ex,
@@ -17581,7 +17674,7 @@ navbarPage(
       dev.off()
 
       message("Downloading overrep table...")
-      Exp_stats_cutoff_count.name <- paste("Prioritisation/PolyClonal/Exp_OverRep_cutoff_count.", input$cut.off_expanded, ".and.freq", input$cutoff.expanded, "_", x, ".csv", sep = "")
+      Exp_stats_cutoff_count.name <- paste("prioritization/PolyClonal/Exp_OverRep_cutoff_count.", input$cut.off_expanded, ".and.freq", input$cutoff.expanded, "_", x, ".csv", sep = "")
       write.csv(Over_rep_Exp(), Exp_stats_cutoff_count.name, row.names = F)
     })
 
@@ -17773,7 +17866,7 @@ navbarPage(
         BD_sum$obs <- 1
         BD_sum <- subset(BD_sum, BD_sum$priority < input$cut.off_percent_repMulti)
 
-        top.name.clonotypes.top_png <- paste("Prioritisation/Multi/PublicLike/", "Selected_clones_", x, ".csv", sep = "")
+        top.name.clonotypes.top_png <- paste("prioritization/Multi/PublicLike/", "Selected_clones_", x, ".csv", sep = "")
         write.csv(BD_sum, top.name.clonotypes.top_png)
         observations <- sum(BD_sum$obs)
 
@@ -17841,7 +17934,7 @@ navbarPage(
               guides(color = "none", size = "none")
 
 
-            top.name.clonotypes.top_png <- paste("Prioritisation/Multi/PublicLike/", i, "_top_clone_", gsub("[/]", "", gsub("&", "", name.clone)), "_", x, ".png", sep = "")
+            top.name.clonotypes.top_png <- paste("prioritization/Multi/PublicLike/", i, "_top_clone_", gsub("[/]", "", gsub("&", "", name.clone)), "_", x, ".png", sep = "")
 
             num_width <- length(unique(dtop_clonotype_bar_code$Selected_group))
 
@@ -17897,7 +17990,7 @@ navbarPage(
             markers.fm.list2 <- subset(markers.fm.list, markers.fm.list$p_val_adj < input$pval.ex.filter)
             message(paste(length(markers.fm.list2$p_val_adj), "total markers for cluster", i))
             if (length(markers.fm.list2$p_val_adj) > 0) {
-              clonotype.name.stats <- paste("Prioritisation/Multi/PublicLike/", i, "_", gsub("[/]", "", gsub("&", "", name.clone)), "_stats_table", "_", today(), ".csv", sep = "")
+              clonotype.name.stats <- paste("prioritization/Multi/PublicLike/", i, "_", gsub("[/]", "", gsub("&", "", name.clone)), "_stats_table", "_", today(), ".csv", sep = "")
               write.csv(markers.fm.list2, clonotype.name.stats, row.names = T)
 
               message(paste0("Saved csv ", name.clone))
@@ -17928,7 +18021,7 @@ navbarPage(
                 scale_y_discrete(labels = label_wrap(20))
 
 
-              file.name.clone <- paste("Prioritisation/Multi/PublicLike/", i, "_", gsub("[/]", "", gsub("&", "", name.clone)), "_dotplot_plot", "_", today(), ".png", sep = "")
+              file.name.clone <- paste("prioritization/Multi/PublicLike/", i, "_", gsub("[/]", "", gsub("&", "", name.clone)), "_dotplot_plot", "_", today(), ".png", sep = "")
 
               ### download the dot plot -------
               png(file.name.clone, width = input$width_png_all_expression_dotplot_top, height = input$height_png_all_expression_dotplot_top, res = input$resolution_PNG_all_expression_dotplot_top)
@@ -18017,7 +18110,7 @@ navbarPage(
                 geneSet2$FDR <- p.adjust(geneSet2$p.val, method = "fdr")
                 geneSet2$Bonferroni <- p.adjust(geneSet2$p.val, method = "bonferroni")
 
-                top.name.overrep <- paste("Prioritisation/Multi/PublicLike/", i, "_", gsub("[/]", "", gsub("&", "", name.clone)), "_OverRep", "_", today(), ".csv", sep = "")
+                top.name.overrep <- paste("prioritization/Multi/PublicLike/", i, "_", gsub("[/]", "", gsub("&", "", name.clone)), "_OverRep", "_", today(), ".csv", sep = "")
                 write.csv(geneSet2, top.name.overrep, row.names = F)
               }
             }
@@ -18083,7 +18176,7 @@ navbarPage(
           message(paste(length(markers.fm.list2$p_val_adj), "total markers for cluster", i))
 
           if (length(markers.fm.list2$p_val_adj) > 0) {
-            clonotype.name.stats <- paste("Prioritisation/Multi/Unique/", i, "_", gsub("[/]", "", gsub("&", "", name.clone)), "_stats_table", "_", today(), ".csv", sep = "")
+            clonotype.name.stats <- paste("prioritization/Multi/Unique/", i, "_", gsub("[/]", "", gsub("&", "", name.clone)), "_stats_table", "_", today(), ".csv", sep = "")
             write.csv(markers.fm.list2, clonotype.name.stats, row.names = T)
 
             message(paste0("Saved csv ", name.clone))
@@ -18114,7 +18207,7 @@ navbarPage(
               scale_y_discrete(labels = label_wrap(20))
 
 
-            file.name.clone <- paste("Prioritisation/Multi/Unique/", i, "_", gsub("[/]", "", gsub("&", "", name.clone)), "_dotplot_plot", "_", today(), ".png", sep = "")
+            file.name.clone <- paste("prioritization/Multi/Unique/", i, "_", gsub("[/]", "", gsub("&", "", name.clone)), "_dotplot_plot", "_", today(), ".png", sep = "")
 
             ### download the dot plot -------
             png(file.name.clone, width = input$width_png_all_expression_dotplot_top, height = input$height_png_all_expression_dotplot_top, res = input$resolution_PNG_all_expression_dotplot_top)
@@ -18204,7 +18297,7 @@ navbarPage(
               geneSet2$FDR <- p.adjust(geneSet2$p.val, method = "fdr")
               geneSet2$Bonferroni <- p.adjust(geneSet2$p.val, method = "bonferroni")
 
-              top.name.overrep <- paste("Prioritisation/Multi/Unique/", i, "_", gsub("[/]", "", gsub("&", "", name.clone)), "_OverRep", "_", today(), ".csv", sep = "")
+              top.name.overrep <- paste("prioritization/Multi/Unique/", i, "_", gsub("[/]", "", gsub("&", "", name.clone)), "_OverRep", "_", today(), ".csv", sep = "")
               write.csv(geneSet2, top.name.overrep, row.names = F)
             }
           }
@@ -18222,7 +18315,7 @@ navbarPage(
       )
       x <- today()
       message("Downloading the Summary table...")
-      top.name.clonotypes <- paste("Prioritisation/Multi/Overlap_Table_", x, ".csv", sep = "")
+      top.name.clonotypes <- paste("prioritization/Multi/Overlap_Table_", x, ".csv", sep = "")
       write.csv(Upset_plot_overlap_Multi(), top.name.clonotypes, row.names = T)
 
       message("Downloading the Upset Plot...")
@@ -18235,7 +18328,7 @@ navbarPage(
       names(unique.df) <- c("group", "chain")
       unique.df <- unique.df[unique.df$group %in% input$ID_Column_factor, ]
       if (length(unique(unique.df$group)) < 31) {
-        top.name.clonotypes.count_png <- paste("Prioritisation/Multi/Overlap_Upset_plot", x, ".png", sep = "")
+        top.name.clonotypes.count_png <- paste("prioritization/Multi/Overlap_Upset_plot", x, ".png", sep = "")
         png(top.name.clonotypes.count_png, width = input$width_png_TCR.UMAP_top, height = input$height_png_TCR.UMAP_top, res = input$resolution_PNG_TCR.UMAP_top)
         plot(Upset_plot_multi())
         dev.off()
@@ -18244,7 +18337,7 @@ navbarPage(
       }
 
       message("Downloading the stacked barplot Plot...")
-      top.name.clonotypes.count_png <- paste("Prioritisation/Multi/Stacked_bar_plot", x, ".png", sep = "")
+      top.name.clonotypes.count_png <- paste("prioritization/Multi/Stacked_bar_plot", x, ".png", sep = "")
 
       df4 <- TCR_Expanded()
       num_indiv <- length(unique(df4$ID_Column))
@@ -18264,7 +18357,7 @@ navbarPage(
 
       if (input$Download_private_overlapping) {
         message("Downloading Private Marker and OverRep analysis summary table ...")
-        top.name.clonotypes <- paste("Prioritisation/Multi/Unique_Table_", x, ".csv", sep = "")
+        top.name.clonotypes <- paste("prioritization/Multi/Unique_Table_", x, ".csv", sep = "")
         write.csv(Top_clonotypes_Private(), top.name.clonotypes, row.names = T)
 
         message("Downloading Private Marker and OverRep analysis ")
@@ -18350,7 +18443,7 @@ navbarPage(
       x <- today()
       if (length(AG_cluster()) > 0) {
         message("Downloading AG cluster table...")
-        Exp_stats_cutoff_count.name <- paste("Prioritisation/Clustering/Cluster_summary_table_AG_", x, ".csv", sep = "")
+        Exp_stats_cutoff_count.name <- paste("prioritization/Clustering/Cluster_summary_table_AG_", x, ".csv", sep = "")
         AG_cluster <- AG_cluster()
 
         write.csv(AG_cluster, Exp_stats_cutoff_count.name, row.names = F)
@@ -18366,7 +18459,7 @@ navbarPage(
 
       if (length(BD_cluster()) > 0) {
         message("Downloading BD cluster table...")
-        Exp_stats_cutoff_count.name <- paste("Prioritisation/Clustering/Cluster_summary_table_BD_", x, ".csv", sep = "")
+        Exp_stats_cutoff_count.name <- paste("prioritization/Clustering/Cluster_summary_table_BD_", x, ".csv", sep = "")
         BD_cluster <- BD_cluster()
 
         write.csv(BD_cluster, Exp_stats_cutoff_count.name, row.names = F)
@@ -18450,8 +18543,8 @@ navbarPage(
           Vgene <- as.data.frame(strsplit(cluster$CDR3_Vgene, "_"))[2, 1]
           Vgene <- gsub("/", "", Vgene)
           sample_size <- unique(cluster$Sample_count)
-          dirName <- paste0("Prioritisation/Clustering/AG/", i, "_", Vgene, "_", sample_size, "/")
-          # dirName <- paste0("Prioritisation/Clustering/AG/")
+          dirName <- paste0("prioritization/Clustering/AG/", i, "_", Vgene, "_", sample_size, "/")
+          # dirName <- paste0("prioritization/Clustering/AG/")
 
           if (file.exists(dirName)) {
             cluster$colour <- cluster[, names(cluster) %in% input$Colour_By_this]
@@ -18766,7 +18859,7 @@ navbarPage(
 
           Vgene <- as.data.frame(strsplit(cluster$CDR3_Vgene, "_"))[2, 1]
           sample_size <- unique(cluster$Sample_count)
-          dirName <- paste0("Prioritisation/Clustering/BD/", i, "_", Vgene, "_", sample_size, "/")
+          dirName <- paste0("prioritization/Clustering/BD/", i, "_", Vgene, "_", sample_size, "/")
           if (file.exists(dirName)) {
             ## ggplot UMAP -----
             cluster$colour <- cluster[, names(cluster) %in% input$Colour_By_this]
@@ -19095,16 +19188,16 @@ navbarPage(
     })
 
 
-    # epitope prioritisation ------
+    # epitope prioritization ------
     observeEvent(input$EpitopePrior_Download_Bt, {
       x <- today()
       message(paste("Downloading sumamry table of", input$Prior_AddInEpiUI_1, "vs", input$Prior_AddInEpiUI_2))
-      Exp_stats_cutoff_count.name <- paste("Prioritisation/EpitopePred/Epitope_summary_table_", input$Prior_AddInEpiUI_1, "vs", input$Prior_AddInEpiUI_2, "_", x, ".csv", sep = "")
+      Exp_stats_cutoff_count.name <- paste("prioritization/EpitopePred/Epitope_summary_table_", input$Prior_AddInEpiUI_1, "vs", input$Prior_AddInEpiUI_2, "_", x, ".csv", sep = "")
       write.csv(Prior_Epitope_dt_process(), Exp_stats_cutoff_count.name, row.names = F)
 
       message(paste("Downloading heatmap", input$Prior_AddInEpiUI_1, " vs ", input$Prior_AddInEpiUI_2))
 
-      name.epitope <- paste("Prioritisation/EpitopePred/", input$Prior_AddInEpiUI_1, "_", input$Prior_AddInEpiUI_2, "_Heatmap_", x, ".png", sep = "")
+      name.epitope <- paste("prioritization/EpitopePred/", input$Prior_AddInEpiUI_1, "_", input$Prior_AddInEpiUI_2, "_Heatmap_", x, ".png", sep = "")
 
       Common_Epitope_code <- Common_Epitope_code()
       total_X <- length(unique(Common_Epitope_code$Selected_function))
@@ -19115,7 +19208,7 @@ navbarPage(
       dev.off()
 
       message(paste("Downloading UMAP", input$Prior_AddInEpiUI_1, " vs ", input$Prior_AddInEpiUI_2))
-      name.epitope.UMAP <- paste("Prioritisation/EpitopePred/", "Epitope_UMAP_coloredby.", input$Prior_AddInEpiUI_1, "_", x, ".png", sep = "")
+      name.epitope.UMAP <- paste("prioritization/EpitopePred/", "Epitope_UMAP_coloredby.", input$Prior_AddInEpiUI_1, "_", x, ".png", sep = "")
 
       len.colour <- length(unique(Common_Epitope_code$ID_Column))
       nCol <- round(sqrt(len.colour), 0)
@@ -19399,12 +19492,12 @@ navbarPage(
 
             Epi.selected <- subset(md, md$Selected_Function_group == df2$Selected_Function_group[i])
 
-            # dirName <- paste0("Prioritisation/Clustering/BD/",i,"_",Vgene,"_",sample_size,"/")
+            # dirName <- paste0("prioritization/Clustering/BD/",i,"_",Vgene,"_",sample_size,"/")
 
             selected.epitope.name <- df2$Selected_group[i]
             Epi.selected.function.name <- df2$Selected_function[i]
 
-            top.name.clonotypes.top_csv <- paste("Prioritisation/EpitopePred/", i, "_", selected.epitope.name, "_", Epi.selected.function.name, "_Epitope_summary_table_", x, ".csv", sep = "")
+            top.name.clonotypes.top_csv <- paste("prioritization/EpitopePred/", i, "_", selected.epitope.name, "_", Epi.selected.function.name, "_Epitope_summary_table_", x, ".csv", sep = "")
 
             write.csv(Epi.selected, top.name.clonotypes.top_csv)
 
@@ -19451,7 +19544,7 @@ navbarPage(
 
             message(paste(i, " Downloading the count UMAP"))
             x <- today()
-            top.name.clonotypes.top_png <- paste("Prioritisation/EpitopePred/", i, "_", selected.epitope.name, "_", Epi.selected.function.name, "_Epitope_UMAP_", x, ".png", sep = "")
+            top.name.clonotypes.top_png <- paste("prioritization/EpitopePred/", i, "_", selected.epitope.name, "_", Epi.selected.function.name, "_Epitope_UMAP_", x, ".png", sep = "")
             png(top.name.clonotypes.top_png, width = input$width_png_TCR.UMAP, height = input$height_png_TCR.UMAP, res = input$resolution_PNG_TCR.UMAP)
             plot(df)
             dev.off()
@@ -19480,7 +19573,7 @@ navbarPage(
 
             if (length(markers.fm.list2$p_val_adj) > 0) {
               message(paste(i, " Downloading stats table"))
-              Exp_stats_cutoff_count.name <- paste("Prioritisation/EpitopePred/", i, "_", selected.epitope.name, "_", Epi.selected.function.name, "_Epitope_statsTab_", x, ".csv", sep = "")
+              Exp_stats_cutoff_count.name <- paste("prioritization/EpitopePred/", i, "_", selected.epitope.name, "_", Epi.selected.function.name, "_Epitope_statsTab_", x, ".csv", sep = "")
               write.csv(markers.fm.list2, Exp_stats_cutoff_count.name, row.names = T)
 
               #   # stats dotplot ----
@@ -19508,7 +19601,7 @@ navbarPage(
                 scale_x_discrete(labels = label_wrap(20)) +
                 scale_y_discrete(labels = label_wrap(20))
 
-              top.name.clonotypes.top_png <- paste("Prioritisation/EpitopePred/", i, "_", selected.epitope.name, "_", Epi.selected.function.name, "_Epitope_dot.plot_", x, ".png", sep = "")
+              top.name.clonotypes.top_png <- paste("prioritization/EpitopePred/", i, "_", selected.epitope.name, "_", Epi.selected.function.name, "_Epitope_dot.plot_", x, ".png", sep = "")
               png(top.name.clonotypes.top_png,
                   width = input$width_png_all_expression_dotplot_clust,
                   height = input$height_png_all_expression_dotplot_clust,
@@ -19591,8 +19684,8 @@ navbarPage(
                   geneSet2$FDR <- p.adjust(geneSet2$p.val, method = "fdr")
                   geneSet2$Bonferroni <- p.adjust(geneSet2$p.val, method = "bonferroni")
                   message("Downloading the Summary table...")
-                  # top.name.clonotypes.top_png <- paste("Prioritisation/EpitopePred/",i,"_",selected.epitope.name,"_dot.plot_",x,".png",sep="")
-                  top.name.clonotypes <- paste("Prioritisation/EpitopePred/", i, "_", selected.epitope.name, "_", Epi.selected.function.name, "_Epitope_OverRep_", x, ".csv", sep = "")
+                  # top.name.clonotypes.top_png <- paste("prioritization/EpitopePred/",i,"_",selected.epitope.name,"_dot.plot_",x,".png",sep="")
+                  top.name.clonotypes <- paste("prioritization/EpitopePred/", i, "_", selected.epitope.name, "_", Epi.selected.function.name, "_Epitope_OverRep_", x, ".csv", sep = "")
                   write.csv(geneSet2, top.name.clonotypes, row.names = F)
                 }
               }
@@ -19628,16 +19721,16 @@ navbarPage(
       df2 <- df2[order(df2$Percent, decreasing = T), ]
       df2
     })
-    # epitope prioritisation ------
+    # epitope prioritization ------
     observeEvent(input$EpitopePrior_Download_Bt, {
       x <- today()
       message(paste("Downloading sumamry table of", input$Prior_AddInEpiUI_1, "vs", input$Prior_AddInEpiUI_2))
-      Exp_stats_cutoff_count.name <- paste("Prioritisation/EpitopePred/Epitope_summary_table_", input$Prior_AddInEpiUI_1, "vs", input$Prior_AddInEpiUI_2, "_", x, ".csv", sep = "")
+      Exp_stats_cutoff_count.name <- paste("prioritization/EpitopePred/Epitope_summary_table_", input$Prior_AddInEpiUI_1, "vs", input$Prior_AddInEpiUI_2, "_", x, ".csv", sep = "")
       write.csv(Prior_Epitope_dt_process(), Exp_stats_cutoff_count.name, row.names = F)
 
       message(paste("Downloading heatmap", input$Prior_AddInEpiUI_1, " vs ", input$Prior_AddInEpiUI_2))
 
-      name.epitope <- paste("Prioritisation/EpitopePred/", input$Prior_AddInEpiUI_1, "_", input$Prior_AddInEpiUI_2, "_Heatmap_", x, ".png", sep = "")
+      name.epitope <- paste("prioritization/EpitopePred/", input$Prior_AddInEpiUI_1, "_", input$Prior_AddInEpiUI_2, "_Heatmap_", x, ".png", sep = "")
 
       Common_Epitope_code <- Common_Epitope_code()
       total_X <- length(unique(Common_Epitope_code$Selected_function))
@@ -19648,7 +19741,7 @@ navbarPage(
       dev.off()
 
       message(paste("Downloading UMAP", input$Prior_AddInEpiUI_1, " vs ", input$Prior_AddInEpiUI_2))
-      name.epitope.UMAP <- paste("Prioritisation/EpitopePred/", "Epitope_UMAP_coloredby.", input$Prior_AddInEpiUI_1, "_", x, ".png", sep = "")
+      name.epitope.UMAP <- paste("prioritization/EpitopePred/", "Epitope_UMAP_coloredby.", input$Prior_AddInEpiUI_1, "_", x, ".png", sep = "")
 
       len.colour <- length(unique(Common_Epitope_code$ID_Column))
       nCol <- round(sqrt(len.colour), 0)
@@ -20115,7 +20208,6 @@ navbarPage(
   }
 
   shinyApp(ui, server)
-  # runGadget(ui, server, viewer = dialogViewer(dialogName = "", width = 1600))
 
 }
 
