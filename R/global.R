@@ -7,6 +7,7 @@ suppressMessages(require("circlize")) # colorRamp2
 suppressMessages(require("colourpicker")) # select visual colour
 suppressMessages(require("ComplexHeatmap"))
 suppressMessages(require("corrplot"))
+require("cowplot")
 suppressMessages(require("doParallel"))
 suppressMessages(require("dplyr"))
 # suppressMessages(require("dior"))
@@ -21,6 +22,7 @@ suppressMessages(require("ggplot2"))
 suppressMessages(require("ggrepel"))
 suppressMessages(require("ggridges")) # ridges plot
 suppressMessages(require("ggseqlogo")) # create logo figure
+require("grid")
 suppressMessages(require("gridExtra"))
 suppressMessages(require("harmony"))
 suppressMessages(require("igraph"))
