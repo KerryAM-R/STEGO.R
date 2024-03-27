@@ -1025,12 +1025,19 @@ navbarPage(
                       multiple = TRUE,
                       accept = c("rds", ".rds")
             ),
+            checkboxInput("include_additional_genes","Add additional genes?",value = F),
+
+            fileInput("file_user_genes",
+                      "Choose .csv files that has required genes",
+                      multiple = F,
+                      accept = c("csv", ".csv","comma")
+            ),
             textInput("project_name2", "Name of Project", value = "Pro"),
             downloadButton("downloaddf_SeruatObj_merged2", "Download Merged Seurat")
           ),
           conditionalPanel(
             condition = "input.Merging_and_batching != 'Merging_Harmony'",
-            selectInput("Seruat_version_merge", "Seurat Version", choices = c("V4", "V5")),
+            selectInput("Seruat_version_merge", "Seurat Version", choices = c("V4", "V5"), selected = "V5"),
             selectInput("sample.type.source", "Species", choices = ""),
             fileInput("file1_rds.Merged_data_for_harmony",
                       "Upload .rds file for Batch correction with Harmony",
@@ -1061,63 +1068,69 @@ navbarPage(
                        ),
                      ),
             ),
-            tabPanel(
-              "Variable data",
-              verbatimTextOutput("testing_mult3"),
-              div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
-              verbatimTextOutput("Scaling_check_output"),
-              actionButton("run_var", "Run VariableFeatures"),
-              div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
-              verbatimTextOutput("var_harmony_verbrose")
-            ),
-            tabPanel(
-              "Scale data",
-              div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
-              actionButton("run_scale", "Run Scale"),
-              div(DT::dataTableOutput("Tb_scaling_features_for_annotation")),
-              div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
-              verbatimTextOutput("scale_harmony_verbrose")
-            ),
-            tabPanel(
-              "PCA",
-              div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
-              actionButton("run_PCA", "Run PCA"),
-              div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
-              verbatimTextOutput("PCA_harmony_verbrose")
-            ),
-            tabPanel(
-              "harmony",
-              div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
-              actionButton("run_harmony", "Run Harmony"),
-              div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
-              verbatimTextOutput("harmony_verbrose"),
-            ),
-            tabPanel(
-              "Dimentional reduction",
-              fluidRow(
-                column(3, numericInput("dimension_Merged", "Max number of dimensions", value = 30)),
-                column(6, numericInput("res_merged", "Resolution of clusters", value = 0.5)),
-              ),
-              actionButton("run_reduction_harmony", "Run Dimentional reduction"),
-              div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
-              verbatimTextOutput("testing_mult4"),
-            ),
-            tabPanel(
-              "UMAP",
-              div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
-              plotOutput("create_UMAP_merged", height = "600px"),
-              fluidRow(
-                column(1, numericInput("width_sc_merged", "Width of PDF", value = 10)),
-                column(1, numericInput("height_sc_merged", "Height of PDF", value = 8)),
-                column(2, style = "margin-top: 25px;", downloadButton("downloadPlot_sc_merged", "Download Network PDF")),
-                column(2, numericInput("width_png_sc_merged", "Width of PNG", value = 1200)),
-                column(2, numericInput("height_png_sc_merged", "Height of PNG", value = 1000)),
-                column(2, numericInput("resolution_PNG_sc_merged", "Resolution of PNG", value = 144)),
-                column(2, style = "margin-top: 25px;", downloadButton("downloadPlotPNG_sc_merged", "Download Network PNG")),
-              ),
-            ),
-          )
-        )
+
+            tabPanel("Batch correction",
+                     tabsetPanel(
+
+
+                       tabPanel(
+                         "Variable data",
+                         verbatimTextOutput("testing_mult3"),
+                         div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
+                         verbatimTextOutput("Scaling_check_output"),
+                         actionButton("run_var", "Run VariableFeatures"),
+                         div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
+                         verbatimTextOutput("var_harmony_verbrose")
+                       ),
+                       tabPanel(
+                         "Scale data",
+                         div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
+                         actionButton("run_scale", "Run Scale"),
+                         div(DT::dataTableOutput("Tb_scaling_features_for_annotation")),
+                         div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
+                         verbatimTextOutput("scale_harmony_verbrose")
+                       ),
+                       tabPanel(
+                         "PCA",
+                         div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
+                         actionButton("run_PCA", "Run PCA"),
+                         div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
+                         verbatimTextOutput("PCA_harmony_verbrose")
+                       ),
+                       tabPanel(
+                         "harmony",
+                         div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
+                         actionButton("run_harmony", "Run Harmony"),
+                         div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
+                         verbatimTextOutput("harmony_verbrose"),
+                       ),
+                       tabPanel(
+                         "Dimentional reduction",
+                         fluidRow(
+                           column(3, numericInput("dimension_Merged", "Max number of dimensions", value = 30)),
+                           column(6, numericInput("res_merged", "Resolution of clusters", value = 0.5)),
+                         ),
+                         actionButton("run_reduction_harmony", "Run Dimentional reduction"),
+                         div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
+                         verbatimTextOutput("testing_mult4"),
+                       ),
+                       tabPanel(
+                         "UMAP",
+                         div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
+                         plotOutput("create_UMAP_merged", height = "600px"),
+                         fluidRow(
+                           column(1, numericInput("width_sc_merged", "Width of PDF", value = 10)),
+                           column(1, numericInput("height_sc_merged", "Height of PDF", value = 8)),
+                           column(2, style = "margin-top: 25px;", downloadButton("downloadPlot_sc_merged", "Download Network PDF")),
+                           column(2, numericInput("width_png_sc_merged", "Width of PNG", value = 1200)),
+                           column(2, numericInput("height_png_sc_merged", "Height of PNG", value = 1000)),
+                           column(2, numericInput("resolution_PNG_sc_merged", "Resolution of PNG", value = 144)),
+                           column(2, style = "margin-top: 25px;", downloadButton("downloadPlotPNG_sc_merged", "Download Network PNG")),
+                         ),
+                       ),
+                     )
+            )
+          ))
       )
     ),
 
@@ -6636,22 +6649,43 @@ navbarPage(
     )
 
     # merging multiple Seurat Obj -----
+
+    data_user_genes <- reactive({
+      inFile_user_genes <- input$file_user_genes
+      if (is.null(inFile_user_genes)) {
+        return(NULL)
+      } else {
+        dataframe <- read.csv(inFile_user_genes$datapath,header = T)
+      }
+    })
+
     getData <- reactive({
       inFile.seq <- input$file1_rds.file
 
       num <- dim(inFile.seq)[1]
       seurat_object_list <- vector("list", length = num)
-
       list.sc <- list()
 
       for (i in 1:num) {
         message("reading in file ", i)
         list.sc[[i]] <- LoadSeuratRds(input$file1_rds.file[[i, "datapath"]])
+
         message("Reducing file size for file ", i)
         if (input$sample.type.source_merging == "hs") {
-          features.var.needed <- read.csv(system.file("Kmean", "human.variable.features.csv", package = "STEGO.R"))
-          # head(features.var.needed)
-          # str_to_title(features.var.needed$V1)[grep("KIR",features.var.needed$V1)]
+
+
+          if (length(data_user_genes())>0 & input$include_additional_genes) {
+            features.var.needed <- read.csv(system.file("Kmean", "human.variable.features.csv", package = "STEGO.R"))
+            user_required_genes <- data_user_genes()
+            names(user_required_genes) <- "V1"
+
+            features.var.needed <- merge(features.var.needed,user_required_genes,by = "V1",all = T)
+            print(dim(features.var.needed))
+          } else {
+
+            features.var.needed <- read.csv(system.file("Kmean", "human.variable.features.csv", package = "STEGO.R"))
+          }
+
           list.sc[[i]] <- subset(list.sc[[i]], features = features.var.needed$V1)
         } else {
           features.var.needed <- read.csv(system.file("Kmean", "human.variable.features.csv", package = "STEGO.R"))
@@ -6664,6 +6698,8 @@ navbarPage(
         sl <- object.size(list.sc[[i]])
         message(i, " object is ", round(sl[1] / 1000^3, 1), " Gb in R env.")
       }
+
+
       list.sc
     })
 
@@ -9113,7 +9149,7 @@ navbarPage(
         session,
         "string.data3",
         choices = name.df$Gene_Name,
-        selected = c("GZMB", "CD4", "CD8A","SELL")
+        selected = c("GZMB", "CD4", "CD8A","SELL","CD27")
       )
     })
 
