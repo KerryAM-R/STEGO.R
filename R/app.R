@@ -2738,15 +2738,15 @@ navbarPage(
           ),
 
           ######
-          tabPanel("Parameters Table",
-                   div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
-                   div(DT::dataTableOutput("parameterTable")),
-                   # Download button
-                   downloadButton("downloadData", "Download State"),
-
-
-
-          ),
+          # tabPanel("Parameters Table",
+          #          div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
+          #          div(DT::dataTableOutput("parameterTable")),
+          #          # Download button
+          #          downloadButton("downloadData", "Download State"),
+          #
+          #
+          #
+          #          ),
         )
 
 
@@ -2755,26 +2755,32 @@ navbarPage(
     )
   ),
   # end of Integration -----
+
   navbarMenu(
     "Post Analysis",
+
+    # Extracting meta data -------
     tabPanel("Extract meta data",
              sidebarLayout(
                sidebarPanel(width = 3,
                             fileInput("file1_extract.metadata",
-                                      "Upload .csv file",
+                                      "Upload .rds file",
                                       multiple = F,
                                       accept = c(".rds", "rds")
                             ),
 
+                            downloadButton("download_extracting_md_from_sc_tb","download meta data")
+
                ),
                mainPanel(
                  width = 9,
+                 div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
+                 div(DT::dataTableOutput("extracting_md_from_sc_tb")),
                )
              )
-
     ),
 
-
+    # filtering CSV files ------
     tabPanel("Filtering",
              value = "",
              sidebarLayout(
@@ -2782,7 +2788,7 @@ navbarPage(
                             fileInput("file1_FilteringCluster",
                                       "Upload .csv file",
                                       multiple = F,
-                                      accept = c(".csv", "csv")
+                                      accept = c(".csv", "csv","csv.gz",".gz")
                             ),
 
                             downloadButton("download_button_filtered_data_df", "Download Filtered Data"),
@@ -2801,6 +2807,37 @@ navbarPage(
              )
              # p("Convert .h5Seurat to .rds")
     ),
+    # summarising the data ------
+
+    tabPanel("Summarizing",
+             value = "",
+             sidebarLayout(
+               sidebarPanel(width = 3,
+                            fileInput("file1_summarising_data",
+                                      "Upload .csv file",
+                                      multiple = F,
+                                      accept = c(".csv", "csv","csv.gz",".gz")
+                            ),
+                            downloadButton("download_button_summarising_data", "Download summarised Data"),
+               ),
+               mainPanel(
+                 width = 9,
+                 # tabsetPanel(
+                 id = "summary_for_data_tab",
+                 div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
+                 selectInput("columns_for_summary","Select columns for summarising",choices = "",multiple = T, width = "1200px"),
+                 dataTableOutput("chain_table_summary_tb"),
+                 # uiOutput("filter_inputs"),
+                 dataTableOutput("loaded_for_summary")
+
+                 # )
+               )
+             )
+             # p("Convert .h5Seurat to .rds")
+    ),
+
+
+
     # post analysis OLGA ------
     tabPanel("OLGA",
              fluidRow(
@@ -2858,21 +2895,8 @@ navbarPage(
 
     ),
 
-    #### contig design -----
+    #####
 
-    tabPanel("Contig design",
-
-             sidebarLayout(
-               sidebarPanel(width = 3),
-               mainPanel(
-                 width = 9,
-                 tabsetPanel(
-                   id = "Other_post_analysis",
-
-                 )
-               )
-             )
-    ), # upload the unfiltered AIRR file and clonotypes for designing TCR contigs
   ),
 ) # nav page
   )
@@ -20029,6 +20053,43 @@ navbarPage(
       }
     )
 
+
+    # extract meta-data from sc object -----
+
+    getData_extract_md <- reactive({
+      inFile_extract.metadata <- input$file1_extract.metadata
+      if (is.null(inFile_extract.metadata)) {
+        return(NULL)
+      }
+      LoadSeuratRds(inFile_extract.metadata$datapath)
+    })
+
+    extracting_md_from_sc <- reactive({
+      sc <- getData_extract_md()
+      req(sc)
+
+      md <- sc@meta.data
+      md
+
+    })
+
+    output$extracting_md_from_sc_tb <- DT::renderDataTable(escape = FALSE, options = list(autoWidth = FALSE, lengthMenu = c(2, 5, 10, 20, 50, 100), pageLength = 20, scrollX = TRUE), {
+      calls <- extracting_md_from_sc()
+      req(calls)
+      calls
+    })
+    # Add a download button
+    output$download_extracting_md_from_sc_tb <- downloadHandler(
+      filename = function() {
+        paste("Meta_data_",today(), ".csv", sep = "")
+      },
+      content = function(file) {
+        filtered_data_df <- extracting_md_from_sc()
+        write.csv(filtered_data_df, file, row.names = F)
+      }
+    )
+
+
     ### filtering clustering table in post analysis ------
     getData_FilteringCluster <- reactive({
       inFile_sc_FilteringCluster <- input$file1_FilteringCluster
@@ -20170,6 +20231,8 @@ navbarPage(
       }
     )
 
+
+
     # output$download_filters_button <- downloadHandler(
     #   filename = function() {
     #     paste("selected_filters", Sys.Date(), ".txt", sep = "_")
@@ -20179,8 +20242,62 @@ navbarPage(
     #     writeLines(selected_filters, file)
     #   }
     # )
+    # summarizing a csv file ------
+    getData_summarising_data <- reactive({
+      inFile_summarising_data <- input$file1_summarising_data
+      if (is.null(inFile_summarising_data)) {
+        return(NULL)
+      }
+      read.csv(inFile_summarising_data$datapath)
+    })
 
+    observe({
+      dat <- getData_summarising_data()
+      updateSelectInput(
+        session,
+        "columns_for_summary",
+        choices = names(dat),
+        selected = "Sample_Name"
+      )
+    })
 
+    chain_table_summary <- reactive({
+      df <- getData_summarising_data()
+      req(df)
+
+      df <- as.data.frame(df)
+      df$cloneCount <- 1
+      df2 <- df[,c("cloneCount",input$columns_for_summary)]
+      df2 <- as.data.frame(df2)
+      df3 <- as.data.frame(ddply(df2,input$columns_for_summary,numcolwise(sum)))
+      df3
+    })
+
+    output$loaded_for_summary <- DT::renderDataTable(escape = FALSE, options = list(autoWidth = FALSE, lengthMenu = c(2, 5, 10, 20, 50, 100), pageLength = 2, scrollX = TRUE), {
+      calls <- getData_summarising_data()
+      req(calls)
+      calls
+    })
+
+    output$chain_table_summary_tb <- DT::renderDataTable(escape = FALSE, options = list(autoWidth = FALSE, lengthMenu = c(2, 5, 10, 20, 50, 100), pageLength = 20, scrollX = TRUE), {
+
+      calls <- chain_table_summary()
+      req(calls)
+      calls
+    })
+
+    # Add a download button
+    output$download_button_summarising_data <- downloadHandler(
+      filename = function() {
+        list_of_ <- paste(input$columns_for_summary, collapse = " ")
+        # print(list_of_)
+        paste("summary_",c(list_of_),"_",today(), ".csv", sep = "")
+      },
+      content = function(file) {
+        df <- chain_table_summary()
+        write.csv(df, file, row.names = F)
+      }
+    )
     # extract meta data from filtered object -----
 
     # extracting parameters and replacing defaults ------
@@ -20244,6 +20361,5 @@ navbarPage(
   }
 
   shinyApp(ui, server)
-
 }
 
