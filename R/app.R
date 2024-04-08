@@ -238,9 +238,55 @@ runSTEGO <- function(){
     white-space: nowrap;
   }
 ")),
+
+# check box size and colouring ------
+
 tags$style("input[type=checkbox] {
-                    transform: scale(2);
-           }"),
+                    transform: scale(1.5);
+           }
+
+           "),
+tags$head(
+  tags$style(HTML('
+      input[type="checkbox"]:before {
+          border: 2px solid;
+          color: #E9C2FF;
+          background-color: white;
+          content: "";
+          height:  15px;
+          left: 0;
+          position: absolute;
+          top: 0;
+          width:  15px;
+           vertical-align: top;
+      }
+
+      input[type="checkbox"]:checked:after {
+          border: 2px solid;
+          color: #6F00B0;
+          background-color: #E9C2FF;
+          content: "✓";
+          font-size: smaller;
+          vertical-align: middle;
+          text-align: center;
+          height:  15px;
+          left: 0;
+          position: absolute;
+          top: 0;
+          width:  15px;
+          vertical-align: top;
+      }
+      label.checkbox {
+
+    line-height: 50px;
+    margin: 2px 0;
+    display: block;
+    height: 50px;} '
+  )
+  )
+),
+
+
 # change spinner position -----
 tags$head(
   tags$style(HTML(
@@ -291,7 +337,7 @@ tags$head(tags$style(
         ')
 )),
 
-# change the button colours and hover
+# change the button colours and hover ------
 tags$head(
   tags$style(HTML("
                   .btn {
@@ -374,6 +420,40 @@ tags$head(tags$style(HTML('
   ".navbar-default .navbar-nav>li>a {background-color: white}"
   '))),
 
+# input Text boxes headers
+
+tags$style(HTML("
+    /* Styling for text input with class name-BD */
+    .name-BD input[type='text'] {
+    background-color: #E9C2FF; /* Change to your desired color */
+    color: #6F00B0; /* Change 'red' to your desired color */
+    border: 2px solid #6F00B0
+    }
+  ")),
+
+tags$style(HTML("
+    .name-header {
+      color: #6F00B0;
+      margin-bottom: -2px;
+      font-size: 16px
+    }
+  ")),
+
+tags$style(HTML("
+    .name-header2 {
+      color: #6F00B0;
+      font-size: 16px
+    }
+  ")),
+
+tags$style(HTML("
+    .name-header3 {
+      color: #6F00B0;
+    font-size: 16px
+    }
+  ")),
+
+#####
 navbarPage(
   title = "STEGO.R",
 
@@ -390,6 +470,11 @@ navbarPage(
         sidebarPanel(
           id = "tPanel4", style = "overflow-y:scroll; max-height: 800px; position:relative;", width = 3,
           # selectInput("dataset_10x", "Choose a dataset:", choices = c("test_data_10x", "own_data_10x")),
+          h4("File name"),
+          fluidRow(
+            column(6, div(class = "name-BD", textInput("group10x", "Add Group name", ""))),
+            column(6, div(class = "name-BD", textInput("Indiv10x", "Add Individual name", "")))
+          ),
           selectInput("Source_type_10x", "Input types", choices = c("Raw", ".h5")),
           conditionalPanel(
             condition = "input.Source_type_10x=='Raw'",
@@ -400,11 +485,8 @@ navbarPage(
           selectInput("csv_contig_file", "format of the contig file", choices = c("csv/csv.gz", "tsv")),
           fileInput("file_TCR_10x", "filtered contig annotations"),
           # textInput("sample_name_10x","Add file and sample name","Treatment_group"),
-          h4("File name"),
-          fluidRow(
-            column(6, textInput("group10x", "Add Treatment/Group name", "Group")),
-            column(6, textInput("Indiv10x", "Add Individual name", "Indiv"))
-          ),
+
+
           selectInput("BCR_TCR_10x", "Type of data", choices = c("TCR only", "BCR only")),
         ),
         # 10x main panel -----
@@ -461,6 +543,7 @@ navbarPage(
     ),
     # 10x_Genomics end -----
     # BD Rhapsody  ------
+
     tabPanel(
       "BD rhapsody data",
       sidebarLayout(
@@ -468,7 +551,9 @@ navbarPage(
           id = "tPanel4", style = "overflow-y:scroll; max-height: 1000px; position:relative;", width = 3,
           # UPLOAD the three files...
           # selectInput("dataset_BD", "Choose a dataset:", choices = c("test_data_BD", "own_data_BD")),
-          textInput("name.BD", h5("Add File Name"), value = ""),
+          div(class = "name-BD",
+              h4("Add File Name", class = "name-header"),
+              textInput("name_BD",h5("e.g., Samp1_Tumor", class = "name-header"), value = "")),
           fluidRow(
             column(6, numericInput("no_lines_skip_Tags", "If needed, skip first 7 lines of Sample Tag", value = 7, min = 0, max = 20, step = 7), ),
             column(6, fileInput("file_calls_BD", "Sample Tag Calls (.csv)",
@@ -512,7 +597,7 @@ navbarPage(
           ### filter out non-function TCR and un-paired TCR
           conditionalPanel(
             condition = "input.filtered_list=='Dominant' || input.filtered_list=='Unfiltered'",
-            column(6, selectInput("locus_column", h5("Chain (e.g. locus)"), "")),
+            selectInput("locus_column", h5("Chain (e.g. locus)"), ""),
           ),
           conditionalPanel(
             condition = "input.filtered_list=='Paired'",
@@ -523,10 +608,11 @@ navbarPage(
               column(6, selectInput("Junction_BD_BDrhap", h6("Beta/Delta junction"), ""))
             ),
           ),
+
           fluidRow(
-            column(6, checkboxInput("filtering_TCR", "paired chains?", value = FALSE, width = NULL), ),
-            column(6, checkboxInput("TCR_present", "TCR present?", value = TRUE, width = NULL), ),
-            column(6, checkboxInput("BCR_present", "BCR present?", value = FALSE, width = NULL), ),
+            column(6, checkboxInput("filtering_TCR", p("paired chains?", class = "name-header3"), value = FALSE, width = NULL)),
+            column(6, checkboxInput("TCR_present",  p("TCR present?", class = "name-header3"), value = TRUE, width = NULL)),
+            column(6, checkboxInput("BCR_present",  p("BCR present?", class = "name-header3"), value = FALSE, width = NULL)),
           ),
         ),
         # main panel ------
@@ -609,7 +695,7 @@ navbarPage(
             tabPanel(
               "Create Sample Tags file",
               tags$head(tags$style("#tb_sample_tags_created  {white-space: nowrap;  }")),
-              textInput("sample_tags_name", "Name of sample", value = "BD EA splenocyte"),
+              div(class = "name-BD",textInput("sample_tags_name", "Name of sample", value = "BD EA splenocyte")),
               div(DT::dataTableOutput("tb_sample_tags_created")),
               downloadButton("downloadtb_sample_tags", "Download Tags")
             ),
@@ -632,8 +718,8 @@ navbarPage(
                     accept = c("text/csv", "text/comma-separated-values,text/plain", "txt.gz")
           ),
           checkboxInput("pairing_TCR_Array", "Paired only?"),
-          textInput("sample_name_Array", "Add sample name", "Treatment_group"),
-          textInput("name.array", "Add file name", "FileName")
+          div(class = "name-BD",textInput("sample_name_Array", "Add sample name", "Treatment_group")),
+          div(class = "name-BD",textInput("name.array", "Add file name", "FileName"))
         ),
         mainPanel(
           width = 9,
@@ -682,13 +768,15 @@ navbarPage(
       sidebarLayout(
         sidebarPanel(
           width = 3,
+          div(class = "name-BD",textInput("project_name5", h4("Name of Project", class = "name-header2"), value = "")),
+          # textInput("", "Name of Project", value = ""),
           fileInput("file1_h5Seurat.file",
                     "Choose .h5Seurat files from directory",
                     multiple = TRUE,
                     accept = c(".h5Seurat", "h5Seurat")
           ),
           div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
-          textInput("project_name5", "Name of Project", value = ""),
+
           downloadButton("downloaddf_SeruatObj_Convert_to_RDS", "Download converted .rds Seurat Obj")
         ),
         mainPanel(
@@ -871,17 +959,17 @@ navbarPage(
         sidebarPanel(shinyjs::useShinyjs(),
                      id = "side-panel",
                      style = "overflow-y:scroll; max-height: 800px; position:relative;", width = 3,
-
+                     div(class = "name-BD",textInput("project_name", h4("Sample/Project Name",class = "name-header2"), value = "")),
                      # selectInput("dataset_sc", "Choose a dataset:", choices = c("test_data_sc", "own_data_sc")),
                      # upload the file
                      fileInput("file_SC", "Load csv (BDrhap), csv.gz (10x), .h5 (10x)", ),
                      fileInput("file_SC_meta", "Upload file meta.data file (.csv.gz or .csv)", ),
-                     textInput("project_name", "Name of sample", value = ""),
+
                      # selectInput("species","Species",choices = c("human","mouse","other")),
                      selectInput("df_seruatobj_type", "Data type", choices = c("10x_Genomics (raw)", "10x_Genomics (.h5)", "BD Rhapsody (Human Immune panel)", "BD Rhapsody (Mouse)", "Array")),
                      selectInput("stored_in_expression", "Does the .h5 object has multiple part?", choices = c("no", "yes")),
                      uiOutput("feature_input"),
-                     actionButton("run", "Update Violin plot"),
+                     actionButton("run_violin", "Update Violin plot"),
                      conditionalPanel(
                        condition = ("input.run != 0"),
                        # fluidRow(
@@ -914,6 +1002,7 @@ navbarPage(
             #          ),
             tabPanel(
               "Header check",
+              div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
               div(DT::dataTableOutput("DEx_header_name_check.dt")),
             ),
             tabPanel(
@@ -1022,6 +1111,7 @@ navbarPage(
         # Sidebar with a slider input
         sidebarPanel(
           id = "tPanel5", style = "overflow-y:scroll; max-height: 800px; position:relative;", width = 3,
+          div(class = "name-BD",textInput("project_name2", h4("Name of Project", class = "name-header2"), value = "")),
           conditionalPanel(
             condition = "input.Merging_and_batching == 'Merging_Harmony'",
             selectInput("sample.type.source_merging", "Species", choices = c("hs", "mm")),
@@ -1030,14 +1120,14 @@ navbarPage(
                       multiple = TRUE,
                       accept = c("rds", ".rds")
             ),
-            checkboxInput("include_additional_genes","Add additional genes?",value = F),
+            checkboxInput("include_additional_genes",p("Add additional genes?",class = "name-header2"),value = F),
 
             fileInput("file_user_genes",
                       "Choose .csv files that has required genes",
                       multiple = F,
                       accept = c("csv", ".csv","comma")
             ),
-            textInput("project_name2", "Name of Project", value = "Pro"),
+
             downloadButton("downloaddf_SeruatObj_merged2", "Download Merged Seurat")
           ),
           conditionalPanel(
@@ -1080,10 +1170,13 @@ navbarPage(
 
                        tabPanel(
                          "Variable data",
-                         verbatimTextOutput("testing_mult3"),
                          div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
-                         verbatimTextOutput("Scaling_check_output"),
+                         # verbatimTextOutput("Scaling_check_output"),
+                         verbatimTextOutput("testing_mult3"),
                          actionButton("run_var", "Run VariableFeatures"),
+
+
+
                          div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
                          verbatimTextOutput("var_harmony_verbrose")
                        ),
@@ -1148,6 +1241,7 @@ navbarPage(
         sidebarPanel(
           id = "tPanel4", style = "overflow-y:scroll; max-height: 800px; position:relative;", width = 3,
           # uiOutput("Detect_version"),
+          div(class = "name-BD",textInput("project_name3", h4("Name of Project", class = "name-header2"), value = "")),
           selectInput("Data_types", "Source", choices = c("10x_HS", "BD_HS.Immune.Panel", "BD_HS.Full.Panel", "10x_MM", "BD_MM_Full.Panel", "BD_MM_Immune.Panel", "TCR-seq")),
           selectInput("sample.type.source.markers", "Species", choices = ""),
           fileInput("file1_rds.file2",
@@ -1155,7 +1249,7 @@ navbarPage(
                     multiple = TRUE,
                     accept = c(".rds", "rds")
           ),
-          textInput("project_name3", "Name of Project", value = ""),
+
           selectInput("Require_custom_geneset", "Require custom genes?", choices = c("no", "yes")),
           uiOutput("scGate_cutoffs"),
           downloadButton("downloaddf_SeruatObj_annotated", "Download Annotated Seurat"),
@@ -1393,12 +1487,12 @@ navbarPage(
       sidebarLayout(
         sidebarPanel(
           id = "tPanelSamps", style = "max-height: 800px; position:relative;", width = 3,
+          div(class = "name-BD",textInput("project_name4", h4("Name of Project", class = "name-header2"), value = "")),
           fileInput("file1_rds.fileSampsRemove",
                     "Upload .rds file",
                     multiple = F,
                     accept = c(".rds", "rds")
           ),
-          textInput("project_name4", "Name of Project", value = ""),
           selectInput("Samp_col_SampToRemove", "Column name", choices = ""),
           downloadButton("downloaddf_SeruatObj_annotated_SampToKeep", "Download .rds"),
         ),
@@ -2943,8 +3037,20 @@ navbarPage(
     output$downloaddf_SeruatObj_Convert_to_RDS <- downloadHandler(
       filename = function() {
         x <- today()
-        # paste(input$project_name,"_SC.obj_",x,".h5Seurat", sep = "")
-        paste(input$project_name5, "_V4_Seurat", x, ".rds", sep = "")
+        if (input$project_name5 == "") {
+          showModal(modalDialog(
+            title = "Error",
+            "Please Add File Name.",
+            size = "s",
+            easyClose = TRUE
+          ))
+          return(NULL)
+        } else {
+
+
+          # paste(input$project_name,"_SC.obj_",x,".h5Seurat", sep = "")
+          paste(input$project_name5, "_V4_Seurat", x, ".rds", sep = "")
+        }
       },
       content = function(file) {
         SaveSeuratRds(Convert_to_RDS(), file)
@@ -4121,8 +4227,19 @@ navbarPage(
 
     output$downloadtb_sample_tags <- downloadHandler(
       filename = function() {
-        x <- today()
-        paste(input$name.BD, "_Sample_Tags_", x, ".csv", sep = "")
+        if (input$name_BD == "") {
+          showModal(modalDialog(
+            title = "Error",
+            "Please Add File Name.",
+            size = "s",
+            easyClose = TRUE
+          ))
+          return(NULL)
+        } else {
+
+          x <- today()
+          paste(input$name_BD, "_Sample_Tags_", x, ".csv", sep = "")
+        }
       },
       content = function(file) {
         df <- as.data.frame(samp.tags())
@@ -4300,18 +4417,31 @@ navbarPage(
         df_clusTCR_Filtered()
       }
     })
+
     output$downloaddf_clusTCR <- downloadHandler(
       filename = function() {
-        x <- today()
-        if (input$chain_clusTCR2_bd == "AG") {
-          paste("AG_", input$name.BD, "", "_ClusTCR_", x, ".csv", sep = "")
-        } else if (input$chain_clusTCR2_bd == "IgH") {
-          paste("IgH_", input$name.BD, "_ClusTCR_", x, ".csv", sep = "")
-        } else if (input$chain_clusTCR2_bd == "IgLK") {
-          paste("IgLK_", input$name.BD, "_ClusTCR_", x, ".csv", sep = "")
+        if (input$name_BD == "") {
+          showModal(modalDialog(
+            title = "Error",
+            "Please Add File Name.",
+            size = "s",
+            easyClose = TRUE
+          ))
+          return(NULL)
         } else {
-          paste("BD_", input$name.BD, "_ClusTCR_", x, ".csv", sep = "")
+          x <- today()
+          if (input$chain_clusTCR2_bd == "AG") {
+            paste("AG_", input$name_BD, "", "_ClusTCR_", x, ".csv", sep = "")
+          } else if (input$chain_clusTCR2_bd == "IgH") {
+            paste("IgH_", input$name_BD, "_ClusTCR_", x, ".csv", sep = "")
+          } else if (input$chain_clusTCR2_bd == "IgLK") {
+            paste("IgLK_", input$name_BD, "_ClusTCR_", x, ".csv", sep = "")
+          } else {
+            paste("BD_", input$name_BD, "_ClusTCR_", x, ".csv", sep = "")
+          }
         }
+
+
       },
       content = function(file) {
         df <- as.data.frame(df_clusTCR_Filtered())
@@ -4375,10 +4505,21 @@ navbarPage(
     })
     output$downloadtb_count_matrix <- downloadHandler(
       filename = function() {
-        if (input$Format_bd == "cellXgene") {
-          paste(input$name.BD, "_BD_Count_Matrix_", gsub("-", ".", Sys.Date()), ".csv", sep = "")
+
+        if (input$name_BD == "") {
+          showModal(modalDialog(
+            title = "Error",
+            "Please Add File Name.",
+            size = "s",
+            easyClose = TRUE
+          ))
+          return(NULL)
         } else {
-          paste(input$name.BD, "_count-matrix_bd_", gsub("-", ".", Sys.Date()), ".csv.gz", sep = "")
+          if (input$Format_bd == "cellXgene") {
+            paste(input$name_BD, "_BD_Count_Matrix_", gsub("-", ".", Sys.Date()), ".csv", sep = "")
+          } else {
+            paste(input$name_BD, "_count-matrix_bd_", gsub("-", ".", Sys.Date()), ".csv.gz", sep = "")
+          }
         }
       },
       content = function(file) {
@@ -4502,8 +4643,18 @@ navbarPage(
 
     output$downloadtb_metadata_sc <- downloadHandler(
       filename = function() {
-        x <- today()
-        paste(input$name.BD, "_Meta.data_", x, ".csv", sep = "")
+        if (input$name_BD == "") {
+          showModal(modalDialog(
+            title = "Error",
+            "Please Add File Name.",
+            size = "s",
+            easyClose = TRUE
+          ))
+          return(NULL)
+        } else {
+          x <- today()
+          paste(input$name_BD, "_Meta.data_", x, ".csv", sep = "")
+        }
       },
       content = function(file) {
         df <- as.data.frame(meta.data_for_Seuratobj())
@@ -4592,8 +4743,18 @@ navbarPage(
 
     output$downloaddf_TCRex_BDrap <- downloadHandler(
       filename = function() {
-        x <- today()
-        paste(input$name.BD, "_TCRex_", x, ".tsv", sep = "")
+        if (input$name_BD == "") {
+          showModal(modalDialog(
+            title = "Error",
+            "Please Add File Name.",
+            size = "s",
+            easyClose = TRUE
+          ))
+          return(NULL)
+        } else {
+          x <- today()
+          paste(input$name_BD, "_TCRex_", x, ".tsv", sep = "")
+        }
       },
       content = function(file) {
         df <- as.data.frame(tb_TCRex_BDrap_df())
@@ -4626,7 +4787,18 @@ navbarPage(
 
     output$downloadtb_TCR_Explore <- downloadHandler(
       filename = function() {
-        paste(input$name.BD, "TCR_Explore.compatible", gsub("-", ".", Sys.Date()), ".csv", sep = "")
+        if (input$name_BD == "") {
+          showModal(modalDialog(
+            title = "Error",
+            "Please Add File Name.",
+            size = "s",
+            easyClose = TRUE
+          ))
+          return(NULL)
+        } else {
+          x <- today()
+          paste(input$name_BD, "TCR_Explore.compatible_", x, ".csv", sep = "")
+        }
       },
       content = function(file) {
         df <- as.data.frame(df_TCR_Explore())
@@ -4860,7 +5032,18 @@ navbarPage(
 
     output$downloadtb_multiTCR <- downloadHandler(
       filename = function() {
-        paste(input$name.BD, "_Multi_TCR_", gsub("-", ".", Sys.Date()), ".csv", sep = "")
+        if (input$name_BD == "") {
+          showModal(modalDialog(
+            title = "Error",
+            "Please Add File Name.",
+            size = "s",
+            easyClose = TRUE
+          ))
+          return(NULL)
+        } else {
+          x <- today()
+          paste(input$name_BD, "_Multi_TCR_", x, ".csv", sep = "")
+        }
       },
       content = function(file) {
         df <- as.data.frame(multi_TCR_BDrhap())
@@ -5079,7 +5262,7 @@ navbarPage(
 
       names(contig_paired_only)[names(contig_paired_only) %in% "cell_id"] <- "Cell_Index"
 
-      contig_paired_only$Sample_Name <- paste(input$group10x, "_", input$Indiv10x, sep = "")
+      contig_paired_only$Sample_Name <- paste(input$Indiv10x, "_", input$group10x, sep = "")
 
       contig_paired_only <- contig_paired_only %>%
         select(all_of(c("Cell_Index", "Sample_Name")), everything())
@@ -5171,7 +5354,7 @@ navbarPage(
       # contig_paired_only$vdj_gene_cdr3_AG_BD <- paste(contig_paired_only$vj_gene_cdr3_AG,contig_paired_only$vdj_gene_cdr3_BD,sep = " & ")
       names(contig_paired_only)[names(contig_paired_only) %in% "barcode"] <- "Cell_Index"
       contig_paired_only <- contig_paired_only[!duplicated(contig_paired_only$Cell_Index), ] # remove duplicates
-      contig_paired_only$Sample_Name <- paste(input$group10x, "_", input$Indiv10x, sep = "")
+      contig_paired_only$Sample_Name <- paste(input$Indiv10x, "_", input$group10x, sep = "")
 
       contig_paired_only <- contig_paired_only %>%
         select(all_of(c("Cell_Index", "Sample_Name")), everything())
@@ -5286,7 +5469,7 @@ navbarPage(
       contig_paired_only_dup <- contig_paired_only[!duplicated(contig_paired_only$Cell_Index), ] # remove duplicate barcodes.
       names(contig_paired_only_dup)
       contig_paired_only_dup <- contig_paired_only_dup[!names(contig_paired_only_dup) %in% c("umis.x", "umis.y")]
-      contig_paired_only_dup$Sample_Name <- paste(input$group10x, "_", input$Indiv10x, sep = "")
+      contig_paired_only_dup$Sample_Name <- paste(input$Indiv10x, "_", input$group10x, sep = "")
 
       contig_paired_only_dup <- contig_paired_only_dup %>%
         select(all_of(c("Cell_Index", "Sample_Name")), everything())
@@ -5311,7 +5494,19 @@ navbarPage(
     })
     output$downloadtb_10x_metadata2 <- downloadHandler(
       filename = function() {
-        paste(input$group10x, "_", input$Indiv10x, "_metadata_10x_", gsub("-", ".", Sys.Date()), ".csv", sep = "")
+        if (input$group10x == "" && input$Indiv10x == "") {
+          showModal(modalDialog(
+            title = "Error",
+            "Add Group and Individual Name",
+            size = "s",
+            easyClose = TRUE
+          ))
+          return(NULL)
+        } else {
+          x <- today()
+          paste( input$Indiv10x, "_", input$group10x, "_metadata_10x_", x, ".csv", sep = "")
+        }
+
       },
       content = function(file) {
         if (input$BCR_TCR_10x == "TCR only") {
@@ -5376,7 +5571,7 @@ navbarPage(
       }
 
       contigs2 <- contigs[names(contigs) %in% c("v_gene", "cdr3")]
-      contigs2$Sample_Name <- paste(input$group10x, "_", input$Indiv10x, sep = "")
+      contigs2$Sample_Name <- paste(  input$Indiv10x, "_", input$group10x,sep = "")
       names(contigs2)[names(contigs2) %in% c("cdr3")] <- "junction_aa"
       names(contigs2)[names(contigs2) %in% c("v_gene")] <- "v_call"
       if (nrow(contigs2[-c(grep("[*]", contigs2$junction_aa)), ] > 0)) {
@@ -5408,8 +5603,19 @@ navbarPage(
 
     output$downloadtb_10x_contigues1 <- downloadHandler(
       filename = function() {
-        x <- today()
-        paste(input$chain_clusTCR2_10x, "_", input$group10x, "_", input$Indiv10x, "_clusTCR_10x_", x, ".csv", sep = "")
+        if (input$group10x == "" && input$Indiv10x == "") {
+          showModal(modalDialog(
+            title = "Error",
+            "Add Group and Individual Name",
+            size = "s",
+            easyClose = TRUE
+          ))
+          return(NULL)
+        } else {
+          x <- today()
+          paste(input$chain_clusTCR2_10x, "_", input$Indiv10x, "_", input$group10x,"_clusTCR_10x_", x, ".csv", sep = "")
+        }
+
       },
       content = function(file) {
         df <- as.data.frame(tb_10x_contigues_contig())
@@ -5449,7 +5655,19 @@ navbarPage(
 
     output$downloaddt_TCR_Explore_10x <- downloadHandler(
       filename = function() {
-        paste(input$group10x, "_", input$Indiv10x, "_TCR_Explore_10x_", gsub("-", ".", Sys.Date()), ".csv", sep = "")
+        if (input$group10x == "" && input$Indiv10x == "") {
+          showModal(modalDialog(
+            title = "Error",
+            "Add Group and Individual Name",
+            size = "s",
+            easyClose = TRUE
+          ))
+          return(NULL)
+        } else {
+          x <- today()
+          paste(input$Indiv10x, "_", input$group10x , "_TCR_Explore_10x_", x, ".csv", sep = "")
+        }
+
       },
       content = function(file) {
         df <- as.data.frame(TCR_Explore_10x())
@@ -5496,8 +5714,19 @@ navbarPage(
 
     output$downloadtb_10x_matrix2 <- downloadHandler(
       filename = function() {
-        x <- today()
-        paste(input$group10x, "_", input$Indiv10x, "_count-matrix_10x_", x, ".csv.gz", sep = "")
+        if (input$group10x == "" && input$Indiv10x == "") {
+          showModal(modalDialog(
+            title = "Error",
+            "Add Group and Individual Name",
+            size = "s",
+            easyClose = TRUE
+          ))
+          return(NULL)
+        } else {
+          x <- today()
+          paste(input$Indiv10x, "_", input$group10x, "_count-matrix_10x_", x, ".csv.gz", sep = "")
+        }
+
       },
       content = function(file) {
         df <- as.data.frame(tb_10x_matrix())
@@ -5565,8 +5794,18 @@ navbarPage(
 
     output$downloaddf_TCRex_10x <- downloadHandler(
       filename = function() {
-        x <- today()
-        paste(input$group10x, "_", input$Indiv10x, "_TCRex_", x, ".tsv", sep = "")
+        if (input$group10x == "" && input$Indiv10x == "") {
+          showModal(modalDialog(
+            title = "Error",
+            "Add Group and Individual Name",
+            size = "s",
+            easyClose = TRUE
+          ))
+          return(NULL)
+        } else {
+          x <- today()
+          paste(input$Indiv10x, "_", input$group10x, "_TCRex_", x, ".tsv", sep = "")
+        }
       },
       content = function(file) {
         df <- as.data.frame(TCRex_10x_df())
@@ -5732,6 +5971,7 @@ navbarPage(
     })
     output$download_ClusTCR2_labs_array <- downloadHandler(
       filename = function() {
+
         paste("ClusTCR2_output_Array", gsub("-", ".", Sys.Date()), ".csv", sep = "")
       },
       content = function(file) {
@@ -5760,8 +6000,20 @@ navbarPage(
 
     output$downloadtb_array_matrix2 <- downloadHandler(
       filename = function() {
-        x <- today()
-        paste(input$name.array, "_count-matrix_array_", x, ".csv", sep = "")
+        if (input$name.array == "") {
+          showModal(modalDialog(
+            title = "Error",
+            "Add Group and Individual Name",
+            size = "s",
+            easyClose = TRUE
+          ))
+          return(NULL)
+        } else {
+          x <- today()
+          paste(input$name.array, "_count-matrix_array_", x, ".csv", sep = "")
+        }
+
+
       },
       content = function(file) {
         df <- as.data.frame(t(tb_Array_matrix()))
@@ -6286,10 +6538,16 @@ navbarPage(
           error_message_val_sc
         )
       )
+
+      validate(
+        need(input$project_name != "", "Please enter a file name.")
+      )
+
       if (input$df_seruatobj_type == "10x_Genomics (raw)") {
         names(df.test) <- gsub("[.]1", "-1", names(df.test))
         rownames(df.test) <- make.unique(df.test$Gene_Name)
         df.test2 <- df.test[, !names(df.test) %in% c("Gene_Name")]
+
         sc <- CreateSeuratObject(counts = df.test2, assay = "RNA", project = input$project_name)
         sc <- PercentageFeatureSet(sc, pattern = "^MT-", col.name = "mtDNA")
         sc <- PercentageFeatureSet(sc, pattern = "^RP[SL]", col.name = "rRNA")
@@ -6355,8 +6613,18 @@ navbarPage(
 
     output$downloadPlot_before_plot_sc <- downloadHandler(
       filename = function() {
-        x <- today()
-        paste(input$project_name2, "_before_plot_sc_", x, ".pdf", sep = "")
+        if (input$project_name == "") {
+          showModal(modalDialog(
+            title = "Error",
+            "Add File Name",
+            size = "s",
+            easyClose = TRUE
+          ))
+          return(NULL)
+        } else {
+          x <- today()
+          paste(input$project_name, "_before_plot_sc_", x, ".pdf", sep = "")
+        }
       },
       content = function(file) {
         pdf(file, width = input$width_before_plot_sc, height = input$height_before_plot_sc, onefile = FALSE) # open the pdf device
@@ -6368,7 +6636,7 @@ navbarPage(
     output$downloadPlotPNG_before_plot_sc <- downloadHandler(
       filename = function() {
         x <- today()
-        paste(input$project_name2, "_before_plot_sc_", x, ".png", sep = "")
+        paste(input$project_name, "_before_plot_sc_", x, ".png", sep = "")
       },
       content = function(file) {
         png(file, width = input$width_png_before_plot_sc, height = input$height_png_before_plot_sc, res = input$resolution_PNG_before_plot_sc)
@@ -6381,14 +6649,13 @@ navbarPage(
 
 
     vals2 <- reactiveValues(after_violin_plot = NULL)
-    observeEvent(input$run, {
+    observeEvent(input$run_violin, {
       sc <- df_seruatobj()
+      req(sc)
       validate(
-        need(
-          nrow(sc) > 0,
-          error_message_val_sc
-        )
+        need(input$project_name != "", "Please enter a file name.")
       )
+
       vals2$after_violin_plot <- subset(sc, subset = nFeature_RNA >= input$features.min & nFeature_RNA <= input$features.max & mtDNA <= input$percent.mt & rRNA >= input$percent.rb)
     })
 
@@ -6405,8 +6672,18 @@ navbarPage(
 
     output$downloadPlot_after_plot_sc <- downloadHandler(
       filename = function() {
-        x <- today()
-        paste(input$project_name2, "_after_plot_sc_", x, ".pdf", sep = "")
+        if (input$project_name == "") {
+          showModal(modalDialog(
+            title = "Error",
+            "Add File Name",
+            size = "s",
+            easyClose = TRUE
+          ))
+          return(NULL)
+        } else {
+          x <- today()
+          paste(input$project_name, "_after_plot_sc_", x, ".pdf", sep = "")
+        }
       },
       content = function(file) {
         pdf(file, width = input$width_after_plot_sc, height = input$height_after_plot_sc, onefile = FALSE) # open the pdf device
@@ -6420,7 +6697,7 @@ navbarPage(
       filename = function() {
         x <- today()
 
-        paste(input$project_name2, "_after_plot_sc_", x, ".png", sep = "")
+        paste(input$project_name, "_after_plot_sc_", x, ".png", sep = "")
       },
       content = function(file) {
         png(file, width = input$width_png_after_plot_sc, height = input$height_png_after_plot_sc, res = input$resolution_PNG_after_plot_sc)
@@ -6514,7 +6791,7 @@ navbarPage(
     output$downloadPlot_heatmap_sc <- downloadHandler(
       filename = function() {
         x <- today()
-        paste(input$project_name2, "_heatmap_sc_", x, ".pdf", sep = "")
+        paste(input$project_name, "_heatmap_sc_", x, ".pdf", sep = "")
       },
       content = function(file) {
         pdf(file, width = input$width_heatmap_sc, height = input$height_heatmap_sc, onefile = FALSE) # open the pdf device
@@ -6527,7 +6804,7 @@ navbarPage(
       filename = function() {
         x <- today()
 
-        paste(input$project_name2, "_heatmap_sc_", x, ".png", sep = "")
+        paste(input$project_name, "_heatmap_sc_", x, ".png", sep = "")
       },
       content = function(file) {
         png(file, width = input$width_png_heatmap_sc, height = input$height_png_heatmap_sc, res = input$resolution_PNG_heatmap_sc)
@@ -6761,10 +7038,13 @@ navbarPage(
       )
       list_seurat <- getData()
       num <- length(list_seurat)
+      validate(
+        need(input$project_name2 != "", "Please enter a project name.")
+      )
 
       if (num > 1) {
         merged_object <- reduce(list_seurat, function(x, y) {
-          merge(x = x, y = y, merge.data = TRUE, project = "SeuratProject")
+          merge(x = x, y = y, merge.data = TRUE, project = input$project_name2)
         })
         sl <- object.size(merged_object)
         message("The merged object is ", round(sl[1] / 1000^3, 1), " Gb in R env.")
@@ -6782,8 +7062,20 @@ navbarPage(
 
     output$downloaddf_SeruatObj_merged2 <- downloadHandler(
       filename = function() {
-        x <- today()
-        paste(input$project_name2, "_merged_", x, ".rds", sep = "")
+        if (input$project_name2 == "") {
+          showModal(modalDialog(
+            title = "Error",
+            "Add File Name",
+            size = "s",
+            easyClose = TRUE
+          ))
+          return(NULL)
+        } else {
+          x <- today()
+          paste(input$project_name2, "_merged_", x, ".rds", sep = "")
+        }
+
+
       },
       content = function(file) {
         SaveSeuratRds(merging_sc_ob$Val2, file)
@@ -6813,11 +7105,6 @@ navbarPage(
           "Run Variable"
         )
       )
-
-
-
-
-
       gene.names <- rownames(sc@assays$RNA$counts)
 
       gene.names_hs <- gene.names[str_detect(gene.names, "^[A-Z][A-Z/0-9][A-Z/0-9]") &
@@ -6886,6 +7173,21 @@ navbarPage(
     Vals_norm4 <- reactiveValues(Norm1 = NULL)
     Vals_normk <- reactiveValues(anno = NULL)
     # Vals_normk <- reactiveValues(anno=NULL)
+
+    output$Scaling_check_output <- renderPrint({
+      sc <- Merged_data_for_harmony()
+      validate(
+        need(
+          nrow(sc) > 0,
+          "Run Scale"
+        )
+      )
+      req(Vals_norm4$Norm1)
+      kmeans <- read.csv(system.file("Kmean", "Kmeans.requires.annotation.csv", package = "STEGO.R"))
+      data <- Merged_data_for_harmony()
+      VersionControl <- data@version
+      VersionControl
+    })
 
     # find variable features
     observeEvent(input$run_var, {
@@ -6959,20 +7261,7 @@ navbarPage(
       Vals_normk$anno <- unique(rbind(var.genes, kmeans2))
     })
 
-    output$Scaling_check_output <- renderPrint({
-      sc <- Vals_norm4$Norm1
-      validate(
-        need(
-          nrow(sc) > 0,
-          "Run Scale"
-        )
-      )
-      req(Vals_norm4$Norm1)
-      kmeans <- read.csv(system.file("Kmean", "Kmeans.requires.annotation.csv", package = "STEGO.R"))
-      data <- Merged_data_for_harmony()
-      VersionControl <- data@version
-      VersionControl
-    })
+
 
     output$Tb_scaling_features_for_annotation <- DT::renderDataTable(escape = FALSE, filter = list(position = "top", clear = FALSE), options = list(autoWidth = FALSE, lengthMenu = c(2, 5, 10, 20, 50, 100), pageLength = 5, scrollX = TRUE), {
       sc <- Vals_norm4$Norm1
@@ -15571,7 +15860,7 @@ navbarPage(
 
     output$downloaddf_Upset_plot_overlap_Tb <- downloadHandler(
       filename = function() {
-        paste(input$name.BD, "_Overlap_", gsub("-", ".", Sys.Date()), ".tsv", sep = "")
+        paste(input$name_BD, "_Overlap_", gsub("-", ".", Sys.Date()), ".tsv", sep = "")
       },
       content = function(file) {
         df <- as.data.frame(Upset_plot_overlap())
