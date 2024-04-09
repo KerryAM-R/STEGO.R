@@ -15,53 +15,51 @@
 preprocessing_10x <- function (downloadTCRex = F, downloadClusTCR = F, downloadTCR_Explore = F,
                                downloadSeurat = F, csv_contig_file = "csv", main_directory = "0_RAW_files/")
 {
+  message("Loading packages")
   suppressMessages(require(magrittr))
   suppressMessages(require(plyr))
   suppressMessages(require(dplyr))
   suppressMessages(require(lubridate))
   suppressMessages(require(readr))
+  message("loaded packages complete")
   main_directory = "0_RAW_files/"
   main_directory <- main_directory
   main_folders <- list.files(paste(main_directory))
-  main_folders
-
+  print(main_folders)
   num <- length(main_folders)
   for (i in 2:num) {
     sub_directory <- main_folders[i]
-    files <- list.files(paste(main_directory, sub_directory, sep = ""), full.names = TRUE)
-    # Check if the required terms are present in the file names
+    files <- list.files(paste(main_directory, sub_directory,
+                              sep = ""), full.names = TRUE)
     required_terms <- c("barcode", "features", "matrix")
-    missing_terms <- required_terms[!sapply(required_terms, function(term) any(grepl(term, files)))]
-
+    missing_terms <- required_terms[!sapply(required_terms,
+                                            function(term) any(grepl(term, files)))]
     if (length(missing_terms) > 0) {
       message(sub_directory)
-      message("Error: The following terms were not found in the file names: ", paste(missing_terms, collapse = ", "))
+      message("Error: The following terms were not found in the file names: ",
+              paste(missing_terms, collapse = ", "))
       next
     }
-
-    if (length(files[grepl("barcode", files)]) == 1 && length(files[grepl("contig", files)]) == 1) {
+    if (length(files[grepl("barcode", files)]) == 1 && length(files[grepl("contig",
+                                                                          files)]) == 1) {
       message("Files are present for in ", sub_directory)
-    } else {
+    }
+    else {
       message("Reformat directory to have Indiv_group name for each file barcode, features, matrix, and contig")
       next
     }
 
-    barcode <- read.table(files[grepl("barcode", files)])
-    features <- read.table(files[grepl("feature", files)])
-
-    if (length(features) > 0) {
-      mat <- Matrix::readMM(files[grepl("matrix", files)])
-      # print("matrix found")
+    if ( downloadSeurat) {
+      barcode <- read.table(files[grepl("barcode", files)])
+      features <- read.table(files[grepl("feature", files)])
+      if (length(features) > 0) {
+        mat <- Matrix::readMM(files[grepl("matrix", files)])
+      }
     }
 
-    TCR <- read.csv(files[grepl("contig", files)])
-    if (length(TCR) > 0) {
-      message("Can create the meta.data, TCRex, Clustering and TCR_Explore files")
-    } else {
-      message("missing TCR contig file, please restructure the folder.")
-      next
+    if (downloadTCRex || downloadClusTCR || downloadTCR_Explore) {
+      TCR <- read.csv(files[grepl("contig", files)])
     }
-
 
     if (downloadTCRex) {
       contigs <- TCR
@@ -111,7 +109,6 @@ preprocessing_10x <- function (downloadTCRex = F, downloadClusTCR = F, downloadT
       message(paste0("Downloaded TCRex for ", sub_directory))
     }
     else {
-      # message("Did not download TCRex, switch to TRUE to run.")
     }
     if (downloadClusTCR) {
       contigs <- TCR
@@ -169,7 +166,6 @@ preprocessing_10x <- function (downloadTCRex = F, downloadClusTCR = F, downloadT
       }
     }
     else {
-      # message("if the files are present, change downloadClusTCR to T")
     }
     if (downloadSeurat) {
       contigs <- TCR
@@ -307,7 +303,6 @@ preprocessing_10x <- function (downloadTCRex = F, downloadClusTCR = F, downloadT
       write_csv(mat, gzfile(file_name_mat))
     }
     else {
-      # message("if the files are present, change downloadSeurat to T")
     }
     if (downloadTCR_Explore) {
       contigs <- TCR
@@ -446,7 +441,6 @@ preprocessing_10x <- function (downloadTCRex = F, downloadClusTCR = F, downloadT
       message(paste0("Downloaded TCR_Explore for ", sub_directory))
     }
     else {
-      # message("if the files are present, change downloadTCR_Explore to T")
     }
   }
 }
