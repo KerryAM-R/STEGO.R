@@ -499,14 +499,14 @@ navbarPage(
                      conditionalPanel(
                        condition = "input.Source_type_10x=='Raw'",
                        div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
-                       div(DT::dataTableOutput("Barcode_10x_file_upload", height = "200px")),
+                       div(DT::DTOutput("Barcode_10x_file_upload", height = "200px")),
                        div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
-                       div(DT::dataTableOutput("Features_10x_file_upload", height = "200px")),
+                       div(DT::DTOutput("Features_10x_file_upload", height = "200px")),
                        div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
-                       div(DT::dataTableOutput("Matrix_10x_file_upload", height = "200px")),
+                       div(DT::DTOutput("Matrix_10x_file_upload", height = "200px")),
                      ),
                      div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
-                     div(DT::dataTableOutput("Contig_10x_file_upload", height = "200px")),
+                     div(DT::DTOutput("Contig_10x_file_upload", height = "200px")),
 
             ),
             tabPanel(
@@ -514,7 +514,7 @@ navbarPage(
               div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
               # fluidRow(
               downloadButton("downloaddf_TCRex_10x", "Download table"),
-              div(DT::dataTableOutput("tb_TCRex_10x_df"),height = "200px"),
+              div(DT::DTOutput("tb_TCRex_10x_df"),height = "200px"),
               # )
 
             ),
@@ -526,11 +526,11 @@ navbarPage(
                        column(3, downloadButton("downloadtb_10x_metadata2", "Download metadata"),style = "padding-top: 25px;")
                      ),
                      div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
-                     div(DT::dataTableOutput("tb_10x_matrix2")),
+                     div(DT::DTOutput("tb_10x_matrix2")),
                      tags$head(tags$style("#sum_tb_10x1  {white-space: nowrap;  }")),
 
-                     div(DT::dataTableOutput("sum_tb_10x1")),
-                     div(DT::dataTableOutput("tb_10x_meta1")),
+                     div(DT::DTOutput("sum_tb_10x1")),
+                     div(DT::DTOutput("tb_10x_meta1")),
 
             ),
             tabPanel("ClusTCR",
@@ -541,8 +541,8 @@ navbarPage(
                        column(3, downloadButton("downloadtb_10x_contigues1", "Download clusTCR"),style = "padding-top: 25px;")
                      ),
 
-
-                     div(DT::dataTableOutput("tb_10x_contigues1")),
+                     div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
+                     div(DT::DTOutput("tb_10x_contigues1")),
 
             ),
             tabPanel("TCR_Explore",
@@ -551,7 +551,8 @@ navbarPage(
                      fluidRow(
                        column(3,downloadButton("downloaddt_TCR_Explore_10x", "Download TCR_Explore"),style = "padding-top: 25px;"),
                      ),
-                     div(DT::dataTableOutput("dt_TCR_Explore_10x")),
+                     div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
+                     div(DT::DTOutput("dt_TCR_Explore_10x")),
             ),
             tabPanel("Auto",
                      conditionalPanel(
@@ -562,6 +563,7 @@ navbarPage(
                        condition = "input.checkFiles > 0",
                        actionButton("automateProcess", "Automate Process")
                      ),
+                     div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
                      verbatimTextOutput("outputText")
             )
           ),
@@ -649,58 +651,58 @@ navbarPage(
             tabPanel(
               "Imported data",
               div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
-              div(DT::dataTableOutput("test.files")),
+              div(DT::DTOutput("test.files")),
               conditionalPanel(
                 condition = "input.Format_bd=='cellXgene'",
                 div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
-                div(DT::dataTableOutput("test.files3"))
+                div(DT::DTOutput("test.files3"))
               ),
               conditionalPanel(
                 condition = "input.Format_bd=='Barcode_features_matrix'",
                 div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
-                div(DT::dataTableOutput("test.files.bd1")),
+                div(DT::DTOutput("test.files.bd1")),
                 div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
-                div(DT::dataTableOutput("test.files.bd2")),
+                div(DT::DTOutput("test.files.bd2")),
                 div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
-                div(DT::dataTableOutput("test.files.bd3")),
+                div(DT::DTOutput("test.files.bd3")),
               ),
               conditionalPanel(
                 condition = "input.filtered_list=='Paired'",
                 div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
-                div(DT::dataTableOutput("test.files2"))
+                div(DT::DTOutput("test.files2"))
               ),
               conditionalPanel(
                 condition = "input.filtered_list=='Dominant' || input.filtered_list=='Unfiltered'",
                 div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
-                div(DT::dataTableOutput("test.files.bd4")),
+                div(DT::DTOutput("test.files.bd4")),
               ),
             ),
             # tabPanel("Checking Merge",
             #
-            #          div(DT::dataTableOutput("Check_table")),
+            #          div(DT::DTOutput("Check_table")),
             #
             #          ),
             tabPanel(
               "clusTCR2",
               tags$head(tags$style("#tb_clusTCR  {white-space: nowrap;  }")),
               div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
-              div(DT::dataTableOutput("tb_clusTCR")),
+              div(DT::DTOutput("tb_clusTCR")),
               selectInput("chain_clusTCR2_bd", "Select to download", choices = c("AG", "BD", "IgH", "IgLK")),
               downloadButton("downloaddf_clusTCR", "Download table")
             ),
             tabPanel(
               "TCRex",
               div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
-              div(DT::dataTableOutput("tb_TCRex_BDrap_df")),
+              div(DT::DTOutput("tb_TCRex_BDrap_df")),
               downloadButton("downloaddf_TCRex_BDrap", "Download table")
             ),
             tabPanel(
               "For Seurat",
               tags$head(tags$style("#tb_count_matrix  {white-space: nowrap;  }")),
               div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
-              div(DT::dataTableOutput("tb_count_matrix")),
+              div(DT::DTOutput("tb_count_matrix")),
               div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
-              div(DT::dataTableOutput("tb_metadata_sc")),
+              div(DT::DTOutput("tb_metadata_sc")),
               fluidRow(
                 column(3, downloadButton("downloadtb_count_matrix", "Download count table")),
                 column(3),
@@ -711,19 +713,19 @@ navbarPage(
               "TCR_Explore",
               tags$head(tags$style("#tb_TCR_Explore  {white-space: nowrap;  }")),
               div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
-              div(DT::dataTableOutput("tb_TCR_Explore")),
+              div(DT::DTOutput("tb_TCR_Explore")),
               downloadButton("downloadtb_TCR_Explore", "Download table")
             ),
             tabPanel(
               "Multi-TCR",
-              div(DT::dataTableOutput("tb_multiTCR")),
+              div(DT::DTOutput("tb_multiTCR")),
               downloadButton("downloadtb_multiTCR", "Download Multi-TCR table")
             ),
             tabPanel(
               "Create Sample Tags file",
               tags$head(tags$style("#tb_sample_tags_created  {white-space: nowrap;  }")),
               div(class = "name-BD",textInput("sample_tags_name", "Name of sample", value = "BD EA splenocyte")),
-              div(DT::dataTableOutput("tb_sample_tags_created")),
+              div(DT::DTOutput("tb_sample_tags_created")),
               downloadButton("downloadtb_sample_tags", "Download Tags")
             ),
           )
@@ -754,27 +756,27 @@ navbarPage(
             tabPanel(
               "Check files",
               div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
-              div(DT::dataTableOutput("test.files_array_Matrix")),
+              div(DT::DTOutput("test.files_array_Matrix")),
               div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
-              div(DT::dataTableOutput("test.files_array_contig")),
+              div(DT::DTOutput("test.files_array_contig")),
             ),
             tabPanel(
               "Filtering",
               div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
-              div(DT::dataTableOutput("test.files_array_contig_Filtered")),
+              div(DT::DTOutput("test.files_array_contig_Filtered")),
             ),
             tabPanel(
               "clusTCR",
               div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
-              div(DT::dataTableOutput("test.files_ClusTCR2_array")),
+              div(DT::DTOutput("test.files_ClusTCR2_array")),
               downloadButton("download_ClusTCR2_labs_array"),
             ),
             tabPanel("TCRex"),
             tabPanel(
               "Seurat",
               div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
-              div(DT::dataTableOutput("tb_array_matrix2")),
-              div(DT::dataTableOutput("tb_Array_meta1")),
+              div(DT::DTOutput("tb_array_matrix2")),
+              div(DT::DTOutput("tb_Array_meta1")),
               fluidRow(
                 column(3, downloadButton("downloadtb_array_matrix2", "Download matrix")),
                 column(3, downloadButton("downloadtb_array_metadata2", "Download metadata"))
@@ -842,7 +844,7 @@ navbarPage(
             id = "TCRex_tabs",
             tabPanel("Merge Multiple Files",
                      value = "merge",
-                     div(DT::dataTableOutput("DEx_TCRexFiltered")),
+                     div(DT::DTOutput("DEx_TCRexFiltered")),
                      # downloadButton('downloaddf_multiple_ClusTCR2','Download table')
             ),
           )
@@ -894,13 +896,13 @@ navbarPage(
             tabPanel("Merge Multiple Files",
                      value = "merge",
                      div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
-                     div(DT::dataTableOutput("DEx_multiple_ClusTCR2")),
+                     div(DT::DTOutput("DEx_multiple_ClusTCR2")),
                      downloadButton("downloaddf_multiple_ClusTCR2", "Download table")
             ),
             tabPanel("Clustering inputs",
                      value = "processing1",
                      div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
-                     div(DT::dataTableOutput("clust_dt2_table")),
+                     div(DT::DTOutput("clust_dt2_table")),
             ),
             tabPanel("Outputs",
                      value = "processing2",
@@ -914,7 +916,7 @@ navbarPage(
                        tabPanel(
                          "Table for analysis",
                          div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
-                         div(DT::dataTableOutput("ClusTCR2_lab")),
+                         div(DT::DTOutput("ClusTCR2_lab")),
                          p(" "),
                        ),
                        tabPanel(
@@ -1030,7 +1032,7 @@ navbarPage(
             tabPanel(
               "Header check",
               div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
-              div(DT::dataTableOutput("DEx_header_name_check.dt")),
+              div(DT::DTOutput("DEx_header_name_check.dt")),
             ),
             tabPanel(
               "Violin and correlation",
@@ -1120,9 +1122,9 @@ navbarPage(
             tabPanel(
               "Add metadata",
               div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
-              div(DT::dataTableOutput("DEx_view.meta.dt")),
+              div(DT::DTOutput("DEx_view.meta.dt")),
               div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
-              div(DT::dataTableOutput("DEx_table_meta.data")),
+              div(DT::DTOutput("DEx_table_meta.data")),
               # selectInput("","comaprison 1")
             ),
           ),
@@ -1211,7 +1213,7 @@ navbarPage(
                          "Scale data",
                          div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
                          actionButton("run_scale", "Run Scale"),
-                         div(DT::dataTableOutput("Tb_scaling_features_for_annotation")),
+                         div(DT::DTOutput("Tb_scaling_features_for_annotation")),
                          div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
                          verbatimTextOutput("scale_harmony_verbrose")
                        ),
@@ -1435,7 +1437,7 @@ navbarPage(
               # id = "Panel_DEX",
               # Cluster table -----
               # tabPanel("Checking files",
-              #          div(DT::dataTableOutput("list_of_genes")),
+              #          div(DT::DTOutput("list_of_genes")),
               #
               #          # verbatimTextOutput("checking_files_markers_featurePlot_sc"),
               #          ),
@@ -1475,7 +1477,7 @@ navbarPage(
               #   tabsetPanel(
               #     tabPanel(
               #       "Table",
-              #       div(DT::dataTableOutput("DEx_table_comparison")),
+              #       div(DT::DTOutput("DEx_table_comparison")),
               #       downloadButton("downloaddf_DEx_sc", "Download Table (.csv)"),
               #       downloadButton("downloaddf_DEx_sc_ggVolcanoR", "Download ggVolcanoR compatible table (.csv)")
               #     ),
@@ -1488,7 +1490,7 @@ navbarPage(
               # tabPanel("Cluster differences (All markers)",
               #   value = 5,
               #   div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
-              #   div(DT::dataTableOutput("DEx_table_clusters")),
+              #   div(DT::DTOutput("DEx_table_clusters")),
               #   downloadButton("downloaddf_DEx_table_clusters", "Download Table (.csv)")
               # ),
               # )
@@ -1502,7 +1504,7 @@ navbarPage(
                 # column(3,checkboxInput("add.scGATE","Add scGATE classifications", value = T))
               ),
               div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
-              div(DT::dataTableOutput("DEx_table_TcellClass_scGATE")),
+              div(DT::DTOutput("DEx_table_TcellClass_scGATE")),
             )
           ),
         )
@@ -1729,11 +1731,11 @@ navbarPage(
                    value = "up",
                    div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
                    fluidRow(
-                     column(12, div(DT::dataTableOutput("meta.data_check_upload"))),
-                     column(12, div(DT::dataTableOutput("Sample_names_merging_sc"))),
-                     # column(12,  div(DT::dataTableOutput("Tb_TCR_clonotypes.Umap"))),
-                     column(12, div(DT::dataTableOutput("Tb_ClusTCR_test"))),
-                     column(12, div(DT::dataTableOutput("Tb_tcrex_test")))
+                     column(12, div(DT::DTOutput("meta.data_check_upload"))),
+                     column(12, div(DT::DTOutput("Sample_names_merging_sc"))),
+                     # column(12,  div(DT::DTOutput("Tb_TCR_clonotypes.Umap"))),
+                     column(12, div(DT::DTOutput("Tb_ClusTCR_test"))),
+                     column(12, div(DT::DTOutput("Tb_tcrex_test")))
                    ),
           ),
 
@@ -1809,7 +1811,7 @@ navbarPage(
                                            column(9, plotOutput("Classification_clonotype_pie", height = "600px"))
                                          ),
                                          # fluidRow(
-                                         #   div(DT::dataTableOutput("table_pie")),
+                                         #   div(DT::DTOutput("table_pie")),
                                          # ),
 
                                          fluidRow(
@@ -1836,14 +1838,14 @@ navbarPage(
                                "Summary Table",
                                selectInput("other_selected_summary_columns","Add other sumamry columns", multiple = T, "",width = "1200px"),
 
-                               div(DT::dataTableOutput("Summary_TCR_tb")),
+                               div(DT::DTOutput("Summary_TCR_tb")),
                                downloadButton("downloaddf_Summary_TCR_tb", "Download table")
                              ),
 
                              tabPanel(
                                "Upset_table",
 
-                               div(DT::dataTableOutput("Upset_plot_overlap_Tb")),
+                               div(DT::DTOutput("Upset_plot_overlap_Tb")),
                                downloadButton("downloaddf_Upset_plot_overlap_Tb", "Download table")
                              ),
                              tabPanel(
@@ -1888,7 +1890,7 @@ navbarPage(
 
                                   tabsetPanel(
                                     tabPanel("Table",
-                                             div(DT::dataTableOutput("Line_graph_table")),
+                                             div(DT::DTOutput("Line_graph_table")),
                                     ),
                                     tabPanel("Line graph",
                                              fluidRow(
@@ -1983,7 +1985,7 @@ navbarPage(
                                   tabsetPanel(
                                     tabPanel(
                                       "Test.table",
-                                      div(DT::dataTableOutput("Tb_TCR_clonotypes.table"))
+                                      div(DT::DTOutput("Tb_TCR_clonotypes.table"))
                                     ),
                                     tabPanel(
                                       "UMAP",
@@ -2118,7 +2120,7 @@ navbarPage(
                                 tabPanel(
                                   "Summary table",
                                   div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
-                                  div(DT::dataTableOutput("Top_clonotype_sum")),
+                                  div(DT::DTOutput("Top_clonotype_sum")),
                                   downloadButton("download_Top_clonotype_sum", "Download table")
                                 ),
                                 tabPanel(
@@ -2146,7 +2148,7 @@ navbarPage(
                                 ),
                                 # tabPanel("Pie labs",
                                 #          add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "200px",width = "200px", color = "#6F00B0"),
-                                #          div(DT::dataTableOutput("Top_clonotype_Labs")),
+                                #          div(DT::DTOutput("Top_clonotype_Labs")),
                                 #
                                 # ),
 
@@ -2213,7 +2215,7 @@ navbarPage(
                                   ),
                                   div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
                                   fluidRow(
-                                    column(6, div(DT::dataTableOutput("Ridge_chart_alpha_gamma_stat"))),
+                                    column(6, div(DT::DTOutput("Ridge_chart_alpha_gamma_stat"))),
                                     column(6, plotOutput("Ridge_chart_alpha_gamma_plot_out", height = "600px"))
                                   ),
                                   column(6, downloadButton("downloaddf_clusTCR_GEx", "Download stats")),
@@ -2230,7 +2232,7 @@ navbarPage(
                                 tabPanel(
                                   "Stats",
                                   div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
-                                  div(DT::dataTableOutput("Ridge_chart_alpha_gamma_stat_comp")),
+                                  div(DT::DTOutput("Ridge_chart_alpha_gamma_stat_comp")),
                                   downloadButton("downloaddf_FindMarker_Top", "Download stat (Right)")
                                 ),
                                 # dotplot top-----
@@ -2264,7 +2266,7 @@ navbarPage(
                                     # column(3,numericInput("adjust_cutoff_top","BH cut-off",value = 1, min = 0, max = 1)),
                                   ),
                                   div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
-                                  div(DT::dataTableOutput("Over_rep_Top_clones_Tab")),
+                                  div(DT::DTOutput("Over_rep_Top_clones_Tab")),
                                   downloadButton("downloadtb_over.rep.Top_Ex", "Download table")
                                   #
                                 ),
@@ -2281,7 +2283,7 @@ navbarPage(
                                 tabPanel(
                                   "Table",
                                   div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
-                                  div(DT::dataTableOutput("Expansion_check")),
+                                  div(DT::DTOutput("Expansion_check")),
                                 ),
                                 tabPanel("ex.UMAP",
                                          value = "ExPan_UMAP",
@@ -2309,7 +2311,7 @@ navbarPage(
                                 tabPanel("Stats",
                                          value = "ExPan_stat",
                                          div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
-                                         div(DT::dataTableOutput("compare.stat_Ex")),
+                                         div(DT::DTOutput("compare.stat_Ex")),
                                          downloadButton("downloadtb_compare.stat_Ex", "Download table")
                                 ),
                                 tabPanel("Dotplot",
@@ -2338,7 +2340,7 @@ navbarPage(
                                            column(3, numericInput("p.val_cutoff_Exp", "p-val cut-off", value = 0.05, min = 0, max = 1)),
                                          ),
                                          div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
-                                         div(DT::dataTableOutput("Over_rep_Exp_Tab")),
+                                         div(DT::DTOutput("Over_rep_Exp_Tab")),
                                          downloadButton("downloadtb_over.rep_Exp", "Download table")
                                 )
                               )
@@ -2351,7 +2353,7 @@ navbarPage(
                                 tabPanel(
                                   "Table.Clust",
                                   div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
-                                  div(DT::dataTableOutput("Tb_ClusTCR_selected")),
+                                  div(DT::DTOutput("Tb_ClusTCR_selected")),
                                   downloadButton("downloadtb_Tb_ClusTCR_selected", "Download table")
                                 ),
                                 tabPanel(
@@ -2412,7 +2414,7 @@ navbarPage(
                                 tabPanel("Stats",
                                          value = "ClusPan_stat",
                                          div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
-                                         div(DT::dataTableOutput("compare.stat_Cluster_DT")),
+                                         div(DT::DTOutput("compare.stat_Cluster_DT")),
                                          downloadButton("downloadtb_compare.stat_Cluster", "Download table")
                                 ),
 
@@ -2446,7 +2448,7 @@ navbarPage(
                                            # column(3,numericInput("adjust_cutoff_Clust","BH cut-off",value = 1, min = 0, max = 1)),
                                          ),
                                          div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
-                                         div(DT::dataTableOutput("Over_rep_Cluster_Tab")),
+                                         div(DT::DTOutput("Over_rep_Cluster_Tab")),
                                          downloadButton("downloadtb_over.rep.cluster", "Download table")
                                 )
                               )
@@ -2467,12 +2469,12 @@ navbarPage(
                                 id = "EpitipeTabs",
                                 # tabPanel("Uploaded Epitope file",
                                 #          add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "200px",width = "200px", color = "#6F00B0"),
-                                #          div(DT::dataTableOutput("MainTcell_Check")),
+                                #          div(DT::DTOutput("MainTcell_Check")),
                                 # ),
                                 tabPanel(
                                   "Summary Table",
                                   div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
-                                  div(DT::dataTableOutput("Pie_Epitope_dt")),
+                                  div(DT::DTOutput("Pie_Epitope_dt")),
                                   downloadButton("downloaddf_Pie_Epitope_dt", "Download table")
                                 ),
                                 tabPanel(
@@ -2541,8 +2543,8 @@ navbarPage(
                                 tabPanel("Stats",
                                          value = "EpiPan_stat",
                                          div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
-                                         div(DT::dataTableOutput("Epi_of_interest_DF")),
-                                         div(DT::dataTableOutput("compare.stat_Epi_DT")),
+                                         div(DT::DTOutput("Epi_of_interest_DF")),
+                                         div(DT::DTOutput("compare.stat_Epi_DT")),
                                          downloadButton("downloadtb_compare.stat_Epi", "Download table")
                                 ),
                                 tabPanel("Dotplot",
@@ -2573,7 +2575,7 @@ navbarPage(
                                            column(3, numericInput("p.val_cutoff_Epi", "p-val cut-off", value = 0.05, min = 0, max = 1)),
                                          ),
                                          div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
-                                         div(DT::dataTableOutput("Over_rep_Epi_Tab")),
+                                         div(DT::DTOutput("Over_rep_Epi_Tab")),
                                          downloadButton("downloadtb_over.rep.Epi", "Download table")
                                          #
                                 )
@@ -2617,9 +2619,9 @@ navbarPage(
                               verbatimTextOutput("Simple_workflow_step1"),
                               verbatimTextOutput("Number_of_clonotypes_to_"),
                               add_busy_spinner(spin = "fading-circle", position = "top-right",  height = "200px", width = "200px", color = "purple"),
-                              div(DT::dataTableOutput("PriorClono_Tab")),
+                              div(DT::DTOutput("PriorClono_Tab")),
                               uiOutput("Module_case_statements"),
-                              div(DT::dataTableOutput("private_clonotypes")),
+                              div(DT::DTOutput("private_clonotypes")),
                      ),
                      # modules of priority cluster ------
                      tabPanel("Cluster",
@@ -2641,7 +2643,7 @@ navbarPage(
                               verbatimTextOutput("number_clusters_to_analyse_BD"),
                               add_busy_spinner(spin = "fading-circle", position = "top-right",  height = "200px", width = "200px", color = "purple"),
                               uiOutput("Cluster_dowload_button_prior"),
-                              # div(DT::dataTableOutput("colors.top_dt")),
+                              # div(DT::DTOutput("colors.top_dt")),
                      ),
                      # modules of priority Epitope ------
                      tabPanel("Epitope/Annotation",
@@ -2653,7 +2655,7 @@ navbarPage(
                                 column(3, uiOutput("AddInEpiUI_2")),
                               ),
                               actionButton("EpitopePrior_Download_Bt", "Automated Epitope analysis"),
-                              div(DT::dataTableOutput("Test_table_1")),
+                              div(DT::DTOutput("Test_table_1")),
                      ),
 
                      ### end priority
@@ -2678,7 +2680,7 @@ navbarPage(
                          tabPanel(
                            "Table",
                            div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
-                           div(DT::dataTableOutput("AnnoTable_perMarkers")),
+                           div(DT::DTOutput("AnnoTable_perMarkers")),
                            downloadButton("downloaddf_AnnoTable_perMarkers", "Download table"),
                          ),
                          tabPanel("UMAP"),
@@ -2721,7 +2723,7 @@ navbarPage(
                              tabPanel("Table",
                                       value = "Marker_Panel_table",
                                       div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
-                                      div(DT::dataTableOutput("marker_selected_tab")),
+                                      div(DT::DTOutput("marker_selected_tab")),
                              ),
                              tabPanel("UMAP plot",
                                       value = "Marker_Panel_plot_UMAP",
@@ -2758,10 +2760,10 @@ navbarPage(
                                       h4("TCR and/or BCR seqeunces that are positive for that marker"),
                                       div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
                                       fluidRow(
-                                        column(6, div(DT::dataTableOutput("TCR_marker_positive_count"))),
-                                        column(6, div(DT::dataTableOutput("TCR_marker_neg_count")))
+                                        column(6, div(DT::DTOutput("TCR_marker_positive_count"))),
+                                        column(6, div(DT::DTOutput("TCR_marker_neg_count")))
                                       ),
-                                      div(DT::dataTableOutput("merged_marker_hist_table")),
+                                      div(DT::DTOutput("merged_marker_hist_table")),
                                       downloadButton("downloaddf_clonotype_distribution", "Download table"),
                                       div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
                                       plotOutput("marker_selected_histogram_plot", height = "600px")
@@ -2769,7 +2771,7 @@ navbarPage(
                              tabPanel("Stats",
                                       value = "MP_plot_stats",
                                       div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
-                                      div(DT::dataTableOutput("Compare.stat_marker")),
+                                      div(DT::DTOutput("Compare.stat_marker")),
                                       downloadButton("downloaddf_Marker_stats", "Download table")
 
                                       # filtered on marker of interest, broad population
@@ -2810,7 +2812,7 @@ navbarPage(
                              tabPanel(
                                "table",
                                div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
-                               div(DT::dataTableOutput("meta_data_for_features_scale2_df")),
+                               div(DT::DTOutput("meta_data_for_features_scale2_df")),
                              ),
                              tabPanel(
                                "Feature plots",
@@ -2844,14 +2846,14 @@ navbarPage(
                              tabPanel(
                                "TCR table",
                                div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
-                               div(DT::dataTableOutput("dual_maker_TCR_Sum_DT")),
+                               div(DT::DTOutput("dual_maker_TCR_Sum_DT")),
                                downloadButton("Dule_marker_TCRsummary_DT", "Download table")
                              ),
                              tabPanel(
                                "Stats",
                                div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
                                selectInput("quad_dualmarker", "Quadrant to compute", choices = c("Q1", "Q2", "Q3", "Q4")),
-                               div(DT::dataTableOutput("dual_maker_TCR_statsTB")),
+                               div(DT::DTOutput("dual_maker_TCR_statsTB")),
                                downloadButton("Dule_marker_statsTBDownload", "Download table")
                              ),
                            )
@@ -2866,7 +2868,7 @@ navbarPage(
           ######
           # tabPanel("Parameters Table",
           #          div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
-          #          div(DT::dataTableOutput("parameterTable")),
+          #          div(DT::DTOutput("parameterTable")),
           #          # Download button
           #          downloadButton("downloadData", "Download State"),
           #
@@ -2901,7 +2903,7 @@ navbarPage(
                mainPanel(
                  width = 9,
                  div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
-                 div(DT::dataTableOutput("extracting_md_from_sc_tb")),
+                 div(DT::DTOutput("extracting_md_from_sc_tb")),
                )
              )
     ),
@@ -2926,7 +2928,7 @@ navbarPage(
                  id = "Other_post_analysis",
                  div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
                  uiOutput("filter_inputs"),
-                 dataTableOutput("filtered_table")
+                 DTOutput("filtered_table")
 
                  # )
                )
@@ -2952,9 +2954,9 @@ navbarPage(
                  id = "summary_for_data_tab",
                  div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
                  selectInput("columns_for_summary","Select columns for summarising",choices = "",multiple = T, width = "1200px"),
-                 dataTableOutput("chain_table_summary_tb"),
+                 DTOutput("chain_table_summary_tb"),
                  # uiOutput("filter_inputs"),
-                 dataTableOutput("loaded_for_summary")
+                 DTOutput("loaded_for_summary")
 
                  # )
                )
@@ -2998,11 +3000,11 @@ navbarPage(
                      id = "OLGA_analysis",
                      tabPanel("Loaded Table",
                               add_busy_spinner(spin = "fading-circle", position = "top-right",  height = "200px", width = "200px", color = "#6F00B0"),
-                              div(DT::dataTableOutput("Pgen_Selected")),
+                              div(DT::DTOutput("Pgen_Selected")),
                      ),
                      tabPanel("Pgen",
                               add_busy_spinner(spin = "fading-circle", position = "top-right",  height = "200px", width = "200px", color = "#6F00B0"),
-                              div(DT::dataTableOutput("Pgen_BD")),
+                              div(DT::DTOutput("Pgen_BD")),
                      )
                    )
                  )
@@ -3228,7 +3230,7 @@ navbarPage(
       }
     })
 
-    output$test.files <- DT::renderDataTable(escape = FALSE, options = list(autoWidth = FALSE, lengthMenu = c(2, 5, 10, 20, 50, 100), pageLength = 2, scrollX = TRUE), {
+    output$test.files <- DT::renderDT(escape = FALSE, options = list(autoWidth = FALSE, lengthMenu = c(2, 5, 10, 20, 50, 100), pageLength = 2, scrollX = TRUE), {
       calls <- input.data.calls.bd()
       validate(
         need(
@@ -3250,7 +3252,7 @@ navbarPage(
         )
       }
     })
-    output$test.files2 <- DT::renderDataTable(escape = FALSE, options = list(autoWidth = FALSE, lengthMenu = c(2, 5, 10, 20, 50, 100), pageLength = 2, scrollX = TRUE), {
+    output$test.files2 <- DT::renderDT(escape = FALSE, options = list(autoWidth = FALSE, lengthMenu = c(2, 5, 10, 20, 50, 100), pageLength = 2, scrollX = TRUE), {
       calls <- input.data.TCR.BD()
       validate(
         need(
@@ -3268,7 +3270,7 @@ navbarPage(
         dataframe <- read.csv(inFilecountBD$datapath, skip = input$no_lines_skip_counts, header = T)
       }
     })
-    output$test.files3 <- DT::renderDataTable(escape = FALSE, options = list(autoWidth = FALSE, lengthMenu = c(2, 5, 10, 20, 50, 100), pageLength = 2, scrollX = TRUE), {
+    output$test.files3 <- DT::renderDT(escape = FALSE, options = list(autoWidth = FALSE, lengthMenu = c(2, 5, 10, 20, 50, 100), pageLength = 2, scrollX = TRUE), {
       calls <- as.data.frame(input.data.count.BD())
       validate(
         need(
@@ -3292,7 +3294,7 @@ navbarPage(
       }
     })
 
-    output$test.files.bd1 <- DT::renderDataTable(escape = FALSE, options = list(autoWidth = FALSE, lengthMenu = c(2, 5, 10, 20, 50, 100), pageLength = 2, scrollX = TRUE), {
+    output$test.files.bd1 <- DT::renderDT(escape = FALSE, options = list(autoWidth = FALSE, lengthMenu = c(2, 5, 10, 20, 50, 100), pageLength = 2, scrollX = TRUE), {
       calls <- input.data.barcode.bd()
       validate(
         need(
@@ -3315,7 +3317,7 @@ navbarPage(
       }
     })
 
-    output$test.files.bd2 <- DT::renderDataTable(escape = FALSE, options = list(autoWidth = FALSE, lengthMenu = c(2, 5, 10, 20, 50, 100), pageLength = 2, scrollX = TRUE), {
+    output$test.files.bd2 <- DT::renderDT(escape = FALSE, options = list(autoWidth = FALSE, lengthMenu = c(2, 5, 10, 20, 50, 100), pageLength = 2, scrollX = TRUE), {
       calls <- input.data.features.bd2()
       validate(
         need(
@@ -3335,7 +3337,7 @@ navbarPage(
         dataframe <- Matrix::readMM(inFile_bd_matrix$datapath)
       }
     })
-    output$test.files.bd3 <- DT::renderDataTable(escape = FALSE, options = list(autoWidth = FALSE, lengthMenu = c(2, 5, 10, 20, 50, 100), pageLength = 2, scrollX = TRUE), {
+    output$test.files.bd3 <- DT::renderDT(escape = FALSE, options = list(autoWidth = FALSE, lengthMenu = c(2, 5, 10, 20, 50, 100), pageLength = 2, scrollX = TRUE), {
       calls <- as.data.frame(input.data.matrix.bd())
       validate(
         need(
@@ -3357,7 +3359,7 @@ navbarPage(
         dataframe <- read.table(inFile_bd2_TCR$datapath, sep = "\t", header = T)
       }
     })
-    output$test.files.bd4 <- DT::renderDataTable(escape = FALSE, options = list(autoWidth = FALSE, lengthMenu = c(2, 5, 10, 20, 50, 100), pageLength = 2, scrollX = TRUE), {
+    output$test.files.bd4 <- DT::renderDT(escape = FALSE, options = list(autoWidth = FALSE, lengthMenu = c(2, 5, 10, 20, 50, 100), pageLength = 2, scrollX = TRUE), {
       calls <- input.data.TCR.bd2()
       validate(
         need(
@@ -4248,7 +4250,7 @@ navbarPage(
       Sample_Tags
     })
 
-    output$tb_sample_tags_created <- DT::renderDataTable(escape = FALSE, options = list(autoWidth = FALSE, lengthMenu = c(2, 5, 10, 20, 50, 100), pageLength = 10, scrollX = TRUE), {
+    output$tb_sample_tags_created <- DT::renderDT(escape = FALSE, options = list(autoWidth = FALSE, lengthMenu = c(2, 5, 10, 20, 50, 100), pageLength = 10, scrollX = TRUE), {
       samp.tags()
     })
 
@@ -4308,7 +4310,7 @@ navbarPage(
       )
     }) # junction sequence
 
-    output$Check_table <- DT::renderDataTable(escape = FALSE, options = list(autoWidth = FALSE, lengthMenu = c(2, 5, 10, 20, 50, 100), pageLength = 10, scrollX = TRUE), {
+    output$Check_table <- DT::renderDT(escape = FALSE, options = list(autoWidth = FALSE, lengthMenu = c(2, 5, 10, 20, 50, 100), pageLength = 10, scrollX = TRUE), {
       df_nocouts <- TCR_Filtering_Paired()
 
       if (nrow(df_nocouts[df_nocouts$Total_VDJ_Read_Count != 0, ] > 0)) {
@@ -4437,7 +4439,7 @@ navbarPage(
       }
     })
 
-    output$tb_clusTCR <- DT::renderDataTable(escape = FALSE, options = list(autoWidth = FALSE, lengthMenu = c(2, 5, 10, 20, 50, 100), pageLength = 10, scrollX = TRUE), {
+    output$tb_clusTCR <- DT::renderDT(escape = FALSE, options = list(autoWidth = FALSE, lengthMenu = c(2, 5, 10, 20, 50, 100), pageLength = 10, scrollX = TRUE), {
       if (input$filtered_list == "Paired") {
         df_clusTCR()
       } else {
@@ -4523,7 +4525,7 @@ navbarPage(
       mat
     })
 
-    output$tb_count_matrix <- DT::renderDataTable(escape = FALSE, options = list(autoWidth = FALSE, lengthMenu = c(2, 5, 10, 20, 50, 100), pageLength = 2, scrollX = TRUE), {
+    output$tb_count_matrix <- DT::renderDT(escape = FALSE, options = list(autoWidth = FALSE, lengthMenu = c(2, 5, 10, 20, 50, 100), pageLength = 2, scrollX = TRUE), {
       if (input$Format_bd == "cellXgene") {
         (df_count.matrix_bd())[1:6, 1:6]
       } else {
@@ -4664,7 +4666,7 @@ navbarPage(
       }
     }
 
-    output$tb_metadata_sc <- DT::renderDataTable(escape = FALSE, options = list(autoWidth = FALSE, lengthMenu = c(2, 5, 10, 20, 50, 100), pageLength = 2, scrollX = TRUE), {
+    output$tb_metadata_sc <- DT::renderDT(escape = FALSE, options = list(autoWidth = FALSE, lengthMenu = c(2, 5, 10, 20, 50, 100), pageLength = 2, scrollX = TRUE), {
       meta.data_for_Seuratobj()
     })
 
@@ -4763,7 +4765,7 @@ navbarPage(
       }
     })
 
-    output$tb_TCRex_BDrap_df <- DT::renderDataTable(escape = FALSE, options = list(autoWidth = FALSE, lengthMenu = c(2, 5, 10, 20, 50, 100), pageLength = 10, scrollX = TRUE), {
+    output$tb_TCRex_BDrap_df <- DT::renderDT(escape = FALSE, options = list(autoWidth = FALSE, lengthMenu = c(2, 5, 10, 20, 50, 100), pageLength = 10, scrollX = TRUE), {
       tb_TCRex_BDrap_df()
     })
 
@@ -4808,7 +4810,7 @@ navbarPage(
       calls_TCR_paired.fun
     }
 
-    output$tb_TCR_Explore <- DT::renderDataTable(escape = FALSE, options = list(autoWidth = FALSE, lengthMenu = c(2, 5, 10, 20, 50, 100), pageLength = 10, scrollX = TRUE), {
+    output$tb_TCR_Explore <- DT::renderDT(escape = FALSE, options = list(autoWidth = FALSE, lengthMenu = c(2, 5, 10, 20, 50, 100), pageLength = 10, scrollX = TRUE), {
       df_TCR_Explore()
     })
 
@@ -5053,7 +5055,7 @@ navbarPage(
       }
     })
 
-    output$tb_multiTCR <- DT::renderDataTable(escape = FALSE, options = list(autoWidth = FALSE, lengthMenu = c(2, 5, 10, 20, 50, 100), pageLength = 10, scrollX = TRUE), {
+    output$tb_multiTCR <- DT::renderDT(escape = FALSE, options = list(autoWidth = FALSE, lengthMenu = c(2, 5, 10, 20, 50, 100), pageLength = 10, scrollX = TRUE), {
       multi_TCR_BDrhap()
     })
 
@@ -5091,7 +5093,7 @@ navbarPage(
       }
     })
 
-    output$Barcode_10x_file_upload <- DT::renderDataTable(escape = FALSE, options = list(autoWidth = FALSE, lengthMenu = c(2, 5, 10, 20, 50, 100), pageLength = 2, scrollX = TRUE, scrollY = T), {
+    output$Barcode_10x_file_upload <- DT::renderDT(escape = FALSE, options = list(autoWidth = FALSE, lengthMenu = c(2, 5, 10, 20, 50, 100), pageLength = 2, scrollX = TRUE, scrollY = T), {
       calls <- input.data.barcode.10x()
       validate(
         need(
@@ -5113,7 +5115,7 @@ navbarPage(
       }
     })
 
-    output$Features_10x_file_upload <- DT::renderDataTable(escape = FALSE, options = list(autoWidth = FALSE, lengthMenu = c(2, 5, 10, 20, 50, 100), pageLength = 2, scrollX = TRUE, scrollY = T), {
+    output$Features_10x_file_upload <- DT::renderDT(escape = FALSE, options = list(autoWidth = FALSE, lengthMenu = c(2, 5, 10, 20, 50, 100), pageLength = 2, scrollX = TRUE, scrollY = T), {
       calls <- input.data.features.10x()
       validate(
         need(
@@ -5133,7 +5135,7 @@ navbarPage(
         dataframe <- Matrix::readMM(inFile_10x_matrix$datapath)
       }
     })
-    output$Matrix_10x_file_upload <- DT::renderDataTable(escape = FALSE, options = list(autoWidth = FALSE, lengthMenu = c(2, 5, 10, 20, 50, 100), pageLength = 2, scrollX = TRUE), {
+    output$Matrix_10x_file_upload <- DT::renderDT(escape = FALSE, options = list(autoWidth = FALSE, lengthMenu = c(2, 5, 10, 20, 50, 100), pageLength = 2, scrollX = TRUE), {
       calls <- as.data.frame(input.data.matrix.10x())
       validate(
         need(
@@ -5158,7 +5160,7 @@ navbarPage(
         dataframe
       }
     })
-    output$Contig_10x_file_upload <- DT::renderDataTable(escape = FALSE, options = list(autoWidth = FALSE, lengthMenu = c(2, 5, 10, 20, 50, 100), pageLength = 2, scrollX = TRUE, scrollY = T), {
+    output$Contig_10x_file_upload <- DT::renderDT(escape = FALSE, options = list(autoWidth = FALSE, lengthMenu = c(2, 5, 10, 20, 50, 100), pageLength = 2, scrollX = TRUE, scrollY = T), {
       if (input$BCR_TCR_10x == "TCR only") {
         calls <- input.data.TCR.10x()
         validate(
@@ -5506,7 +5508,7 @@ navbarPage(
       contig_paired_only_dup
     }
 
-    output$tb_10x_meta1 <- DT::renderDataTable(escape = FALSE, options = list(autoWidth = FALSE, lengthMenu = c(2, 5, 10, 20, 50, 100), pageLength = 5, scrollX = TRUE), {
+    output$tb_10x_meta1 <- DT::renderDT(escape = FALSE, options = list(autoWidth = FALSE, lengthMenu = c(2, 5, 10, 20, 50, 100), pageLength = 5, scrollX = TRUE), {
       if (input$BCR_TCR_10x == "TCR only") {
         tb_10x_meta.data_TCR()
       } else if (input$BCR_TCR_10x == "BCR only") {
@@ -5577,7 +5579,7 @@ navbarPage(
       df1 <- ddply(count.df, names(count.df)[c(-4)], numcolwise(sum))
       df1
     }
-    output$sum_tb_10x1 <- DT::renderDataTable(escape = FALSE, options = list(autoWidth = FALSE, lengthMenu = c(2, 5, 10, 20, 50, 100), pageLength = 10, scrollX = TRUE), {
+    output$sum_tb_10x1 <- DT::renderDT(escape = FALSE, options = list(autoWidth = FALSE, lengthMenu = c(2, 5, 10, 20, 50, 100), pageLength = 10, scrollX = TRUE), {
       sum_tb_10x()
     })
 
@@ -5624,7 +5626,7 @@ navbarPage(
       }
     })
 
-    output$tb_10x_contigues1 <- DT::renderDataTable(escape = FALSE, options = list(autoWidth = FALSE, lengthMenu = c(2, 5, 10, 20, 50, 100), pageLength = 10, scrollX = TRUE), {
+    output$tb_10x_contigues1 <- DT::renderDT(escape = FALSE, options = list(autoWidth = FALSE, lengthMenu = c(2, 5, 10, 20, 50, 100), pageLength = 10, scrollX = TRUE), {
       tb_10x_contigues_contig()
     })
 
@@ -5676,7 +5678,7 @@ navbarPage(
       contig_paired_only
     }
 
-    output$dt_TCR_Explore_10x <- DT::renderDataTable(escape = FALSE, options = list(autoWidth = FALSE, lengthMenu = c(2, 5, 10, 20, 50, 100), pageLength = 10, scrollX = TRUE), {
+    output$dt_TCR_Explore_10x <- DT::renderDT(escape = FALSE, options = list(autoWidth = FALSE, lengthMenu = c(2, 5, 10, 20, 50, 100), pageLength = 10, scrollX = TRUE), {
       TCR_Explore_10x()
     })
 
@@ -5737,7 +5739,7 @@ navbarPage(
       mmMat
     }
 
-    output$tb_10x_matrix2 <- DT::renderDataTable(escape = FALSE, options = list(autoWidth = FALSE, lengthMenu = c(2, 5, 10, 20, 50, 100), pageLength = 2, scrollX = TRUE), {
+    output$tb_10x_matrix2 <- DT::renderDT(escape = FALSE, options = list(autoWidth = FALSE, lengthMenu = c(2, 5, 10, 20, 50, 100), pageLength = 2, scrollX = TRUE), {
       tb_10x_matrix()[1:6, 1:6]
     })
 
@@ -5817,7 +5819,7 @@ navbarPage(
       calls_TCR_paired.fun3
     }
 
-    output$tb_TCRex_10x_df <- DT::renderDataTable(filter = list(position = "top", clear = FALSE), escape = FALSE, options = list(autoWidth = FALSE, lengthMenu = c(2, 5, 10, 20, 50, 100), pageLength = 10, scrollX = TRUE), {
+    output$tb_TCRex_10x_df <- DT::renderDT(filter = list(position = "top", clear = FALSE), escape = FALSE, options = list(autoWidth = FALSE, lengthMenu = c(2, 5, 10, 20, 50, 100), pageLength = 10, scrollX = TRUE), {
       TCRex_10x_df()
     })
 
@@ -5883,7 +5885,7 @@ navbarPage(
         dataframe <- read.table(inFile_arrayM$datapath)
       }
     })
-    output$test.files_array_Matrix <- DT::renderDataTable(escape = FALSE, options = list(autoWidth = FALSE, lengthMenu = c(2, 5, 10, 20, 50, 100), pageLength = 2, scrollX = TRUE), {
+    output$test.files_array_Matrix <- DT::renderDT(escape = FALSE, options = list(autoWidth = FALSE, lengthMenu = c(2, 5, 10, 20, 50, 100), pageLength = 2, scrollX = TRUE), {
       calls <- input.data.calls.array()
       validate(
         need(
@@ -5902,7 +5904,7 @@ navbarPage(
         dataframe <- read.table(inFile_arrayC$datapath, sep = "\t", header = T, row.names = 1)
       }
     })
-    output$test.files_array_contig <- DT::renderDataTable(escape = FALSE, options = list(autoWidth = FALSE, lengthMenu = c(2, 5, 10, 20, 50, 100), pageLength = 2, scrollX = TRUE), {
+    output$test.files_array_contig <- DT::renderDT(escape = FALSE, options = list(autoWidth = FALSE, lengthMenu = c(2, 5, 10, 20, 50, 100), pageLength = 2, scrollX = TRUE), {
       calls <- input.data.calls.array_contig()
       validate(
         need(
@@ -5993,7 +5995,7 @@ navbarPage(
     })
 
 
-    output$test.files_array_contig_Filtered <- DT::renderDataTable(escape = FALSE, options = list(autoWidth = FALSE, lengthMenu = c(2, 5, 10, 20, 50, 100), pageLength = 10, scrollX = TRUE), {
+    output$test.files_array_contig_Filtered <- DT::renderDT(escape = FALSE, options = list(autoWidth = FALSE, lengthMenu = c(2, 5, 10, 20, 50, 100), pageLength = 10, scrollX = TRUE), {
       calls <- Filtering_TCR_Array()
       validate(
         need(
@@ -6022,7 +6024,7 @@ navbarPage(
 
     })
 
-    output$test.files_ClusTCR2_array <- DT::renderDataTable(escape = FALSE, options = list(autoWidth = FALSE, lengthMenu = c(2, 5, 10, 20, 50, 100), pageLength = 10, scrollX = TRUE), {
+    output$test.files_ClusTCR2_array <- DT::renderDT(escape = FALSE, options = list(autoWidth = FALSE, lengthMenu = c(2, 5, 10, 20, 50, 100), pageLength = 10, scrollX = TRUE), {
       calls <- ClusTCR2_array()
       calls
     })
@@ -6051,7 +6053,7 @@ navbarPage(
       mmMat
     }
 
-    output$tb_array_matrix2 <- DT::renderDataTable(escape = FALSE, options = list(autoWidth = FALSE, lengthMenu = c(2, 5, 10, 20, 50, 100), pageLength = 2, scrollX = TRUE), {
+    output$tb_array_matrix2 <- DT::renderDT(escape = FALSE, options = list(autoWidth = FALSE, lengthMenu = c(2, 5, 10, 20, 50, 100), pageLength = 2, scrollX = TRUE), {
       tb_Array_matrix()[1:6, 1:6]
     })
 
@@ -6099,7 +6101,7 @@ navbarPage(
       contig_paired_only
     }
 
-    output$tb_Array_meta1 <- DT::renderDataTable(escape = FALSE, options = list(autoWidth = FALSE, lengthMenu = c(2, 5, 10, 20, 50, 100), pageLength = 5, scrollX = TRUE), {
+    output$tb_Array_meta1 <- DT::renderDT(escape = FALSE, options = list(autoWidth = FALSE, lengthMenu = c(2, 5, 10, 20, 50, 100), pageLength = 5, scrollX = TRUE), {
       tb_Array_meta.data_TCR()
     })
     output$downloadtb_array_metadata2 <- downloadHandler(
@@ -6158,7 +6160,7 @@ navbarPage(
       df[!duplicated(df$CDR3_beta), ]
     })
 
-    output$DEx_TCRexFiltered <- DT::renderDataTable(escape = FALSE, filter = list(position = "top", clear = FALSE), options = list(autoWidth = FALSE, lengthMenu = c(2, 5, 10, 20, 50, 100), pageLength = 5, scrollX = TRUE), {
+    output$DEx_TCRexFiltered <- DT::renderDT(escape = FALSE, filter = list(position = "top", clear = FALSE), options = list(autoWidth = FALSE, lengthMenu = c(2, 5, 10, 20, 50, 100), pageLength = 5, scrollX = TRUE), {
       df <- merged_TCRexFiltered()
 
       df
@@ -6238,7 +6240,7 @@ navbarPage(
       df[!duplicated(df$junction_aa), ]
     })
 
-    output$DEx_multiple_ClusTCR2 <- DT::renderDataTable(escape = FALSE, filter = list(position = "top", clear = FALSE), options = list(autoWidth = FALSE, lengthMenu = c(2, 5, 10, 20, 50, 100), pageLength = 5, scrollX = TRUE), {
+    output$DEx_multiple_ClusTCR2 <- DT::renderDT(escape = FALSE, filter = list(position = "top", clear = FALSE), options = list(autoWidth = FALSE, lengthMenu = c(2, 5, 10, 20, 50, 100), pageLength = 5, scrollX = TRUE), {
       df <- merged_Clust_filtered()
 
       df
@@ -6285,7 +6287,7 @@ navbarPage(
       )
       df1
     })
-    output$clust_dt2_table <- DT::renderDataTable({
+    output$clust_dt2_table <- DT::renderDT({
       df1 <- input.data_ClusTCR2()
       validate(
         need(
@@ -6369,7 +6371,7 @@ navbarPage(
     })
 
 
-    output$ClusTCR2_lab <- DT::renderDataTable(escape = FALSE, filter = list(position = "top", clear = FALSE), options = list(autoWidth = FALSE, lengthMenu = c(2, 5, 10, 20, 50, 100), pageLength = 10, scrollX = TRUE), {
+    output$ClusTCR2_lab <- DT::renderDT(escape = FALSE, filter = list(position = "top", clear = FALSE), options = list(autoWidth = FALSE, lengthMenu = c(2, 5, 10, 20, 50, 100), pageLength = 10, scrollX = TRUE), {
       df1 <- input.data_ClusTCR2()
       validate(
         need(
@@ -6555,7 +6557,7 @@ navbarPage(
       }
     })
 
-    output$DEx_header_name_check.dt <- DT::renderDataTable(escape = FALSE, filter = list(position = "top", clear = FALSE), options = list(autoWidth = FALSE, lengthMenu = c(2, 5, 10, 20, 50, 100), pageLength = 5, scrollX = TRUE), {
+    output$DEx_header_name_check.dt <- DT::renderDT(escape = FALSE, filter = list(position = "top", clear = FALSE), options = list(autoWidth = FALSE, lengthMenu = c(2, 5, 10, 20, 50, 100), pageLength = 5, scrollX = TRUE), {
       df.test <- input.data_sc()
       validate(
         need(
@@ -6951,7 +6953,7 @@ navbarPage(
       }
     })
 
-    output$DEx_view.meta.dt <- DT::renderDataTable(escape = FALSE, filter = list(position = "top", clear = FALSE), options = list(autoWidth = FALSE, lengthMenu = c(2, 5, 10, 20, 50, 100), pageLength = 2, scrollX = TRUE), {
+    output$DEx_view.meta.dt <- DT::renderDT(escape = FALSE, filter = list(position = "top", clear = FALSE), options = list(autoWidth = FALSE, lengthMenu = c(2, 5, 10, 20, 50, 100), pageLength = 2, scrollX = TRUE), {
       sc <- input.data_sc_meta()
 
       validate(
@@ -6991,7 +6993,7 @@ navbarPage(
       vals_meta.sc$metadata_SCobj
     })
 
-    output$DEx_table_meta.data <- DT::renderDataTable(escape = FALSE, filter = list(position = "top", clear = FALSE), options = list(autoWidth = FALSE, lengthMenu = c(2, 5, 10, 20, 50, 100), pageLength = 2, scrollX = TRUE), {
+    output$DEx_table_meta.data <- DT::renderDT(escape = FALSE, filter = list(position = "top", clear = FALSE), options = list(autoWidth = FALSE, lengthMenu = c(2, 5, 10, 20, 50, 100), pageLength = 2, scrollX = TRUE), {
       calls <- vals_meta.sc$metadata_SCobj
       validate(
         need(
@@ -7320,7 +7322,7 @@ navbarPage(
 
 
 
-    output$Tb_scaling_features_for_annotation <- DT::renderDataTable(escape = FALSE, filter = list(position = "top", clear = FALSE), options = list(autoWidth = FALSE, lengthMenu = c(2, 5, 10, 20, 50, 100), pageLength = 5, scrollX = TRUE), {
+    output$Tb_scaling_features_for_annotation <- DT::renderDT(escape = FALSE, filter = list(position = "top", clear = FALSE), options = list(autoWidth = FALSE, lengthMenu = c(2, 5, 10, 20, 50, 100), pageLength = 5, scrollX = TRUE), {
       sc <- Vals_norm4$Norm1
       validate(
         need(
@@ -7779,7 +7781,7 @@ navbarPage(
       sc
     })
 
-    output$TCR_seq_classification_df <- DT::renderDataTable(escape = FALSE, filter = list(position = "top", clear = FALSE), options = list(autoWidth = FALSE, lengthMenu = c(2, 5, 10, 20, 50, 100), pageLength = 5, scrollX = TRUE), {
+    output$TCR_seq_classification_df <- DT::renderDT(escape = FALSE, filter = list(position = "top", clear = FALSE), options = list(autoWidth = FALSE, lengthMenu = c(2, 5, 10, 20, 50, 100), pageLength = 5, scrollX = TRUE), {
       sc <- TCR_seq_classification()
       sc@meta.data
     })
@@ -9284,7 +9286,7 @@ navbarPage(
     })
 
     # all.annotations added -----
-    output$DEx_table_TcellClass_scGATE <- DT::renderDataTable(
+    output$DEx_table_TcellClass_scGATE <- DT::renderDT(
       escape = FALSE,
       filter = list(position = "top", clear = FALSE),
       options = list(
@@ -9452,7 +9454,7 @@ navbarPage(
 
 
 
-    output$list_of_genes_df <- DT::renderDataTable(escape = FALSE, filter = list(position = "top", clear = FALSE), options = list(autoWidth = FALSE, lengthMenu = c(2, 5, 10, 20, 50, 100), pageLength = 10, scrollX = TRUE), {
+    output$list_of_genes_df <- DT::renderDT(escape = FALSE, filter = list(position = "top", clear = FALSE), options = list(autoWidth = FALSE, lengthMenu = c(2, 5, 10, 20, 50, 100), pageLength = 10, scrollX = TRUE), {
       df.test <- getData_2()
       validate(
         need(
@@ -9464,7 +9466,7 @@ navbarPage(
     })
 
 
-    output$meta_data_comaprison_check <- DT::renderDataTable(escape = FALSE, filter = list(position = "top", clear = FALSE), options = list(autoWidth = FALSE, lengthMenu = c(2, 5, 10, 20, 50, 100), pageLength = 10, scrollX = TRUE), {
+    output$meta_data_comaprison_check <- DT::renderDT(escape = FALSE, filter = list(position = "top", clear = FALSE), options = list(autoWidth = FALSE, lengthMenu = c(2, 5, 10, 20, 50, 100), pageLength = 10, scrollX = TRUE), {
       calls <- sc@meta.data
       calls
     })
@@ -9490,7 +9492,7 @@ navbarPage(
       vals_clust_markers$markers_for_table <- sc.markers
     })
 
-    output$DEx_table_clusters <- DT::renderDataTable(escape = FALSE, filter = list(position = "top", clear = FALSE), options = list(autoWidth = FALSE, lengthMenu = c(2, 5, 10, 20, 50, 100), pageLength = 2, scrollX = TRUE), {
+    output$DEx_table_clusters <- DT::renderDT(escape = FALSE, filter = list(position = "top", clear = FALSE), options = list(autoWidth = FALSE, lengthMenu = c(2, 5, 10, 20, 50, 100), pageLength = 2, scrollX = TRUE), {
       calls <- vals_clust_markers$markers_for_table
       calls
     })
@@ -9752,7 +9754,7 @@ navbarPage(
       sc
     })
 
-    output$Sample_names_merging_sc <- DT::renderDataTable(escape = FALSE, options = list(autoWidth = FALSE, lengthMenu = c(2, 5, 10, 20, 50, 100), pageLength = 2, scrollX = TRUE), {
+    output$Sample_names_merging_sc <- DT::renderDT(escape = FALSE, options = list(autoWidth = FALSE, lengthMenu = c(2, 5, 10, 20, 50, 100), pageLength = 2, scrollX = TRUE), {
       sc <- UMAP_metadata_with_labs()
       validate(
         need(
@@ -9772,7 +9774,7 @@ navbarPage(
 
 
     # checking issue with analysis ------
-    output$meta.data_check_upload <- DT::renderDataTable(escape = FALSE, options = list(autoWidth = FALSE, lengthMenu = c(2, 5, 10, 20, 50, 100), pageLength = 2, scrollX = TRUE), {
+    output$meta.data_check_upload <- DT::renderDT(escape = FALSE, options = list(autoWidth = FALSE, lengthMenu = c(2, 5, 10, 20, 50, 100), pageLength = 2, scrollX = TRUE), {
       sc <- UMAP_metadata_with_labs()
       validate(
         need(
@@ -9812,7 +9814,7 @@ navbarPage(
     })
 
     ## uploaded clusTCR table -----
-    output$Tb_ClusTCR_test <- DT::renderDataTable(escape = FALSE, options = list(autoWidth = FALSE, lengthMenu = c(2, 5, 10, 20, 50, 100), pageLength = 2, scrollX = TRUE), {
+    output$Tb_ClusTCR_test <- DT::renderDT(escape = FALSE, options = list(autoWidth = FALSE, lengthMenu = c(2, 5, 10, 20, 50, 100), pageLength = 2, scrollX = TRUE), {
       AG_calls <- input.data_sc_clusTCR_AG()
       BD_calls <- input.data_sc_clusTCR_BD()
       validate(
@@ -9824,7 +9826,7 @@ navbarPage(
       rbind(AG_calls, BD_calls)
     })
 
-    output$Tb_tcrex_test <- DT::renderDataTable(escape = FALSE, options = list(autoWidth = FALSE, lengthMenu = c(2, 5, 10, 20, 50, 100), pageLength = 2, scrollX = TRUE), {
+    output$Tb_tcrex_test <- DT::renderDT(escape = FALSE, options = list(autoWidth = FALSE, lengthMenu = c(2, 5, 10, 20, 50, 100), pageLength = 2, scrollX = TRUE), {
       calls <- input.data_sc_TCRex()
       validate(
         need(
@@ -9889,7 +9891,7 @@ navbarPage(
       )
     })
 
-    output$Tb_TCR_clonotypes.Umap <- DT::renderDataTable(escape = FALSE, options = list(autoWidth = FALSE, lengthMenu = c(2, 5, 10, 20, 50, 100), pageLength = 5, scrollX = TRUE), {
+    output$Tb_TCR_clonotypes.Umap <- DT::renderDT(escape = FALSE, options = list(autoWidth = FALSE, lengthMenu = c(2, 5, 10, 20, 50, 100), pageLength = 5, scrollX = TRUE), {
       calls <- select_group_metadata()
       validate(
         need(
@@ -10003,7 +10005,7 @@ navbarPage(
 
     })
 
-    output$Summary_TCR_tb <- DT::renderDataTable(escape = FALSE, filter = list(position = "top", clear = FALSE), options = list(autoWidth = FALSE, lengthMenu = c(2, 5, 10, 20, 50, 100), pageLength = 5, scrollX = TRUE), {
+    output$Summary_TCR_tb <- DT::renderDT(escape = FALSE, filter = list(position = "top", clear = FALSE), options = list(autoWidth = FALSE, lengthMenu = c(2, 5, 10, 20, 50, 100), pageLength = 5, scrollX = TRUE), {
       Summary_TCR_table()
     })
 
@@ -10468,7 +10470,7 @@ navbarPage(
     })
 
 
-    output$Tb_TCR_clonotypes.table <- DT::renderDataTable(escape = FALSE, options = list(autoWidth = FALSE, lengthMenu = c(2, 5, 10, 20, 50, 100), pageLength = 10, scrollX = TRUE), {
+    output$Tb_TCR_clonotypes.table <- DT::renderDT(escape = FALSE, options = list(autoWidth = FALSE, lengthMenu = c(2, 5, 10, 20, 50, 100), pageLength = 10, scrollX = TRUE), {
       sc <- UMAP_metadata_with_labs()
       validate(
         need(
@@ -11056,7 +11058,7 @@ navbarPage(
       b.interferon.response
     })
 
-    output$DEx_table_comparison <- DT::renderDataTable(escape = FALSE, filter = list(position = "top", clear = FALSE), options = list(autoWidth = FALSE, lengthMenu = c(2, 5, 10, 20, 50, 100), pageLength = 5, scrollX = TRUE), {
+    output$DEx_table_comparison <- DT::renderDT(escape = FALSE, filter = list(position = "top", clear = FALSE), options = list(autoWidth = FALSE, lengthMenu = c(2, 5, 10, 20, 50, 100), pageLength = 5, scrollX = TRUE), {
       DEx_sc()
     })
 
@@ -11566,7 +11568,7 @@ navbarPage(
       })
     })
 
-    output$table_pie <- DT::renderDataTable(escape = FALSE, filter = list(position = "top", clear = FALSE), options = list(autoWidth = FALSE, lengthMenu = c(2, 5, 10, 20, 50, 100), pageLength = 10, scrollX = TRUE), {
+    output$table_pie <- DT::renderDT(escape = FALSE, filter = list(position = "top", clear = FALSE), options = list(autoWidth = FALSE, lengthMenu = c(2, 5, 10, 20, 50, 100), pageLength = 10, scrollX = TRUE), {
       sc <- UMAP_metadata_with_labs()
       validate(
         need(
@@ -11715,7 +11717,7 @@ navbarPage(
       chisq
     })
 
-    output$Post_hoc_chi <- DT::renderDataTable(escape = FALSE, filter = list(position = "top", clear = FALSE), options = list(autoWidth = FALSE, lengthMenu = c(2, 5, 10, 20, 50, 100), pageLength = 10, scrollX = TRUE), {
+    output$Post_hoc_chi <- DT::renderDT(escape = FALSE, filter = list(position = "top", clear = FALSE), options = list(autoWidth = FALSE, lengthMenu = c(2, 5, 10, 20, 50, 100), pageLength = 10, scrollX = TRUE), {
       totals <- chi_squ()
       tb_totals <- table(totals$samps, totals$split)
       df <- tb_totals
@@ -11832,7 +11834,7 @@ navbarPage(
       BD_sum
     })
 
-    output$Top_clonotype_sum <- DT::renderDataTable(escape = FALSE, options = list(autoWidth = FALSE, lengthMenu = c(2, 5, 10, 20, 50, 100), pageLength = 10, scrollX = TRUE), {
+    output$Top_clonotype_sum <- DT::renderDT(escape = FALSE, options = list(autoWidth = FALSE, lengthMenu = c(2, 5, 10, 20, 50, 100), pageLength = 10, scrollX = TRUE), {
       Top_clonotype_df2()
     })
 
@@ -12210,7 +12212,7 @@ navbarPage(
       total.group.condition
     })
 
-    output$Top_clonotype_Labs <- DT::renderDataTable(escape = FALSE, options = list(autoWidth = FALSE, lengthMenu = c(2, 5, 10, 20, 50, 100), pageLength = 10, scrollX = TRUE), {
+    output$Top_clonotype_Labs <- DT::renderDT(escape = FALSE, options = list(autoWidth = FALSE, lengthMenu = c(2, 5, 10, 20, 50, 100), pageLength = 10, scrollX = TRUE), {
       pie_ag_bd_table()
     })
 
@@ -12461,7 +12463,7 @@ navbarPage(
       # markers.fm.list2 <- subset(markers.fm.list,markers.fm.list$p_val_adj < input$pval.ex.filter)
       # as.data.frame(markers.fm.list2)
     })
-    output$Ridge_chart_alpha_gamma_stat_comp <- DT::renderDataTable(escape = FALSE, options = list(autoWidth = FALSE, lengthMenu = c(2, 5, 10, 20, 50, 100), pageLength = 10, scrollX = TRUE), {
+    output$Ridge_chart_alpha_gamma_stat_comp <- DT::renderDT(escape = FALSE, options = list(autoWidth = FALSE, lengthMenu = c(2, 5, 10, 20, 50, 100), pageLength = 10, scrollX = TRUE), {
       sc <- input.data_sc_pro()
 
       validate(
@@ -12514,7 +12516,7 @@ navbarPage(
     })
 
 
-    output$test.table_ridge <- DT::renderDataTable(escape = FALSE, options = list(autoWidth = FALSE, lengthMenu = c(2, 5, 10, 20, 50, 100), pageLength = 10, scrollX = TRUE), {
+    output$test.table_ridge <- DT::renderDT(escape = FALSE, options = list(autoWidth = FALSE, lengthMenu = c(2, 5, 10, 20, 50, 100), pageLength = 10, scrollX = TRUE), {
       sc <- input.data_sc_pro()
 
       validate(
@@ -12613,7 +12615,7 @@ navbarPage(
       tab
     })
 
-    output$Ridge_chart_alpha_gamma_stat <- DT::renderDataTable(escape = FALSE, options = list(autoWidth = FALSE, lengthMenu = c(2, 5, 10, 20, 50, 100), pageLength = 10, scrollX = TRUE), {
+    output$Ridge_chart_alpha_gamma_stat <- DT::renderDT(escape = FALSE, options = list(autoWidth = FALSE, lengthMenu = c(2, 5, 10, 20, 50, 100), pageLength = 10, scrollX = TRUE), {
       Ridge_chart_alpha_gamma_stat_table()
     })
 
@@ -13095,7 +13097,7 @@ navbarPage(
       geneSet2
     })
 
-    output$Over_rep_Top_clones_Tab <- DT::renderDataTable(escape = FALSE, filter = list(position = "top", clear = FALSE), options = list(autoWidth = FALSE, lengthMenu = c(1, 2, 5, 10, 20, 50, 100), pageLength = 10, scrollX = TRUE), {
+    output$Over_rep_Top_clones_Tab <- DT::renderDT(escape = FALSE, filter = list(position = "top", clear = FALSE), options = list(autoWidth = FALSE, lengthMenu = c(1, 2, 5, 10, 20, 50, 100), pageLength = 10, scrollX = TRUE), {
       Over_rep_Top_clones()
     })
 
@@ -13169,7 +13171,7 @@ navbarPage(
       }
     })
 
-    output$Expansion_check <- DT::renderDataTable(escape = FALSE, filter = list(position = "top", clear = FALSE), options = list(autoWidth = FALSE, lengthMenu = c(2, 5, 10, 20, 50, 100), pageLength = 10, scrollX = TRUE), {
+    output$Expansion_check <- DT::renderDT(escape = FALSE, filter = list(position = "top", clear = FALSE), options = list(autoWidth = FALSE, lengthMenu = c(2, 5, 10, 20, 50, 100), pageLength = 10, scrollX = TRUE), {
       sc <- UMAP_metadata_with_labs()
       validate(
         need(
@@ -13537,7 +13539,7 @@ navbarPage(
       Vals_expanded.stats
     })
 
-    output$compare.stat_Ex <- DT::renderDataTable(escape = FALSE, options = list(autoWidth = FALSE, lengthMenu = c(2, 5, 10, 20, 50, 100), pageLength = 10, scrollX = TRUE), {
+    output$compare.stat_Ex <- DT::renderDT(escape = FALSE, options = list(autoWidth = FALSE, lengthMenu = c(2, 5, 10, 20, 50, 100), pageLength = 10, scrollX = TRUE), {
       sc <- input.data_sc_pro()
 
       validate(
@@ -13778,7 +13780,7 @@ navbarPage(
       #   select(all_of(name.list), everything())
       geneSet2
     })
-    output$Over_rep_Exp_Tab <- DT::renderDataTable(escape = FALSE, filter = list(position = "top", clear = FALSE), options = list(autoWidth = FALSE, lengthMenu = c(1, 2, 5, 10, 20, 50, 100), pageLength = 20, scrollX = TRUE), {
+    output$Over_rep_Exp_Tab <- DT::renderDT(escape = FALSE, filter = list(position = "top", clear = FALSE), options = list(autoWidth = FALSE, lengthMenu = c(1, 2, 5, 10, 20, 50, 100), pageLength = 20, scrollX = TRUE), {
       Over_rep_Exp()
     })
 
@@ -13797,7 +13799,7 @@ navbarPage(
       epi[!(duplicated(epi$CDR3_beta)), ]
     })
 
-    output$MainTcell_Check <- DT::renderDataTable(escape = FALSE, filter = list(position = "top", clear = FALSE), options = list(autoWidth = FALSE, lengthMenu = c(2, 5, 10, 20, 50, 100), pageLength = 10, scrollX = TRUE), {
+    output$MainTcell_Check <- DT::renderDT(escape = FALSE, filter = list(position = "top", clear = FALSE), options = list(autoWidth = FALSE, lengthMenu = c(2, 5, 10, 20, 50, 100), pageLength = 10, scrollX = TRUE), {
       df_tcrex()
     })
     #### Epitope heatmap -----
@@ -14302,7 +14304,7 @@ navbarPage(
       df2[order(df2$Percent, decreasing = T), ]
     })
 
-    output$Pie_Epitope_dt <- DT::renderDataTable(escape = FALSE, options = list(autoWidth = FALSE, lengthMenu = c(2, 5, 10, 20, 50, 100), pageLength = 5, scrollX = TRUE), {
+    output$Pie_Epitope_dt <- DT::renderDT(escape = FALSE, options = list(autoWidth = FALSE, lengthMenu = c(2, 5, 10, 20, 50, 100), pageLength = 5, scrollX = TRUE), {
       Pie_Epitope_dt_process()
     })
 
@@ -14340,7 +14342,7 @@ navbarPage(
       sum.check2_Morethan2
     })
 
-    output$Epi_of_interest_DF <- DT::renderDataTable(escape = FALSE, options = list(autoWidth = FALSE, lengthMenu = c(2, 5, 10, 20, 50, 100), pageLength = 5, scrollX = TRUE), {
+    output$Epi_of_interest_DF <- DT::renderDT(escape = FALSE, options = list(autoWidth = FALSE, lengthMenu = c(2, 5, 10, 20, 50, 100), pageLength = 5, scrollX = TRUE), {
       sc <- UMAP_metadata_with_labs()
       epi <- input.data_sc_TCRex()
       validate(
@@ -14416,7 +14418,7 @@ navbarPage(
       as.data.frame(markers.fm.list2)
     })
 
-    output$compare.stat_Epi_DT <- DT::renderDataTable(escape = FALSE, options = list(autoWidth = FALSE, lengthMenu = c(2, 5, 10, 20, 50, 100), pageLength = 10, scrollX = TRUE), {
+    output$compare.stat_Epi_DT <- DT::renderDT(escape = FALSE, options = list(autoWidth = FALSE, lengthMenu = c(2, 5, 10, 20, 50, 100), pageLength = 10, scrollX = TRUE), {
       sc <- input.data_sc_pro()
       validate(
         need(
@@ -14493,7 +14495,7 @@ navbarPage(
         scale_y_discrete(labels = label_wrap(20))
     })
 
-    output$checking_epi_dot_issue <- DT::renderDataTable(escape = FALSE, filter = list(position = "top", clear = FALSE), options = list(autoWidth = FALSE, lengthMenu = c(1, 2, 5, 10, 20, 50, 100), pageLength = 20, scrollX = TRUE), {
+    output$checking_epi_dot_issue <- DT::renderDT(escape = FALSE, filter = list(position = "top", clear = FALSE), options = list(autoWidth = FALSE, lengthMenu = c(1, 2, 5, 10, 20, 50, 100), pageLength = 20, scrollX = TRUE), {
       sc <- UMAP_metadata_with_labs()
       epi <- input.data_sc_TCRex()
       validate(
@@ -14715,7 +14717,7 @@ navbarPage(
         select(all_of(name.list), everything())
     })
 
-    output$Over_rep_Epi_Tab <- DT::renderDataTable(escape = FALSE, filter = list(position = "top", clear = FALSE), options = list(autoWidth = FALSE, lengthMenu = c(1, 2, 5, 10, 20, 50, 100), pageLength = 10, scrollX = TRUE), {
+    output$Over_rep_Epi_Tab <- DT::renderDT(escape = FALSE, filter = list(position = "top", clear = FALSE), options = list(autoWidth = FALSE, lengthMenu = c(1, 2, 5, 10, 20, 50, 100), pageLength = 10, scrollX = TRUE), {
       Over_rep_Epi()
     })
 
@@ -14958,7 +14960,7 @@ navbarPage(
       }
     })
 
-    output$Tb_ClusTCR_selected <- DT::renderDataTable(escape = FALSE, options = list(autoWidth = FALSE, lengthMenu = c(2, 5, 10, 20, 50, 100), pageLength = 5, scrollX = TRUE), {
+    output$Tb_ClusTCR_selected <- DT::renderDT(escape = FALSE, options = list(autoWidth = FALSE, lengthMenu = c(2, 5, 10, 20, 50, 100), pageLength = 5, scrollX = TRUE), {
       cluster <- clusTCR2_df()
       validate(
         need(
@@ -15503,7 +15505,7 @@ navbarPage(
       as.data.frame(markers.fm.list2)
     })
 
-    output$compare.stat_Cluster_DT <- DT::renderDataTable(escape = FALSE, options = list(autoWidth = FALSE, lengthMenu = c(2, 5, 10, 20, 50, 100), pageLength = 10, scrollX = TRUE), {
+    output$compare.stat_Cluster_DT <- DT::renderDT(escape = FALSE, options = list(autoWidth = FALSE, lengthMenu = c(2, 5, 10, 20, 50, 100), pageLength = 10, scrollX = TRUE), {
       sc <- UMAP_metadata_with_labs()
       validate(
         need(
@@ -15529,7 +15531,7 @@ navbarPage(
 
     # Cluster dot plot -----
 
-    output$Cluster_of_interest_DF <- DT::renderDataTable(escape = FALSE, options = list(autoWidth = FALSE, lengthMenu = c(2, 5, 10, 20, 50, 100), pageLength = 2, scrollX = TRUE), {
+    output$Cluster_of_interest_DF <- DT::renderDT(escape = FALSE, options = list(autoWidth = FALSE, lengthMenu = c(2, 5, 10, 20, 50, 100), pageLength = 2, scrollX = TRUE), {
       sc <- UMAP_metadata_with_labs()
       validate(
         need(
@@ -15785,7 +15787,7 @@ navbarPage(
       geneSet2
     })
 
-    output$Over_rep_Cluster_Tab <- DT::renderDataTable(escape = FALSE, filter = list(position = "top", clear = FALSE), options = list(autoWidth = FALSE, lengthMenu = c(1, 2, 5, 10, 20, 50, 100), pageLength = 20, scrollX = TRUE), {
+    output$Over_rep_Cluster_Tab <- DT::renderDT(escape = FALSE, filter = list(position = "top", clear = FALSE), options = list(autoWidth = FALSE, lengthMenu = c(1, 2, 5, 10, 20, 50, 100), pageLength = 20, scrollX = TRUE), {
       Over_rep_cluster()
     })
 
@@ -15911,7 +15913,7 @@ navbarPage(
       mat
     })
 
-    output$Upset_plot_overlap_Tb <- DT::renderDataTable(escape = FALSE, filter = list(position = "top", clear = FALSE), options = list(autoWidth = FALSE, lengthMenu = c(2, 5, 10, 20, 50, 100), pageLength = 5, scrollX = TRUE), {
+    output$Upset_plot_overlap_Tb <- DT::renderDT(escape = FALSE, filter = list(position = "top", clear = FALSE), options = list(autoWidth = FALSE, lengthMenu = c(2, 5, 10, 20, 50, 100), pageLength = 5, scrollX = TRUE), {
       Upset_plot_overlap()
     })
 
@@ -16054,7 +16056,7 @@ navbarPage(
 
     })
 
-    output$Line_graph_table <- DT::renderDataTable(escape = FALSE, filter = list(position = "top", clear = FALSE), options = list(autoWidth = FALSE, lengthMenu = c(1, 2, 5, 10, 20, 50, 100), pageLength = 20, scrollX = TRUE), {
+    output$Line_graph_table <- DT::renderDT(escape = FALSE, filter = list(position = "top", clear = FALSE), options = list(autoWidth = FALSE, lengthMenu = c(1, 2, 5, 10, 20, 50, 100), pageLength = 20, scrollX = TRUE), {
 
       list.df <- select_top_five()
 
@@ -16517,7 +16519,7 @@ navbarPage(
         select(all_of(name.list), everything())
     })
 
-    output$Over_rep_overlap_Tab <- DT::renderDataTable(escape = FALSE, filter = list(position = "top", clear = FALSE), options = list(autoWidth = FALSE, lengthMenu = c(1, 2, 5, 10, 20, 50, 100), pageLength = 20, scrollX = TRUE), {
+    output$Over_rep_overlap_Tab <- DT::renderDT(escape = FALSE, filter = list(position = "top", clear = FALSE), options = list(autoWidth = FALSE, lengthMenu = c(1, 2, 5, 10, 20, 50, 100), pageLength = 20, scrollX = TRUE), {
       Over_rep_Overlap()
     })
 
@@ -16843,12 +16845,12 @@ navbarPage(
       df_unique_sum[order(df_unique_sum$cloneCount, decreasing = T), ]
     })
 
-    output$TCR_marker_positive_count <- DT::renderDataTable(escape = FALSE, filter = list(position = "top", clear = FALSE), options = list(autoWidth = FALSE, lengthMenu = c(1, 2, 5, 10, 20, 50, 100), pageLength = 1, scrollX = TRUE), {
+    output$TCR_marker_positive_count <- DT::renderDT(escape = FALSE, filter = list(position = "top", clear = FALSE), options = list(autoWidth = FALSE, lengthMenu = c(1, 2, 5, 10, 20, 50, 100), pageLength = 1, scrollX = TRUE), {
       umap.meta <- filtered_positive_marker_TCRsum()
       umap.meta
     })
 
-    output$TCR_marker_neg_count <- DT::renderDataTable(escape = FALSE, filter = list(position = "top", clear = FALSE), options = list(autoWidth = FALSE, lengthMenu = c(1, 2, 5, 10, 20, 50, 100), pageLength = 1, scrollX = TRUE), {
+    output$TCR_marker_neg_count <- DT::renderDT(escape = FALSE, filter = list(position = "top", clear = FALSE), options = list(autoWidth = FALSE, lengthMenu = c(1, 2, 5, 10, 20, 50, 100), pageLength = 1, scrollX = TRUE), {
       umap.meta <- filtered_negative_marker_TCRsum()
       umap.meta
     })
@@ -16879,7 +16881,7 @@ navbarPage(
       ab[order(ab$diff, decreasing = T), ]
     })
 
-    output$merged_marker_hist_table <- DT::renderDataTable(escape = FALSE, filter = list(position = "top", clear = FALSE), options = list(autoWidth = FALSE, lengthMenu = c(1, 2, 5, 10, 20, 50, 100), pageLength = 10, scrollX = TRUE), {
+    output$merged_marker_hist_table <- DT::renderDT(escape = FALSE, filter = list(position = "top", clear = FALSE), options = list(autoWidth = FALSE, lengthMenu = c(1, 2, 5, 10, 20, 50, 100), pageLength = 10, scrollX = TRUE), {
       umap.meta <- merged_marker_hist()
       umap.meta
     })
@@ -16937,7 +16939,7 @@ navbarPage(
       sc
     })
 
-    output$marker_selected_tab <- DT::renderDataTable(escape = FALSE, filter = list(position = "top", clear = FALSE), options = list(autoWidth = FALSE, lengthMenu = c(1, 2, 5, 10, 20, 50, 100), pageLength = 20, scrollX = TRUE), {
+    output$marker_selected_tab <- DT::renderDT(escape = FALSE, filter = list(position = "top", clear = FALSE), options = list(autoWidth = FALSE, lengthMenu = c(1, 2, 5, 10, 20, 50, 100), pageLength = 20, scrollX = TRUE), {
       sc <- UMAP_metadata_with_labs()
       validate(
         need(
@@ -16982,7 +16984,7 @@ navbarPage(
       as.data.frame(markers.fm.list)
     })
 
-    output$Compare.stat_marker <- DT::renderDataTable(escape = FALSE, options = list(autoWidth = FALSE, lengthMenu = c(2, 5, 10, 20, 50, 100), pageLength = 10, scrollX = TRUE), {
+    output$Compare.stat_marker <- DT::renderDT(escape = FALSE, options = list(autoWidth = FALSE, lengthMenu = c(2, 5, 10, 20, 50, 100), pageLength = 10, scrollX = TRUE), {
       sc <- input.data_sc_pro()
 
       validate(
@@ -17119,7 +17121,7 @@ navbarPage(
 
 
 
-    output$AnnoTable_perMarkers <- DT::renderDataTable(escape = FALSE, options = list(autoWidth = FALSE, lengthMenu = c(2, 5, 10, 20, 50, 100), pageLength = 10, scrollX = TRUE), {
+    output$AnnoTable_perMarkers <- DT::renderDT(escape = FALSE, options = list(autoWidth = FALSE, lengthMenu = c(2, 5, 10, 20, 50, 100), pageLength = 10, scrollX = TRUE), {
       sc <- UMAP_metadata_with_labs()
       validate(
         need(
@@ -17218,7 +17220,7 @@ navbarPage(
       sc2
     })
 
-    output$meta_data_for_features_scale2_df <- DT::renderDataTable(escape = FALSE, filter = list(position = "top", clear = FALSE), options = list(autoWidth = FALSE, lengthMenu = c(1, 2, 5, 10, 20, 50, 100), pageLength = 1, scrollX = TRUE), {
+    output$meta_data_for_features_scale2_df <- DT::renderDT(escape = FALSE, filter = list(position = "top", clear = FALSE), options = list(autoWidth = FALSE, lengthMenu = c(1, 2, 5, 10, 20, 50, 100), pageLength = 1, scrollX = TRUE), {
       sc <- meta_data_for_features_scale2()
       validate(
         need(
@@ -17522,7 +17524,7 @@ navbarPage(
     })
 
 
-    output$dual_maker_TCR_Sum_DT <- DT::renderDataTable(escape = FALSE, filter = list(position = "top", clear = FALSE), options = list(autoWidth = FALSE, lengthMenu = c(1, 2, 5, 10, 20, 50, 100), pageLength = 10, scrollX = TRUE), {
+    output$dual_maker_TCR_Sum_DT <- DT::renderDT(escape = FALSE, filter = list(position = "top", clear = FALSE), options = list(autoWidth = FALSE, lengthMenu = c(1, 2, 5, 10, 20, 50, 100), pageLength = 10, scrollX = TRUE), {
       umeta.TCR <- dual_maker_TCR_Sum()
       umeta.TCR
     })
@@ -17559,7 +17561,7 @@ navbarPage(
     })
 
 
-    output$dual_maker_TCR_statsTB <- DT::renderDataTable(escape = FALSE, filter = list(position = "top", clear = FALSE), options = list(autoWidth = FALSE, lengthMenu = c(1, 2, 5, 10, 20, 50, 100), pageLength = 10, scrollX = TRUE), {
+    output$dual_maker_TCR_statsTB <- DT::renderDT(escape = FALSE, filter = list(position = "top", clear = FALSE), options = list(autoWidth = FALSE, lengthMenu = c(1, 2, 5, 10, 20, 50, 100), pageLength = 10, scrollX = TRUE), {
       umeta.TCR <- stats_dual_markers_tb1()
       umeta.TCR
     })
@@ -18896,13 +18898,13 @@ navbarPage(
       df3
     })
 
-    output$private_clonotypes <- DT::renderDataTable(escape = FALSE, options = list(autoWidth = FALSE, lengthMenu = c(2, 5, 10, 20, 50, 100), pageLength = 2, scrollX = TRUE), {
+    output$private_clonotypes <- DT::renderDT(escape = FALSE, options = list(autoWidth = FALSE, lengthMenu = c(2, 5, 10, 20, 50, 100), pageLength = 2, scrollX = TRUE), {
       BD_sum <- Top_clonotypes_multiCounts()
       req(BD_sum)
       BD_sum
     })
 
-    output$PriorClono_Tab <- DT::renderDataTable(escape = FALSE, options = list(autoWidth = FALSE, lengthMenu = c(2, 5, 10, 20, 50, 100), pageLength = 2, scrollX = TRUE), {
+    output$PriorClono_Tab <- DT::renderDT(escape = FALSE, options = list(autoWidth = FALSE, lengthMenu = c(2, 5, 10, 20, 50, 100), pageLength = 2, scrollX = TRUE), {
       sc <- UMAP_metadata_with_labs()
       validate(
         need(
@@ -19667,7 +19669,7 @@ navbarPage(
     })
 
     ### clustering table -----
-    output$PriorClustTB_Tab <- DT::renderDataTable(escape = FALSE, options = list(autoWidth = FALSE, lengthMenu = c(2, 5, 10, 20, 50, 100), pageLength = 2, scrollX = TRUE), {
+    output$PriorClustTB_Tab <- DT::renderDT(escape = FALSE, options = list(autoWidth = FALSE, lengthMenu = c(2, 5, 10, 20, 50, 100), pageLength = 2, scrollX = TRUE), {
       sc <- UMAP_metadata_with_labs()
       validate(
         need(
@@ -20191,7 +20193,7 @@ navbarPage(
       }
     })
 
-    output$Test_table_1 <- DT::renderDataTable(escape = FALSE, options = list(autoWidth = FALSE, lengthMenu = c(2, 5, 10, 20, 50, 100), pageLength = 10, scrollX = TRUE), {
+    output$Test_table_1 <- DT::renderDT(escape = FALSE, options = list(autoWidth = FALSE, lengthMenu = c(2, 5, 10, 20, 50, 100), pageLength = 10, scrollX = TRUE), {
       sc <- UMAP_metadata_with_labs()
       validate(
         need(
@@ -20247,7 +20249,7 @@ navbarPage(
       Prior_Stats_Epitope()
     })
     ### test table -----
-    output$colors.top_dt <- DT::renderDataTable(escape = FALSE, options = list(autoWidth = FALSE, lengthMenu = c(2, 5, 10, 20, 50, 100), pageLength = 10, scrollX = TRUE), {
+    output$colors.top_dt <- DT::renderDT(escape = FALSE, options = list(autoWidth = FALSE, lengthMenu = c(2, 5, 10, 20, 50, 100), pageLength = 10, scrollX = TRUE), {
       sc <- UMAP_metadata_with_labs()
       validate(
         need(
@@ -20349,7 +20351,7 @@ navbarPage(
     })
 
 
-    output$Pgen_Selected <- DT::renderDataTable(escape = FALSE, options = list(autoWidth = FALSE, lengthMenu = c(2, 5, 10, 20, 50, 100), pageLength = 2, scrollX = TRUE), {
+    output$Pgen_Selected <- DT::renderDT(escape = FALSE, options = list(autoWidth = FALSE, lengthMenu = c(2, 5, 10, 20, 50, 100), pageLength = 2, scrollX = TRUE), {
       sc <- OLGA_data()
       validate(
         need(
@@ -20462,7 +20464,7 @@ navbarPage(
 
     })
 
-    output$Pgen_BD <- DT::renderDataTable(escape = FALSE, options = list(autoWidth = FALSE, lengthMenu = c(2, 5, 10, 20, 50, 100), pageLength = 20, scrollX = TRUE), {
+    output$Pgen_BD <- DT::renderDT(escape = FALSE, options = list(autoWidth = FALSE, lengthMenu = c(2, 5, 10, 20, 50, 100), pageLength = 20, scrollX = TRUE), {
       sc <- OLGA_data()
       validate(
         need(
@@ -20504,7 +20506,7 @@ navbarPage(
 
     })
 
-    output$extracting_md_from_sc_tb <- DT::renderDataTable(escape = FALSE, options = list(autoWidth = FALSE, lengthMenu = c(2, 5, 10, 20, 50, 100), pageLength = 20, scrollX = TRUE), {
+    output$extracting_md_from_sc_tb <- DT::renderDT(escape = FALSE, options = list(autoWidth = FALSE, lengthMenu = c(2, 5, 10, 20, 50, 100), pageLength = 20, scrollX = TRUE), {
       calls <- extracting_md_from_sc()
       req(calls)
       calls
@@ -20643,7 +20645,7 @@ navbarPage(
 
 
     # Render the filtered table
-    output$filtered_table <- renderDataTable({
+    output$filtered_table <- renderDT({
       filtered_data()
     }, options = list(
       scrollX = TRUE,
@@ -20704,13 +20706,13 @@ navbarPage(
       df3
     })
 
-    output$loaded_for_summary <- DT::renderDataTable(escape = FALSE, options = list(autoWidth = FALSE, lengthMenu = c(2, 5, 10, 20, 50, 100), pageLength = 2, scrollX = TRUE), {
+    output$loaded_for_summary <- DT::renderDT(escape = FALSE, options = list(autoWidth = FALSE, lengthMenu = c(2, 5, 10, 20, 50, 100), pageLength = 2, scrollX = TRUE), {
       calls <- getData_summarising_data()
       req(calls)
       calls
     })
 
-    output$chain_table_summary_tb <- DT::renderDataTable(escape = FALSE, options = list(autoWidth = FALSE, lengthMenu = c(2, 5, 10, 20, 50, 100), pageLength = 20, scrollX = TRUE), {
+    output$chain_table_summary_tb <- DT::renderDT(escape = FALSE, options = list(autoWidth = FALSE, lengthMenu = c(2, 5, 10, 20, 50, 100), pageLength = 20, scrollX = TRUE), {
 
       calls <- chain_table_summary()
       req(calls)

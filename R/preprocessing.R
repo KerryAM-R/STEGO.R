@@ -28,30 +28,27 @@ preprocessing_10x <- function (downloadTCRex = F, downloadClusTCR = F, downloadT
   num <- length(main_folders)
   for (i in 2:num) {
     sub_directory <- main_folders[i]
-    print(sub_directory)
     files <- list.files(paste(main_directory, sub_directory, sep = ""), full.names = TRUE)
     # Check if the required terms are present in the file names
     required_terms <- c("barcode", "features", "matrix")
     missing_terms <- required_terms[!sapply(required_terms, function(term) any(grepl(term, files)))]
 
     if (length(missing_terms) > 0) {
+      message(sub_directory)
       message("Error: The following terms were not found in the file names: ", paste(missing_terms, collapse = ", "))
       next
     }
 
     if (length(files[grepl("barcode", files)]) == 1 && length(files[grepl("contig", files)]) == 1) {
-      print(files)
-      message("Files are present")
+      message("Files are present for in", sub_directory)
     } else {
       message("Reformat directory to have Indiv_group name for each file barcode, features, matrix, and contig")
       next
     }
 
     barcode <- read.table(files[grepl("barcode", files)])
-    dim(barcode)
-    # print("barcode found")
     features <- read.table(files[grepl("feature", files)])
-    # print("features found")
+
     if (length(features) > 0) {
       mat <- Matrix::readMM(files[grepl("matrix", files)])
       # print("matrix found")
