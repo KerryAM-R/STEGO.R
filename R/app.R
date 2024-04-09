@@ -366,6 +366,40 @@ tags$head(tags$style(HTML("
 "))),
 
 tags$head(
+  tags$style(HTML('
+      .nav > li.disabled-1 > a {
+
+        background: #d8ffc2 !important;
+        color: #41b000 !important;
+        pointer-events: none;
+      }
+    '))
+),
+
+tags$head(
+  tags$style(HTML('
+      .nav > li.disabled-2 > a {
+
+        background: #d8ffc2 !important;
+        color: #41b000 !important;
+        pointer-events: none;
+      }
+    '))
+),
+
+tags$head(
+  tags$style(HTML('
+      .nav > li.disabled-3 > a {
+
+        background: #d8ffc2 !important;
+        color: #41b000 !important;
+        pointer-events: none;
+      }
+    '))
+),
+
+
+tags$head(
   tags$style(HTML("
     .my-selectize .selectize-input {
       width: 900px !important;  /* Set the width as needed */
@@ -373,7 +407,7 @@ tags$head(
   "))
 ),
 
-# progress bar for to be purple and in the centre
+# progress bar for to be purple and in the centre ------
 tags$head(tags$style(HTML(".progress-bar {background-color: #6F00B0}"))),
 tags$head(
   tags$style(
@@ -420,7 +454,7 @@ tags$head(tags$style(HTML('
   ".navbar-default .navbar-nav>li>a {background-color: white}"
   '))),
 
-# input Text boxes headers
+# input Text boxes headers -----
 
 tags$style(HTML("
     /* Styling for text input with class name-BD */
@@ -452,6 +486,9 @@ tags$style(HTML("
     font-size: 16px
     }
   ")),
+# add in disable function ----
+
+
 
 #####
 navbarPage(
@@ -469,25 +506,29 @@ navbarPage(
       sidebarLayout(
         sidebarPanel(
           id = "tPanel4", style = "overflow-y:scroll; max-height: 800px; position:relative;", width = 3,
-          # selectInput("dataset_10x", "Choose a dataset:", choices = c("test_data_10x", "own_data_10x")),
-          h4("File name"),
-          fluidRow(
-            column(6, div(class = "name-BD", textInput("group10x", "Add Group name", ""))),
-            column(6, div(class = "name-BD", textInput("Indiv10x", "Add Individual name", "")))
-          ),
-          selectInput("Source_type_10x", "Input types", choices = c("Raw", ".h5")),
           conditionalPanel(
-            condition = "input.Source_type_10x=='Raw'",
-            fileInput("file_calls_10x", "Barcode file (.tsv.gz or .tsv)"),
-            fileInput("file_features_10x", "Features file (.tsv.gz or .tsv)"),
-            fileInput("file_matrix_10x", "Matrix file (.mtx.gz or .mtx)"),
-          ),
-          selectInput("csv_contig_file", "format of the contig file", choices = c("csv/csv.gz", "tsv")),
-          fileInput("file_TCR_10x", "filtered contig annotations"),
-          # textInput("sample_name_10x","Add file and sample name","Treatment_group"),
+            condition = "input.panel_10x != 'auto_10x'",
+            h4("File name"),
+            fluidRow(
+              column(6, div(class = "name-BD", textInput("group10x", "Add Group name", ""))),
+              column(6, div(class = "name-BD", textInput("Indiv10x", "Add Individual name", "")))
+            ),
+            selectInput("Source_type_10x", "Input types", choices = c("Raw", ".h5")),
+            conditionalPanel(
+              condition = "input.Source_type_10x=='Raw'",
+              fileInput("file_calls_10x", "Barcode file (.tsv.gz or .tsv)"),
+              fileInput("file_features_10x", "Features file (.tsv.gz or .tsv)"),
+              fileInput("file_matrix_10x", "Matrix file (.mtx.gz or .mtx)"),
+            ),
+            selectInput("csv_contig_file", "format of the contig file", choices = c("csv/csv.gz", "tsv")),
+            fileInput("file_TCR_10x", "filtered contig annotations"),
+            selectInput("BCR_TCR_10x", "Type of data", choices = c("TCR only", "BCR only"))),
+          conditionalPanel(
+            condition = "input.panel_10x == 'auto_10x'",
 
 
-          selectInput("BCR_TCR_10x", "Type of data", choices = c("TCR only", "BCR only")),
+          )
+
         ),
         # 10x main panel -----
         mainPanel(
@@ -554,14 +595,15 @@ navbarPage(
                      div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
                      div(DT::DTOutput("dt_TCR_Explore_10x")),
             ),
-            tabPanel("Auto",
+            tabPanel("Auto",value = "auto_10x",
+                     h4("Set up the directories to have folders named sample_condition with the barcode, features, matrix and contig file"),
                      conditionalPanel(
                        condition = "!input.checkFiles",
-                       actionButton("checkFiles", "Check Files")
+                       div(actionButton("checkFiles", "Check Files"), style = "padding-top: 25px;")
                      ),
                      conditionalPanel(
                        condition = "input.checkFiles > 0",
-                       actionButton("automateProcess", "Automate Process")
+                       div(actionButton("automateProcess", "Automate Process"), style = "padding-top: 25px;")
                      ),
                      div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
                      verbatimTextOutput("outputText")
@@ -869,24 +911,36 @@ navbarPage(
             )
           ),
           conditionalPanel(
-            condition = "input.clusTCR2_tabs=='processing1' || input.clusTCR2_tabs=='processing2'",
-            fileInput("file2_ClusTCR2", "Select file for single samples",
-                      accept = c("text/csv", "text/comma-separated-values,text/plain", ".csv")
+            condition = "input.clusTCR2_tabs != 'merge'",
+
+            conditionalPanel(
+              condition = "input.clusTCR2_tabs2 == 'processing1'",
+              fileInput("file2_ClusTCR2", "Select file for Clustering",
+                        accept = c("text/csv", "text/comma-separated-values,text/plain", ".csv")
+              ),
+
+              fluidRow(
+                column(6, selectInput("clusTCR2_names", label = h5("CDR3"), "")),
+                column(6, selectInput("clusTCR2_Vgene", label = h5("V gene"), "")),
+              ),
+              fluidRow(
+                column(6, checkboxInput("allele_ClusTCR2", "Remove allele *00?", value = T)),
+                # column(6, numericInput("cores_ClusTCR2","Number of cores to parallel",value=1))
+              ),
             ),
-            h5("Click to run/update clustering"),
-            actionButton("run_ClusTCR2", "Run Clustering"),
-            fluidRow(
-              column(6, selectInput("clusTCR2_names", label = h5("CDR3"), "")),
-              column(6, selectInput("clusTCR2_Vgene", label = h5("V gene"), "")),
-            ),
-            fluidRow(
-              column(6, checkboxInput("allele_ClusTCR2", "Remove allele *00?", value = T)),
-              # column(6, numericInput("cores_ClusTCR2","Number of cores to parallel",value=1))
+            conditionalPanel(
+              condition = "input.clusTCR2_tabs2 != 'processing1'",
+              h5("Click to run/update clustering"),
+              div(actionButton("run_ClusTCR2", "Run Clustering"), style = "padding-top: 25px;")
             ),
           ),
           conditionalPanel(
-            condition = "input.clusTCR2_tabs=='processing2'",
-            downloadButton("download_ClusTCR_labels", "Download Cluster table")
+            condition = "input.clusTCR2_tabs2 != 'processing1'",
+
+            conditionalPanel(
+              condition = "input.run_ClusTCR2 > 0",
+              div(downloadButton("download_ClusTCR_labels", "Download Cluster table"),style = "padding-top: 25px;")
+            ),
           ),
         ),
         mainPanel(
@@ -895,82 +949,85 @@ navbarPage(
             id = "clusTCR2_tabs",
             tabPanel("Merge Multiple Files",
                      value = "merge",
-                     div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
-                     div(DT::DTOutput("DEx_multiple_ClusTCR2")),
-                     downloadButton("downloaddf_multiple_ClusTCR2", "Download table")
-            ),
-            tabPanel("Clustering inputs",
-                     value = "processing1",
-                     div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
-                     div(DT::DTOutput("clust_dt2_table")),
-            ),
-            tabPanel("Outputs",
-                     value = "processing2",
-                     tabsetPanel(
-                       tabPanel(
-                         "Processing",
-                         div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
-                         verbatimTextOutput("ClusTCR2_Time"),
-                         verbatimTextOutput("verbatum_ClusTCR2")
-                       ),
-                       tabPanel(
-                         "Table for analysis",
-                         div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
-                         div(DT::DTOutput("ClusTCR2_lab")),
-                         p(" "),
-                       ),
-                       tabPanel(
-                         "Figures",
-                         # cluster number
-                         fluidRow(
-                           column(3, numericInput("selected_Cluster", "Selected cluster", value = 1)),
-                           column(3, numericInput("filter_connections", "Keep connections >", value = 1)),
-                           # Name (CDR3_V_gene_Cluster), cluster, CDR3, V_gene, Len (length of CDR3 sequence),CDR3_selected,Name_selected,cluster_selected, (_selected only prints names of the chosen cluster), None
-                           column(3, selectInput("lab_clust_by", "Label cluster by:", choices = c("Name", "cluster", "CDR3", "V_gene", "Len", "CDR3_selected", "Name_selected", "cluster_selected", "None"), selected = "cluster")),
-                           # column(3, selectInput("Clust_size_order", "Order of cluster", choices = c("cluster", "Original_cluster", "Clust_size_order"), selected = "Clust_size_order")),
-                           column(3, selectInput("colour_ClusTCR2", "Type of colouring", choices = c("color_all", "color_test"), selected = "color_test")),
-                           column(3, numericInput("text_size1", "Text size of selected cluster", value = 4)),
-                           column(3, numericInput("text_size2", "Text size of non-selected cluster", value = 2)),
-                         ),
-                         fluidRow(
-                           conditionalPanel(
-                             condition = "input.colour_ClusTCR2 == 'color_all'",
-                             column(3, selectInput("colour_ClusTCR2_types", "Colour panel", choices = c("default", "rainbow", "random", "heat.colors", "terrain.colors", "topo.colors", "hcl.colors"))),
-                           ),
-                           conditionalPanel(
-                             condition = "input.colour_ClusTCR2 == 'color_test'",
-                             fluidRow(
-                               column(3, colourInput("sel_colour_netplot", "Selected colour", "purple")),
-                               column(3, colourInput("nonsel_colour_netplot", "Non-selected colour", "grey80")),
-                             )
-                           )
-                         ),
-                         fluidRow(
-                           column(8, plotOutput("NP_ClusTCR", height = "600px")),
-                           column(4, plotOutput("MP_ClusTCR", height = "200px")),
-                         ),
-                         fluidRow(
-                           column(1, numericInput("width_Network_plot2", "Width of PDF", value = 10)),
-                           column(1, numericInput("height_Network_plot2", "Height of PDF", value = 8)),
-                           column(2, style = "margin-top: 25px;", downloadButton("downloadPlot_Network_plot2", "Download Network PDF")),
-                           column(2, numericInput("width_png_Network_plot2", "Width of PNG", value = 1200)),
-                           column(2, numericInput("height_png_Network_plot2", "Height of PNG", value = 1000)),
-                           column(2, numericInput("resolution_PNG_Network_plot2", "Resolution of PNG", value = 144)),
-                           column(2, style = "margin-top: 25px;", downloadButton("downloadPlotPNG_Network_plot2", "Download Network PNG")),
-                         ),
-                         fluidRow(
-                           column(1, numericInput("width_Motif_plot2", "Width of PDF", value = 10)),
-                           column(1, numericInput("height_Motif_plot2", "Height of PDF", value = 3.5)),
-                           column(2, style = "margin-top: 25px;", downloadButton("downloadPlot_Motif_plot2", "Download Motif PDF")),
-                           column(2, numericInput("width_png_Motif_plot2", "Width of PNG", value = 1200)),
-                           column(2, numericInput("height_png_Motif_plot2", "Height of PNG", value = 600)),
-                           column(2, numericInput("resolution_PNG_Motif_plot2", "Resolution of PNG", value = 144)),
-                           column(2, style = "margin-top: 25px;", downloadButton("downloadPlotPNG_Motif_plot2", "Download Motif PNG"))
-                         ),
-                       ),
-                       # tabPanel("Time",
 
-                       # )
+                     div(downloadButton("downloaddf_multiple_ClusTCR2", "Download table") ,style = "padding-top: 25px;"),
+
+                     div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
+
+                     div(DT::DTOutput("DEx_multiple_ClusTCR2")),
+
+            ),
+            tabPanel("Clustering",
+                     tabsetPanel(id = "clusTCR2_tabs2",
+                                 tabPanel("Inputs",
+                                          value = "processing1",
+                                          div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
+                                          div(DT::DTOutput("clust_dt2_table")),
+                                 ),
+                                 tabPanel(
+                                   "Processing",
+                                   div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
+                                   verbatimTextOutput("ClusTCR2_Time"),
+                                   verbatimTextOutput("verbatum_ClusTCR2")
+                                 ),
+                                 tabPanel(
+                                   "Table for analysis",
+                                   div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
+                                   div(DT::DTOutput("ClusTCR2_lab")),
+                                   p(" "),
+                                 ),
+                                 tabPanel(
+                                   "Figures",
+                                   # cluster number
+                                   fluidRow(
+                                     column(3, numericInput("selected_Cluster", "Selected cluster", value = 1)),
+                                     column(3, numericInput("filter_connections", "Keep connections >", value = 1)),
+                                     # Name (CDR3_V_gene_Cluster), cluster, CDR3, V_gene, Len (length of CDR3 sequence),CDR3_selected,Name_selected,cluster_selected, (_selected only prints names of the chosen cluster), None
+                                     column(3, selectInput("lab_clust_by", "Label cluster by:", choices = c("Name", "cluster", "CDR3", "V_gene", "Len", "CDR3_selected", "Name_selected", "cluster_selected", "None"), selected = "cluster")),
+                                     # column(3, selectInput("Clust_size_order", "Order of cluster", choices = c("cluster", "Original_cluster", "Clust_size_order"), selected = "Clust_size_order")),
+                                     column(3, selectInput("colour_ClusTCR2", "Type of colouring", choices = c("color_all", "color_test"), selected = "color_test")),
+                                     column(3, numericInput("text_size1", "Text size of selected cluster", value = 4)),
+                                     column(3, numericInput("text_size2", "Text size of non-selected cluster", value = 2)),
+                                   ),
+                                   fluidRow(
+                                     conditionalPanel(
+                                       condition = "input.colour_ClusTCR2 == 'color_all'",
+                                       column(3, selectInput("colour_ClusTCR2_types", "Colour panel", choices = c("default", "rainbow", "random", "heat.colors", "terrain.colors", "topo.colors", "hcl.colors"))),
+                                     ),
+                                     conditionalPanel(
+                                       condition = "input.colour_ClusTCR2 == 'color_test'",
+                                       fluidRow(
+                                         column(3, colourInput("sel_colour_netplot", "Selected colour", "purple")),
+                                         column(3, colourInput("nonsel_colour_netplot", "Non-selected colour", "grey80")),
+                                       )
+                                     )
+                                   ),
+                                   fluidRow(
+                                     column(8, plotOutput("NP_ClusTCR", height = "600px")),
+                                     column(4, plotOutput("MP_ClusTCR", height = "200px")),
+                                   ),
+                                   fluidRow(
+                                     column(1, numericInput("width_Network_plot2", "Width of PDF", value = 10)),
+                                     column(1, numericInput("height_Network_plot2", "Height of PDF", value = 8)),
+                                     column(2, style = "margin-top: 25px;", downloadButton("downloadPlot_Network_plot2", "Download PDF")),
+                                     column(2, numericInput("width_png_Network_plot2", "Width of PNG", value = 1200)),
+                                     column(2, numericInput("height_png_Network_plot2", "Height of PNG", value = 1000)),
+                                     column(2, numericInput("resolution_PNG_Network_plot2", "Resolution of PNG", value = 144)),
+                                     column(2, style = "margin-top: 25px;", downloadButton("downloadPlotPNG_Network_plot2", "Download PNG")),
+                                   ),
+                                   fluidRow(
+                                     column(1, numericInput("width_Motif_plot2", "Width of PDF", value = 10)),
+                                     column(1, numericInput("height_Motif_plot2", "Height of PDF", value = 3.5)),
+                                     column(2, style = "margin-top: 25px;", downloadButton("downloadPlot_Motif_plot2", "Download PDF")),
+                                     column(2, numericInput("width_png_Motif_plot2", "Width of PNG", value = 1200)),
+                                     column(2, numericInput("height_png_Motif_plot2", "Height of PNG", value = 600)),
+                                     column(2, numericInput("resolution_PNG_Motif_plot2", "Resolution of PNG", value = 144)),
+                                     column(2, style = "margin-top: 25px;", downloadButton("downloadPlotPNG_Motif_plot2", "Download PNG"))
+                                   ),
+                                 ),
+                                 # tabPanel("Time",
+
+                                 # )
                      )
             )
           )
@@ -998,27 +1055,27 @@ navbarPage(
                      selectInput("df_seruatobj_type", "Data type", choices = c("10x_Genomics (raw)", "10x_Genomics (.h5)", "BD Rhapsody (Human Immune panel)", "BD Rhapsody (Mouse)", "Array")),
                      selectInput("stored_in_expression", "Does the .h5 object has multiple part?", choices = c("no", "yes")),
                      uiOutput("feature_input"),
-                     actionButton("run_violin", "Update Violin plot"),
+                     actionButton('run_violin', 'Filter', onclick = "$(tab).removeClass('disabled-1')"),
+                     ######
+                     # actionButton("run_violin", "Update Violin plot", onclick = "$(tab1).removeClass('disabled_after')"),
                      conditionalPanel(
-                       condition = ("input.run != 0"),
-                       # fluidRow(
-                       #   column(6, numericInput("dimension_heatmap.min", "View heatmap dimensions.min", value = 1)),
-                       #   column(6, numericInput("dimension_heatmap.max", "View heatmap dimensions.max", value = 10)),
-                       #   column(6, numericInput("numberofcells", "Number of cells to use for heatmap", value = 500)),
-                       # ),
-                       # selectInput("method_Seurat", "Method", choices = c("vst", "dispersion", "mvp"), selected = "vst"),
+                       condition = ("input.run_violin != 0"),
                        fluidRow(
                          column(6, numericInput("dimension_sc", "Max dimensions for clustering", value = 15)),
                          column(6, numericInput("resolution", "Resolution of clusters", value = 1)),
                        ),
-                       actionButton("run_reduction", "Run clustering"),
-                       p(""),
-                       actionButton("run_metadata", "Impute metadata after clustering"),
+
+                       div(actionButton("run_reduction", "Run clustering", onclick = "$(tab).removeClass('disabled-2')"), style = "padding-top: 25px;"),
+
+                       conditionalPanel(
+                         condition = ("input.run_reduction != 0"),
+                         div(actionButton("run_metadata", "Impute metadata after clustering", onclick = "$(tab).removeClass('disabled-3')"), style = "padding-top: 25px;"),
+                       ),
                      ),
                      conditionalPanel(
                        condition = ("input.run_metadata != 0"),
                        div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
-                       downloadButton("downloaddf_SeruatObj", "Download Seurat")
+                       div(downloadButton("downloaddf_SeruatObj", "Download Seurat (.rds)"), style = "padding-top: 25px;")
                      ),
                      tags$hr(),
                      # actionButton("reset_input", "Reset inputs")
@@ -1034,9 +1091,12 @@ navbarPage(
               div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
               div(DT::DTOutput("DEx_header_name_check.dt")),
             ),
+            #######
             tabPanel(
               "Violin and correlation",
               tabsetPanel(
+                id = "Before_after",
+                type = "tabs",
                 tabPanel(
                   "Before",
                   div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
@@ -1044,92 +1104,177 @@ navbarPage(
                   fluidRow(
                     column(1, numericInput("width_before_plot_sc", "Width of PDF", value = 10)),
                     column(1, numericInput("height_before_plot_sc", "Height of PDF", value = 8)),
-                    column(2, style = "margin-top: 25px;", downloadButton("downloadPlot_before_plot_sc", "Download Before PDF")),
+                    column(2, style = "margin-top: 25px;", downloadButton("downloadPlot_before_plot_sc", "Download PDF")),
                     column(2, numericInput("width_png_before_plot_sc", "Width of PNG", value = 1200)),
                     column(2, numericInput("height_png_before_plot_sc", "Height of PNG", value = 1000)),
                     column(2, numericInput("resolution_PNG_before_plot_sc", "Resolution of PNG", value = 144)),
-                    column(2, style = "margin-top: 25px;", downloadButton("downloadPlotPNG_before_plot_sc", "Download Before PNG")),
+                    column(2, style = "margin-top: 25px;", downloadButton("downloadPlotPNG_before_plot_sc", "Download PNG")),
                   ),
                 ),
                 tabPanel(
-                  "After",
+                  "After",value = "after_filtering_violin",
                   p("hit 'update Violin plot' to check cut-offs"),
                   div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
                   plotOutput("after_plot_sc", height = "600px"),
                   fluidRow(
                     column(1, numericInput("width_after_plot_sc", "Width of PDF", value = 10)),
                     column(1, numericInput("height_after_plot_sc", "Height of PDF", value = 8)),
-                    column(2, style = "margin-top: 25px;", downloadButton("downloadPlot_after_plot_sc", "Download After PDF")),
+                    column(2, style = "margin-top: 25px;", downloadButton("downloadPlot_after_plot_sc", "Download PDF")),
                     column(2, numericInput("width_png_after_plot_sc", "Width of PNG", value = 1200)),
                     column(2, numericInput("height_png_after_plot_sc", "Height of PNG", value = 1000)),
                     column(2, numericInput("resolution_PNG_after_plot_sc", "Resolution of PNG", value = 144)),
-                    column(2, style = "margin-top: 25px;", downloadButton("downloadPlotPNG_after_plot_sc", "Download After PNG")),
+                    column(2, style = "margin-top: 25px;", downloadButton("downloadPlotPNG_after_plot_sc", "Download PNG")),
+                  ),
+                  tags$script(
+                    '
+    var tab2 = $(\'a[data-value="after_filtering_violin"]\').parent();
+
+    $(function(){
+      $(tab2).addClass("disabled-1");
+
+      $(tab2.parent()).on("click", "li.disabled-1", function(e) {
+        e.preventDefault();
+        return false;
+      });
+    });
+    $(document).on("shiny:connected", function(e) {
+      $("#run_violin").on("click", function() {
+        $(tab2).removeClass("disabled-1");
+      });
+    });
+    '
                   ),
                 )
-              ),
+              )
             ),
-            # Variable features -----
-            tabPanel(
-              "Top variable features",
-              div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
-              plotOutput("plot_10_features_sc", height = "600px"),
-              fluidRow(
-                column(1, numericInput("width_plot_10_features_sc", "Width of PDF", value = 10)),
-                column(1, numericInput("height_plot_10_features_sc", "Height of PDF", value = 8)),
-                column(2, style = "margin-top: 25px;", downloadButton("downloadPlot_plot_10_features_sc", "Download PDF")),
-                column(2, numericInput("width_png_plot_10_features_sc", "Width of PNG", value = 1200)),
-                column(2, numericInput("height_png_plot_10_features_sc", "Height of PNG", value = 1000)),
-                column(2, numericInput("resolution_PNG_plot_10_features_sc", "Resolution of PNG", value = 144)),
-                column(2, style = "margin-top: 25px;", downloadButton("downloadPlotPNG_plot_10_features_sc", "Download PNG")),
-              ),
-            ),
-            # Elbow and heatmap  -----
-            tabPanel(
-              "Elbow Plot",
-              div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
-              plotOutput("create_elbowPlot_sc", height = "600px"),
-              fluidRow(
-                column(1, numericInput("width_create_elbowPlot_sc", "Width of PDF", value = 10)),
-                column(1, numericInput("height_create_elbowPlot_sc", "Height of PDF", value = 8)),
-                column(2, style = "margin-top: 25px;", downloadButton("downloadPlot_create_elbowPlot_sc", "Download PDF")),
-                column(2, numericInput("width_png_create_elbowPlot_sc", "Width of PNG", value = 1200)),
-                column(2, numericInput("height_png_create_elbowPlot_sc", "Height of PNG", value = 1000)),
-                column(2, numericInput("resolution_PNG_create_elbowPlot_sc", "Resolution of PNG", value = 144)),
-                column(2, style = "margin-top: 25px;", downloadButton("downloadPlotPNG_create_elbowPlot_sc", "Download PNG")),
-              ),
-            ),
-            # tabPanel(
-            #   "DimHeatmap",
-            #   div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
-            #   plotOutput("create_PCA_heatmap_sc", height = "1000px"),
-            #   fluidRow(
-            #     column(1, numericInput("width_heatmap_sc", "Width of PDF", value = 10)),
-            #     column(1, numericInput("height_heatmap_sc", "Height of PDF", value = 8)),
-            #     column(2, style = "margin-top: 25px;", downloadButton("downloadPlot_heatmap_sc", "Download Network PDF")),
-            #     column(2, numericInput("width_png_heatmap_sc", "Width of PNG", value = 1200)),
-            #     column(2, numericInput("height_png_heatmap_sc", "Height of PNG", value = 1000)),
-            #     column(2, numericInput("resolution_PNG_heatmap_sc", "Resolution of PNG", value = 144)),
-            #     column(2, style = "margin-top: 25px;", downloadButton("downloadPlotPNG_heatmap_sc", "Download Network PNG")),
-            #   ),
-            # ),
-            # tabPanel("Resolution plot"),
-            # UMAP  -----
-            tabPanel(
-              "UMAP",
-              div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
-              plotOutput("create_UMAP_sc", height = "600px")
-            ), # Export a table with meta.data and expression.
-            tabPanel(
-              "Add metadata",
-              div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
-              div(DT::DTOutput("DEx_view.meta.dt")),
-              div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
-              div(DT::DTOutput("DEx_table_meta.data")),
-              # selectInput("","comaprison 1")
-            ),
+    # Variable features -----
+    tabPanel(
+      "Top variable features", value = "Top_var_feat",
+      div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
+      plotOutput("plot_10_features_sc", height = "600px"),
+      fluidRow(
+        column(1, numericInput("width_plot_10_features_sc", "Width of PDF", value = 10)),
+        column(1, numericInput("height_plot_10_features_sc", "Height of PDF", value = 8)),
+        column(2, style = "margin-top: 25px;", downloadButton("downloadPlot_plot_10_features_sc", "Download PDF")),
+        column(2, numericInput("width_png_plot_10_features_sc", "Width of PNG", value = 1200)),
+        column(2, numericInput("height_png_plot_10_features_sc", "Height of PNG", value = 1000)),
+        column(2, numericInput("resolution_PNG_plot_10_features_sc", "Resolution of PNG", value = 144)),
+        column(2, style = "margin-top: 25px;", downloadButton("downloadPlotPNG_plot_10_features_sc", "Download PNG")),
+      ),
+
+      tags$script(
+        '
+    var tab3 = $(\'a[data-value="Top_var_feat"]\').parent();
+
+    $(function(){
+      $(tab3).addClass("disabled-2");
+
+      $(tab3.parent()).on("click", "li.disabled-2", function(e) {
+        e.preventDefault();
+        return false;
+      });
+    });
+    $(document).on("shiny:connected", function(e) {
+      $("#run_reduction").on("click", function() {
+        $(tab3).removeClass("disabled-2");
+      });
+    });
+    '
+      ),
+
+    ),
+    # Elbow and heatmap  -----
+    tabPanel(
+      "Elbow Plot", value = "Elbow_plot",
+      div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
+      plotOutput("create_elbowPlot_sc", height = "600px"),
+      fluidRow(
+        column(1, numericInput("width_create_elbowPlot_sc", "Width of PDF", value = 10)),
+        column(1, numericInput("height_create_elbowPlot_sc", "Height of PDF", value = 8)),
+        column(2, style = "margin-top: 25px;", downloadButton("downloadPlot_create_elbowPlot_sc", "Download PDF")),
+        column(2, numericInput("width_png_create_elbowPlot_sc", "Width of PNG", value = 1200)),
+        column(2, numericInput("height_png_create_elbowPlot_sc", "Height of PNG", value = 1000)),
+        column(2, numericInput("resolution_PNG_create_elbowPlot_sc", "Resolution of PNG", value = 144)),
+        column(2, style = "margin-top: 25px;", downloadButton("downloadPlotPNG_create_elbowPlot_sc", "Download PNG")),
+      ),
+      tags$script(
+        '
+    var tab4 = $(\'a[data-value="Elbow_plot"]\').parent();
+
+    $(function(){
+      $(tab4).addClass("disabled-2");
+
+      $(tab4.parent()).on("click", "li.disabled-2", function(e) {
+        e.preventDefault();
+        return false;
+      });
+    });
+    $(document).on("shiny:connected", function(e) {
+      $("#run_reduction").on("click", function() {
+        $(tab4).removeClass("disabled-2");
+      });
+    });
+    '
+      ),
+    ),
+    # UMAP  -----
+    tabPanel(
+      "UMAP", value = "sc_UMAP_QC",
+      div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
+      plotOutput("create_UMAP_sc", height = "600px"),
+      tags$script(
+        '
+    var tab5 = $(\'a[data-value="sc_UMAP_QC"]\').parent();
+
+    $(function(){
+      $(tab5).addClass("disabled-2");
+
+      $(tab5.parent()).on("click", "li.disabled-2", function(e) {
+        e.preventDefault();
+        return false;
+      });
+    });
+    $(document).on("shiny:connected", function(e) {
+      $("#run_reduction").on("click", function() {
+        $(tab5).removeClass("disabled-2");
+      });
+    });
+    '
+      ),
+
+    ), # Export a table with meta.data and expression.
+    tabPanel(
+      "Add metadata", value = "Add_meta_data_to_sc",
+      div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
+      div(DT::DTOutput("DEx_view.meta.dt")),
+      div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
+      div(DT::DTOutput("DEx_table_meta.data")),
+
+      tags$script(
+        '
+    var tab6 = $(\'a[data-value="Add_meta_data_to_sc"]\').parent();
+
+    $(function(){
+      $(tab6).addClass("disabled-2");
+
+      $(tab6.parent()).on("click", "li.disabled-3", function(e) {
+        e.preventDefault();
+        return false;
+      });
+    });
+    $(document).on("shiny:connected", function(e) {
+      $("#run_reduction").on("click", function() {
+        $(tab6).removeClass("disabled-2");
+      });
+    });
+    '
+      ),
+
+    # selectInput("","comaprison 1")
+    ),
           ),
         ),
-        # end of QC -----
+    # end of QC -----
       ),
     ),
     ###################
@@ -1544,7 +1689,7 @@ navbarPage(
         )
       )
     ),
-    tabPanel("STEP3. Markdown"),
+    # tabPanel("STEP3. Markdown"),
   ),
 
   ###################
@@ -3177,6 +3322,9 @@ navbarPage(
 
       selectInput("epitope_umap_selected2", "Split Pie by (hm = x-axis):", choices = names(df3.meta), selected = "epitope")
     })
+
+    # UI for Step 3a.
+
 
     # user interface parameters-----
     output$feature_input <- renderUI({
@@ -6217,7 +6365,7 @@ navbarPage(
       validate(
         need(
           nrow(inFile2_ClusTCR2) > 0,
-          "Upload mutliple CLusTCR2 files to merge"
+          "Upload mutliple ClusTCR2 files to merge"
         )
       )
 
@@ -6590,61 +6738,63 @@ navbarPage(
 
     ## reading in 10x and BD data ----
     df_seruatobj <- reactive({
-      df.test <- input.data_sc()
-      validate(
-        need(
-          length(df.test) > 0,
-          error_message_val_sc
+      suppressWarnings({
+        df.test <- input.data_sc()
+        validate(
+          need(
+            length(df.test) > 0,
+            error_message_val_sc
+          )
         )
-      )
 
-      validate(
-        need(input$project_name != "", "Please enter a file name.")
-      )
+        validate(
+          need(input$project_name != "", "Please enter a file name.")
+        )
 
-      if (input$df_seruatobj_type == "10x_Genomics (raw)") {
-        names(df.test) <- gsub("[.]1", "-1", names(df.test))
-        rownames(df.test) <- make.unique(df.test$Gene_Name)
-        df.test2 <- df.test[, !names(df.test) %in% c("Gene_Name")]
+        if (input$df_seruatobj_type == "10x_Genomics (raw)") {
+          names(df.test) <- gsub("[.]1", "-1", names(df.test))
+          rownames(df.test) <- make.unique(df.test$Gene_Name)
+          df.test2 <- df.test[, !names(df.test) %in% c("Gene_Name")]
 
-        sc <- CreateSeuratObject(counts = df.test2, assay = "RNA", project = input$project_name)
-        sc <- PercentageFeatureSet(sc, pattern = "^MT-", col.name = "mtDNA")
-        sc <- PercentageFeatureSet(sc, pattern = "^RP[SL]", col.name = "rRNA")
-        sc
-      } else if (input$df_seruatobj_type == "10x_Genomics (.h5)") {
-        # rownames(df.test$`Gene Expression`) <- gsub("GRCh38___","",rownames(df.test$`Gene Expression`))
-        # sc <- CreateSeuratObject(counts = df.test[[1]], project = input$project_name)
-        sc <- CreateSeuratObject(counts = df.test, project = input$project_name)
-        sc <- PercentageFeatureSet(sc, pattern = "^MT-", col.name = "mtDNA")
-        sc <- PercentageFeatureSet(sc, pattern = "^RP[SL]", col.name = "rRNA")
-        sc
-      } else if (input$df_seruatobj_type == "BD Rhapsody (Mouse)") {
-        names(df.test) <- as.character(gsub("X", "", names(df.test)))
+          sc <- CreateSeuratObject(counts = df.test2, assay = "RNA", project = input$project_name)
+          sc <- PercentageFeatureSet(sc, pattern = "^MT-", col.name = "mtDNA")
+          sc <- PercentageFeatureSet(sc, pattern = "^RP[SL]", col.name = "rRNA")
+          sc
+        } else if (input$df_seruatobj_type == "10x_Genomics (.h5)") {
+          # rownames(df.test$`Gene Expression`) <- gsub("GRCh38___","",rownames(df.test$`Gene Expression`))
+          # sc <- CreateSeuratObject(counts = df.test[[1]], project = input$project_name)
+          sc <- CreateSeuratObject(counts = df.test, project = input$project_name)
+          sc <- PercentageFeatureSet(sc, pattern = "^MT-", col.name = "mtDNA")
+          sc <- PercentageFeatureSet(sc, pattern = "^RP[SL]", col.name = "rRNA")
+          sc
+        } else if (input$df_seruatobj_type == "BD Rhapsody (Mouse)") {
+          names(df.test) <- as.character(gsub("X", "", names(df.test)))
 
-        # rownames(df.test) <- make.unique(df.test$Gene_Name)
-        # df.test2 <- df.test[,!names(df.test) %in% c("Gene_Name")]
+          # rownames(df.test) <- make.unique(df.test$Gene_Name)
+          # df.test2 <- df.test[,!names(df.test) %in% c("Gene_Name")]
 
-        sc <- CreateSeuratObject(counts = df.test, assay = "RNA", project = input$project_name)
-        sc <- PercentageFeatureSet(sc, pattern = "^Mt", col.name = "mtDNA")
-        sc <- PercentageFeatureSet(sc, pattern = "Rp[sl]", col.name = "rRNA")
-        sc
-      } else if (input$df_seruatobj_type == "BD Rhapsody (Human Immune panel)") {
-        names(df.test) <- as.character(gsub("X", "", names(df.test)))
+          sc <- CreateSeuratObject(counts = df.test, assay = "RNA", project = input$project_name)
+          sc <- PercentageFeatureSet(sc, pattern = "^Mt", col.name = "mtDNA")
+          sc <- PercentageFeatureSet(sc, pattern = "Rp[sl]", col.name = "rRNA")
+          sc
+        } else if (input$df_seruatobj_type == "BD Rhapsody (Human Immune panel)") {
+          names(df.test) <- as.character(gsub("X", "", names(df.test)))
 
-        # rownames(df.test) <- make.unique(df.test$Gene_Name)
-        # df.test2 <- df.test[,!names(df.test) %in% c("Gene_Name")]
+          # rownames(df.test) <- make.unique(df.test$Gene_Name)
+          # df.test2 <- df.test[,!names(df.test) %in% c("Gene_Name")]
 
-        sc <- CreateSeuratObject(counts = df.test, assay = "RNA", project = input$project_name)
-        sc <- PercentageFeatureSet(sc, pattern = "^MT-", col.name = "mtDNA")
-        sc <- PercentageFeatureSet(sc, pattern = "^RP[SL]", col.name = "rRNA")
-        sc
-      } else {
-        names(df.test) <- gsub("[.]", "-", names(df.test))
-        rownames(df.test) <- gsub("[.]", "-", rownames(df.test))
-        sc <- CreateSeuratObject(counts = df.test, assay = "RNA", project = input$project_name)
-        sc <- PercentageFeatureSet(sc, pattern = "^MT-", col.name = "mtDNA")
-        sc <- PercentageFeatureSet(sc, pattern = "^RP[SL]", col.name = "rRNA")
-      }
+          sc <- CreateSeuratObject(counts = df.test, assay = "RNA", project = input$project_name)
+          sc <- PercentageFeatureSet(sc, pattern = "^MT-", col.name = "mtDNA")
+          sc <- PercentageFeatureSet(sc, pattern = "^RP[SL]", col.name = "rRNA")
+          sc
+        } else {
+          names(df.test) <- gsub("[.]", "-", names(df.test))
+          rownames(df.test) <- gsub("[.]", "-", rownames(df.test))
+          sc <- CreateSeuratObject(counts = df.test, assay = "RNA", project = input$project_name)
+          sc <- PercentageFeatureSet(sc, pattern = "^MT-", col.name = "mtDNA")
+          sc <- PercentageFeatureSet(sc, pattern = "^RP[SL]", col.name = "rRNA")
+        }
+      })
     })
     before_plot <- reactive({
       sc <- df_seruatobj()
@@ -6654,7 +6804,11 @@ navbarPage(
           "Upload files"
         )
       )
-      VlnPlot(sc, features = c("nFeature_RNA", "nCount_RNA", "mtDNA", "rRNA"), ncol = 2)
+      suppressWarnings({
+        VlnPlot(sc, features = c("nFeature_RNA", "nCount_RNA", "mtDNA", "rRNA"), ncol = 2)
+      })
+
+
     })
 
     output$before_plot_sc <- renderPlot({
@@ -6709,13 +6863,23 @@ navbarPage(
 
     vals2 <- reactiveValues(after_violin_plot = NULL)
     observeEvent(input$run_violin, {
-      sc <- df_seruatobj()
-      req(sc)
-      validate(
-        need(input$project_name != "", "Please enter a file name.")
-      )
+      suppressWarnings({
+        sc <- df_seruatobj()
+        req(sc)
+        validate(
+          need(input$project_name != "", "Please enter a file name.")
+        )
 
-      vals2$after_violin_plot <- subset(sc, subset = nFeature_RNA >= input$features.min & nFeature_RNA <= input$features.max & mtDNA <= input$percent.mt & rRNA >= input$percent.rb)
+        tryCatch({
+          suppressWarnings({
+            vals2$after_violin_plot <- subset(sc, subset = nFeature_RNA >= input$features.min & nFeature_RNA <= input$features.max & mtDNA <= input$percent.mt & rRNA >= input$percent.rb)
+          })
+
+        }, error = function(e) {
+          # Handle the error by displaying a notification
+          showNotification("No cells remain. Please check your input parameters.", type = "error")
+        })
+      })
     })
 
     output$after_plot_sc <- renderPlot({

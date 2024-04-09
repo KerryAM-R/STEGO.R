@@ -15,11 +15,11 @@
 preprocessing_10x <- function (downloadTCRex = F, downloadClusTCR = F, downloadTCR_Explore = F,
                                downloadSeurat = F, csv_contig_file = "csv", main_directory = "0_RAW_files/")
 {
-  require(magrittr)
-  require(plyr)
-  require(dplyr)
-  require(lubridate)
-  require(readr)
+  suppressMessages(require(magrittr))
+  suppressMessages(require(plyr))
+  suppressMessages(require(dplyr))
+  suppressMessages(require(lubridate))
+  suppressMessages(require(readr))
   main_directory = "0_RAW_files/"
   main_directory <- main_directory
   main_folders <- list.files(paste(main_directory))
@@ -40,7 +40,7 @@ preprocessing_10x <- function (downloadTCRex = F, downloadClusTCR = F, downloadT
     }
 
     if (length(files[grepl("barcode", files)]) == 1 && length(files[grepl("contig", files)]) == 1) {
-      message("Files are present for in", sub_directory)
+      message("Files are present for in ", sub_directory)
     } else {
       message("Reformat directory to have Indiv_group name for each file barcode, features, matrix, and contig")
       next
