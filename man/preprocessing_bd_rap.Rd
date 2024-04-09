@@ -4,7 +4,15 @@
 \alias{preprocessing_bd_rap}
 \title{Automated preprocessing}
 \usage{
-preprocessing_bd_rap()
+preprocessing_bd_rap(
+  downloadSeurat = F,
+  downloadTCRex = F,
+  downloadClusTCR = F,
+  downloadTCR_Explore = F,
+  csv_contig_file = "csv",
+  main_directory = "0_RAW_files/",
+  create_sample_tag_file = F
+)
 }
 \arguments{
 \item{downloadSeurat}{T or F; set to T if you want to include the current T cell model}
@@ -15,11 +23,11 @@ preprocessing_bd_rap()
 
 \item{downloadTCR_Explore}{T cell based stress models of exhaustion}
 
-\item{create_sample_tag_file}{If not multiplexed, this will create the sample tag file.}
-
 \item{csv_contig_file}{T cell based stress models of Senescence}
 
 \item{main_directory}{This is the location of the raw data from 10x outputs}
+
+\item{create_sample_tag_file}{If not multiplexed, this will create the sample tag file.}
 }
 \description{
 This function performs the pre-processing equivalent to STEP 1. This requires the user to name their folders indiv_group. Please use the _ to separate the values, this particularly important for the TCR_Explore as it will separate out the indiv from the group column.

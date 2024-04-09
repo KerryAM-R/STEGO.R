@@ -498,45 +498,72 @@ navbarPage(
                      value = 1,
                      conditionalPanel(
                        condition = "input.Source_type_10x=='Raw'",
-                       div(DT::dataTableOutput("test.files.10x1")),
-                       div(DT::dataTableOutput("test.files.10x2")),
+                       div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
+                       div(DT::dataTableOutput("Barcode_10x_file_upload", height = "200px")),
+                       div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
+                       div(DT::dataTableOutput("Features_10x_file_upload", height = "200px")),
+                       div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
+                       div(DT::dataTableOutput("Matrix_10x_file_upload", height = "200px")),
                      ),
+                     div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
+                     div(DT::dataTableOutput("Contig_10x_file_upload", height = "200px")),
 
-                     # div(DT::dataTableOutput("test.files.10x3")),
-                     div(DT::dataTableOutput("test.files.10x4")),
             ),
             tabPanel(
               "TCRex",
               div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
-              div(DT::dataTableOutput("tb_TCRex_10x_df")),
-              downloadButton("downloaddf_TCRex_10x", "Download table")
+              # fluidRow(
+              downloadButton("downloaddf_TCRex_10x", "Download table"),
+              div(DT::dataTableOutput("tb_TCRex_10x_df"),height = "200px"),
+              # )
+
             ),
             tabPanel("Seurat QC",
                      value = 2,
                      tags$head(tags$style("#tb_10x_matrix2  {white-space: nowrap;  }")),
+                     fluidRow(
+                       column(3, downloadButton("downloadtb_10x_matrix2", "Download matrix"),style = "padding-top: 25px;"),
+                       column(3, downloadButton("downloadtb_10x_metadata2", "Download metadata"),style = "padding-top: 25px;")
+                     ),
                      div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
                      div(DT::dataTableOutput("tb_10x_matrix2")),
                      tags$head(tags$style("#sum_tb_10x1  {white-space: nowrap;  }")),
+
                      div(DT::dataTableOutput("sum_tb_10x1")),
                      div(DT::dataTableOutput("tb_10x_meta1")),
-                     fluidRow(
-                       column(3, downloadButton("downloadtb_10x_matrix2", "Download matrix")),
-                       column(3, downloadButton("downloadtb_10x_metadata2", "Download metadata"))
-                     )
+
             ),
             tabPanel("ClusTCR",
                      value = 3,
                      tags$head(tags$style("#tb_10x_contigues1  {white-space: nowrap;  }")),
+                     fluidRow(
+                       column(3,selectInput("chain_clusTCR2_10x", "Select to download", choices = c("AG", "BD", "IgH", "IgLK")), ),
+                       column(3, downloadButton("downloadtb_10x_contigues1", "Download clusTCR"),style = "padding-top: 25px;")
+                     ),
+
+
                      div(DT::dataTableOutput("tb_10x_contigues1")),
-                     selectInput("chain_clusTCR2_10x", "Select to download", choices = c("AG", "BD", "IgH", "IgLK")),
-                     downloadButton("downloadtb_10x_contigues1", "Download clusTCR")
+
             ),
             tabPanel("TCR_Explore",
                      value = 4,
                      tags$head(tags$style("#dt_TCR_Explore_10x  {white-space: nowrap;  }")),
+                     fluidRow(
+                       column(3,downloadButton("downloaddt_TCR_Explore_10x", "Download TCR_Explore"),style = "padding-top: 25px;"),
+                     ),
                      div(DT::dataTableOutput("dt_TCR_Explore_10x")),
-                     downloadButton("downloaddt_TCR_Explore_10x", "Download TCR_Explore")
             ),
+            tabPanel("Auto",
+                     conditionalPanel(
+                       condition = "!input.checkFiles",
+                       actionButton("checkFiles", "Check Files")
+                     ),
+                     conditionalPanel(
+                       condition = "input.checkFiles > 0",
+                       actionButton("automateProcess", "Automate Process")
+                     ),
+                     verbatimTextOutput("outputText")
+            )
           ),
         )
       )
@@ -5064,12 +5091,12 @@ navbarPage(
       }
     })
 
-    output$test.files.10x1 <- DT::renderDataTable(escape = FALSE, options = list(autoWidth = FALSE, lengthMenu = c(2, 5, 10, 20, 50, 100), pageLength = 2, scrollX = TRUE), {
+    output$Barcode_10x_file_upload <- DT::renderDataTable(escape = FALSE, options = list(autoWidth = FALSE, lengthMenu = c(2, 5, 10, 20, 50, 100), pageLength = 2, scrollX = TRUE, scrollY = T), {
       calls <- input.data.barcode.10x()
       validate(
         need(
           nrow(calls) > 0,
-          error_message_val_10x_barcode
+          "Upload Barcode"
         )
       )
       calls
@@ -5086,12 +5113,12 @@ navbarPage(
       }
     })
 
-    output$test.files.10x2 <- DT::renderDataTable(escape = FALSE, options = list(autoWidth = FALSE, lengthMenu = c(2, 5, 10, 20, 50, 100), pageLength = 2, scrollX = TRUE), {
+    output$Features_10x_file_upload <- DT::renderDataTable(escape = FALSE, options = list(autoWidth = FALSE, lengthMenu = c(2, 5, 10, 20, 50, 100), pageLength = 2, scrollX = TRUE, scrollY = T), {
       calls <- input.data.features.10x()
       validate(
         need(
           nrow(calls) > 0,
-          error_message_val_10x_features
+          "Upload Features/Gene File"
         )
       )
       calls
@@ -5106,12 +5133,12 @@ navbarPage(
         dataframe <- Matrix::readMM(inFile_10x_matrix$datapath)
       }
     })
-    output$test.files.10x3 <- DT::renderDataTable(escape = FALSE, options = list(autoWidth = FALSE, lengthMenu = c(2, 5, 10, 20, 50, 100), pageLength = 2, scrollX = TRUE), {
+    output$Matrix_10x_file_upload <- DT::renderDataTable(escape = FALSE, options = list(autoWidth = FALSE, lengthMenu = c(2, 5, 10, 20, 50, 100), pageLength = 2, scrollX = TRUE), {
       calls <- as.data.frame(input.data.matrix.10x())
       validate(
         need(
           nrow(calls) > 0,
-          error_message_val_10x_features
+          "Upload Matrix file"
         )
       )
       calls[1:10, 1:10]
@@ -5131,13 +5158,13 @@ navbarPage(
         dataframe
       }
     })
-    output$test.files.10x4 <- DT::renderDataTable(escape = FALSE, options = list(autoWidth = FALSE, lengthMenu = c(2, 5, 10, 20, 50, 100), pageLength = 2, scrollX = TRUE), {
+    output$Contig_10x_file_upload <- DT::renderDataTable(escape = FALSE, options = list(autoWidth = FALSE, lengthMenu = c(2, 5, 10, 20, 50, 100), pageLength = 2, scrollX = TRUE, scrollY = T), {
       if (input$BCR_TCR_10x == "TCR only") {
         calls <- input.data.TCR.10x()
         validate(
           need(
             nrow(calls) > 0,
-            error_message_val_10x_features
+            "Upload TCR Files (Filtered contig file)"
           )
         )
         tb_10x_meta.data_TCR()
@@ -5146,7 +5173,7 @@ navbarPage(
         validate(
           need(
             nrow(calls) > 0,
-            error_message_val_10x_features
+            "Upload BCR Files (Filtered contig file)"
           )
         )
         tb_10x_meta.data_BCR()
@@ -5158,7 +5185,7 @@ navbarPage(
       validate(
         need(
           nrow(contigs) > 0,
-          "Upload file"
+          "Upload TCR Files (Filtered contig file)"
         )
       )
       contigs
@@ -5560,7 +5587,7 @@ navbarPage(
       validate(
         need(
           nrow(contigs) > 0,
-          error_message_val_10x_features
+          "Upload TCR Files (Filtered contig file)"
         )
       )
       if (input$csv_contig_file == "tsv") {
@@ -5675,6 +5702,8 @@ navbarPage(
       }
     )
 
+
+
     ## count table ----
     tb_10x_matrix <- function() {
       barcode <- input.data.barcode.10x()
@@ -5741,7 +5770,7 @@ navbarPage(
       validate(
         need(
           nrow(contigs) > 0,
-          error_message_val_10x_features
+          "Upload TCR Files (Filtered contig file)"
         )
       )
 
@@ -5816,6 +5845,34 @@ navbarPage(
 
 
 
+
+
+    # automated 10x process if the folder is of the correct structure
+    output$outputText <- renderPrint({
+
+      req(input$checkFiles | input$automateProcess)
+
+      if (input$checkFiles) {
+        FN <- tempfile()
+        zz <- file(FN, open = "wt")
+        sink(zz, type = "output")
+        sink(zz, type = "message")
+        STEGO.R::preprocessing_10x(downloadTCRex = FALSE, downloadClusTCR = FALSE, downloadSeurat = FALSE, downloadTCR_Explore = FALSE)
+        sink(type = "message")
+        sink(type = "output")
+        cat(readLines(FN), sep = "\n")
+      } else if (input$automateProcess) {
+        FN <- tempfile()
+        zz <- file(FN, open = "wt")
+        sink(zz, type = "output")
+        sink(zz, type = "message")
+        STEGO.R::preprocessing_10x(downloadTCRex = TRUE, downloadClusTCR = TRUE, downloadSeurat = TRUE, downloadTCR_Explore = TRUE)
+        message("Download successful")
+        sink(type = "message")
+        sink(type = "output")
+        cat(readLines(FN), sep = "\n")
+      }
+    })
 
     # Array ------
     input.data.calls.array <- reactive({
