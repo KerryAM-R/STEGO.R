@@ -12,6 +12,7 @@
 #' @param main_directory This is the location of the raw data from 10x outputs
 #' @export
 
+preprocessing_10x <- function (downloadTCRex = F, downloadClusTCR = F, downloadTCR_Explore = F,
                                downloadSeurat = F, csv_contig_file = "csv", main_directory = "0_RAW_files/")
 {
   require(magrittr)
