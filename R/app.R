@@ -16330,9 +16330,9 @@ navbarPage(
               scale_shape_manual(values = unique_vdj$shape) +  # Use default shapes
               labs(x = "", y = "", title = "", color = year, shape = year) +
               theme_minimal() +
-              theme(legend.title = element_text(face = "bold", size = 16, family = "Times New Roman"),
-                    legend.text = element_text(size = 12, family = "Times New Roman"),
-                    axis.text = element_text(size = 16, family = "Times New Roman"),
+              theme(legend.title = element_text(face = "bold", size = 16, family = input$font_type),
+                    legend.text = element_text(size = input$Legend_size, family = input$font_type),
+                    axis.text = element_text(size = 16, family = input$font_type),
                     axis.title = element_blank(),
                     plot.title = element_blank()
               ) +
@@ -16357,9 +16357,10 @@ navbarPage(
               scale_shape_manual(values = unique_vdj$shape) +  # Use default shapes
               labs(x = "", y = "", title = "", color = year, shape = input$shape_legend_name) +
               theme_minimal() +
-              theme(legend.title = element_text(face = "bold", size = 16, family = "Times New Roman"),
-                    legend.text = element_text(size = 12, family = "Times New Roman"),
-                    axis.text = element_text(size = 16, family = "Times New Roman"),
+              theme(legend.title = element_text(colour = "black", size = input$Legend_size, family = input$font_type),
+                    legend.text = element_text(size = input$Legend_size, family = input$font_type),
+                    axis.text.y = element_text(colour = "black", family = input$font_type, size = input$text_size),
+                    axis.text.x = element_text(colour = "black", family = input$font_type, size = input$text_size, angle = 0),
                     axis.title = element_blank(),
                     plot.title = element_blank()
               ) +
@@ -16421,11 +16422,13 @@ navbarPage(
           scale_shape_manual(values = unique_vdj$shape) +  # Use default shapes
           labs(x = "TCR counts", y = "", title = "", color = "VDJ", shape = "VDJ") +
           theme_minimal() +
-          theme(legend.title = element_text(face = "bold", size = 16, family = "Times New Roman"),
-                legend.text = element_text(size = 12, family = "Times New Roman"),
-                axis.text = element_text(size = 16, family = "Times New Roman"),
-                axis.title.y  = element_text(face = "bold", col = "black", fontfamily = "Times New Roman", fontsize=30),
-                axis.title.x  = element_blank()
+          theme(
+            legend.title = element_text(colour = "black", size = input$Legend_size, family = input$font_type),
+            legend.text = element_text(size = input$Legend_size, family = input$font_type),
+            axis.text.y = element_text(colour = "black", family = input$font_type, size = input$text_size),
+            axis.text.x = element_text(colour = "black", family = input$font_type, size = input$text_size, angle = 0),
+            axis.title.y  = element_text(col = "black", family = input$font_type, size = input$title.text.sizer2),
+            axis.title.x  = element_blank()
           ) +
           labs(x = "", y = "")
         guides(color = guide_legend(
@@ -16468,10 +16471,10 @@ navbarPage(
       req(plot_list)
       combined_plots <- plot_grid(plotlist = plot_list, nrow = input$wrap_row)
       y.grob <- textGrob("TCR counts",
-                         gp=gpar(fontface = "bold", col="black", fontfamily = "Times New Roman", fontsize=30), rot=90)
+                         gp=gpar(fontface = "bold", col="black", family = input$font_type, fontsize=30), rot=90)
 
       x.grob <- textGrob("Time",
-                         gp=gpar(fontface = "bold", col="black", fontfamily = "Times New Roman", fontsize=30))
+                         gp=gpar(fontface = "bold", col="black", family = input$font_type, fontsize=30))
 
       grid.arrange(arrangeGrob(combined_plots, left = y.grob, bottom = x.grob))
     })
@@ -16528,9 +16531,9 @@ navbarPage(
         theme(
           strip.text = element_text(size = input$Strip_text_size, family = input$font_type),
           axis.title.y = element_text(colour = "black", family = input$font_type, size = input$title.text.sizer2),
+          axis.title.x = element_text(colour = "black", angle = 0, vjust = .5, face = "plain", family = input$font_type, size = input$title.text.sizer2),
           axis.text.y = element_text(colour = "black", family = input$font_type, size = input$text_size),
           axis.text.x = element_text(colour = "black", family = input$font_type, size = input$text_size, angle = 0),
-          axis.title.x = element_text(colour = "black", angle = 0, vjust = .5, face = "plain", family = input$font_type, size = input$title.text.sizer2),
           legend.text = element_text(colour = "black", size = input$Legend_size, family = input$font_type),
           legend.title = element_blank(),
           legend.position = input$legend_position,
