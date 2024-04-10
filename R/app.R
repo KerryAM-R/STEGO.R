@@ -598,9 +598,11 @@ navbarPage(
             tabPanel("Auto",value = "auto_10x",
                      h4("Set up the directories to have folders named sample_condition with the barcode, features, matrix and contig file"),
                      div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
-                     div(actionButton("checkFiles", "Check Files"), style = "padding-top: 25px;"),
-                     div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
-                     div(actionButton("automateProcess", "Automate Process"), style = "padding-top: 25px;"),
+                     fluidRow(
+                       column(3,div(actionButton("checkFiles", "Check Files"), style = "padding-top: 25px;")),
+                       column(3,div(actionButton("automateProcess", "Automate Process"), style = "padding-top: 25px;")),
+                     ),
+
                      div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
                      verbatimTextOutput("outputText")
             )
@@ -6014,8 +6016,16 @@ navbarPage(
     })
 
     observeEvent(input$automateProcess, {
-      suppressWarnings(STEGO.R::preprocessing_10x(downloadTCRex = T, downloadClusTCR = T, downloadSeurat = T, downloadTCR_Explore = T))
 
+      withProgress(
+        message = 'Processing...',
+        value = 0,
+        {
+          suppressWarnings(
+            STEGO.R::preprocessing_10x(downloadTCRex = T, downloadClusTCR = T, downloadSeurat = T, downloadTCR_Explore = T)
+          )
+        }
+      )
     })
 
     # Array ------
@@ -16413,10 +16423,10 @@ navbarPage(
           scale_shape_manual(values = unique_vdj$shape) +  # Use default shapes
           labs(x = "TCR counts", y = "", title = "", color = "VDJ", shape = "VDJ") +
           theme_minimal() +
-          theme(legend.title = element_text(face = "bold", size = 16, family = "Times New Roman"),
+          theme(legend.title = element_text(fontface = "bold", size = 16, family = "Times New Roman"),
                 legend.text = element_text(size = 12, family = "Times New Roman"),
                 axis.text = element_text(size = 16, family = "Times New Roman"),
-                axis.title.y  = element_text(fontface="bold", col="black", fontfamily="Times New Roman", fontsize=30),
+                axis.title.y  = element_text(fontface = "bold", col = "black", fontfamily = "Times New Roman", fontsize=30),
                 axis.title.x  = element_blank()
           ) +
           labs(x = "", y = "")
@@ -16460,10 +16470,10 @@ navbarPage(
       req(plot_list)
       combined_plots <- plot_grid(plotlist = plot_list, nrow = input$wrap_row)
       y.grob <- textGrob("TCR counts",
-                         gp=gpar(fontface="bold", col="black", fontfamily="Times New Roman", fontsize=30), rot=90)
+                         gp=gpar(fontface = "bold", col="black", fontfamily = "Times New Roman", fontsize=30), rot=90)
 
       x.grob <- textGrob("Time",
-                         gp=gpar(fontface="bold", col="black", fontfamily="Times New Roman", fontsize=30))
+                         gp=gpar(fontface = "bold", col="black", fontfamily = "Times New Roman", fontsize=30))
 
       grid.arrange(arrangeGrob(combined_plots, left = y.grob, bottom = x.grob))
     })
@@ -20952,4 +20962,5 @@ navbarPage(
   }
 
   shinyApp(ui, server)
+
 }
