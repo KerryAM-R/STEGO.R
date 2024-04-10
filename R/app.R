@@ -16427,7 +16427,7 @@ navbarPage(
             legend.text = element_text(size = input$Legend_size, family = input$font_type),
             axis.text.y = element_text(colour = "black", family = input$font_type, size = input$text_size),
             axis.text.x = element_text(colour = "black", family = input$font_type, size = input$text_size, angle = 0),
-            axis.title.y  = element_text(col = "black", family = input$font_type, size = input$title.text.sizer2),
+            axis.title.y  = element_text(colour = "black", family = input$font_type, size = input$title.text.sizer2),
             axis.title.x  = element_blank()
           ) +
           labs(x = "", y = "")
@@ -16437,8 +16437,6 @@ navbarPage(
           override.aes = list(size = 7)# Increase margin between items
         )) +
           ylim(0, max_count)  # Set y-axis limits
-
-
       }
       plot_list
     })
