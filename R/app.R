@@ -874,7 +874,6 @@ navbarPage(
           # selectInput("dataset2", "Choose a dataset:", choices = c("test_data_clusTCR2","own_data_clusTCR2")),
           fileInput("file2_TCRexMerge", "Select files to merge",
                     multiple = TRUE,
-                    accept = c("text/csv", "text/comma-separated-values,text/plain", ".csv")
           ),
           downloadButton("downloaddf_TCRexFiltered", "Download table")
         ),
@@ -3322,7 +3321,6 @@ navbarPage(
     })
 
     # UI for Step 3a.
-
 
     # user interface parameters-----
     output$feature_input <- renderUI({
@@ -20961,5 +20959,4 @@ navbarPage(
   }
 
   shinyApp(ui, server)
-
 }
