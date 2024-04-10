@@ -25,7 +25,7 @@ automated_sc_filtering <- function(folder = "1_SeuratQC",
                                    resolution_sc= 1,
                                    limit_to_TCR_GEx = T,
                                    save_plots = T
-                                   ) {
+) {
   suppressMessages(require(Seurat))
   suppressMessages(require(ggplot2))
 
@@ -41,8 +41,8 @@ automated_sc_filtering <- function(folder = "1_SeuratQC",
   num <- length(samp_names2)
   for (i in 1:num) {
     message(paste("processing",i,"of",num))
-
     project_name <- samp_names[i]
+    project_name
     project_name2 <- samp_names2[i]
     print(project_name2)
     sc_processed <- paste0("2_SCobj/",project_name2,"_md_added",".rds")
@@ -57,9 +57,14 @@ automated_sc_filtering <- function(folder = "1_SeuratQC",
 
       if (dataset_type == "10x") {
         message("reading in matrix file")
+        file.exists(paste0(samp_names[i],"_count-matrix_10x.csv.gz"))
         mat <- read.csv(paste0(samp_names[i],"_count-matrix_10x.csv.gz"))
+
+        head(mat)[1:6]
+
         message("reading in meta data file")
         md <- read.csv(paste0(samp_names[i],"_metadata_10x.csv"))
+
         md <-  md[!duplicated(md$Cell_Index),]
         head(md)
       } else if (dataset_type == "BD_rap") {
@@ -69,10 +74,7 @@ automated_sc_filtering <- function(folder = "1_SeuratQC",
         md <- read.csv(paste0(samp_names[i],"_metadata_10x.csv"))
         # randomly removing duplication ----
         md <-  md[!duplicated(md$Cell_Index),]
-
-
       } else {
-
         message("Please select 10x or BD_rap")
       }
 
@@ -82,9 +84,10 @@ automated_sc_filtering <- function(folder = "1_SeuratQC",
         rownames(mat) <- make.unique(mat$Gene_Name)
         mat2 <- mat[, !names(mat) %in% c("Gene_Name")]
 
-        sc <- CreateSeuratObject(counts = mat2, assay = "RNA", project = project_name2)
+        sc <- suppressWarnings(CreateSeuratObject(counts = mat2, assay = "RNA", project = project_name2))
         sc <- PercentageFeatureSet(sc, pattern = "^MT-", col.name = "mtDNA")
         sc <- PercentageFeatureSet(sc, pattern = "^RP[SL]", col.name = "rRNA")
+        head(sc@meta.data)
 
       } else if (dataset_type == "10x" && species == "mm") {
         names(mat) <- gsub("[.]1", "-1", names(mat))
@@ -114,10 +117,21 @@ automated_sc_filtering <- function(folder = "1_SeuratQC",
         message("Please choose either 10x or BD_rap as well as define hs or mm")
       }
       print(sc)
+      print(head(sc@meta.data))
 
       if(save_plots) {
         suppressWarnings({
-          plot <- suppressMessages(VlnPlot(sc, features = c("nFeature_RNA", "nCount_RNA", "mtDNA", "rRNA"), ncol = 2, verbose = F))
+          sc@meta.data$mtDNA[is.na(sc@meta.data$mtDNA)] <- 0
+          sc@meta.data$rRNA[is.na(sc@meta.data$rRNA)] <- 0
+
+          # val_mt_rRNA <- sum(sc@meta.data$mtDNA) == 0 || sum(sc@meta.data$rRNA) == 0
+          # if(val_mt_rRNA) {
+          #   message("no MT DNA or no rRNA")
+          #   plot <- suppressWarnings(suppressMessages(VlnPlot(sc, features = c("nFeature_RNA", "nCount_RNA"), ncol = 2)))
+          # } else {
+          plot <- suppressWarnings(suppressMessages(VlnPlot(sc, features = c("nFeature_RNA", "nCount_RNA", "mtDNA", "rRNA"), ncol = 2)))
+          # }
+
           file_name_before <- paste0("Figures.Tables/QC_Figures/",project_name2,"_1_before_filtering.png")
           png(file_name_before, width = 1000, height = 1200, res = 144)
           plot(plot)
@@ -126,10 +140,23 @@ automated_sc_filtering <- function(folder = "1_SeuratQC",
       }
 
       sc <- suppressWarnings(suppressMessages(subset(sc, subset = nFeature_RNA >= features.min & nFeature_RNA <= features.max & mtDNA <= percent.mt & rRNA >= percent.rb)))
+      # summary(sc@meta.data$nFeature_RNA)
+      # sc <- subset(sc, subset = nFeature_RNA >= features.min)
+      # print(sc)
+      # sc <- subset(sc, subset = nFeature_RNA <= features.max)
+      # print(sc)
+      # sc <- subset(sc, subset = mtDNA <= percent.mt)
+      # print(sc)
+      # sc <- subset(sc, subset = rRNA >= percent.rb)
+      # print(sc)
 
       if(save_plots) {
         suppressWarnings({
-          plot <- suppressMessages(VlnPlot(sc, features = c("nFeature_RNA", "nCount_RNA", "mtDNA", "rRNA"), ncol = 2, verbose = F))
+          if(sum(sc@meta.data$mtDNA)==0 || sum(sc@meta.data$rRNA)==0) {
+            plot <- suppressWarnings(suppressMessages(VlnPlot(sc, features = c("nFeature_RNA", "nCount_RNA"), ncol = 2)))
+          } else {
+            plot <- suppressWarnings(suppressMessages(VlnPlot(sc, features = c("nFeature_RNA", "nCount_RNA", "mtDNA", "rRNA"), ncol = 2)))
+          }
           file_name_after <- paste0("Figures.Tables/QC_Figures/",project_name2,"_2_after_filtering.png")
           png(file_name_after, width = 1000, height = 1200, res = 144)
           plot(plot)
@@ -168,7 +195,7 @@ automated_sc_filtering <- function(folder = "1_SeuratQC",
 
       if(save_plots) {
         suppressWarnings({
-          plot <- ElbowPlot(sc, verbose = F)
+          plot <- ElbowPlot(sc)
 
           file_name_top10 <- paste0("Figures.Tables/QC_Figures/",project_name2,"_4_Elbow_plot.png")
           png(file_name_top10, width = 1000, height = 1200, res = 144)
@@ -179,7 +206,7 @@ automated_sc_filtering <- function(folder = "1_SeuratQC",
 
       if(save_plots) {
         suppressWarnings({
-          plot <- DimPlot(sc, reduction = "umap", verbose = F)
+          plot <- DimPlot(sc, reduction = "umap")
           file_name_top10 <- paste0("Figures.Tables/QC_Figures/",project_name2,"_5_UMAP_plot.png")
           png(file_name_top10, width = 1000, height = 1200, res = 144)
           plot(plot)
@@ -211,6 +238,3 @@ automated_sc_filtering <- function(folder = "1_SeuratQC",
     }
   }
 }
-
-
-
