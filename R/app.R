@@ -6017,14 +6017,12 @@ navbarPage(
 
     observeEvent(input$automateProcess, {
 
-      withProgress(
-        message = 'Processing...',
-        value = 0,
-        {
-          suppressWarnings(
-            STEGO.R::preprocessing_10x(downloadTCRex = T, downloadClusTCR = T, downloadSeurat = T, downloadTCR_Explore = T)
-          )
-        }
+      withProgress(message = "Pre processing underway", value = 0,
+                   {
+                     suppressWarnings(
+                       preprocessing_10x(downloadTCRex = T, downloadClusTCR = T, downloadSeurat = T, downloadTCR_Explore = T)
+                     )
+                   }
       )
     })
 
@@ -16423,10 +16421,10 @@ navbarPage(
           scale_shape_manual(values = unique_vdj$shape) +  # Use default shapes
           labs(x = "TCR counts", y = "", title = "", color = "VDJ", shape = "VDJ") +
           theme_minimal() +
-          theme(legend.title = element_text(fontface = "bold", size = 16, family = "Times New Roman"),
+          theme(legend.title = element_text(face = "bold", size = 16, family = "Times New Roman"),
                 legend.text = element_text(size = 12, family = "Times New Roman"),
                 axis.text = element_text(size = 16, family = "Times New Roman"),
-                axis.title.y  = element_text(fontface = "bold", col = "black", fontfamily = "Times New Roman", fontsize=30),
+                axis.title.y  = element_text(face = "bold", col = "black", fontfamily = "Times New Roman", fontsize=30),
                 axis.title.x  = element_blank()
           ) +
           labs(x = "", y = "")

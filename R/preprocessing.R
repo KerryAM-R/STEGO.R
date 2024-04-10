@@ -30,6 +30,7 @@ preprocessing_10x <- function (downloadTCRex = F, downloadClusTCR = F, downloadT
   num <- length(main_folders)
 
   for (i in 1:num) {
+    incProgress(1/num, detail = paste("completed",i,"of",num))
 
     sub_directory <- main_folders[i]
     files <- list.files(paste(main_directory, sub_directory,
