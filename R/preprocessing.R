@@ -473,8 +473,9 @@ preprocessing_10x <- function (downloadTCRex = F, downloadClusTCR = F, downloadT
         contig_paired_only$vdj_gene_cdr3_AG_BD <- gsub(" & $",
                                                        "", contig_paired_only$vdj_gene_cdr3_AG_BD)
         dim(contig_paired_only)
-        contig_paired_only_dup <- contig_paired_only[!duplicated(contig_paired_only$Cell_Index),
+        contig_paired_only <- contig_paired_only[!duplicated(contig_paired_only$Cell_Index),
         ]
+
         contig_paired_only$indiv.group <- sub_directory
         contig_paired_only <- contig_paired_only %>% select(all_of(c("Cell_Index",
                                                                      "indiv.group")), everything())
