@@ -117,7 +117,7 @@ automated_sc_filtering <- function(folder = "1_SeuratQC",
 
       if(save_plots) {
         suppressWarnings({
-          plot <- suppressMessages(VlnPlot(sc, features = c("nFeature_RNA", "nCount_RNA", "mtDNA", "rRNA"), ncol = 2))
+          plot <- suppressMessages(VlnPlot(sc, features = c("nFeature_RNA", "nCount_RNA", "mtDNA", "rRNA"), ncol = 2, verbose = F))
           file_name_before <- paste0("Figures.Tables/QC_Figures/",project_name2,"_1_before_filtering.png")
           png(file_name_before, width = 1000, height = 1200, res = 144)
           plot(plot)
@@ -125,23 +125,24 @@ automated_sc_filtering <- function(folder = "1_SeuratQC",
         })
       }
 
-      sc <- suppressMessages(subset(sc, subset = nFeature_RNA >= features.min & nFeature_RNA <= features.max & mtDNA <= percent.mt & rRNA >= percent.rb))
+      sc <- suppressWarnings(suppressMessages(subset(sc, subset = nFeature_RNA >= features.min & nFeature_RNA <= features.max & mtDNA <= percent.mt & rRNA >= percent.rb)))
 
       if(save_plots) {
         suppressWarnings({
-          plot <- suppressMessages(VlnPlot(sc, features = c("nFeature_RNA", "nCount_RNA", "mtDNA", "rRNA"), ncol = 2))
+          plot <- suppressMessages(VlnPlot(sc, features = c("nFeature_RNA", "nCount_RNA", "mtDNA", "rRNA"), ncol = 2, verbose = F))
           file_name_after <- paste0("Figures.Tables/QC_Figures/",project_name2,"_2_after_filtering.png")
           png(file_name_after, width = 1000, height = 1200, res = 144)
           plot(plot)
           dev.off()
         })
       }
-      sc <- suppressMessages(NormalizeData(sc))
-      sc <- suppressMessages(FindVariableFeatures(sc, selection.method = "vst"))
+      sc <- suppressMessages(NormalizeData(sc, verbose = F))
+
+      sc <- suppressMessages(FindVariableFeatures(sc, selection.method = "vst", verbose = F))
 
       if(save_plots) {
         suppressWarnings({
-          top10 <- head(VariableFeatures(sc), 10)
+          top10 <- head(VariableFeatures(sc, verbose = F), 10)
           # plot variable features with and without labels
           plot1 <- VariableFeaturePlot(sc)
           plot2 <- LabelPoints(plot = plot1, points = top10, repel = TRUE)
@@ -155,19 +156,19 @@ automated_sc_filtering <- function(folder = "1_SeuratQC",
 
       all.genes <- rownames(sc)
       message("Scaling")
-      sc <- suppressWarnings(suppressMessages(ScaleData(sc, features = all.genes)))
+      sc <- suppressWarnings(suppressMessages(ScaleData(sc, features = all.genes, verbose = F)))
       message("PCA")
-      sc <- suppressMessages(RunPCA(sc, features = VariableFeatures(object = sc)))
+      sc <- suppressMessages(RunPCA(sc, features = VariableFeatures(object = sc),verbose = F))
       message("Finding Neighbours")
-      sc <- suppressMessages(FindNeighbors(sc, dims = 1:dimension_sc))
+      sc <- suppressMessages(FindNeighbors(sc, dims = 1:dimension_sc, verbose = F))
       message("Finding clusters")
-      sc <- suppressMessages(FindClusters(sc, resolution = resolution_sc))
+      sc <- suppressMessages(FindClusters(sc, resolution = resolution_sc, verbose = F))
       message("make UMAP")
-      sc <- RunUMAP(sc, dims = 1:dimension_sc)
+      sc <- RunUMAP(sc, dims = 1:dimension_sc, verbose = F)
 
       if(save_plots) {
         suppressWarnings({
-          plot <- ElbowPlot(sc)
+          plot <- ElbowPlot(sc, verbose = F)
 
           file_name_top10 <- paste0("Figures.Tables/QC_Figures/",project_name2,"_4_Elbow_plot.png")
           png(file_name_top10, width = 1000, height = 1200, res = 144)
@@ -178,7 +179,7 @@ automated_sc_filtering <- function(folder = "1_SeuratQC",
 
       if(save_plots) {
         suppressWarnings({
-          plot <- DimPlot(sc, reduction = "umap")
+          plot <- DimPlot(sc, reduction = "umap", verbose = F)
           file_name_top10 <- paste0("Figures.Tables/QC_Figures/",project_name2,"_5_UMAP_plot.png")
           png(file_name_top10, width = 1000, height = 1200, res = 144)
           plot(plot)
@@ -210,5 +211,6 @@ automated_sc_filtering <- function(folder = "1_SeuratQC",
     }
   }
 }
+
 
 
