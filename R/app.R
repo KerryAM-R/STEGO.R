@@ -229,6 +229,7 @@ runSTEGO <- function(){
   }
 
   ###################
+
   # UI page -----
   ui <- fluidPage(
 
@@ -1033,9 +1034,10 @@ navbarPage(
     ),
   ),
   # end TCR clustering ------
-  # Quality control side bar panel -----
+  # STEP 3Quality control side bar panel -----
   navbarMenu(
     "STEP 3.",
+    # STEP 3A ------
     tabPanel(
       "3a. Seurat QC",
       sidebarLayout(
@@ -1053,6 +1055,7 @@ navbarPage(
                      selectInput("stored_in_expression", "Does the .h5 object has multiple part?", choices = c("no", "yes")),
                      uiOutput("feature_input"),
                      actionButton('run_violin', 'Filter', onclick = "$(tab).removeClass('disabled-1')"),
+
                      ######
                      # actionButton("run_violin", "Update Violin plot", onclick = "$(tab1).removeClass('disabled_after')"),
                      conditionalPanel(
@@ -1072,7 +1075,9 @@ navbarPage(
                      conditionalPanel(
                        condition = ("input.run_metadata != 0"),
                        div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
-                       div(downloadButton("downloaddf_SeruatObj", "Download Seurat (.rds)"), style = "padding-top: 25px;")
+                       downloadButton("downloaddf_SeruatObj", "Download Seurat (.rds)"), style = "padding-top: 25px;"),
+
+                     div(actionButton("clearDataBtn", "Clear Data"), # Add clear data button here
                      ),
                      tags$hr(),
                      # actionButton("reset_input", "Reset inputs")
@@ -1084,11 +1089,13 @@ navbarPage(
             # tabPanel("Instructions"
             #          ),
             tabPanel(
-              "Header check",
+              "Uploaded Files",
               div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
               div(DT::DTOutput("DEx_header_name_check.dt")),
+              div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
+              div(DT::DTOutput("DEx_view.meta.dt")),
             ),
-            #######
+            ######
             tabPanel(
               "Violin and correlation",
               tabsetPanel(
@@ -1124,43 +1131,94 @@ navbarPage(
                   ),
                   tags$script(
                     '
-    var tab2 = $(\'a[data-value="after_filtering_violin"]\').parent();
+  var tab2 = $(\'a[data-value="after_filtering_violin"]\').parent();
+
+  $(function(){
+    $(tab2).addClass("disabled-1");
+
+    $(tab2.parent()).on("click", "li.disabled-1", function(e) {
+      e.preventDefault();
+      return false;
+    });
+  });
+  $(document).on("shiny:connected", function(e) {
+    $("#run_violin").on("click", function() {
+      $(tab2).removeClass("disabled-1");
+    });
+  });
+
+  // Add this block to re-disable the tab upon clicking clearDataBtn
+  $(document).on("shiny:connected", function(e) {
+    $("#clearDataBtn").on("click", function() {
+      $(tab2).addClass("disabled-1");
+    });
+  });
+  '
+                  ),
+                )
+              )
+            ),
+  # Elbow and heatmap  -----
+  tabPanel(
+    "Elbow Plot", value = "Elbow_plot",
+    div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
+    plotOutput("create_elbowPlot_sc", height = "600px"),
+    fluidRow(
+      column(1, numericInput("width_create_elbowPlot_sc", "Width of PDF", value = 10)),
+      column(1, numericInput("height_create_elbowPlot_sc", "Height of PDF", value = 8)),
+      column(2, style = "margin-top: 25px;", downloadButton("downloadPlot_create_elbowPlot_sc", "Download PDF")),
+      column(2, numericInput("width_png_create_elbowPlot_sc", "Width of PNG", value = 1200)),
+      column(2, numericInput("height_png_create_elbowPlot_sc", "Height of PNG", value = 1000)),
+      column(2, numericInput("resolution_PNG_create_elbowPlot_sc", "Resolution of PNG", value = 144)),
+      column(2, style = "margin-top: 25px;", downloadButton("downloadPlotPNG_create_elbowPlot_sc", "Download PNG")),
+    ),
+    tags$script(
+      '
+    var tab4 = $(\'a[data-value="Elbow_plot"]\').parent();
 
     $(function(){
-      $(tab2).addClass("disabled-1");
+      $(tab4).addClass("disabled-1");
 
-      $(tab2.parent()).on("click", "li.disabled-1", function(e) {
+      $(tab4.parent()).on("click", "li.disabled-1", function(e) {
         e.preventDefault();
         return false;
       });
     });
     $(document).on("shiny:connected", function(e) {
       $("#run_violin").on("click", function() {
-        $(tab2).removeClass("disabled-1");
+        $(tab4).removeClass("disabled-1");
       });
     });
-    '
-                  ),
-                )
-              )
-            ),
-    # Variable features -----
-    tabPanel(
-      "Top variable features", value = "Top_var_feat",
-      div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
-      plotOutput("plot_10_features_sc", height = "600px"),
-      fluidRow(
-        column(1, numericInput("width_plot_10_features_sc", "Width of PDF", value = 10)),
-        column(1, numericInput("height_plot_10_features_sc", "Height of PDF", value = 8)),
-        column(2, style = "margin-top: 25px;", downloadButton("downloadPlot_plot_10_features_sc", "Download PDF")),
-        column(2, numericInput("width_png_plot_10_features_sc", "Width of PNG", value = 1200)),
-        column(2, numericInput("height_png_plot_10_features_sc", "Height of PNG", value = 1000)),
-        column(2, numericInput("resolution_PNG_plot_10_features_sc", "Resolution of PNG", value = 144)),
-        column(2, style = "margin-top: 25px;", downloadButton("downloadPlotPNG_plot_10_features_sc", "Download PNG")),
-      ),
 
-      tags$script(
-        '
+      // Add this block to re-disable the tab upon clicking clearDataBtn
+  $(document).on("shiny:connected", function(e) {
+    $("#clearDataBtn").on("click", function() {
+      $(tab4).addClass("disabled-1");
+    });
+  });
+
+
+    '
+    ),
+  ),
+
+  # Variable features -----
+  tabPanel(
+    "Top variable features", value = "Top_var_feat",
+    div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
+    plotOutput("plot_10_features_sc", height = "600px"),
+    fluidRow(
+      column(1, numericInput("width_plot_10_features_sc", "Width of PDF", value = 10)),
+      column(1, numericInput("height_plot_10_features_sc", "Height of PDF", value = 8)),
+      column(2, style = "margin-top: 25px;", downloadButton("downloadPlot_plot_10_features_sc", "Download PDF")),
+      column(2, numericInput("width_png_plot_10_features_sc", "Width of PNG", value = 1200)),
+      column(2, numericInput("height_png_plot_10_features_sc", "Height of PNG", value = 1000)),
+      column(2, numericInput("resolution_PNG_plot_10_features_sc", "Resolution of PNG", value = 144)),
+      column(2, style = "margin-top: 25px;", downloadButton("downloadPlotPNG_plot_10_features_sc", "Download PNG")),
+    ),
+
+    tags$script(
+      '
     var tab3 = $(\'a[data-value="Top_var_feat"]\').parent();
 
     $(function(){
@@ -1176,51 +1234,24 @@ navbarPage(
         $(tab3).removeClass("disabled-2");
       });
     });
-    '
-      ),
-
-    ),
-    # Elbow and heatmap  -----
-    tabPanel(
-      "Elbow Plot", value = "Elbow_plot",
-      div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
-      plotOutput("create_elbowPlot_sc", height = "600px"),
-      fluidRow(
-        column(1, numericInput("width_create_elbowPlot_sc", "Width of PDF", value = 10)),
-        column(1, numericInput("height_create_elbowPlot_sc", "Height of PDF", value = 8)),
-        column(2, style = "margin-top: 25px;", downloadButton("downloadPlot_create_elbowPlot_sc", "Download PDF")),
-        column(2, numericInput("width_png_create_elbowPlot_sc", "Width of PNG", value = 1200)),
-        column(2, numericInput("height_png_create_elbowPlot_sc", "Height of PNG", value = 1000)),
-        column(2, numericInput("resolution_PNG_create_elbowPlot_sc", "Resolution of PNG", value = 144)),
-        column(2, style = "margin-top: 25px;", downloadButton("downloadPlotPNG_create_elbowPlot_sc", "Download PNG")),
-      ),
-      tags$script(
-        '
-    var tab4 = $(\'a[data-value="Elbow_plot"]\').parent();
-
-    $(function(){
-      $(tab4).addClass("disabled-2");
-
-      $(tab4.parent()).on("click", "li.disabled-2", function(e) {
-        e.preventDefault();
-        return false;
-      });
+          // Add this block to re-disable the tab upon clicking clearDataBtn
+  $(document).on("shiny:connected", function(e) {
+    $("#clearDataBtn").on("click", function() {
+      $(tab3).addClass("disabled-2");
     });
-    $(document).on("shiny:connected", function(e) {
-      $("#run_reduction").on("click", function() {
-        $(tab4).removeClass("disabled-2");
-      });
-    });
+  });
     '
-      ),
     ),
-    # UMAP  -----
-    tabPanel(
-      "UMAP", value = "sc_UMAP_QC",
-      div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
-      plotOutput("create_UMAP_sc", height = "600px"),
-      tags$script(
-        '
+
+  ),
+
+  # UMAP  -----
+  tabPanel(
+    "UMAP", value = "sc_UMAP_QC",
+    div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
+    plotOutput("create_UMAP_sc", height = "600px"),
+    tags$script(
+      '
     var tab5 = $(\'a[data-value="sc_UMAP_QC"]\').parent();
 
     $(function(){
@@ -1236,19 +1267,24 @@ navbarPage(
         $(tab5).removeClass("disabled-2");
       });
     });
+// Add this block to re-disable the tab upon clicking clearDataBtn
+  $(document).on("shiny:connected", function(e) {
+    $("#clearDataBtn").on("click", function() {
+      $(tab5).addClass("disabled-2");
+    });
+  });
     '
-      ),
+    ),
 
-    ), # Export a table with meta.data and expression.
-    tabPanel(
-      "Add metadata", value = "Add_meta_data_to_sc",
-      div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
-      div(DT::DTOutput("DEx_view.meta.dt")),
-      div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
-      div(DT::DTOutput("DEx_table_meta.data")),
+  ), # Export a table with meta.data and expression.
+tabPanel(
+  "Add metadata", value = "Add_meta_data_to_sc",
 
-      tags$script(
-        '
+  div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
+  div(DT::DTOutput("DEx_table_meta.data")),
+
+  tags$script(
+    '
     var tab6 = $(\'a[data-value="Add_meta_data_to_sc"]\').parent();
 
     $(function(){
@@ -1264,825 +1300,890 @@ navbarPage(
         $(tab6).removeClass("disabled-2");
       });
     });
+    // Add this block to re-disable the tab upon clicking clearDataBtn
+  $(document).on("shiny:connected", function(e) {
+    $("#clearDataBtn").on("click", function() {
+      $(tab6).addClass("disabled-2");
+    });
+  });
     '
-      ),
-
-    # selectInput("","comaprison 1")
-    ),
+  ),
+),
           ),
         ),
-    # end of QC -----
+# end of QC -----
       ),
     ),
-    ###################
-    # Merge multiple Seurat objects -----
-    tabPanel(
-      "3b. Merge & Batch correction",
-      sidebarLayout(
-        # Sidebar with a slider input
-        sidebarPanel(
-          id = "tPanel5", style = "overflow-y:scroll; max-height: 800px; position:relative;", width = 3,
-          div(class = "name-BD",textInput("project_name2", h4("Name of Project", class = "name-header2"), value = "")),
-          conditionalPanel(
-            condition = "input.Merging_and_batching == 'Merging_Harmony'",
-            selectInput("sample.type.source_merging", "Species", choices = c("hs", "mm")),
-            fileInput("file1_rds.file",
-                      "Choose .rds files from merging",
-                      multiple = TRUE,
-                      accept = c("rds", ".rds")
-            ),
-            checkboxInput("include_additional_genes",p("Add additional genes?",class = "name-header2"),value = F),
+###################
+# Merge multiple Seurat objects -----
+tabPanel(
+  "3b. Merge & Batch correction",
+  sidebarLayout(
+    # Sidebar with a slider input
+    sidebarPanel(
+      id = "tPanel5", style = "overflow-y:scroll; max-height: 800px; position:relative;", width = 3,
+      div(class = "name-BD",textInput("project_name2", h4("Name of Project", class = "name-header2"), value = "")),
+      conditionalPanel(
+        condition = "input.Merging_and_batching == 'Merging_Harmony'",
+        selectInput("sample.type.source_merging", "Species", choices = c("hs", "mm")),
+        fileInput("file1_rds.file",
+                  "Choose .rds files from merging",
+                  multiple = TRUE,
+                  accept = c("rds", ".rds")
+        ),
+        checkboxInput("include_additional_genes",p("Add additional genes?",class = "name-header2"),value = F),
 
-            fileInput("file_user_genes",
-                      "Choose .csv files that has required genes",
-                      multiple = F,
-                      accept = c("csv", ".csv","comma")
-            ),
-
-            downloadButton("downloaddf_SeruatObj_merged2", "Download Merged Seurat")
-          ),
-          conditionalPanel(
-            condition = "input.Merging_and_batching != 'Merging_Harmony'",
-            selectInput("Seruat_version_merge", "Seurat Version", choices = c("V4", "V5"), selected = "V5"),
-            selectInput("sample.type.source", "Species", choices = ""),
-            fileInput("file1_rds.Merged_data_for_harmony",
-                      "Upload .rds file for Batch correction with Harmony",
-                      multiple = F,
-                      accept = c(".rds", "rds")
-            ),
-            downloadButton("downloaddf_SeruatObj_merged", "Download Batch corrected Seurat")
-          )
+        fileInput("file_user_genes",
+                  "Choose .csv files that has required genes",
+                  multiple = F,
+                  accept = c("csv", ".csv","comma")
         ),
 
-        # Show a plot of the generated distribution
-        mainPanel(
-          width = 9,
-          tabsetPanel(
-            id = "Merging_and_batching",
-            tabPanel("Merge Files",
-                     value = "Merging_Harmony",
+        downloadButton("downloaddf_SeruatObj_merged2", "Download Merged Seurat")
+      ),
+      conditionalPanel(
+        condition = "input.Merging_and_batching != 'Merging_Harmony'",
+        selectInput("Seruat_version_merge", "Seurat Version", choices = c("V4", "V5"), selected = "V5"),
+        selectInput("sample.type.source", "Species", choices = ""),
+        fileInput("file1_rds.Merged_data_for_harmony",
+                  "Upload .rds file for Batch correction with Harmony",
+                  multiple = F,
+                  accept = c(".rds", "rds")
+        ),
+        downloadButton("downloaddf_SeruatObj_merged", "Download Batch corrected Seurat")
+      )
+    ),
+
+    # Show a plot of the generated distribution
+    mainPanel(
+      width = 9,
+      tabsetPanel(
+        id = "Merging_and_batching",
+        tabPanel("Merge Files",
+                 value = "Merging_Harmony",
+                 div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
+                 tabsetPanel(
+                   tabPanel(
+                     "uploaded",
+                     verbatimTextOutput("testing_mult"),
+                   ),
+                   tabPanel(
+                     "merging",
+                     actionButton("run_merging", "run merging"),
+                     verbatimTextOutput("testing_mult2")
+                   ),
+                 ),
+        ),
+
+        tabPanel("Batch correction",
+                 tabsetPanel(
+
+
+                   tabPanel(
+                     "Variable data",
                      div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
-                     tabsetPanel(
-                       tabPanel(
-                         "uploaded",
-                         verbatimTextOutput("testing_mult"),
-                       ),
-                       tabPanel(
-                         "merging",
-                         actionButton("run_merging", "run merging"),
-                         verbatimTextOutput("testing_mult2")
-                       ),
+                     # verbatimTextOutput("Scaling_check_output"),
+                     verbatimTextOutput("testing_mult3"),
+                     actionButton("run_var", "Run VariableFeatures"),
+
+
+
+                     div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
+                     verbatimTextOutput("var_harmony_verbrose")
+                   ),
+                   tabPanel(
+                     "Scale data",
+                     div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
+                     actionButton("run_scale", "Run Scale"),
+                     div(DT::DTOutput("Tb_scaling_features_for_annotation")),
+                     div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
+                     verbatimTextOutput("scale_harmony_verbrose")
+                   ),
+                   tabPanel(
+                     "PCA",
+                     div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
+                     actionButton("run_PCA", "Run PCA"),
+                     div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
+                     verbatimTextOutput("PCA_harmony_verbrose")
+                   ),
+                   tabPanel(
+                     "harmony",
+                     div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
+                     actionButton("run_harmony", "Run Harmony"),
+                     div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
+                     verbatimTextOutput("harmony_verbrose"),
+                   ),
+                   tabPanel(
+                     "Dimentional reduction",
+                     fluidRow(
+                       column(3, numericInput("dimension_Merged", "Max number of dimensions", value = 30)),
+                       column(6, numericInput("res_merged", "Resolution of clusters", value = 0.5)),
                      ),
-            ),
-
-            tabPanel("Batch correction",
-                     tabsetPanel(
-
-
-                       tabPanel(
-                         "Variable data",
-                         div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
-                         # verbatimTextOutput("Scaling_check_output"),
-                         verbatimTextOutput("testing_mult3"),
-                         actionButton("run_var", "Run VariableFeatures"),
-
-
-
-                         div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
-                         verbatimTextOutput("var_harmony_verbrose")
-                       ),
-                       tabPanel(
-                         "Scale data",
-                         div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
-                         actionButton("run_scale", "Run Scale"),
-                         div(DT::DTOutput("Tb_scaling_features_for_annotation")),
-                         div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
-                         verbatimTextOutput("scale_harmony_verbrose")
-                       ),
-                       tabPanel(
-                         "PCA",
-                         div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
-                         actionButton("run_PCA", "Run PCA"),
-                         div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
-                         verbatimTextOutput("PCA_harmony_verbrose")
-                       ),
-                       tabPanel(
-                         "harmony",
-                         div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
-                         actionButton("run_harmony", "Run Harmony"),
-                         div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
-                         verbatimTextOutput("harmony_verbrose"),
-                       ),
-                       tabPanel(
-                         "Dimentional reduction",
-                         fluidRow(
-                           column(3, numericInput("dimension_Merged", "Max number of dimensions", value = 30)),
-                           column(6, numericInput("res_merged", "Resolution of clusters", value = 0.5)),
-                         ),
-                         actionButton("run_reduction_harmony", "Run Dimentional reduction"),
-                         div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
-                         verbatimTextOutput("testing_mult4"),
-                       ),
-                       tabPanel(
-                         "UMAP",
-                         div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
-                         plotOutput("create_UMAP_merged", height = "600px"),
-                         fluidRow(
-                           column(1, numericInput("width_sc_merged", "Width of PDF", value = 10)),
-                           column(1, numericInput("height_sc_merged", "Height of PDF", value = 8)),
-                           column(2, style = "margin-top: 25px;", downloadButton("downloadPlot_sc_merged", "Download Network PDF")),
-                           column(2, numericInput("width_png_sc_merged", "Width of PNG", value = 1200)),
-                           column(2, numericInput("height_png_sc_merged", "Height of PNG", value = 1000)),
-                           column(2, numericInput("resolution_PNG_sc_merged", "Resolution of PNG", value = 144)),
-                           column(2, style = "margin-top: 25px;", downloadButton("downloadPlotPNG_sc_merged", "Download Network PNG")),
-                         ),
-                       ),
-                     )
-            )
-          ))
-      )
-    ),
-
-    ###################
-
-    # Add annotations -----
-    tabPanel(
-      "3c. Annotations",
-      sidebarLayout(
-        sidebarPanel(
-          id = "tPanel4", style = "overflow-y:scroll; max-height: 800px; position:relative;", width = 3,
-          # uiOutput("Detect_version"),
-          div(class = "name-BD",textInput("project_name3", h4("Name of Project", class = "name-header2"), value = "")),
-          selectInput("Data_types", "Source", choices = c("10x_HS", "BD_HS.Immune.Panel", "BD_HS.Full.Panel", "10x_MM", "BD_MM_Full.Panel", "BD_MM_Immune.Panel", "TCR-seq")),
-          selectInput("sample.type.source.markers", "Species", choices = ""),
-          fileInput("file1_rds.file2",
-                    "Choose merged or single .rds files from directory",
-                    multiple = TRUE,
-                    accept = c(".rds", "rds")
-          ),
-
-          selectInput("Require_custom_geneset", "Require custom genes?", choices = c("no", "yes")),
-          uiOutput("scGate_cutoffs"),
-          downloadButton("downloaddf_SeruatObj_annotated", "Download Annotated Seurat"),
-        ),
-        mainPanel(
-          width = 9,
-          tabsetPanel(
-            tabPanel(
-              "Upload",
-              div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
-              verbatimTextOutput("testing_mult_anno")
-            ),
-            tabPanel(
-              "scGATE",
-              selectInput("reduction_anno", "Reduction to use", choices = c("calculate", "pca", "umap", "harmony"), selected = "harmony"),
-
-              # custom annotations databases -----
-              conditionalPanel(
-                condition = "input.Require_custom_geneset == 'yes'",
-                fluidRow(
-                  column(2, checkboxInput("GeneSet1_scGate", "GeneSet1", value = F)),
-                  column(2, textInput("geneset1_name", "Name", value = "GeneSet1")),
-                  column(2, checkboxInput("GeneSet2_scGate", "GeneSet2", value = F)),
-                  column(2, textInput("geneset2_name", "Name", value = "GeneSet2")),
-                  column(2, checkboxInput("GeneSet3_scGate", "GeneSet3", value = F)),
-                  column(2, textInput("geneset3_name", "Name", value = "GeneSet3")),
-                  column(2, checkboxInput("GeneSet4_scGate", "GeneSet4", value = F)),
-                  column(2, textInput("geneset4_name", "Name", value = "GeneSet4")),
-                  column(2, checkboxInput("GeneSet5_scGate", "GeneSet5", value = F)),
-                  column(2, textInput("geneset5_name", "Name", value = "GeneSet5")),
-                  column(2, checkboxInput("GeneSet6_scGate", "GeneSet6", value = F)),
-                  column(2, textInput("geneset6_name", "Name", value = "GeneSet6")),
-                  column(2, checkboxInput("GeneSet7_scGate", "GeneSet7", value = F)),
-                  column(2, textInput("geneset7_name", "Name", value = "GeneSet7")),
-                  column(2, checkboxInput("GeneSet8_scGate", "GeneSet8", value = F)),
-                  column(2, textInput("geneset8_name", "Name", value = "GeneSet8")),
-                  column(2, checkboxInput("GeneSet9_scGate", "GeneSet9", value = F)),
-                  column(2, textInput("geneset9_name", "Name", value = "GeneSet9")),
-                )
-              ),
-
-
-              # human 10x annotations -----
-              conditionalPanel(
-                condition = "input.Data_types == '10x_HS' || input.Data_types == 'BD_HS.Full.Panel' || 'BD_HS.Immune.Panel'",
-                div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
-                fluidRow(
-                  div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
-                  column(3, checkboxInput("hs_function_scGATE", "Function (Human)", value = F)),
-                  column(3, checkboxInput("hs_generic_scGATE", "Generic (Human)", value = F)),
-                  column(3, checkboxInput("hs_exhausted_scGATE", "Exhausted (Human)", value = F)),
-                  column(3, checkboxInput("hs_senescence_scGATE", "Senescence (Human)", value = F)),
-                  column(3, checkboxInput("hs_cycling_scGATE", "Cycling (Human)", value = F)),
-                  column(3, checkboxInput("hs_TCRseq_scGATE", "TCR-seq (Human)", value = F)),
-                )
-              ),
-
-              # BD rhapsody MM full panel ----
-              conditionalPanel(
-                "input.Data_types == 'BD_MM_Full.Panel' || input.Data_types =='10x_MM'",
-                h5("Under development"),
-                div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
-                h6("Curated from Sharland lab"),
-                fluidRow(
-                  column(3, checkboxInput("BDrhapsody_scGATE.MM.Tcell", "Major T cell popualtions", value = F)),
-                  column(3, checkboxInput("BDrhapsody_scGATE.MM.Memory", "Memory", value = F)),
-                  column(3, checkboxInput("BDrhapsody_scGATE.MM.signatures", "signatures", value = F)),
-                  column(3, checkboxInput("BDrhapsody_scGATE.MM.Innate.NK", "Innate & NK", value = F)),
-                ),
-                h6("From the human BD Rhapsody searches"),
-                fluidRow(
-                  column(3, checkboxInput("BDrhapsody_scGATE.MM.TNF.IFNg", "TNF.IFNg", value = F)),
-                  column(3, checkboxInput("BDrhapsody_scGATE.MM.subtypes", "Subtypes", value = F)),
-                  column(3, checkboxInput("BDrhapsody_scGATE.MM.other", "other", value = F)),
-                ),
-              ),
-              # BD rhapsody MM immune panel ----
-              conditionalPanel(
-                "input.Data_types == 'BD_MM_Immune.Panel'",
-                h5("Under development")
-              ),
-              conditionalPanel(
-                condition = "input.Require_custom_geneset == 'yes'",
-                verbatimTextOutput("scGATE_verbatum_GeneSet1"),
-                verbatimTextOutput("scGATE_verbatum_GeneSet2"),
-                verbatimTextOutput("scGATE_verbatum_GeneSet3"),
-                verbatimTextOutput("scGATE_verbatum_GeneSet4"),
-                verbatimTextOutput("scGATE_verbatum_GeneSet5"),
-                verbatimTextOutput("scGATE_verbatum_GeneSet6"),
-                verbatimTextOutput("scGATE_verbatum_GeneSet7"),
-                verbatimTextOutput("scGATE_verbatum_GeneSet8"),
-                verbatimTextOutput("scGATE_verbatum_GeneSet9"),
-              ),
-              # human 10x annotations Verbatium -----
-              conditionalPanel(
-                condition = "input.Data_types == '10x_HS' || input.Data_types == 'BD_HS.Full.Panel' || 'BD_HS.Immune.Panel'",
-                div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
-                verbatimTextOutput("scGATE_verbatum_function"),
-                div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
-                verbatimTextOutput("scGATE_verbatum_generic2"),
-                div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
-                verbatimTextOutput("scGATE_verbatum_exhausted"),
-                div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
-                verbatimTextOutput("scGATE_verbatum_senescence"),
-                div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
-                verbatimTextOutput("scGATE_verbatum_cycling"),
-                div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
-                verbatimTextOutput("scGATE_verbatum_TCRseq"),
-              ),
-              conditionalPanel(
-                "input.Data_types == 'BD_MM_Full.Panel' || input.Data_types =='10x_MM'",
-                verbatimTextOutput("scGATE_verbatum_BDrhapsody_MM.FP.Tcell"),
-                verbatimTextOutput("scGATE_verbatum_BDrhapsody_MM.FP.Memory"),
-                verbatimTextOutput("scGATE_verbatum_BDrhapsody_MM.FP.signatures"),
-                verbatimTextOutput("scGATE_verbatum_BDrhapsody_MM.FP.Innate.NK"),
-                verbatimTextOutput("scGATE_verbatum_BDrhapsody_MM.FP.TNF.IFNg"),
-                verbatimTextOutput("scGATE_verbatum_BDrhapsody_MM.FP.subtypes"),
-                verbatimTextOutput("scGATE_verbatum_BDrhapsody_MM.FP.other")
-              ),
-            ),
-            tabPanel(
-              "Check custom scGate annotations",
-
-              fluidRow(
-                column(4, plotOutput("create_custom_1", height = "600px")),
-                column(4, plotOutput("create_custom_2", height = "600px"), ),
-                column(4, plotOutput("create_custom_3", height = "600px")),
-                column(4, plotOutput("create_custom_4", height = "600px"), ),
-                column(4, plotOutput("create_custom_5", height = "600px")),
-                column(4, plotOutput("create_custom_6", height = "600px"), ),
-                column(4, plotOutput("create_custom_7", height = "600px")),
-                column(4, plotOutput("create_custom_8", height = "600px"), ),
-                column(4, plotOutput("create_custom_9", height = "600px")),
-              )
-              # plotOutput("create_custom_1", height = "600px"),
-            ),
-            # classification based on TCR_seq -----
-            # display metadata -----
-            tabPanel(
-              "Feature plot",
-              #   fluidRow(
-              #     column(3, numericInput("min.ptc.sc", "minimum point", value = 0.25)),
-              #     column(3, numericInput("logfc.ptc.sc", "Log fold change", value = 0.25)),
-              #     column(3, selectInput("normalN", "Type of Differnetial expression",
-              #       choices = c("wilcox", "bimod", "roc", "t", "negbinom", "poisson", "LR", "MAST", "DESeq2")
-              #     )),
-              #     column(3, style = "margin-top: 25px;", actionButton("run_differental.exp", "run differental expression"), )
-              # ),
-              #   fluidRow(
-              #     column(4, selectInput("multiple_group_sc", "Include group comparison", choices = c("no", "yes"))),
-              #     column(4, selectInput("meta_data_sc_clust", "Cluster by", choices = "")),
-              #     column(4, selectInput("meta_data_sc_", "Add group", choices = "")),
-              #
-              # ),
-              # tabsetPanel(
-              # id = "Panel_DEX",
-              # Cluster table -----
-              # tabPanel("Checking files",
-              #          div(DT::DTOutput("list_of_genes")),
-              #
-              #          # verbatimTextOutput("checking_files_markers_featurePlot_sc"),
-              #          ),
-              # tabPanel(
-              p("   "),
-              actionButton("run_string.data3", "View Feature plot"),
-              fluidRow(column(12, selectInput("string.data3", "column names for summary", "", multiple = T, width = "1200px"))),
-              fluidRow(
-                column(2, checkboxInput("label_is_true_features", "Add plot lables", value = T)),
-                column(2, selectInput("norm_expression_for_all", "Set Maximum", choices = c("no", "yes"))),
-                column(2, numericInput("max_norm_FP", "Set maximum scale value", value = 10, step = 1, min = 1)),
-                column(2, colourInput("lower_col_FP", "Min (Colour)", value = "grey90")),
-                column(2, colourInput("upper_col_FP", "Max (colour)", value = "Darkblue"))
-              ),
-              plotOutput("markers_featurePlot_sc", height = "600px"),
-              fluidRow(
-                column(3, numericInput("width_markers_featurePlot_sc", "Width of PDF", value = 10)),
-                column(3, numericInput("height_markers_featurePlot_sc", "Height of PDF", value = 8)),
-                column(3),
-                column(3, style = "margin-top: 25px;", downloadButton("downloadPlot_markers_featurePlot_sc", "Download PDF"))
-              ),
-              fluidRow(
-                column(3, numericInput("width_png_markers_featurePlot_sc", "Width of PNG", value = 1200)),
-                column(3, numericInput("height_png_markers_featurePlot_sc", "Height of PNG", value = 1000)),
-                column(3, numericInput("resolution_PNG_markers_featurePlot_sc", "Resolution of PNG", value = 144)),
-                column(3, style = "margin-top: 25px;", downloadButton("downloadPlotPNG_markers_featurePlot_sc", "Download PNG"))
-              )
-              # ),
-              # differential expression within clusters ----
-              # tabPanel("Treatment differences within clusters",
-              #   value = 55,
-              #   actionButton("run_update_clust", "Update comparisons"),
-              #   fluidRow(
-              #     column(4, selectInput("unique.Idents1", "comaprison 1", choices = "")),
-              #     column(4, selectInput("unique.Idents2", "comaprison 2", choices = "")),
-              #   ),
-              #   tabsetPanel(
-              #     tabPanel(
-              #       "Table",
-              #       div(DT::DTOutput("DEx_table_comparison")),
-              #       downloadButton("downloaddf_DEx_sc", "Download Table (.csv)"),
-              #       downloadButton("downloaddf_DEx_sc_ggVolcanoR", "Download ggVolcanoR compatible table (.csv)")
-              #     ),
-              #     tabPanel(
-              #       "Plot",
-              #       plotOutput("volc_plot_cluster", height = "600px")
-              #     )
-              #   ),
-              # ),
-              # tabPanel("Cluster differences (All markers)",
-              #   value = 5,
-              #   div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
-              #   div(DT::DTOutput("DEx_table_clusters")),
-              #   downloadButton("downloaddf_DEx_table_clusters", "Download Table (.csv)")
-              # ),
-              # )
-            ),
-
-            # meta data table ------
-            tabPanel(
-              "Meta data table",
-              fluidRow(
-                # column(3,checkboxInput("add.kmeans","Add K-means classification", value = F)),
-                # column(3,checkboxInput("add.scGATE","Add scGATE classifications", value = T))
-              ),
-              div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
-              div(DT::DTOutput("DEx_table_TcellClass_scGATE")),
-            )
-          ),
+                     actionButton("run_reduction_harmony", "Run Dimentional reduction"),
+                     div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
+                     verbatimTextOutput("testing_mult4"),
+                   ),
+                   tabPanel(
+                     "UMAP",
+                     div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
+                     plotOutput("create_UMAP_merged", height = "600px"),
+                     fluidRow(
+                       column(1, numericInput("width_sc_merged", "Width of PDF", value = 10)),
+                       column(1, numericInput("height_sc_merged", "Height of PDF", value = 8)),
+                       column(2, style = "margin-top: 25px;", downloadButton("downloadPlot_sc_merged", "Download Network PDF")),
+                       column(2, numericInput("width_png_sc_merged", "Width of PNG", value = 1200)),
+                       column(2, numericInput("height_png_sc_merged", "Height of PNG", value = 1000)),
+                       column(2, numericInput("resolution_PNG_sc_merged", "Resolution of PNG", value = 144)),
+                       column(2, style = "margin-top: 25px;", downloadButton("downloadPlotPNG_sc_merged", "Download Network PNG")),
+                     ),
+                   ),
+                 )
         )
-      )
+      ))
+  )
+),
+
+###################
+
+# Add annotations -----
+tabPanel(
+  "3c. Annotations",
+  sidebarLayout(
+    sidebarPanel(
+      id = "tPanel4", style = "overflow-y:scroll; max-height: 800px; position:relative;", width = 3,
+      # uiOutput("Detect_version"),
+      div(class = "name-BD",textInput("project_name3", h4("Name of Project", class = "name-header2"), value = "")),
+      selectInput("Data_types", "Source", choices = c("10x_HS", "BD_HS.Immune.Panel", "BD_HS.Full.Panel", "10x_MM", "BD_MM_Full.Panel", "BD_MM_Immune.Panel", "TCR-seq")),
+      selectInput("sample.type.source.markers", "Species", choices = ""),
+      fileInput("file1_rds.file2",
+                "Choose merged or single .rds files from directory",
+                multiple = TRUE,
+                accept = c(".rds", "rds")
+      ),
+
+      selectInput("Require_custom_geneset", "Require custom genes?", choices = c("no", "yes")),
+      uiOutput("scGate_cutoffs"),
+      downloadButton("downloaddf_SeruatObj_annotated", "Download Annotated Seurat"),
     ),
-    # remove cells based on one factor -----
-    tabPanel(
-      "3d. Remove/Edit Samps",
-      sidebarLayout(
-        sidebarPanel(
-          id = "tPanelSamps", style = "max-height: 800px; position:relative;", width = 3,
-          div(class = "name-BD",textInput("project_name4", h4("Name of Project", class = "name-header2"), value = "")),
-          fileInput("file1_rds.fileSampsRemove",
-                    "Upload .rds file",
-                    multiple = F,
-                    accept = c(".rds", "rds")
-          ),
-          selectInput("Samp_col_SampToRemove", "Column name", choices = ""),
-          downloadButton("downloaddf_SeruatObj_annotated_SampToKeep", "Download .rds"),
+    mainPanel(
+      width = 9,
+      tabsetPanel(
+        tabPanel(
+          "Upload",
+          div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
+          verbatimTextOutput("testing_mult_anno")
         ),
-        mainPanel(
-          width = 9,
-          tabsetPanel(
-            tabPanel(
-              "Remove Samps",
-              h5("Before Samples are removed"),
-              actionButton("run_remove_samps", "Remove samples"),
-              verbatimTextOutput("Preliminary_samp_to_remove"),
-              selectInput("DownVColumn", "Chose subset type:", choices = c("Meta_data", "Down_sampling")),
-              numericInput("downsamp_limit", "Down sampling limit", value = 1000),
-              selectInput("ID_Column_factor_SampToRemove", "Order of graph", choices = "", multiple = T, width = "1400px"),
-              h5("After Samples are removed"),
-              verbatimTextOutput("Filtered_samp_to_remove"),
+        tabPanel(
+          "scGATE",
+          selectInput("reduction_anno", "Reduction to use", choices = c("calculate", "pca", "umap", "harmony"), selected = "harmony"),
+
+          # custom annotations databases -----
+          conditionalPanel(
+            condition = "input.Require_custom_geneset == 'yes'",
+            fluidRow(
+              column(2, checkboxInput("GeneSet1_scGate", "GeneSet1", value = F)),
+              column(2, textInput("geneset1_name", "Name", value = "GeneSet1")),
+              column(2, checkboxInput("GeneSet2_scGate", "GeneSet2", value = F)),
+              column(2, textInput("geneset2_name", "Name", value = "GeneSet2")),
+              column(2, checkboxInput("GeneSet3_scGate", "GeneSet3", value = F)),
+              column(2, textInput("geneset3_name", "Name", value = "GeneSet3")),
+              column(2, checkboxInput("GeneSet4_scGate", "GeneSet4", value = F)),
+              column(2, textInput("geneset4_name", "Name", value = "GeneSet4")),
+              column(2, checkboxInput("GeneSet5_scGate", "GeneSet5", value = F)),
+              column(2, textInput("geneset5_name", "Name", value = "GeneSet5")),
+              column(2, checkboxInput("GeneSet6_scGate", "GeneSet6", value = F)),
+              column(2, textInput("geneset6_name", "Name", value = "GeneSet6")),
+              column(2, checkboxInput("GeneSet7_scGate", "GeneSet7", value = F)),
+              column(2, textInput("geneset7_name", "Name", value = "GeneSet7")),
+              column(2, checkboxInput("GeneSet8_scGate", "GeneSet8", value = F)),
+              column(2, textInput("geneset8_name", "Name", value = "GeneSet8")),
+              column(2, checkboxInput("GeneSet9_scGate", "GeneSet9", value = F)),
+              column(2, textInput("geneset9_name", "Name", value = "GeneSet9")),
+            )
+          ),
+
+
+          # human 10x annotations -----
+          conditionalPanel(
+            condition = "input.Data_types == '10x_HS' || input.Data_types == 'BD_HS.Full.Panel' || 'BD_HS.Immune.Panel'",
+            div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
+            fluidRow(
+              div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
+              column(3, checkboxInput("hs_function_scGATE", "Function (Human)", value = F)),
+              column(3, checkboxInput("hs_generic_scGATE", "Generic (Human)", value = F)),
+              column(3, checkboxInput("hs_exhausted_scGATE", "Exhausted (Human)", value = F)),
+              column(3, checkboxInput("hs_senescence_scGATE", "Senescence (Human)", value = F)),
+              column(3, checkboxInput("hs_cycling_scGATE", "Cycling (Human)", value = F)),
+              column(3, checkboxInput("hs_TCRseq_scGATE", "TCR-seq (Human)", value = F)),
+            )
+          ),
+
+          # BD rhapsody MM full panel ----
+          conditionalPanel(
+            "input.Data_types == 'BD_MM_Full.Panel' || input.Data_types =='10x_MM'",
+            h5("Under development"),
+            div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
+            h6("Curated from Sharland lab"),
+            fluidRow(
+              column(3, checkboxInput("BDrhapsody_scGATE.MM.Tcell", "Major T cell popualtions", value = F)),
+              column(3, checkboxInput("BDrhapsody_scGATE.MM.Memory", "Memory", value = F)),
+              column(3, checkboxInput("BDrhapsody_scGATE.MM.signatures", "signatures", value = F)),
+              column(3, checkboxInput("BDrhapsody_scGATE.MM.Innate.NK", "Innate & NK", value = F)),
             ),
-            tabPanel("Update Meta data")
+            h6("From the human BD Rhapsody searches"),
+            fluidRow(
+              column(3, checkboxInput("BDrhapsody_scGATE.MM.TNF.IFNg", "TNF.IFNg", value = F)),
+              column(3, checkboxInput("BDrhapsody_scGATE.MM.subtypes", "Subtypes", value = F)),
+              column(3, checkboxInput("BDrhapsody_scGATE.MM.other", "other", value = F)),
+            ),
+          ),
+          # BD rhapsody MM immune panel ----
+          conditionalPanel(
+            "input.Data_types == 'BD_MM_Immune.Panel'",
+            h5("Under development")
+          ),
+          conditionalPanel(
+            condition = "input.Require_custom_geneset == 'yes'",
+            verbatimTextOutput("scGATE_verbatum_GeneSet1"),
+            verbatimTextOutput("scGATE_verbatum_GeneSet2"),
+            verbatimTextOutput("scGATE_verbatum_GeneSet3"),
+            verbatimTextOutput("scGATE_verbatum_GeneSet4"),
+            verbatimTextOutput("scGATE_verbatum_GeneSet5"),
+            verbatimTextOutput("scGATE_verbatum_GeneSet6"),
+            verbatimTextOutput("scGATE_verbatum_GeneSet7"),
+            verbatimTextOutput("scGATE_verbatum_GeneSet8"),
+            verbatimTextOutput("scGATE_verbatum_GeneSet9"),
+          ),
+          # human 10x annotations Verbatium -----
+          conditionalPanel(
+            condition = "input.Data_types == '10x_HS' || input.Data_types == 'BD_HS.Full.Panel' || 'BD_HS.Immune.Panel'",
+            div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
+            verbatimTextOutput("scGATE_verbatum_function"),
+            div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
+            verbatimTextOutput("scGATE_verbatum_generic2"),
+            div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
+            verbatimTextOutput("scGATE_verbatum_exhausted"),
+            div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
+            verbatimTextOutput("scGATE_verbatum_senescence"),
+            div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
+            verbatimTextOutput("scGATE_verbatum_cycling"),
+            div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
+            verbatimTextOutput("scGATE_verbatum_TCRseq"),
+          ),
+          conditionalPanel(
+            "input.Data_types == 'BD_MM_Full.Panel' || input.Data_types =='10x_MM'",
+            verbatimTextOutput("scGATE_verbatum_BDrhapsody_MM.FP.Tcell"),
+            verbatimTextOutput("scGATE_verbatum_BDrhapsody_MM.FP.Memory"),
+            verbatimTextOutput("scGATE_verbatum_BDrhapsody_MM.FP.signatures"),
+            verbatimTextOutput("scGATE_verbatum_BDrhapsody_MM.FP.Innate.NK"),
+            verbatimTextOutput("scGATE_verbatum_BDrhapsody_MM.FP.TNF.IFNg"),
+            verbatimTextOutput("scGATE_verbatum_BDrhapsody_MM.FP.subtypes"),
+            verbatimTextOutput("scGATE_verbatum_BDrhapsody_MM.FP.other")
+          ),
+        ),
+        tabPanel(
+          "Check custom scGate annotations",
+
+          fluidRow(
+            column(4, plotOutput("create_custom_1", height = "600px")),
+            column(4, plotOutput("create_custom_2", height = "600px"), ),
+            column(4, plotOutput("create_custom_3", height = "600px")),
+            column(4, plotOutput("create_custom_4", height = "600px"), ),
+            column(4, plotOutput("create_custom_5", height = "600px")),
+            column(4, plotOutput("create_custom_6", height = "600px"), ),
+            column(4, plotOutput("create_custom_7", height = "600px")),
+            column(4, plotOutput("create_custom_8", height = "600px"), ),
+            column(4, plotOutput("create_custom_9", height = "600px")),
           )
+          # plotOutput("create_custom_1", height = "600px"),
+        ),
+        # classification based on TCR_seq -----
+        # display metadata -----
+        tabPanel(
+          "Feature plot",
+          #   fluidRow(
+          #     column(3, numericInput("min.ptc.sc", "minimum point", value = 0.25)),
+          #     column(3, numericInput("logfc.ptc.sc", "Log fold change", value = 0.25)),
+          #     column(3, selectInput("normalN", "Type of Differnetial expression",
+          #       choices = c("wilcox", "bimod", "roc", "t", "negbinom", "poisson", "LR", "MAST", "DESeq2")
+          #     )),
+          #     column(3, style = "margin-top: 25px;", actionButton("run_differental.exp", "run differental expression"), )
+          # ),
+          #   fluidRow(
+          #     column(4, selectInput("multiple_group_sc", "Include group comparison", choices = c("no", "yes"))),
+          #     column(4, selectInput("meta_data_sc_clust", "Cluster by", choices = "")),
+          #     column(4, selectInput("meta_data_sc_", "Add group", choices = "")),
+          #
+          # ),
+          # tabsetPanel(
+          # id = "Panel_DEX",
+          # Cluster table -----
+          # tabPanel("Checking files",
+          #          div(DT::DTOutput("list_of_genes")),
+          #
+          #          # verbatimTextOutput("checking_files_markers_featurePlot_sc"),
+          #          ),
+          # tabPanel(
+          p("   "),
+          actionButton("run_string.data3", "View Feature plot"),
+          fluidRow(column(12, selectInput("string.data3", "column names for summary", "", multiple = T, width = "1200px"))),
+          fluidRow(
+            column(2, checkboxInput("label_is_true_features", "Add plot lables", value = T)),
+            column(2, selectInput("norm_expression_for_all", "Set Maximum", choices = c("no", "yes"))),
+            column(2, numericInput("max_norm_FP", "Set maximum scale value", value = 10, step = 1, min = 1)),
+            column(2, colourInput("lower_col_FP", "Min (Colour)", value = "grey90")),
+            column(2, colourInput("upper_col_FP", "Max (colour)", value = "Darkblue"))
+          ),
+          plotOutput("markers_featurePlot_sc", height = "600px"),
+          fluidRow(
+            column(3, numericInput("width_markers_featurePlot_sc", "Width of PDF", value = 10)),
+            column(3, numericInput("height_markers_featurePlot_sc", "Height of PDF", value = 8)),
+            column(3),
+            column(3, style = "margin-top: 25px;", downloadButton("downloadPlot_markers_featurePlot_sc", "Download PDF"))
+          ),
+          fluidRow(
+            column(3, numericInput("width_png_markers_featurePlot_sc", "Width of PNG", value = 1200)),
+            column(3, numericInput("height_png_markers_featurePlot_sc", "Height of PNG", value = 1000)),
+            column(3, numericInput("resolution_PNG_markers_featurePlot_sc", "Resolution of PNG", value = 144)),
+            column(3, style = "margin-top: 25px;", downloadButton("downloadPlotPNG_markers_featurePlot_sc", "Download PNG"))
+          )
+          # ),
+          # differential expression within clusters ----
+          # tabPanel("Treatment differences within clusters",
+          #   value = 55,
+          #   actionButton("run_update_clust", "Update comparisons"),
+          #   fluidRow(
+          #     column(4, selectInput("unique.Idents1", "comaprison 1", choices = "")),
+          #     column(4, selectInput("unique.Idents2", "comaprison 2", choices = "")),
+          #   ),
+          #   tabsetPanel(
+          #     tabPanel(
+          #       "Table",
+          #       div(DT::DTOutput("DEx_table_comparison")),
+          #       downloadButton("downloaddf_DEx_sc", "Download Table (.csv)"),
+          #       downloadButton("downloaddf_DEx_sc_ggVolcanoR", "Download ggVolcanoR compatible table (.csv)")
+          #     ),
+          #     tabPanel(
+          #       "Plot",
+          #       plotOutput("volc_plot_cluster", height = "600px")
+          #     )
+          #   ),
+          # ),
+          # tabPanel("Cluster differences (All markers)",
+          #   value = 5,
+          #   div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
+          #   div(DT::DTOutput("DEx_table_clusters")),
+          #   downloadButton("downloaddf_DEx_table_clusters", "Download Table (.csv)")
+          # ),
+          # )
+        ),
+
+        # meta data table ------
+        tabPanel(
+          "Meta data table",
+          fluidRow(
+            # column(3,checkboxInput("add.kmeans","Add K-means classification", value = F)),
+            # column(3,checkboxInput("add.scGATE","Add scGATE classifications", value = T))
+          ),
+          div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
+          div(DT::DTOutput("DEx_table_TcellClass_scGATE")),
         )
-      )
+      ),
+    )
+  )
+),
+# remove cells based on one factor -----
+tabPanel(
+  "3d. Remove/Edit Samps",
+  sidebarLayout(
+    sidebarPanel(
+      id = "tPanelSamps", style = "max-height: 800px; position:relative;", width = 3,
+      div(class = "name-BD",textInput("project_name4", h4("Name of Project", class = "name-header2"), value = "")),
+      fileInput("file1_rds.fileSampsRemove",
+                "Upload .rds file",
+                multiple = F,
+                accept = c(".rds", "rds")
+      ),
+      selectInput("Samp_col_SampToRemove", "Column name", choices = ""),
+      downloadButton("downloaddf_SeruatObj_annotated_SampToKeep", "Download .rds"),
     ),
-    # tabPanel("STEP3. Markdown"),
+    mainPanel(
+      width = 9,
+      tabsetPanel(
+        tabPanel(
+          "Remove Samps",
+          h5("Before Samples are removed"),
+          actionButton("run_remove_samps", "Remove samples"),
+          verbatimTextOutput("Preliminary_samp_to_remove"),
+          selectInput("DownVColumn", "Chose subset type:", choices = c("Meta_data", "Down_sampling")),
+          numericInput("downsamp_limit", "Down sampling limit", value = 1000),
+          selectInput("ID_Column_factor_SampToRemove", "Order of graph", choices = "", multiple = T, width = "1400px"),
+          h5("After Samples are removed"),
+          verbatimTextOutput("Filtered_samp_to_remove"),
+        ),
+        tabPanel("Update Meta data")
+      )
+    )
+  )
+),
+# tabPanel("STEP3. Markdown"),
   ),
 
-  ###################
-  # Analysis (UI side panel) ---------
-  tabPanel(
-    "STEP 4. Analysis", id = "step4_analysis",
+###################
+# Analysis (UI side panel) ---------
+tabPanel(
+  "STEP 4. Analysis", id = "step4_analysis",
 
-    # side bar layout ------
-    sidebarLayout(
-      sidebarPanel(
-        ######
-        id = "tPanel4", style = "overflow-y:scroll; max-height: 1000px; position:relative;", width = 3,
+  # side bar layout ------
+  sidebarLayout(
+    sidebarPanel(
+      ######
+      id = "tPanel4", style = "overflow-y:scroll; max-height: 1000px; position:relative;", width = 3,
+      conditionalPanel(
+        condition = "input.check_up_files== 'up'",
+        fileInput("file_SC_pro", "Upload seurat file",
+                  accept = c("rds", ".rds", "rds")
+        ),
+        selectInput("add_additional_lables", "add additional labels", choices = c("no", "yes")),
         conditionalPanel(
-          condition = "input.check_up_files== 'up'",
-          fileInput("file_SC_pro", "Upload seurat file",
-                    accept = c("rds", ".rds", "rds")
+          condition = "input.add_additional_lables== 'yes'",
+          p("The .csv file first column should be label 'ID' and match the selected column"),
+          selectInput("Samp_col2", "Sample column name", choices = ""),
+          fileInput("file_Labels_to_add", "Upload other identifiers (.csv)",
+                    accept = c(".csv", "csv")
           ),
-          selectInput("add_additional_lables", "add additional labels", choices = c("no", "yes")),
+        ),
+        selectInput("Type_of_receptor", "Type of receptor", choices = c("TCR", "BCR"), selected = "TCR"),
+        conditionalPanel(
+          condition = "input.Type_of_receptor== 'TCR'",
+          fileInput("file_cluster_file_AG", "Upload AG clusTCR2 file (.csv)",
+                    accept = c(".csv", "csv")
+          ),
+          fileInput("file_cluster_file_BD", "Upload BD clusTCR2 file (.csv)",
+                    accept = c(".csv", "csv")
+          ),
+        ),
+        conditionalPanel(
+          condition = "input.Type_of_receptor== 'BCR'",
+          fileInput("file_cluster_file_IgH", "Upload IgH clusTCR2 file (.csv)",
+                    accept = c(".csv", "csv")
+          ),
+          fileInput("file_cluster_file_IgKL", "Upload IgKL clusTCR2 file (.csv)",
+                    accept = c(".csv", "csv")
+          ),
+        ),
+        numericInput("skip_TCRex_up", "Skip # of lines for TCRex file", value = 7),
+        fileInput("upload_TCRex_file", "Upload TCRex (.tsv)",
+                  accept = c("tsv", ".tsv")
+        ),
+        selectInput("datasource", "Data source", choices = ""),
+        selectInput("species_analysis", "Species", choices = ""),
+      ),
+      selectInput("V_gene_sc", "V gene with/without CDR3", choices = ""),
+
+      conditionalPanel(
+        condition = "input.check_up_files != 'up'",
+        fluidRow(
+          column(6,  selectInput("Samp_col", "Selected Individual", choices = "")),
+          column(6, selectInput("Split_by_group", "Display by Selected Individual", choices = c("no", "yes"))),
+          column(6, numericInput("wrap_row", h5("Number of plot rows"), value = 2)),
           conditionalPanel(
-            condition = "input.add_additional_lables== 'yes'",
-            p("The .csv file first column should be label 'ID' and match the selected column"),
-            selectInput("Samp_col2", "Sample column name", choices = ""),
-            fileInput("file_Labels_to_add", "Upload other identifiers (.csv)",
-                      accept = c(".csv", "csv")
-            ),
-          ),
-          selectInput("Type_of_receptor", "Type of receptor", choices = c("TCR", "BCR"), selected = "TCR"),
-          conditionalPanel(
-            condition = "input.Type_of_receptor== 'TCR'",
-            fileInput("file_cluster_file_AG", "Upload AG clusTCR2 file (.csv)",
-                      accept = c(".csv", "csv")
-            ),
-            fileInput("file_cluster_file_BD", "Upload BD clusTCR2 file (.csv)",
-                      accept = c(".csv", "csv")
-            ),
-          ),
-          conditionalPanel(
-            condition = "input.Type_of_receptor== 'BCR'",
-            fileInput("file_cluster_file_IgH", "Upload IgH clusTCR2 file (.csv)",
-                      accept = c(".csv", "csv")
-            ),
-            fileInput("file_cluster_file_IgKL", "Upload IgKL clusTCR2 file (.csv)",
-                      accept = c(".csv", "csv")
-            ),
-          ),
-          numericInput("skip_TCRex_up", "Skip # of lines for TCRex file", value = 7),
-          fileInput("upload_TCRex_file", "Upload TCRex (.tsv)",
-                    accept = c("tsv", ".tsv")
-          ),
-          selectInput("datasource", "Data source", choices = ""),
-          selectInput("species_analysis", "Species", choices = ""),
-        ),
-        selectInput("V_gene_sc", "V gene with/without CDR3", choices = ""),
-
-        conditionalPanel(
-          condition = "input.check_up_files != 'up'",
-          fluidRow(
-            column(6,  selectInput("Samp_col", "Selected Individual", choices = "")),
-            column(6, selectInput("Split_by_group", "Display by Selected Individual", choices = c("no", "yes"))),
-            column(6, numericInput("wrap_row", h5("Number of plot rows"), value = 2)),
-            conditionalPanel(
-              condition = "input.Panel_TCRUMAP != 'TCR_and_GEX_tb'",
-              column(6, selectInput("Split_group_by_", "Split graph by:", choices = ""))
-
-            ),
+            condition = "input.Panel_TCRUMAP != 'TCR_and_GEX_tb'",
+            column(6, selectInput("Split_group_by_", "Split graph by:", choices = ""))
 
           ),
-          selectInput("colourtype", "Colouring Palettes", choices = c("default", "rainbow", "random", "heat.colors", "terrain.colors", "topo.colors", "hcl.colors", "one")),
-        ),
 
-        conditionalPanel(
-          condition = "input.check_up_files != 'up'",
-          conditionalPanel(
-            condition = "input.Panel_TCRUMAP != 'Expanded'",
-            conditionalPanel(
-              condition = "input.check_up_files != 'up2'",
-              uiOutput("classification_to_add")
-            )
-          )
         ),
-        # Need to check the colouring by, may need to reduce to 1?
-        conditionalPanel(
-          condition = "input.check_up_files == 'up2'",
-          uiOutput("classification_to_add_overview")
-        ),
-
-        # side bar layout expansion priority UI -------
-        conditionalPanel(
-          condition = "input.check_up_files == 'Prior' || input.check_up_files == 'TCR_and_GEX_tb' ",
-          conditionalPanel(
-            condition = "input.Panel_TCRUMAP == 'Expanded'",
-            h4("Expanded cut-offs and colouring"),
-            fluidRow(
-
-              column(6, numericInput("cutoff.expanded", "Cut off greater than", value = 0.5, step = 0.01, min = 0, max = 0.99)),
-              column(6, uiOutput("cut.off_expanded2")),
-              column(6, uiOutput("classification_to_add2")),
-            ),
-            fluidRow(
-              column(6, numericInput("cut.off_percent_rep", "Percent of Repertoire", value = 1, step = 1, min = 1, max = 100)),
-              column(6, numericInput("size.dot.umap", "size of UMAP dot's", value = 2, step = 1, min = 1))
-            )
-          ),
-        ),
-        conditionalPanel(
-          condition = "input.PriorTBMods == 'PriorRepertoireTB' || input.Panel_TCRUMAP == 'Expanded'",
-          fluidRow(
-            column(12, uiOutput("Expanded.dotplot.cutoffs")),
-            column(12, selectizeInput("selected_Indiv_Ex_1", "Samp 1", choices = "", multiple = T)),
-            column(12, selectizeInput("selected_Indiv_Ex_2", "Samp 2", choices = "", multiple = T)),
-          )
-        ),
-        conditionalPanel(
-          condition = "input.PriorTBMods == 'PriorClustTB' || input.Panel_TCRUMAP == 'ClusTCR2'",
-          selectInput("Clusters_to_dis_PIE", "Clusters to display", choices = "", multiple = F)
-        ),
-        conditionalPanel(
-          condition = "input.Panel_TCRUMAP=='ClusTCR2'",
-          selectInput("chain_TCR", "Chain to display", choices = c("TRAG", "TRBD", "IgH", "IgKL")),
-        ),
-        #
-        # Expanded stat cut-offs -----
-
-        conditionalPanel(
-          condition = "input.PriorTBMods == 'PriorRepertoireTB' || input.check_up_files == 'TCR_and_GEX_tb' ",
-          fluidRow(
-            column(4, numericInput("min_point_", "Min point cut off", value = 0.25)),
-            column(4, numericInput("LogFC_", "Min LogFC cut off", value = 0.25)),
-            column(4, numericInput("pval.ex.filter", "adj.p-val cut-off", value = 0.1)),
-          )
-        ),
-        conditionalPanel(
-          condition = "input.Panel_TCRUMAP == 'Marker'",
-          column(12, selectInput("col_marker_scale", "Colour scale", choices = col_markers, selected = col_markers[1])),
-        ),
-        conditionalPanel(
-          condition = "input.check_up_files != 'up' ",
-          fluidRow(
-            column(6, colourInput("one.colour.default", "One colour", "grey50")),
-            column(6, colourInput("NA_col_analysis", "NA colour", "grey90"), )
-          ),
-          conditionalPanel(
-            condition = "input.check_up_files == 'up2' || input.check_up_files == 'Prior'",
-
-            fluidRow(column(12, selectInput("Graph_type_bar", "Type of graph", choices = c("Number_expanded", "Frequency_expanded", "Top_clonotypes")))),
-            conditionalPanel(
-              condition = "input.Graph_type_bar == 'Top_clonotypes'",
-              fluidRow(
-                column(12, numericInput("top_no_clonotypes", "Top clonotypes per group", value = 1, step = 1, min = 0, max = 20))
-              )),
-          ),
-
-          h4("What individuals to include"),
-
-          fluidRow(
-            column(6, selectInput("by_indiv_pie_epi", "Display one individual?", choices = c("no", "yes"))),
-            column(6, selectInput("selected_Indiv", "Display one individual", choices = ""), )
-          ),
-          h4("Plot parameters (all)"),
-          fluidRow(
-            column(6, numericInput("text_size", "Size of #", value = 16)),
-            column(6, numericInput("title.text.sizer2", "Axis text size", value = 30)),
-            column(6, numericInput("Legend_size", "Legend text size", value = 12)),
-            column(6, selectInput("legend_position", "Legend location", choices = c("top", "bottom", "left", "right", "none"), selected = "right")),
-          ),
-          fluidRow(
-            column(6, numericInput("Strip_text_size", "Strip text size (e.g., grey bars)", value = 16)),
-            column(6, numericInput("anno_text_size", "Annotation text size", value = 6)),
-          ),
-          selectInput("font_type", label = "Type of font", choices = font, selected = "Times New Roman"),
-        ),
-        ###### state of the analysis section as a csv file --------
-
-        # Upload button
-        # fileInput("uploadData", "Upload State")
+        selectInput("colourtype", "Colouring Palettes", choices = c("default", "rainbow", "random", "heat.colors", "terrain.colors", "topo.colors", "hcl.colors", "one")),
       ),
 
-      # add in clustering  (why did I add this comment?) -----
-      mainPanel(
-        width = 9,
-        tabsetPanel(
-          id = "check_up_files",
-          tabPanel("Uploaded data",
-                   value = "up",
-                   div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
-                   fluidRow(
-                     column(12, div(DT::DTOutput("meta.data_check_upload"))),
-                     column(12, div(DT::DTOutput("Sample_names_merging_sc"))),
-                     # column(12,  div(DT::DTOutput("Tb_TCR_clonotypes.Umap"))),
-                     column(12, div(DT::DTOutput("Tb_ClusTCR_test"))),
-                     column(12, div(DT::DTOutput("Tb_tcrex_test")))
-                   ),
+      conditionalPanel(
+        condition = "input.check_up_files != 'up'",
+        conditionalPanel(
+          condition = "input.Panel_TCRUMAP != 'Expanded'",
+          conditionalPanel(
+            condition = "input.check_up_files != 'up2'",
+            uiOutput("classification_to_add")
+          )
+        )
+      ),
+      # Need to check the colouring by, may need to reduce to 1?
+      conditionalPanel(
+        condition = "input.check_up_files == 'up2'",
+        uiOutput("classification_to_add_overview")
+      ),
+
+      # side bar layout expansion priority UI -------
+      conditionalPanel(
+        condition = "input.check_up_files == 'Prior' || input.check_up_files == 'TCR_and_GEX_tb' ",
+        conditionalPanel(
+          condition = "input.Panel_TCRUMAP == 'Expanded'",
+          h4("Expanded cut-offs and colouring"),
+          fluidRow(
+
+            column(6, numericInput("cutoff.expanded", "Cut off greater than", value = 0.5, step = 0.01, min = 0, max = 0.99)),
+            column(6, uiOutput("cut.off_expanded2")),
+            column(6, uiOutput("classification_to_add2")),
           ),
+          fluidRow(
+            column(6, numericInput("cut.off_percent_rep", "Percent of Repertoire", value = 1, step = 1, min = 1, max = 100)),
+            column(6, numericInput("size.dot.umap", "size of UMAP dot's", value = 2, step = 1, min = 1))
+          )
+        ),
+      ),
+      conditionalPanel(
+        condition = "input.PriorTBMods == 'PriorRepertoireTB' || input.Panel_TCRUMAP == 'Expanded'",
+        fluidRow(
+          column(12, uiOutput("Expanded.dotplot.cutoffs")),
+          column(12, selectizeInput("selected_Indiv_Ex_1", "Samp 1", choices = "", multiple = T)),
+          column(12, selectizeInput("selected_Indiv_Ex_2", "Samp 2", choices = "", multiple = T)),
+        )
+      ),
+      conditionalPanel(
+        condition = "input.PriorTBMods == 'PriorClustTB' || input.Panel_TCRUMAP == 'ClusTCR2'",
+        selectInput("Clusters_to_dis_PIE", "Clusters to display", choices = "", multiple = F)
+      ),
+      conditionalPanel(
+        condition = "input.Panel_TCRUMAP=='ClusTCR2'",
+        selectInput("chain_TCR", "Chain to display", choices = c("TRAG", "TRBD", "IgH", "IgKL")),
+      ),
+      #
+      # Expanded stat cut-offs -----
 
-          # UMAP -> TCR -----
-          tabPanel("Overview",
-                   value = "up2",
-                   fluidRow(
-                     div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
-                     column(12, selectInput("ID_Column_factor", "Order of graph (Selected Individual)", choices = "", multiple = T, width = "1200px")),
-                   ),
+      conditionalPanel(
+        condition = "input.PriorTBMods == 'PriorRepertoireTB' || input.check_up_files == 'TCR_and_GEX_tb' ",
+        fluidRow(
+          column(4, numericInput("min_point_", "Min point cut off", value = 0.25)),
+          column(4, numericInput("LogFC_", "Min LogFC cut off", value = 0.25)),
+          column(4, numericInput("pval.ex.filter", "adj.p-val cut-off", value = 0.1)),
+        )
+      ),
+      conditionalPanel(
+        condition = "input.Panel_TCRUMAP == 'Marker'",
+        column(12, selectInput("col_marker_scale", "Colour scale", choices = col_markers, selected = col_markers[1])),
+      ),
+      conditionalPanel(
+        condition = "input.check_up_files != 'up' ",
+        fluidRow(
+          column(6, colourInput("one.colour.default", "One colour", "grey50")),
+          column(6, colourInput("NA_col_analysis", "NA colour", "grey90"), )
+        ),
+        conditionalPanel(
+          condition = "input.check_up_files == 'up2' || input.check_up_files == 'Prior'",
 
-                   tabsetPanel(
-                     id = "QC_panel",
-                     # T cell classification ------
-                     tabPanel("GEX",
-                              value = "GEX_panel",
-                              tabsetPanel(
-                                id = "Panel_class",
-                                tabPanel("Percentage",
-                                         value = 16,
-                                         div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
-                                         verbatimTextOutput("Percent_tab"),
-                                         downloadButton("downloaddf_Percent_tab", "Download table")
-                                ),
-                                tabPanel("UMAP plot",
-                                         value = 14,
-                                         fluidRow(
-                                           column(3, selectInput("show_selected", "Show all labels?", choices = c("All", "Selected_list"))),
-                                           column(9, uiOutput("SiteNumInput", width = "900px")),
-                                         ),
-                                         fluidRow(
-                                           column(2, numericInput("Filter_lower_UMAP1_marker_GEX", "UMAP_1 >", value = -20)),
-                                           column(2, numericInput("Filter_lower_UMAP1_marker2_GEX", "UMAP_1 <", value = 20)),
-                                           column(2, numericInput("Filter_lower_UMAP2_marker_GEX", "UMAP_2 >", value = -20)),
-                                           column(2, numericInput("Filter_lower_UMAP2_marker2_GEX", "UMAP_2 <", value = 20)),
-                                         ),
-                                         div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
-                                         fluidRow(
-                                           column(
-                                             3,
-                                             wellPanel(
-                                               id = "tPanel23", style = "overflow-y:scroll; max-height: 600px",
-                                               uiOutput("cols_UMAP_all_classification")
-                                             )
-                                           ),
-                                           column(9, plotOutput("UMAP_all_classification2", height = "600px"))
-                                         ),
-                                         fluidRow(
-                                           column(1, numericInput("width_UMAP_all_classification", "Width of PDF", value = 10)),
-                                           column(1, numericInput("height_UMAP_all_classification", "Height of PDF", value = 8)),
-                                           column(2, style = "margin-top: 25px;", downloadButton("downloadPlot_UMAP_all_classification", "Download PDF")),
-                                           column(2, numericInput("width_png_UMAP_all_classification", "Width of PNG", value = 1200)),
-                                           column(2, numericInput("height_png_UMAP_all_classification", "Height of PNG", value = 1000)),
-                                           column(2, numericInput("resolution_PNG_UMAP_all_classification", "Resolution of PNG", value = 144)),
-                                           column(2, style = "margin-top: 25px;", downloadButton("downloadPlotPNG_UMAP_all_classification", "Download PNG"))
-                                         ),
-                                ),
-                                tabPanel("Pie chart",
-                                         value = 15,
-                                         div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
-                                         fluidRow(
-                                           # column(3),
-                                           # column(9, h5("pie segments (Colour by:) & separation (Split graph by:)"))
-                                         ),
-                                         fluidRow(
-                                           column(
-                                             3,
-                                             wellPanel(
-                                               id = "tPanel23", style = "overflow-y:scroll; max-height: 600px",
-                                               uiOutput("myPanel_pie")
-                                             )
-                                           ), # pie chart
-                                           column(9, plotOutput("Classification_clonotype_pie", height = "600px"))
-                                         ),
-                                         # fluidRow(
-                                         #   div(DT::DTOutput("table_pie")),
-                                         # ),
+          fluidRow(column(12, selectInput("Graph_type_bar", "Type of graph", choices = c("Number_expanded", "Frequency_expanded", "Top_clonotypes")))),
+          conditionalPanel(
+            condition = "input.Graph_type_bar == 'Top_clonotypes'",
+            fluidRow(
+              column(12, numericInput("top_no_clonotypes", "Top clonotypes per group", value = 1, step = 1, min = 0, max = 20))
+            )),
+        ),
 
-                                         fluidRow(
-                                           column(1, numericInput("width_Classification_clonotype_pie", "Width of PDF", value = 10)),
-                                           column(1, numericInput("height_Classification_clonotype_pie", "Height of PDF", value = 8)),
-                                           column(2, style = "margin-top: 25px;", downloadButton("downloadPlot_Classification_clonotype_pie", "Download PDF")),
-                                           column(2, numericInput("width_png_Classification_clonotype_pie", "Width of PNG", value = 1200)),
-                                           column(2, numericInput("height_png_Classification_clonotype_pie", "Height of PNG", value = 1000)),
-                                           column(2, numericInput("resolution_PNG_Classification_clonotype_pie", "Resolution of PNG", value = 144)),
-                                           column(2, style = "margin-top: 25px;", downloadButton("downloadPlotPNG_Classification_clonotype_pie", "Download PNG"))
-                                         ),
-                                ),
+        h4("What individuals to include"),
+
+        fluidRow(
+          column(6, selectInput("by_indiv_pie_epi", "Display one individual?", choices = c("no", "yes"))),
+          column(6, selectInput("selected_Indiv", "Display one individual", choices = ""), )
+        ),
+        h4("Plot parameters (all)"),
+        fluidRow(
+          column(6, numericInput("text_size", "Size of #", value = 16)),
+          column(6, numericInput("title.text.sizer2", "Axis text size", value = 30)),
+          column(6, numericInput("Legend_size", "Legend text size", value = 12)),
+          column(6, selectInput("legend_position", "Legend location", choices = c("top", "bottom", "left", "right", "none"), selected = "right")),
+        ),
+        fluidRow(
+          column(6, numericInput("Strip_text_size", "Strip text size (e.g., grey bars)", value = 16)),
+          column(6, numericInput("anno_text_size", "Annotation text size", value = 6)),
+        ),
+        selectInput("font_type", label = "Type of font", choices = font, selected = "Times New Roman"),
+      ),
+      ###### state of the analysis section as a csv file --------
+
+      # Upload button
+      # fileInput("uploadData", "Upload State")
+    ),
+
+    # add in clustering  (why did I add this comment?) -----
+    mainPanel(
+      width = 9,
+      tabsetPanel(
+        id = "check_up_files",
+        tabPanel("Uploaded data",
+                 value = "up",
+                 div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
+                 fluidRow(
+                   column(12, div(DT::DTOutput("meta.data_check_upload"))),
+                   column(12, div(DT::DTOutput("Sample_names_merging_sc"))),
+                   # column(12,  div(DT::DTOutput("Tb_TCR_clonotypes.Umap"))),
+                   column(12, div(DT::DTOutput("Tb_ClusTCR_test"))),
+                   column(12, div(DT::DTOutput("Tb_tcrex_test")))
+                 ),
+        ),
+
+        # UMAP -> TCR -----
+        tabPanel("Overview",
+                 value = "up2",
+                 fluidRow(
+                   div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
+                   column(12, selectInput("ID_Column_factor", "Order of graph (Selected Individual)", choices = "", multiple = T, width = "1200px")),
+                 ),
+
+                 tabsetPanel(
+                   id = "QC_panel",
+                   # T cell classification ------
+                   tabPanel("GEX",
+                            value = "GEX_panel",
+                            tabsetPanel(
+                              id = "Panel_class",
+                              tabPanel("Percentage",
+                                       value = 16,
+                                       div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
+                                       verbatimTextOutput("Percent_tab"),
+                                       downloadButton("downloaddf_Percent_tab", "Download table")
                               ),
-                     ),
-                     # TCR overview ontop of UMAP -----
-                     tabPanel(
-                       "TCR",
-                       tabsetPanel(
-                         id = "TCR",
-                         tabPanel(
-                           "Overlap",
-                           tabsetPanel(
-                             tabPanel(
-                               "Summary Table",
-                               selectInput("other_selected_summary_columns","Add other sumamry columns", multiple = T, "",width = "1200px"),
+                              tabPanel("UMAP plot",
+                                       value = 14,
+                                       fluidRow(
+                                         column(3, selectInput("show_selected", "Show all labels?", choices = c("All", "Selected_list"))),
+                                         column(9, uiOutput("SiteNumInput", width = "900px")),
+                                       ),
+                                       fluidRow(
+                                         column(2, numericInput("Filter_lower_UMAP1_marker_GEX", "UMAP_1 >", value = -20)),
+                                         column(2, numericInput("Filter_lower_UMAP1_marker2_GEX", "UMAP_1 <", value = 20)),
+                                         column(2, numericInput("Filter_lower_UMAP2_marker_GEX", "UMAP_2 >", value = -20)),
+                                         column(2, numericInput("Filter_lower_UMAP2_marker2_GEX", "UMAP_2 <", value = 20)),
+                                       ),
+                                       div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
+                                       fluidRow(
+                                         column(
+                                           3,
+                                           wellPanel(
+                                             id = "tPanel23", style = "overflow-y:scroll; max-height: 600px",
+                                             uiOutput("cols_UMAP_all_classification")
+                                           )
+                                         ),
+                                         column(9, plotOutput("UMAP_all_classification2", height = "600px"))
+                                       ),
+                                       fluidRow(
+                                         column(1, numericInput("width_UMAP_all_classification", "Width of PDF", value = 10)),
+                                         column(1, numericInput("height_UMAP_all_classification", "Height of PDF", value = 8)),
+                                         column(2, style = "margin-top: 25px;", downloadButton("downloadPlot_UMAP_all_classification", "Download PDF")),
+                                         column(2, numericInput("width_png_UMAP_all_classification", "Width of PNG", value = 1200)),
+                                         column(2, numericInput("height_png_UMAP_all_classification", "Height of PNG", value = 1000)),
+                                         column(2, numericInput("resolution_PNG_UMAP_all_classification", "Resolution of PNG", value = 144)),
+                                         column(2, style = "margin-top: 25px;", downloadButton("downloadPlotPNG_UMAP_all_classification", "Download PNG"))
+                                       ),
+                              ),
+                              tabPanel("Pie chart",
+                                       value = 15,
+                                       div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
+                                       fluidRow(
+                                         # column(3),
+                                         # column(9, h5("pie segments (Colour by:) & separation (Split graph by:)"))
+                                       ),
+                                       fluidRow(
+                                         column(
+                                           3,
+                                           wellPanel(
+                                             id = "tPanel23", style = "overflow-y:scroll; max-height: 600px",
+                                             uiOutput("myPanel_pie")
+                                           )
+                                         ), # pie chart
+                                         column(9, plotOutput("Classification_clonotype_pie", height = "600px"))
+                                       ),
+                                       # fluidRow(
+                                       #   div(DT::DTOutput("table_pie")),
+                                       # ),
 
-                               div(DT::DTOutput("Summary_TCR_tb")),
-                               downloadButton("downloaddf_Summary_TCR_tb", "Download table")
+                                       fluidRow(
+                                         column(1, numericInput("width_Classification_clonotype_pie", "Width of PDF", value = 10)),
+                                         column(1, numericInput("height_Classification_clonotype_pie", "Height of PDF", value = 8)),
+                                         column(2, style = "margin-top: 25px;", downloadButton("downloadPlot_Classification_clonotype_pie", "Download PDF")),
+                                         column(2, numericInput("width_png_Classification_clonotype_pie", "Width of PNG", value = 1200)),
+                                         column(2, numericInput("height_png_Classification_clonotype_pie", "Height of PNG", value = 1000)),
+                                         column(2, numericInput("resolution_PNG_Classification_clonotype_pie", "Resolution of PNG", value = 144)),
+                                         column(2, style = "margin-top: 25px;", downloadButton("downloadPlotPNG_Classification_clonotype_pie", "Download PNG"))
+                                       ),
+                              ),
+                            ),
+                   ),
+                   # TCR overview ontop of UMAP -----
+                   tabPanel(
+                     "TCR",
+                     tabsetPanel(
+                       id = "TCR",
+                       tabPanel(
+                         "Overlap",
+                         tabsetPanel(
+                           tabPanel(
+                             "Summary Table",
+                             selectInput("other_selected_summary_columns","Add other sumamry columns", multiple = T, "",width = "1200px"),
+
+                             div(DT::DTOutput("Summary_TCR_tb")),
+                             downloadButton("downloaddf_Summary_TCR_tb", "Download table")
+                           ),
+
+                           tabPanel(
+                             "Upset_table",
+
+                             div(DT::DTOutput("Upset_plot_overlap_Tb")),
+                             downloadButton("downloaddf_Upset_plot_overlap_Tb", "Download table")
+                           ),
+                           tabPanel(
+                             "Upset Plot",
+                             plotOutput("Upset_plot_overlap"),
+                             fluidRow(
+                               column(1, numericInput("width_Upset_plot_overlap", "Width of PDF", value = 10)),
+                               column(1, numericInput("height_Upset_plot_overlap", "Height of PDF", value = 8)),
+                               column(2, style = "margin-top: 25px;", downloadButton("downloadPlot_Upset_plot_overlap", "Download PDF")),
+                               column(2, numericInput("width_png_Upset_plot_overlap", "Width of PNG", value = 1200)),
+                               column(2, numericInput("height_png_Upset_plot_overlap", "Height of PNG", value = 1000)),
+                               column(2, numericInput("resolution_PNG_Upset_plot_overlap", "Resolution of PNG", value = 144)),
+                               column(2, style = "margin-top: 25px;", downloadButton("downloadPlotPNG_Upset_plot_overlap", "Download PNG"))
                              ),
+                           ),
+                         )
+                       ),
+                       ##### line graph ----
+                       tabPanel("Line Graph",
+                                p(" "),
+                                fluidRow(column(2,actionButton("load_samp_name_list","Load samples"))),
+                                fluidRow(
+                                  column(2,checkboxInput("is_a_time_series",h4("Time series?"),value = T)),
+                                  column(2,selectInput("separator_input", "Select Separators:",
+                                                       choices = c("_" = "_.*", "-" = "-.*", "." = "\\..*", "|" = "\\|.*", "#" = "#*", "^" = "\\^*", "&" = "&.*"),
+                                                       multiple = F),),
+                                  column(2,selectInput("comparison_operator", "Choose comparison operator:",
+                                                       choices = c("Equal to" = "==", "Greater than or equal to" = ">="),
+                                                       selected = c("Greater than or equal to" = ">=")),),
+                                  column(2,numericInput("cutoff_upset", "Enter cutoff value:", value = 2),),
+                                  column(2,numericInput("max_number_lines_to","Maximum to display",value = 20)),
+                                  column(2,numericInput("Total_count_Cutoff","Min count threshold",value = 1)),
 
-                             tabPanel(
-                               "Upset_table",
+                                ),
 
-                               div(DT::DTOutput("Upset_plot_overlap_Tb")),
-                               downloadButton("downloaddf_Upset_plot_overlap_Tb", "Download table")
-                             ),
-                             tabPanel(
-                               "Upset Plot",
-                               plotOutput("Upset_plot_overlap"),
-                               fluidRow(
-                                 column(1, numericInput("width_Upset_plot_overlap", "Width of PDF", value = 10)),
-                                 column(1, numericInput("height_Upset_plot_overlap", "Height of PDF", value = 8)),
-                                 column(2, style = "margin-top: 25px;", downloadButton("downloadPlot_Upset_plot_overlap", "Download PDF")),
-                                 column(2, numericInput("width_png_Upset_plot_overlap", "Width of PNG", value = 1200)),
-                                 column(2, numericInput("height_png_Upset_plot_overlap", "Height of PNG", value = 1000)),
-                                 column(2, numericInput("resolution_PNG_Upset_plot_overlap", "Resolution of PNG", value = 144)),
-                                 column(2, style = "margin-top: 25px;", downloadButton("downloadPlotPNG_Upset_plot_overlap", "Download PNG"))
-                               ),
-                             ),
-                           )
-                         ),
-                         ##### line graph ----
-                         tabPanel("Line Graph",
-                                  p(" "),
-                                  fluidRow(column(2,actionButton("load_samp_name_list","Load samples"))),
-                                  fluidRow(
-                                    column(2,checkboxInput("is_a_time_series",h4("Time series?"),value = T)),
-                                    column(2,selectInput("separator_input", "Select Separators:",
-                                                         choices = c("_" = "_.*", "-" = "-.*", "." = "\\..*", "|" = "\\|.*", "#" = "#*", "^" = "\\^*", "&" = "&.*"),
-                                                         multiple = F),),
-                                    column(2,selectInput("comparison_operator", "Choose comparison operator:",
-                                                         choices = c("Equal to" = "==", "Greater than or equal to" = ">="),
-                                                         selected = c("Greater than or equal to" = ">=")),),
-                                    column(2,numericInput("cutoff_upset", "Enter cutoff value:", value = 2),),
-                                    column(2,numericInput("max_number_lines_to","Maximum to display",value = 20)),
-                                    column(2,numericInput("Total_count_Cutoff","Min count threshold",value = 1)),
+                                fluidRow(
 
+                                  column(2,conditionalPanel(
+                                    condition = "input.is_a_time_series",
+                                    selectizeInput("Group_for_line_graph","Display multi-sample clones for: ",""))),
+                                ),
+
+                                tabsetPanel(
+                                  tabPanel("Table",
+                                           div(DT::DTOutput("Line_graph_table")),
                                   ),
+                                  tabPanel("Line graph",
+                                           fluidRow(
+                                             column(2,sliderInput("number_of_conditions","Number of conditions",value = 2, min = 2 , max = 3)),
+                                             column(2,selectInput("separator_input2", "Select Separators:",
+                                                                  choices = c("_" = "_", "-" = "-", "." = "\\.", "|" = "\\|", "#" = "#", "^" = "\\^", "&" = "&"),
+                                                                  selected = "_",
+                                                                  multiple = T)),
+                                             column(2,selectInput("display_all_samps_line","Display all?",choices = c("no","yes"))),
 
-                                  fluidRow(
-
-                                    column(2,conditionalPanel(
-                                      condition = "input.is_a_time_series",
-                                      selectizeInput("Group_for_line_graph","Display multi-sample clones for: ",""))),
-                                  ),
-
-                                  tabsetPanel(
-                                    tabPanel("Table",
-                                             div(DT::DTOutput("Line_graph_table")),
-                                    ),
-                                    tabPanel("Line graph",
-                                             fluidRow(
-                                               column(2,sliderInput("number_of_conditions","Number of conditions",value = 2, min = 2 , max = 3)),
-                                               column(2,selectInput("separator_input2", "Select Separators:",
-                                                                    choices = c("_" = "_", "-" = "-", "." = "\\.", "|" = "\\|", "#" = "#", "^" = "\\^", "&" = "&"),
-                                                                    selected = "_",
-                                                                    multiple = T)),
-                                               column(2,selectInput("display_all_samps_line","Display all?",choices = c("no","yes"))),
-
-                                               column(3,
-                                                      conditionalPanel(
-                                                        condition = "input.number_of_conditions == 3",textInput("shape_legend_name","Shape legend name",value = ""))
-                                               ),
+                                             column(3,
+                                                    conditionalPanel(
+                                                      condition = "input.number_of_conditions == 3",textInput("shape_legend_name","Shape legend name",value = ""))
                                              ),
+                                           ),
 
-                                             conditionalPanel(
-                                               condition = "input.display_all_samps_line == 'no'",
+                                           conditionalPanel(
+                                             condition = "input.display_all_samps_line == 'no'",
 
-                                               plotOutput("line_graph_output"),
+                                             plotOutput("line_graph_output"),
 
-                                             ),
+                                           ),
 
-                                             conditionalPanel(
-                                               condition = "input.display_all_samps_line == 'yes'",
+                                           conditionalPanel(
+                                             condition = "input.display_all_samps_line == 'yes'",
 
-                                               plotOutput("line_graph_all_output"),
+                                             plotOutput("line_graph_all_output"),
 
-                                             ),
+                                           ),
 
 
 
-                                             fluidRow(
-                                               column(1, numericInput("width_line_graph_output", "Width of PDF", value = 10)),
-                                               column(1, numericInput("height_line_graph_output", "Height of PDF", value = 8)),
-                                               column(2, style = "margin-top: 25px;", downloadButton("downloadPlot_line_graph_output", "Download PDF")),
-                                               column(2, numericInput("width_png_line_graph_output", "Width of PNG", value = 1200)),
-                                               column(2, numericInput("height_png_line_graph_output", "Height of PNG", value = 1000)),
-                                               column(2, numericInput("resolution_PNG_line_graph_output", "Resolution of PNG", value = 144)),
-                                               column(2, style = "margin-top: 25px;", downloadButton("downloadPlotPNG_line_graph_output", "Download PNG"))
-                                             ),
+                                           fluidRow(
+                                             column(1, numericInput("width_line_graph_output", "Width of PDF", value = 10)),
+                                             column(1, numericInput("height_line_graph_output", "Height of PDF", value = 8)),
+                                             column(2, style = "margin-top: 25px;", downloadButton("downloadPlot_line_graph_output", "Download PDF")),
+                                             column(2, numericInput("width_png_line_graph_output", "Width of PNG", value = 1200)),
+                                             column(2, numericInput("height_png_line_graph_output", "Height of PNG", value = 1000)),
+                                             column(2, numericInput("resolution_PNG_line_graph_output", "Resolution of PNG", value = 144)),
+                                             column(2, style = "margin-top: 25px;", downloadButton("downloadPlotPNG_line_graph_output", "Download PNG"))
+                                           ),
+                                  )
+                                ),
+
+                       ),
+                       #####
+                       tabPanel("Clonal expansion plots",
+                                value = 2,
+                                div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
+                                fluidRow(
+                                  conditionalPanel(
+                                    condition = "input.Graph_type_bar=='Number_expanded' || input.Graph_type_bar=='Frequency_expanded'",
+                                    fluidRow(
+                                      column(
+                                        3,
+                                        wellPanel(
+                                          id = "tPanel23", style = "overflow-y:scroll; max-height: 600px",
+                                          uiOutput("myPanel_clonal_plot")
+                                        )
+                                      ),
+                                      column(9, plotOutput("clonality.bar.graph", height = "600px"))
                                     )
                                   ),
-
-                         ),
-                         #####
-                         tabPanel("Clonal expansion plots",
-                                  value = 2,
-                                  div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
-                                  fluidRow(
+                                  # selected clones to display ----
+                                  conditionalPanel(
+                                    condition = "input.Graph_type_bar=='Top_clonotypes'",
+                                    fluidRow(
+                                      column(
+                                        3,
+                                        wellPanel(
+                                          id = "tPanel23", style = "overflow-y:scroll; max-height: 600px",
+                                          uiOutput("myPanel_top_clonal_plot")
+                                        )
+                                      ),
+                                      column(9, plotOutput("clonality.bar.graph2", height = "600px"))
+                                    ),
+                                  ),
+                                ),
+                                fluidRow(
+                                  column(1, numericInput("width_clonality.bar.graph", "Width of PDF", value = 10)),
+                                  column(1, numericInput("height_clonality.bar.graph", "Height of PDF", value = 8)),
+                                  column(2, style = "margin-top: 25px;", downloadButton("downloadPlot_clonaity.bar.graph", "Download PDF")),
+                                  column(2, numericInput("width_png_clonality.bar.graph", "Width of PNG", value = 1200)),
+                                  column(2, numericInput("height_png_clonality.bar.graph", "Height of PNG", value = 1000)),
+                                  column(2, numericInput("resolution_PNG_clonality.bar.graph", "Resolution of PNG", value = 144)),
+                                  column(2, style = "margin-top: 25px;", downloadButton("downloadPlotPNG_clonaity.bar.graph", "Download PNG"))
+                                ),
+                       ),
+                       # UMAP clonality -> TCR -----
+                       tabPanel("Conality (counts)",
+                                value = 3,
+                                tabsetPanel(
+                                  tabPanel(
+                                    "Test.table",
+                                    div(DT::DTOutput("Tb_TCR_clonotypes.table"))
+                                  ),
+                                  tabPanel(
+                                    "UMAP",
+                                    div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
+                                    fluidRow(
+                                      column(3, selectInput("filter_umap_expand", "Filter plot", choices = c("no", "yes"))),
+                                    ),
+                                    conditionalPanel(
+                                      condition = "input.filter_umap_expand == 'yes'",
+                                      fluidRow(
+                                        column(3, numericInput("UMAP_1x", "UMAP_1 <", value = 10)),
+                                        column(3, numericInput("UMAP_1y", "UMAP_1 >", value = -10)),
+                                        column(3, numericInput("UMAP_2x", "UMAP_2 <", value = 10)),
+                                        column(3, numericInput("UMAP_2y", "UMAP_2 >", value = -10))
+                                      ),
+                                    ),
                                     conditionalPanel(
                                       condition = "input.Graph_type_bar=='Number_expanded' || input.Graph_type_bar=='Frequency_expanded'",
                                       fluidRow(
@@ -2090,1093 +2191,1032 @@ navbarPage(
                                           3,
                                           wellPanel(
                                             id = "tPanel23", style = "overflow-y:scroll; max-height: 600px",
-                                            uiOutput("myPanel_clonal_plot")
+                                            uiOutput("cols_UMAP_clonal_plot")
                                           )
                                         ),
-                                        column(9, plotOutput("clonality.bar.graph", height = "600px"))
-                                      )
+                                        column(9, plotOutput("clonality.TCR.UMAP", height = "600px"))
+                                      ),
+                                      fluidRow(
+                                        column(1, numericInput("width_TCR.UMAP", "Width of PDF", value = 10)),
+                                        column(1, numericInput("height_TCR.UMAP", "Height of PDF", value = 8)),
+                                        column(2, style = "margin-top: 25px;", downloadButton("downloadPlot_TCR.UMAP", "Download PDF")),
+                                        column(2, numericInput("width_png_TCR.UMAP", "Width of PNG", value = 1600)),
+                                        column(2, numericInput("height_png_TCR.UMAP", "Height of PNG", value = 1000)),
+                                        column(2, numericInput("resolution_PNG_TCR.UMAP", "Resolution of PNG", value = 144)),
+                                        column(2, style = "margin-top: 25px;", downloadButton("downloadPlotPNG_TCR.UMAP", "Download PNG"))
+                                      ),
                                     ),
-                                    # selected clones to display ----
                                     conditionalPanel(
                                       condition = "input.Graph_type_bar=='Top_clonotypes'",
+                                      #
+
+                                      fluidRow(
+                                        # column(4,selectInput("Split_by_group","Include group comparison",choices=c("no","yes"))),
+                                        column(4, selectInput("display_all_samps", "Display all sample", choices = c("yes", "no"))),
+                                      ),
+                                      conditionalPanel(
+                                        condition = "input.display_all_samps == 'no'",
+                                        column(8, selectInput("ID_Column_metadata", "Select to display", choices = "", multiple = T, width = "800px"))
+                                      ),
+                                      div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
                                       fluidRow(
                                         column(
                                           3,
                                           wellPanel(
                                             id = "tPanel23", style = "overflow-y:scroll; max-height: 600px",
-                                            uiOutput("myPanel_top_clonal_plot")
+                                            uiOutput("cols_UMAP_Topclonotypes")
                                           )
                                         ),
-                                        column(9, plotOutput("clonality.bar.graph2", height = "600px"))
+                                        column(9, plotOutput("clonality.TCR.UMAP.top", height = "600px")),
+                                        fluidRow(
+                                          column(1, numericInput("width_TCR.UMAP_top", "Width of PDF", value = 10)),
+                                          column(1, numericInput("height_TCR.UMAP_top", "Height of PDF", value = 8)),
+                                          column(2, style = "margin-top: 25px;", downloadButton("downloadPlot_TCR.UMAP_top", "Download PDF")),
+                                          column(2, numericInput("width_png_TCR.UMAP_top", "Width of PNG", value = 1800)),
+                                          column(2, numericInput("height_png_TCR.UMAP_top", "Height of PNG", value = 1000)),
+                                          column(2, numericInput("resolution_PNG_TCR.UMAP_top", "Resolution of PNG", value = 144)),
+                                          column(2, style = "margin-top: 25px;", downloadButton("downloadPlotPNG_TCR.UMAP_top", "Download PNG"))
+                                        ),
                                       ),
                                     ),
-                                  ),
-                                  fluidRow(
-                                    column(1, numericInput("width_clonality.bar.graph", "Width of PDF", value = 10)),
-                                    column(1, numericInput("height_clonality.bar.graph", "Height of PDF", value = 8)),
-                                    column(2, style = "margin-top: 25px;", downloadButton("downloadPlot_clonaity.bar.graph", "Download PDF")),
-                                    column(2, numericInput("width_png_clonality.bar.graph", "Width of PNG", value = 1200)),
-                                    column(2, numericInput("height_png_clonality.bar.graph", "Height of PNG", value = 1000)),
-                                    column(2, numericInput("resolution_PNG_clonality.bar.graph", "Resolution of PNG", value = 144)),
-                                    column(2, style = "margin-top: 25px;", downloadButton("downloadPlotPNG_clonaity.bar.graph", "Download PNG"))
-                                  ),
-                         ),
-                         # UMAP clonality -> TCR -----
-                         tabPanel("Conality (counts)",
-                                  value = 3,
-                                  tabsetPanel(
-                                    tabPanel(
-                                      "Test.table",
-                                      div(DT::DTOutput("Tb_TCR_clonotypes.table"))
-                                    ),
-                                    tabPanel(
-                                      "UMAP",
-                                      div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
-                                      fluidRow(
-                                        column(3, selectInput("filter_umap_expand", "Filter plot", choices = c("no", "yes"))),
-                                      ),
-                                      conditionalPanel(
-                                        condition = "input.filter_umap_expand == 'yes'",
-                                        fluidRow(
-                                          column(3, numericInput("UMAP_1x", "UMAP_1 <", value = 10)),
-                                          column(3, numericInput("UMAP_1y", "UMAP_1 >", value = -10)),
-                                          column(3, numericInput("UMAP_2x", "UMAP_2 <", value = 10)),
-                                          column(3, numericInput("UMAP_2y", "UMAP_2 >", value = -10))
-                                        ),
-                                      ),
-                                      conditionalPanel(
-                                        condition = "input.Graph_type_bar=='Number_expanded' || input.Graph_type_bar=='Frequency_expanded'",
-                                        fluidRow(
-                                          column(
-                                            3,
-                                            wellPanel(
-                                              id = "tPanel23", style = "overflow-y:scroll; max-height: 600px",
-                                              uiOutput("cols_UMAP_clonal_plot")
-                                            )
-                                          ),
-                                          column(9, plotOutput("clonality.TCR.UMAP", height = "600px"))
-                                        ),
-                                        fluidRow(
-                                          column(1, numericInput("width_TCR.UMAP", "Width of PDF", value = 10)),
-                                          column(1, numericInput("height_TCR.UMAP", "Height of PDF", value = 8)),
-                                          column(2, style = "margin-top: 25px;", downloadButton("downloadPlot_TCR.UMAP", "Download PDF")),
-                                          column(2, numericInput("width_png_TCR.UMAP", "Width of PNG", value = 1600)),
-                                          column(2, numericInput("height_png_TCR.UMAP", "Height of PNG", value = 1000)),
-                                          column(2, numericInput("resolution_PNG_TCR.UMAP", "Resolution of PNG", value = 144)),
-                                          column(2, style = "margin-top: 25px;", downloadButton("downloadPlotPNG_TCR.UMAP", "Download PNG"))
-                                        ),
-                                      ),
-                                      conditionalPanel(
-                                        condition = "input.Graph_type_bar=='Top_clonotypes'",
-                                        #
+                                  )
+                                ),
+                       ),
+                     ),
+                   ),
 
-                                        fluidRow(
-                                          # column(4,selectInput("Split_by_group","Include group comparison",choices=c("no","yes"))),
-                                          column(4, selectInput("display_all_samps", "Display all sample", choices = c("yes", "no"))),
-                                        ),
-                                        conditionalPanel(
-                                          condition = "input.display_all_samps == 'no'",
-                                          column(8, selectInput("ID_Column_metadata", "Select to display", choices = "", multiple = T, width = "800px"))
-                                        ),
-                                        div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
-                                        fluidRow(
-                                          column(
-                                            3,
-                                            wellPanel(
-                                              id = "tPanel23", style = "overflow-y:scroll; max-height: 600px",
-                                              uiOutput("cols_UMAP_Topclonotypes")
-                                            )
-                                          ),
-                                          column(9, plotOutput("clonality.TCR.UMAP.top", height = "600px")),
-                                          fluidRow(
-                                            column(1, numericInput("width_TCR.UMAP_top", "Width of PDF", value = 10)),
-                                            column(1, numericInput("height_TCR.UMAP_top", "Height of PDF", value = 8)),
-                                            column(2, style = "margin-top: 25px;", downloadButton("downloadPlot_TCR.UMAP_top", "Download PDF")),
-                                            column(2, numericInput("width_png_TCR.UMAP_top", "Width of PNG", value = 1800)),
-                                            column(2, numericInput("height_png_TCR.UMAP_top", "Height of PNG", value = 1000)),
-                                            column(2, numericInput("resolution_PNG_TCR.UMAP_top", "Resolution of PNG", value = 144)),
-                                            column(2, style = "margin-top: 25px;", downloadButton("downloadPlotPNG_TCR.UMAP_top", "Download PNG"))
-                                          ),
-                                        ),
-                                      ),
+
+
+                   # tabPanel("Clonotype overlap per cluster (upset plot)",
+                   #          # add in upset plot per cluster
+                   #          )
+                 )
+        ),
+        # end of differential expression -----
+        # TCR and GEX analysis section-----
+        tabPanel("TCR -> GEX",
+                 value = "TCR_and_GEX_tb",
+                 fluidRow(
+                   column(
+                     12,
+                     # conditionalPanel(condition="input.Panel_TCRUMAP=='top_clone' || input.Panel_TCRUMAP=='Epitope'",
+                     selectInput("Graph_split_order", "Order of split by:", choices = "", multiple = T, width = "1400px")
+                   ),
+                   column(3,colourInput("min_FC_col", "Zero colour", value = "white")),
+                   column(3,colourInput("med_FC_col", "from one colour", value = "#E9C2FF")),
+                   column(3,colourInput("max_FC_col", "Max colour", value = "#6F00B0")),
+                   # ),
+                 ),
+                 # Classification to include ------
+                 tabsetPanel(
+                   id = "Panel_TCRUMAP",
+                   # top clonotypes plot -----
+                   tabPanel("Clone abundance",
+                            value = "top_clone",
+                            fluidRow(
+                              column(
+                                3,
+                                conditionalPanel(
+                                  condition = "input.Panel_TCRUMAP=='top_clone'",
+                                  checkboxInput("limit_to_top_clones", "Limit to the top clones", value = T)
+                                ),
+                              ),
+                              column(
+                                3,
+                                conditionalPanel(
+                                  condition = "input.Panel_TCRUMAP=='top_clone' && input.limit_to_top_clones",
+                                  numericInput("max_top_clone_limit", "1 to max value", value = 50)
+                                ),
+                              )
+                            ),
+                            fluidRow(
+                              column(
+                                12,
+                                conditionalPanel(
+                                  condition = "input.Panel_TCRUMAP=='top_clone'",
+                                  selectInput("Selected_clonotype", "Select clonotype:", choices = "", width = "1400px")
+                                ),
+                              ),
+                            ),
+                            tabsetPanel(
+                              tabPanel(
+                                "Summary table",
+                                div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
+                                div(DT::DTOutput("Top_clonotype_sum")),
+                                downloadButton("download_Top_clonotype_sum", "Download table")
+                              ),
+                              tabPanel(
+                                "Bar graph",
+                                div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
+                                fluidRow(
+                                  column(
+                                    3,
+                                    wellPanel(
+                                      id = "tPanel23", style = "overflow-y:scroll; max-height: 600px",
+                                      uiOutput("myPanel_Top_bar_clonotype")
                                     )
                                   ),
-                         ),
-                       ),
-                     ),
-
-
-
-                     # tabPanel("Clonotype overlap per cluster (upset plot)",
-                     #          # add in upset plot per cluster
-                     #          )
-                   )
-          ),
-          # end of differential expression -----
-          # TCR and GEX analysis section-----
-          tabPanel("TCR -> GEX",
-                   value = "TCR_and_GEX_tb",
-                   fluidRow(
-                     column(
-                       12,
-                       # conditionalPanel(condition="input.Panel_TCRUMAP=='top_clone' || input.Panel_TCRUMAP=='Epitope'",
-                       selectInput("Graph_split_order", "Order of split by:", choices = "", multiple = T, width = "1400px")
-                     ),
-                     column(3,colourInput("min_FC_col", "Zero colour", value = "white")),
-                     column(3,colourInput("med_FC_col", "from one colour", value = "#E9C2FF")),
-                     column(3,colourInput("max_FC_col", "Max colour", value = "#6F00B0")),
-                     # ),
-                   ),
-                   # Classification to include ------
-                   tabsetPanel(
-                     id = "Panel_TCRUMAP",
-                     # top clonotypes plot -----
-                     tabPanel("Clone abundance",
-                              value = "top_clone",
-                              fluidRow(
-                                column(
-                                  3,
-                                  conditionalPanel(
-                                    condition = "input.Panel_TCRUMAP=='top_clone'",
-                                    checkboxInput("limit_to_top_clones", "Limit to the top clones", value = T)
-                                  ),
+                                  column(9, plotOutput("top_clonotype", height = "600px"))
                                 ),
-                                column(
-                                  3,
-                                  conditionalPanel(
-                                    condition = "input.Panel_TCRUMAP=='top_clone' && input.limit_to_top_clones",
-                                    numericInput("max_top_clone_limit", "1 to max value", value = 50)
-                                  ),
-                                )
-                              ),
-                              fluidRow(
-                                column(
-                                  12,
-                                  conditionalPanel(
-                                    condition = "input.Panel_TCRUMAP=='top_clone'",
-                                    selectInput("Selected_clonotype", "Select clonotype:", choices = "", width = "1400px")
-                                  ),
-                                ),
-                              ),
-                              tabsetPanel(
-                                tabPanel(
-                                  "Summary table",
-                                  div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
-                                  div(DT::DTOutput("Top_clonotype_sum")),
-                                  downloadButton("download_Top_clonotype_sum", "Download table")
-                                ),
-                                tabPanel(
-                                  "Bar graph",
-                                  div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
-                                  fluidRow(
-                                    column(
-                                      3,
-                                      wellPanel(
-                                        id = "tPanel23", style = "overflow-y:scroll; max-height: 600px",
-                                        uiOutput("myPanel_Top_bar_clonotype")
-                                      )
-                                    ),
-                                    column(9, plotOutput("top_clonotype", height = "600px"))
-                                  ),
-                                  fluidRow(
-                                    column(1, numericInput("width_top_clonotype", "Width of PDF", value = 10)),
-                                    column(1, numericInput("height_top_clonotype", "Height of PDF", value = 8)),
-                                    column(2, style = "margin-top: 25px;", downloadButton("downloadPlot_top_clonotype", "Download PDF")),
-                                    column(2, numericInput("width_png_top_clonotype", "Width of PNG", value = 1200)),
-                                    column(2, numericInput("height_png_top_clonotype", "Height of PNG", value = 1000)),
-                                    column(2, numericInput("resolution_PNG_top_clonotype", "Resolution of PNG", value = 144)),
-                                    column(2, style = "margin-top: 25px;", downloadButton("downloadPlotPNG_top_clonotype", "Download PNG"))
-                                  ),
-                                ),
-                                # tabPanel("Pie labs",
-                                #          add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "200px",width = "200px", color = "#6F00B0"),
-                                #          div(DT::DTOutput("Top_clonotype_Labs")),
-                                #
-                                # ),
-
-                                tabPanel("heatmap",
-                                         value = "TopHeat",
-                                         p("Colour by: = x-axis; Split graph by: = y-axis for this heatmap"),
-                                         div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
-                                         plotOutput("heatmap_topclone_plot", height = "600px"),
-                                         fluidRow(
-                                           column(1, numericInput("width_heatmap_topclone_plot", "Width of PDF", value = 10)),
-                                           column(1, numericInput("height_heatmap_topclone_plot", "Height of PDF", value = 8)),
-                                           column(2, style = "margin-top: 25px;", downloadButton("downloadPlot_heatmap_topclone_plot", "Download PDF")),
-                                           column(2, numericInput("width_png_heatmap_topclone_plot", "Width of PNG", value = 1200)),
-                                           column(2, numericInput("height_png_heatmap_topclone_plot", "Height of PNG", value = 1000)),
-                                           column(2, numericInput("resolution_heatmap_topclone_plot", "Resolution of PNG", value = 144)),
-                                           column(2, style = "margin-top: 25px;", downloadButton("downloadPlotPNG_heatmap_topclone_plot", "Download PNG"))
-                                         ),
-                                ),
-                                #####.
-                                tabPanel(
-                                  "Pie/UMAP chart",
-                                  div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
-                                  fluidRow(
-                                    column(3, selectInput("Plot_type_selected", "Plot", choices = c("pie", "UMAP"))),
-                                    column(3, numericInput("size_selected_top", "Size of Point", value = 2)),
-                                  ),
-                                  fluidRow(
-                                    column(
-                                      3,
-                                      wellPanel(
-                                        id = "tPanel23", style = "overflow-y:scroll; max-height: 600px",
-                                        uiOutput("myPanel_Top_pie_clonotype")
-                                      )
-                                    ),
-                                    column(9, plotOutput("top_clonotype_pie", height = "600px")),
-                                  ),
-                                  fluidRow(
-                                    column(1, numericInput("width_top_clonotype_pie", "Width of PDF", value = 10)),
-                                    column(1, numericInput("height_top_clonotype_pie", "Height of PDF", value = 8)),
-                                    column(2, style = "margin-top: 25px;", downloadButton("downloadPlot_top_clonotype_pie", "Download PDF")),
-                                    column(2, numericInput("width_png_top_clonotype_pie", "Width of PNG", value = 1200)),
-                                    column(2, numericInput("height_png_top_clonotype_pie", "Height of PNG", value = 1000)),
-                                    column(2, numericInput("resolution_PNG_top_clonotype_pie", "Resolution of PNG", value = 144)),
-                                    column(2, style = "margin-top: 25px;", downloadButton("downloadPlotPNG_top_clonotype_pie", "Download PNG"))
-                                  ),
-                                ),
-                                # add in find marker for comparing population to other for top clonotype
-                                # tabPanel("FindMarker"),
-
-                                # tabPanel("Expression",
-
-
-
-                                # tabsetPanel(
-                                tabPanel(
-                                  "Ridge/Violin plots",
-                                  div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
-                                  actionButton("run_string.data_Exp_top", "View Ridge plot"),
-                                  fluidRow(column(12, selectInput("string.data_Exp_top", "column names for summary", "", multiple = F, width = "1200px"))),
-                                  fluidRow(
-                                    column(3, checkboxInput("restric_ex", "Restrict to above a threshold?", value = F)),
-                                    column(3, numericInput("Gre_ex", "Expression above:", value = 0)),
-                                    column(3, selectInput("plot_type_ridgvi", "Plot type", choices = c("Ridge (selected clonotype)", "Ridge (compare)", "Violin (selected clonotype)", "Violin (compare)"))),
-                                  ),
-                                  div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
-                                  fluidRow(
-                                    column(6, div(DT::DTOutput("Ridge_chart_alpha_gamma_stat"))),
-                                    column(6, plotOutput("Ridge_chart_alpha_gamma_plot_out", height = "600px"))
-                                  ),
-                                  column(6, downloadButton("downloaddf_clusTCR_GEx", "Download stats")),
-                                  fluidRow(
-                                    column(1, numericInput("width_Ridge_chart_alpha_gamma_plot_out", "Width of PDF", value = 10)),
-                                    column(1, numericInput("height_Ridge_chart_alpha_gamma_plot_out", "Height of PDF", value = 8)),
-                                    column(2, style = "margin-top: 25px;", downloadButton("downloadPlot_Ridge_chart_alpha_gamma_plot_out", "Download PDF")),
-                                    column(2, numericInput("width_png_Ridge_chart_alpha_gamma_plot_out", "Width of PNG", value = 1200)),
-                                    column(2, numericInput("height_png_Ridge_chart_alpha_gamma_plot_out", "Height of PNG", value = 1000)),
-                                    column(2, numericInput("resolution_PNG_Ridge_chart_alpha_gamma_plot_out", "Resolution of PNG", value = 144)),
-                                    column(2, style = "margin-top: 25px;", downloadButton("downloadPlotPNG_Ridge_chart_alpha_gamma_plot_out", "Download PNG"))
-                                  ),
-                                ),
-                                tabPanel(
-                                  "Stats",
-                                  div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
-                                  div(DT::DTOutput("Ridge_chart_alpha_gamma_stat_comp")),
-                                  downloadButton("downloaddf_FindMarker_Top", "Download stat (Right)")
-                                ),
-                                # dotplot top-----
-                                tabPanel(
-                                  "Dotplot",
-                                  fluidRow(
-                                    column(2, colourInput("low.dotplot", "Lower color:", "darkblue")),
-                                    column(2, colourInput("middle.dotplot", "Middle color:", "white")),
-                                    column(2, colourInput("high.dotplot", "High color:", "darkred")),
-                                    column(2, checkboxInput("restict_no_points", "Restrict Label", value = F)),
-                                    column(2, numericInput("pval.ex.top_genes", "Top genes to display", value = 40)),
-                                  ),
-                                  div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
-                                  plotOutput("all_expression_dotplot_top", height = "400px"),
-                                  textInput("name_clonotype_selected", "Name of clone", "clone 1"),
-                                  fluidRow(
-                                    column(1, numericInput("width_all_expression_dotplot_top", "Width of PDF", value = 20)),
-                                    column(1, numericInput("height_all_expression_dotplot_top", "Height of PDF", value = 4)),
-                                    column(2, style = "margin-top: 25px;", downloadButton("downloadPlot_all_expression_dotplot_top", "Download PDF")),
-                                    column(2, numericInput("width_png_all_expression_dotplot_top", "Width of PNG", value = 2400)),
-                                    column(2, numericInput("height_png_all_expression_dotplot_top", "Height of PNG", value = 700)),
-                                    column(2, numericInput("resolution_PNG_all_expression_dotplot_top", "Resolution of PNG", value = 144)),
-                                    column(2, style = "margin-top: 25px;", downloadButton("downloadPlotPNG_all_expression_dotplot_top", "Download PNG"))
-                                  ),
-                                ),
-                                tabPanel(
-                                  "Over-representation",
-                                  fluidRow(
-                                    column(3, numericInput("in.geneset.cutoff_top", "Min number of genes in GeneSet", value = 1, min = 0, step = 1, max = 60000)),
-                                    column(3, numericInput("p.val_cutoff_top", "p-val cut-off", value = 0.05, min = 0, max = 1)),
-                                    # column(3,numericInput("adjust_cutoff_top","BH cut-off",value = 1, min = 0, max = 1)),
-                                  ),
-                                  div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
-                                  div(DT::DTOutput("Over_rep_Top_clones_Tab")),
-                                  downloadButton("downloadtb_over.rep.Top_Ex", "Download table")
-                                  #
-                                ),
-                                # ),
-                                # ),
-                              ),
-                     ),
-
-                     # expanded phenotype -----
-                     tabPanel("Expanded",
-                              value = "Expanded",
-                              tabsetPanel(
-                                id = "ExPan",
-                                tabPanel(
-                                  "Table",
-                                  div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
-                                  div(DT::DTOutput("Expansion_check")),
-                                ),
-                                tabPanel("ex.UMAP",
-                                         value = "ExPan_UMAP",
-                                         fluidRow(
-                                           div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
-                                           column(
-                                             3,
-                                             wellPanel(
-                                               id = "tPanel23", style = "overflow-y:scroll; max-height: 600px",
-                                               uiOutput("cols_UMAP_Expanded")
-                                             )
-                                           ),
-                                           column(9, plotOutput("UMAP_Expanded", height = "600px"))
-                                         ),
-                                         fluidRow(
-                                           column(1, numericInput("width_UMAP_Expanded", "Width of PDF", value = 10)),
-                                           column(1, numericInput("height_UMAP_Expanded", "Height of PDF", value = 8)),
-                                           column(2, style = "margin-top: 25px;", downloadButton("downloadPlot_UMAP_Expanded", "Download PDF")),
-                                           column(2, numericInput("width_png_UMAP_Expanded", "Width of PNG", value = 1200)),
-                                           column(2, numericInput("height_png_UMAP_Expanded", "Height of PNG", value = 1000)),
-                                           column(2, numericInput("resolution_PNG_UMAP_Expanded", "Resolution of PNG", value = 144)),
-                                           column(2, style = "margin-top: 25px;", downloadButton("downloadPlotPNG_UMAP_Expanded", "Download PNG"))
-                                         ),
-                                ),
-                                tabPanel("Stats",
-                                         value = "ExPan_stat",
-                                         div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
-                                         div(DT::DTOutput("compare.stat_Ex")),
-                                         downloadButton("downloadtb_compare.stat_Ex", "Download table")
-                                ),
-                                tabPanel("Dotplot",
-                                         value = "ExPan_dot",
-                                         fluidRow(
-                                           column(2, colourInput("low.dotplot.ex", "Lower color:", "darkblue")),
-                                           column(2, colourInput("middle.dotplot.ex", "Middle color:", "white")),
-                                           column(2, colourInput("high.dotplot.ex", "High color:", "darkred")),
-                                         ),
-                                         div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
-                                         plotOutput("relative_expression_dotplot_ex", height = "600px"),
-                                         fluidRow(
-                                           column(1, numericInput("width_all_expression_dotplot_ex", "Width of PDF", value = 20)),
-                                           column(1, numericInput("height_all_expression_dotplot_ex", "Height of PDF", value = 4)),
-                                           column(2, style = "margin-top: 25px;", downloadButton("downloadPlot_all_expression_dotplot_ex", "Download PDF")),
-                                           column(2, numericInput("width_png_all_expression_dotplot_ex", "Width of PNG", value = 2400)),
-                                           column(2, numericInput("height_png_all_expression_dotplot_ex", "Height of PNG", value = 600)),
-                                           column(2, numericInput("resolution_PNG_all_expression_dotplot_ex", "Resolution of PNG", value = 144)),
-                                           column(2, style = "margin-top: 25px;", downloadButton("downloadPlotPNG_all_expression_dotplot_ex", "Download PNG"))
-                                         ),
-                                ),
-                                tabPanel("Over-representation",
-                                         value = "ExPan_OvRep",
-                                         fluidRow(
-                                           column(3, numericInput("in.geneset.cutoff_Exp", "Min number of genes in GeneSet", value = 1, min = 0, step = 1, max = 60000)),
-                                           column(3, numericInput("p.val_cutoff_Exp", "p-val cut-off", value = 0.05, min = 0, max = 1)),
-                                         ),
-                                         div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
-                                         div(DT::DTOutput("Over_rep_Exp_Tab")),
-                                         downloadButton("downloadtb_over.rep_Exp", "Download table")
-                                )
-                              )
-                     ),
-
-                     # ClusTCR2 Analysis -----
-                     tabPanel("ClusTCR2",
-                              value = "ClusTCR2",
-                              tabsetPanel(
-                                tabPanel(
-                                  "Table.Clust",
-                                  div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
-                                  div(DT::DTOutput("Tb_ClusTCR_selected")),
-                                  downloadButton("downloadtb_Tb_ClusTCR_selected", "Download table")
-                                ),
-                                tabPanel(
-                                  "UMAP",
-                                  div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
-                                  fluidRow(
-                                    column(
-                                      3,
-                                      wellPanel(
-                                        id = "tPanel23", style = "overflow-y:scroll; max-height: 600px",
-                                        uiOutput("myPanel_cols_clust_UMAP")
-                                      )
-                                    ),
-                                    column(9, plotOutput("UMAP_ClusTCR2_plot", height = "600px"))
-                                  ),
-                                  fluidRow(
-                                    column(1, numericInput("width_UMAP_ClusTCR2_plot", "Width of PDF", value = 10)),
-                                    column(1, numericInput("height_UMAP_ClusTCR2_plot", "Height of PDF", value = 8)),
-                                    column(2, style = "margin-top: 25px;", downloadButton("downloadPlot_UMAP_ClusTCR2_plot", "Download PDF")),
-                                    column(2, numericInput("width_png_UMAP_ClusTCR2_plot", "Width of PNG", value = 1200)),
-                                    column(2, numericInput("height_png_UMAP_ClusTCR2_plot", "Height of PNG", value = 1000)),
-                                    column(2, numericInput("resolution_PNG_UMAP_ClusTCR2_plot", "Resolution of PNG", value = 144)),
-                                    column(2, style = "margin-top: 25px;", downloadButton("downloadPlotPNG_UMAP_ClusTCR2_plot", "Download PNG"))
-                                  ),
-                                ),
-                                tabPanel(
-                                  "motif",
-                                  div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
-                                  plotOutput("Motif_ClusTCR2_cluster", height = "300px"),
-                                  verbatimTextOutput("print_unique_cases"),
-                                  fluidRow(
-                                    column(1, numericInput("width_Motif_ClusTCR2_cluster", "Width of PDF", value = 10)),
-                                    column(1, numericInput("height_Motif_ClusTCR2_cluster", "Height of PDF", value = 4)),
-                                    column(2, style = "margin-top: 25px;", downloadButton("downloadPlot_Motif_ClusTCR2_cluster", "Download PDF")),
-                                    column(2, numericInput("width_png_Motif_ClusTCR2_cluster", "Width of PNG", value = 2400)),
-                                    column(2, numericInput("height_png_Motif_ClusTCR2_cluster", "Height of PNG", value = 600)),
-                                    column(2, numericInput("resolution_PNG_Motif_ClusTCR2_cluster", "Resolution of PNG", value = 144)),
-                                    column(2, style = "margin-top: 25px;", downloadButton("downloadPlotPNG_Motif_ClusTCR2_cluster", "Download PNG"))
-                                  ),
-                                ),
-                                #####
-                                tabPanel("heatmap",
-                                         value = "ClustHeat",
-                                         div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
-                                         p("Colour by: = x-axis; Split graph by: = y-axis for this heatmap"),
-                                         plotOutput("Pie_ClusTCR2_plot", height = "600px"),
-                                         fluidRow(
-                                           column(1, numericInput("width_Pie_ClusTCR2_plot", "Width of PDF", value = 10)),
-                                           column(1, numericInput("height_Pie_ClusTCR2_plot", "Height of PDF", value = 8)),
-                                           column(2, style = "margin-top: 25px;", downloadButton("downloadPlot_Pie_ClusTCR2_plot", "Download PDF")),
-                                           column(2, numericInput("width_png_Pie_ClusTCR2_plot", "Width of PNG", value = 1200)),
-                                           column(2, numericInput("height_png_Pie_ClusTCR2_plot", "Height of PNG", value = 1000)),
-                                           column(2, numericInput("resolution_PNG_Pie_ClusTCR2_plot", "Resolution of PNG", value = 144)),
-                                           column(2, style = "margin-top: 25px;", downloadButton("downloadPlotPNG_Pie_ClusTCR2_plot", "Download PNG"))
-                                         ),
-                                ),
-
-                                tabPanel("Stats",
-                                         value = "ClusPan_stat",
-                                         div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
-                                         div(DT::DTOutput("compare.stat_Cluster_DT")),
-                                         downloadButton("downloadtb_compare.stat_Cluster", "Download table")
-                                ),
-
-                                # dotplot Cluster ------
-                                tabPanel("Dotplot",
-                                         value = "ClusPan_dot",
-                                         fluidRow(
-                                           column(2, colourInput("low.dotplot.clust", "Lower color:", "darkblue")),
-                                           column(2, colourInput("middle.dotplot.clust", "Middle color:", "white")),
-                                           column(2, colourInput("high.dotplot.clust", "High color:", "darkred")),
-                                           column(2, checkboxInput("restrict.dotpot.clust", "Restrict to top list", value = F)),
-                                           column(2, numericInput("restrict.dotpot.num.clust", "Total genes to display:", value = 10))
-                                         ),
-                                         div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
-                                         plotOutput("all_expression_dotplot_cluster", height = "400px"),
-                                         fluidRow(
-                                           column(1, numericInput("width_all_expression_dotplot_clust", "Width of PDF", value = 20)),
-                                           column(1, numericInput("height_all_expression_dotplot_clust", "Height of PDF", value = 8)),
-                                           column(2, style = "margin-top: 25px;", downloadButton("downloadPlot_all_expression_dotplot_clust", "Download PDF")),
-                                           column(2, numericInput("width_png_all_expression_dotplot_clust", "Width of PNG", value = 2400)),
-                                           column(2, numericInput("height_png_all_expression_dotplot_clust", "Height of PNG", value = 700)),
-                                           column(2, numericInput("resolution_PNG_all_expression_dotplot_clust", "Resolution of PNG", value = 144)),
-                                           column(2, style = "margin-top: 25px;", downloadButton("downloadPlotPNG_all_expression_dotplot_clust", "Download PNG"))
-                                         ),
-                                ),
-                                tabPanel("Over-representation",
-                                         value = "ClusPan_OvRep",
-                                         fluidRow(
-                                           column(3, numericInput("in.geneset.cutoff_Clust", "Min number of genes in GeneSet", value = 1, min = 0, step = 1, max = 60000)),
-                                           column(3, numericInput("p.val_cutoff_Clust", "p-val cut-off", value = 0.05, min = 0, max = 1)),
-                                           # column(3,numericInput("adjust_cutoff_Clust","BH cut-off",value = 1, min = 0, max = 1)),
-                                         ),
-                                         div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
-                                         div(DT::DTOutput("Over_rep_Cluster_Tab")),
-                                         downloadButton("downloadtb_over.rep.cluster", "Download table")
-                                )
-                              )
-                     ),
-                     # epitope analysis -----
-                     tabPanel("Epitope",
-                              value = "Epitope",
-                              conditionalPanel(
-                                condition = "input.Panel_TCRUMAP=='Epitope'",
                                 fluidRow(
-                                  column(3, uiOutput("classification_to_add_epitope")),
-                                  column(3, uiOutput("classification_to_add_epitope2")),
-                                  column(3, actionButton("Update_epi", "Add in Epitope list")),
-                                  column(3, selectInput("Epi_of_interest", "Epitope of interest", ""))
+                                  column(1, numericInput("width_top_clonotype", "Width of PDF", value = 10)),
+                                  column(1, numericInput("height_top_clonotype", "Height of PDF", value = 8)),
+                                  column(2, style = "margin-top: 25px;", downloadButton("downloadPlot_top_clonotype", "Download PDF")),
+                                  column(2, numericInput("width_png_top_clonotype", "Width of PNG", value = 1200)),
+                                  column(2, numericInput("height_png_top_clonotype", "Height of PNG", value = 1000)),
+                                  column(2, numericInput("resolution_PNG_top_clonotype", "Resolution of PNG", value = 144)),
+                                  column(2, style = "margin-top: 25px;", downloadButton("downloadPlotPNG_top_clonotype", "Download PNG"))
                                 ),
                               ),
-                              tabsetPanel(
-                                id = "EpitipeTabs",
-                                # tabPanel("Uploaded Epitope file",
-                                #          add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "200px",width = "200px", color = "#6F00B0"),
-                                #          div(DT::DTOutput("MainTcell_Check")),
-                                # ),
-                                tabPanel(
-                                  "Summary Table",
-                                  div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
-                                  div(DT::DTOutput("Pie_Epitope_dt")),
-                                  downloadButton("downloaddf_Pie_Epitope_dt", "Download table")
-                                ),
-                                tabPanel(
-                                  "Heatmap",
-                                  div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
-                                  plotOutput("Heatmap_epi_plot", height = "600px"),
-                                  fluidRow(
-                                    column(1, numericInput("width_Heatmap_epi_plot", "Width of PDF", value = 10)),
-                                    column(1, numericInput("height_Heatmap_epi_plot", "Height of PDF", value = 8)),
-                                    column(2, style = "margin-top: 25px;", downloadButton("downloadPlot_Heatmap_epi_plot", "Download PDF")),
-                                    column(2, numericInput("width_png_Heatmap_epi_plot", "Width of PNG", value = 1200)),
-                                    column(2, numericInput("height_png_Heatmap_epi_plot", "Height of PNG", value = 1000)),
-                                    column(2, numericInput("resolution_PNG_Heatmap_epi_plot", "Resolution of PNG", value = 144)),
-                                    column(2, style = "margin-top: 25px;", downloadButton("downloadPlotPNG_Heatmap_epi_plot", "Download PNG"))
-                                  ),
-                                ),
-                                tabPanel(
-                                  "UMAP",
-                                  numericInput("value_size_epi_umap", "Size of epitope dots", value = 2),
+                              # tabPanel("Pie labs",
+                              #          add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "200px",width = "200px", color = "#6F00B0"),
+                              #          div(DT::DTOutput("Top_clonotype_Labs")),
+                              #
+                              # ),
 
-                                  # column(3,selectInput("epitope_umap_selected","Select",choices = c("beta","epitope","pathology"),selected = "pathology")),
-                                  div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
-                                  fluidRow(
-                                    column(
-                                      3,
-                                      wellPanel(
-                                        id = "tPanel23", style = "overflow-y:scroll; max-height: 600px",
-                                        uiOutput("myPanel_cols_epitope")
-                                      )
-                                    ),
-                                    column(9, plotOutput("UMAP_Epitope_plot", height = "600px"))
-                                  ),
-                                  fluidRow(
-                                    column(1, numericInput("width_UMAP_Epitope", "Width of PDF", value = 10)),
-                                    column(1, numericInput("height_UMAP_Epitope", "Height of PDF", value = 8)),
-                                    column(2, style = "margin-top: 25px;", downloadButton("downloadPlot_UMAP_Epitope", "Download PDF")),
-                                    column(2, numericInput("width_png_UMAP_Epitope", "Width of PNG", value = 1200)),
-                                    column(2, numericInput("height_png_UMAP_Epitope", "Height of PNG", value = 1000)),
-                                    column(2, numericInput("resolution_PNG_UMAP_Epitope", "Resolution of PNG", value = 144)),
-                                    column(2, style = "margin-top: 25px;", downloadButton("downloadPlotPNG_UMAP_Epitope", "Download PNG"))
-                                  ),
-                                ),
-                                tabPanel(
-                                  "Pie (Expression)",
-                                  div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
-                                  fluidRow(
-                                    column(
-                                      3,
-                                      wellPanel(
-                                        id = "tPanel23", style = "overflow-y:scroll; max-height: 600px",
-                                        uiOutput("myPanel_cols_epitope_pie")
-                                      )
-                                    ),
-                                    column(9, plotOutput("Pie_Epitope_plot", height = "600px"))
-                                  ),
-                                  fluidRow(
-                                    column(1, numericInput("width_Pie_Epitope", "Width of PDF", value = 10)),
-                                    column(1, numericInput("height_Pie_Epitope", "Height of PDF", value = 8)),
-                                    column(2, style = "margin-top: 25px;", downloadButton("downloadPlot_Pie_Epitope", "Download PDF")),
-                                    column(2, numericInput("width_png_Pie_Epitope", "Width of PNG", value = 1200)),
-                                    column(2, numericInput("height_png_Pie_Epitope", "Height of PNG", value = 1000)),
-                                    column(2, numericInput("resolution_PNG_Pie_Epitope", "Resolution of PNG", value = 144)),
-                                    column(2, style = "margin-top: 25px;", downloadButton("downloadPlotPNG_Pie_Epitope", "Download PNG"))
-                                  ),
-                                ),
-                                tabPanel("Stats",
-                                         value = "EpiPan_stat",
-                                         div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
-                                         div(DT::DTOutput("Epi_of_interest_DF")),
-                                         div(DT::DTOutput("compare.stat_Epi_DT")),
-                                         downloadButton("downloadtb_compare.stat_Epi", "Download table")
-                                ),
-                                tabPanel("Dotplot",
-                                         value = "EpiPan_dot",
-                                         fluidRow(
-                                           column(2, colourInput("low.dotplot.epi", "Lower color:", "darkblue")),
-                                           column(2, colourInput("middle.dotplot.epi", "Middle color:", "white")),
-                                           column(2, colourInput("high.dotplot.epi", "High color:", "darkred")),
-                                           column(2, checkboxInput("restrict.dotpot.epi", "Restrict to top list", value = F)),
-                                           column(2, numericInput("restrict.dotpot.num.epi", "Total genes to display:", value = 10))
-                                         ),
-                                         div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
-                                         plotOutput("all_expression_dotplot_epi", height = "400px"),
-                                         fluidRow(
-                                           column(1, numericInput("width_all_expression_dotplot_epi", "Width of PDF", value = 20)),
-                                           column(1, numericInput("height_all_expression_dotplot_epi", "Height of PDF", value = 4)),
-                                           column(2, style = "margin-top: 25px;", downloadButton("downloadPlot_all_expression_dotplot_epi", "Download PDF")),
-                                           column(2, numericInput("width_png_all_expression_dotplot_epi", "Width of PNG", value = 2400)),
-                                           column(2, numericInput("height_png_all_expression_dotplot_epi", "Height of PNG", value = 700)),
-                                           column(2, numericInput("resolution_PNG_all_expression_dotplot_epi", "Resolution of PNG", value = 144)),
-                                           column(2, style = "margin-top: 25px;", downloadButton("downloadPlotPNG_all_expression_dotplot_epi", "Download PNG"))
-                                         ),
-                                ),
-                                tabPanel("Over-representation",
-                                         value = "EpiPan_OvRep",
-                                         fluidRow(
-                                           column(3, numericInput("in.geneset.cutoff_Epi", "Min number of genes in GeneSet", value = 1, min = 0, step = 1, max = 60000)),
-                                           column(3, numericInput("p.val_cutoff_Epi", "p-val cut-off", value = 0.05, min = 0, max = 1)),
-                                         ),
-                                         div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
-                                         div(DT::DTOutput("Over_rep_Epi_Tab")),
-                                         downloadButton("downloadtb_over.rep.Epi", "Download table")
-                                         #
-                                )
+                              tabPanel("heatmap",
+                                       value = "TopHeat",
+                                       p("Colour by: = x-axis; Split graph by: = y-axis for this heatmap"),
+                                       div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
+                                       plotOutput("heatmap_topclone_plot", height = "600px"),
+                                       fluidRow(
+                                         column(1, numericInput("width_heatmap_topclone_plot", "Width of PDF", value = 10)),
+                                         column(1, numericInput("height_heatmap_topclone_plot", "Height of PDF", value = 8)),
+                                         column(2, style = "margin-top: 25px;", downloadButton("downloadPlot_heatmap_topclone_plot", "Download PDF")),
+                                         column(2, numericInput("width_png_heatmap_topclone_plot", "Width of PNG", value = 1200)),
+                                         column(2, numericInput("height_png_heatmap_topclone_plot", "Height of PNG", value = 1000)),
+                                         column(2, numericInput("resolution_heatmap_topclone_plot", "Resolution of PNG", value = 144)),
+                                         column(2, style = "margin-top: 25px;", downloadButton("downloadPlotPNG_heatmap_topclone_plot", "Download PNG"))
+                                       ),
                               ),
-                     ),
+                              #####.
+                              tabPanel(
+                                "Pie/UMAP chart",
+                                div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
+                                fluidRow(
+                                  column(3, selectInput("Plot_type_selected", "Plot", choices = c("pie", "UMAP"))),
+                                  column(3, numericInput("size_selected_top", "Size of Point", value = 2)),
+                                ),
+                                fluidRow(
+                                  column(
+                                    3,
+                                    wellPanel(
+                                      id = "tPanel23", style = "overflow-y:scroll; max-height: 600px",
+                                      uiOutput("myPanel_Top_pie_clonotype")
+                                    )
+                                  ),
+                                  column(9, plotOutput("top_clonotype_pie", height = "600px")),
+                                ),
+                                fluidRow(
+                                  column(1, numericInput("width_top_clonotype_pie", "Width of PDF", value = 10)),
+                                  column(1, numericInput("height_top_clonotype_pie", "Height of PDF", value = 8)),
+                                  column(2, style = "margin-top: 25px;", downloadButton("downloadPlot_top_clonotype_pie", "Download PDF")),
+                                  column(2, numericInput("width_png_top_clonotype_pie", "Width of PNG", value = 1200)),
+                                  column(2, numericInput("height_png_top_clonotype_pie", "Height of PNG", value = 1000)),
+                                  column(2, numericInput("resolution_PNG_top_clonotype_pie", "Resolution of PNG", value = 144)),
+                                  column(2, style = "margin-top: 25px;", downloadButton("downloadPlotPNG_top_clonotype_pie", "Download PNG"))
+                                ),
+                              ),
+                              # add in find marker for comparing population to other for top clonotype
+                              # tabPanel("FindMarker"),
 
-                     # Overlap ------
+                              # tabPanel("Expression",
 
-                     # tabPanel("Clonotypes per cluster (Pie/bar plot)"),
-                     # tabPanel("Upset plot")
+
+
+                              # tabsetPanel(
+                              tabPanel(
+                                "Ridge/Violin plots",
+                                div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
+                                actionButton("run_string.data_Exp_top", "View Ridge plot"),
+                                fluidRow(column(12, selectInput("string.data_Exp_top", "column names for summary", "", multiple = F, width = "1200px"))),
+                                fluidRow(
+                                  column(3, checkboxInput("restric_ex", "Restrict to above a threshold?", value = F)),
+                                  column(3, numericInput("Gre_ex", "Expression above:", value = 0)),
+                                  column(3, selectInput("plot_type_ridgvi", "Plot type", choices = c("Ridge (selected clonotype)", "Ridge (compare)", "Violin (selected clonotype)", "Violin (compare)"))),
+                                ),
+                                div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
+                                fluidRow(
+                                  column(6, div(DT::DTOutput("Ridge_chart_alpha_gamma_stat"))),
+                                  column(6, plotOutput("Ridge_chart_alpha_gamma_plot_out", height = "600px"))
+                                ),
+                                column(6, downloadButton("downloaddf_clusTCR_GEx", "Download stats")),
+                                fluidRow(
+                                  column(1, numericInput("width_Ridge_chart_alpha_gamma_plot_out", "Width of PDF", value = 10)),
+                                  column(1, numericInput("height_Ridge_chart_alpha_gamma_plot_out", "Height of PDF", value = 8)),
+                                  column(2, style = "margin-top: 25px;", downloadButton("downloadPlot_Ridge_chart_alpha_gamma_plot_out", "Download PDF")),
+                                  column(2, numericInput("width_png_Ridge_chart_alpha_gamma_plot_out", "Width of PNG", value = 1200)),
+                                  column(2, numericInput("height_png_Ridge_chart_alpha_gamma_plot_out", "Height of PNG", value = 1000)),
+                                  column(2, numericInput("resolution_PNG_Ridge_chart_alpha_gamma_plot_out", "Resolution of PNG", value = 144)),
+                                  column(2, style = "margin-top: 25px;", downloadButton("downloadPlotPNG_Ridge_chart_alpha_gamma_plot_out", "Download PNG"))
+                                ),
+                              ),
+                              tabPanel(
+                                "Stats",
+                                div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
+                                div(DT::DTOutput("Ridge_chart_alpha_gamma_stat_comp")),
+                                downloadButton("downloaddf_FindMarker_Top", "Download stat (Right)")
+                              ),
+                              # dotplot top-----
+                              tabPanel(
+                                "Dotplot",
+                                fluidRow(
+                                  column(2, colourInput("low.dotplot", "Lower color:", "darkblue")),
+                                  column(2, colourInput("middle.dotplot", "Middle color:", "white")),
+                                  column(2, colourInput("high.dotplot", "High color:", "darkred")),
+                                  column(2, checkboxInput("restict_no_points", "Restrict Label", value = F)),
+                                  column(2, numericInput("pval.ex.top_genes", "Top genes to display", value = 40)),
+                                ),
+                                div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
+                                plotOutput("all_expression_dotplot_top", height = "400px"),
+                                textInput("name_clonotype_selected", "Name of clone", "clone 1"),
+                                fluidRow(
+                                  column(1, numericInput("width_all_expression_dotplot_top", "Width of PDF", value = 20)),
+                                  column(1, numericInput("height_all_expression_dotplot_top", "Height of PDF", value = 4)),
+                                  column(2, style = "margin-top: 25px;", downloadButton("downloadPlot_all_expression_dotplot_top", "Download PDF")),
+                                  column(2, numericInput("width_png_all_expression_dotplot_top", "Width of PNG", value = 2400)),
+                                  column(2, numericInput("height_png_all_expression_dotplot_top", "Height of PNG", value = 700)),
+                                  column(2, numericInput("resolution_PNG_all_expression_dotplot_top", "Resolution of PNG", value = 144)),
+                                  column(2, style = "margin-top: 25px;", downloadButton("downloadPlotPNG_all_expression_dotplot_top", "Download PNG"))
+                                ),
+                              ),
+                              tabPanel(
+                                "Over-representation",
+                                fluidRow(
+                                  column(3, numericInput("in.geneset.cutoff_top", "Min number of genes in GeneSet", value = 1, min = 0, step = 1, max = 60000)),
+                                  column(3, numericInput("p.val_cutoff_top", "p-val cut-off", value = 0.05, min = 0, max = 1)),
+                                  # column(3,numericInput("adjust_cutoff_top","BH cut-off",value = 1, min = 0, max = 1)),
+                                ),
+                                div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
+                                div(DT::DTOutput("Over_rep_Top_clones_Tab")),
+                                downloadButton("downloadtb_over.rep.Top_Ex", "Download table")
+                                #
+                              ),
+                              # ),
+                              # ),
+                            ),
                    ),
-          ),
-          ########
-          # prioritization strategy ------
 
-          tabPanel("Automation (TCR -> GEX)",
-                   value = "Prior",
-                   h5("under construction"),
-                   tabsetPanel(
-                     id = "PriorTBMods",
-                     tabPanel("Analysis steps",
-                              value = "ModstoConsid",
-                              p("The prioritization section automates the analysis based on certain thresholds"),
-                              p("There are three section"),
-                              p("1. Clonotype"),
-                              p("    - Single sample: immunodominant based on percentage threshold"),
-                              p("2. Cluster"),
-                              p("3. Epitope"),
-                              p("Note: minimum threshold of expansion (n=3) per analysis. Cannot perform stats on n=1 or n=2"),
-                     ),
-                     # modules of priority Top clone ------
-                     tabPanel("Clonotype",
-                              value = "PriorRepertoireTB",
-                              fluidRow(
-                                column(3, checkboxInput("Download_public_overlapping", "Download Public-like", value = T)),
-                                column(3, checkboxInput("Download_public_overlapping_bar", "Download Public-like Over-rep", value = F)),
-                                column(3, checkboxInput("Download_private_overlapping", "Download Private clone analysis", value = F)),
-                                column(3, checkboxInput("restrict_to_expanded", "Restrict to expanded", value = F))
+                   # expanded phenotype -----
+                   tabPanel("Expanded",
+                            value = "Expanded",
+                            tabsetPanel(
+                              id = "ExPan",
+                              tabPanel(
+                                "Table",
+                                div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
+                                div(DT::DTOutput("Expansion_check")),
                               ),
-                              add_busy_spinner(spin = "fading-circle", position = "top-right",  height = "200px", width = "200px", color = "purple"),
-                              verbatimTextOutput("Simple_workflow_step1"),
-                              verbatimTextOutput("Number_of_clonotypes_to_"),
-                              add_busy_spinner(spin = "fading-circle", position = "top-right",  height = "200px", width = "200px", color = "purple"),
-                              div(DT::DTOutput("PriorClono_Tab")),
-                              uiOutput("Module_case_statements"),
-                              div(DT::DTOutput("private_clonotypes")),
-                     ),
-                     # modules of priority cluster ------
-                     tabPanel("Cluster",
-                              value = "PriorClustTB",
-                              fluidRow(
-                                column(3, uiOutput("Default_priority_cutoffAG")),
-                                column(3, uiOutput("Default_priority_cutoffBD")),
-                                # column(3,numericInput("CloneTotal_input","Select clones > ",value = 2, min = 2)),
+                              tabPanel("ex.UMAP",
+                                       value = "ExPan_UMAP",
+                                       fluidRow(
+                                         div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
+                                         column(
+                                           3,
+                                           wellPanel(
+                                             id = "tPanel23", style = "overflow-y:scroll; max-height: 600px",
+                                             uiOutput("cols_UMAP_Expanded")
+                                           )
+                                         ),
+                                         column(9, plotOutput("UMAP_Expanded", height = "600px"))
+                                       ),
+                                       fluidRow(
+                                         column(1, numericInput("width_UMAP_Expanded", "Width of PDF", value = 10)),
+                                         column(1, numericInput("height_UMAP_Expanded", "Height of PDF", value = 8)),
+                                         column(2, style = "margin-top: 25px;", downloadButton("downloadPlot_UMAP_Expanded", "Download PDF")),
+                                         column(2, numericInput("width_png_UMAP_Expanded", "Width of PNG", value = 1200)),
+                                         column(2, numericInput("height_png_UMAP_Expanded", "Height of PNG", value = 1000)),
+                                         column(2, numericInput("resolution_PNG_UMAP_Expanded", "Resolution of PNG", value = 144)),
+                                         column(2, style = "margin-top: 25px;", downloadButton("downloadPlotPNG_UMAP_Expanded", "Download PNG"))
+                                       ),
                               ),
-                              fluidRow(
-                                column(3, numericInput("Sample_count_cluster", "AG Sample count >=", value = 2)),
-                                column(3, numericInput("Total_cloneCount_cluster", "AG Clone count >=", value = 3, min = 3)),
-                                column(3, numericInput("Sample_count_clusterBD", "BD Sample count >=", value = 3, min = 3)),
-                                column(3, numericInput("Total_cloneCount_clusterBD", "BD Clone count >=", value = 2)),
+                              tabPanel("Stats",
+                                       value = "ExPan_stat",
+                                       div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
+                                       div(DT::DTOutput("compare.stat_Ex")),
+                                       downloadButton("downloadtb_compare.stat_Ex", "Download table")
                               ),
-                              add_busy_spinner(spin = "fading-circle", position = "top-right",  height = "200px", width = "200px", color = "purple"),
-                              verbatimTextOutput("number_clusters_to_analyse_AG"),
-                              add_busy_spinner(spin = "fading-circle", position = "top-right",  height = "200px", width = "200px", color = "purple"),
-                              verbatimTextOutput("number_clusters_to_analyse_BD"),
-                              add_busy_spinner(spin = "fading-circle", position = "top-right",  height = "200px", width = "200px", color = "purple"),
-                              uiOutput("Cluster_dowload_button_prior"),
-                              # div(DT::DTOutput("colors.top_dt")),
-                     ),
-                     # modules of priority Epitope ------
-                     tabPanel("Epitope/Annotation",
-                              value = "PriorEpiTB",
-                              add_busy_spinner(spin = "fading-circle", position = "top-right",  height = "200px", width = "200px", color = "purple"),
-                              checkboxInput("epitope_uploaded", "Add in Epitope data", value = T),
-                              fluidRow(
-                                column(3, uiOutput("AddInEpiUI_1")),
-                                column(3, uiOutput("AddInEpiUI_2")),
+                              tabPanel("Dotplot",
+                                       value = "ExPan_dot",
+                                       fluidRow(
+                                         column(2, colourInput("low.dotplot.ex", "Lower color:", "darkblue")),
+                                         column(2, colourInput("middle.dotplot.ex", "Middle color:", "white")),
+                                         column(2, colourInput("high.dotplot.ex", "High color:", "darkred")),
+                                       ),
+                                       div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
+                                       plotOutput("relative_expression_dotplot_ex", height = "600px"),
+                                       fluidRow(
+                                         column(1, numericInput("width_all_expression_dotplot_ex", "Width of PDF", value = 20)),
+                                         column(1, numericInput("height_all_expression_dotplot_ex", "Height of PDF", value = 4)),
+                                         column(2, style = "margin-top: 25px;", downloadButton("downloadPlot_all_expression_dotplot_ex", "Download PDF")),
+                                         column(2, numericInput("width_png_all_expression_dotplot_ex", "Width of PNG", value = 2400)),
+                                         column(2, numericInput("height_png_all_expression_dotplot_ex", "Height of PNG", value = 600)),
+                                         column(2, numericInput("resolution_PNG_all_expression_dotplot_ex", "Resolution of PNG", value = 144)),
+                                         column(2, style = "margin-top: 25px;", downloadButton("downloadPlotPNG_all_expression_dotplot_ex", "Download PNG"))
+                                       ),
                               ),
-                              actionButton("EpitopePrior_Download_Bt", "Automated Epitope analysis"),
-                              div(DT::DTOutput("Test_table_1")),
-                     ),
+                              tabPanel("Over-representation",
+                                       value = "ExPan_OvRep",
+                                       fluidRow(
+                                         column(3, numericInput("in.geneset.cutoff_Exp", "Min number of genes in GeneSet", value = 1, min = 0, step = 1, max = 60000)),
+                                         column(3, numericInput("p.val_cutoff_Exp", "p-val cut-off", value = 0.05, min = 0, max = 1)),
+                                       ),
+                                       div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
+                                       div(DT::DTOutput("Over_rep_Exp_Tab")),
+                                       downloadButton("downloadtb_over.rep_Exp", "Download table")
+                              )
+                            )
+                   ),
 
-                     ### end priority
-                   )
-          ),
+                   # ClusTCR2 Analysis -----
+                   tabPanel("ClusTCR2",
+                            value = "ClusTCR2",
+                            tabsetPanel(
+                              tabPanel(
+                                "Table.Clust",
+                                div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
+                                div(DT::DTOutput("Tb_ClusTCR_selected")),
+                                downloadButton("downloadtb_Tb_ClusTCR_selected", "Download table")
+                              ),
+                              tabPanel(
+                                "UMAP",
+                                div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
+                                fluidRow(
+                                  column(
+                                    3,
+                                    wellPanel(
+                                      id = "tPanel23", style = "overflow-y:scroll; max-height: 600px",
+                                      uiOutput("myPanel_cols_clust_UMAP")
+                                    )
+                                  ),
+                                  column(9, plotOutput("UMAP_ClusTCR2_plot", height = "600px"))
+                                ),
+                                fluidRow(
+                                  column(1, numericInput("width_UMAP_ClusTCR2_plot", "Width of PDF", value = 10)),
+                                  column(1, numericInput("height_UMAP_ClusTCR2_plot", "Height of PDF", value = 8)),
+                                  column(2, style = "margin-top: 25px;", downloadButton("downloadPlot_UMAP_ClusTCR2_plot", "Download PDF")),
+                                  column(2, numericInput("width_png_UMAP_ClusTCR2_plot", "Width of PNG", value = 1200)),
+                                  column(2, numericInput("height_png_UMAP_ClusTCR2_plot", "Height of PNG", value = 1000)),
+                                  column(2, numericInput("resolution_PNG_UMAP_ClusTCR2_plot", "Resolution of PNG", value = 144)),
+                                  column(2, style = "margin-top: 25px;", downloadButton("downloadPlotPNG_UMAP_ClusTCR2_plot", "Download PNG"))
+                                ),
+                              ),
+                              tabPanel(
+                                "motif",
+                                div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
+                                plotOutput("Motif_ClusTCR2_cluster", height = "300px"),
+                                verbatimTextOutput("print_unique_cases"),
+                                fluidRow(
+                                  column(1, numericInput("width_Motif_ClusTCR2_cluster", "Width of PDF", value = 10)),
+                                  column(1, numericInput("height_Motif_ClusTCR2_cluster", "Height of PDF", value = 4)),
+                                  column(2, style = "margin-top: 25px;", downloadButton("downloadPlot_Motif_ClusTCR2_cluster", "Download PDF")),
+                                  column(2, numericInput("width_png_Motif_ClusTCR2_cluster", "Width of PNG", value = 2400)),
+                                  column(2, numericInput("height_png_Motif_ClusTCR2_cluster", "Height of PNG", value = 600)),
+                                  column(2, numericInput("resolution_PNG_Motif_ClusTCR2_cluster", "Resolution of PNG", value = 144)),
+                                  column(2, style = "margin-top: 25px;", downloadButton("downloadPlotPNG_Motif_ClusTCR2_cluster", "Download PNG"))
+                                ),
+                              ),
+                              #####
+                              tabPanel("heatmap",
+                                       value = "ClustHeat",
+                                       div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
+                                       p("Colour by: = x-axis; Split graph by: = y-axis for this heatmap"),
+                                       plotOutput("Pie_ClusTCR2_plot", height = "600px"),
+                                       fluidRow(
+                                         column(1, numericInput("width_Pie_ClusTCR2_plot", "Width of PDF", value = 10)),
+                                         column(1, numericInput("height_Pie_ClusTCR2_plot", "Height of PDF", value = 8)),
+                                         column(2, style = "margin-top: 25px;", downloadButton("downloadPlot_Pie_ClusTCR2_plot", "Download PDF")),
+                                         column(2, numericInput("width_png_Pie_ClusTCR2_plot", "Width of PNG", value = 1200)),
+                                         column(2, numericInput("height_png_Pie_ClusTCR2_plot", "Height of PNG", value = 1000)),
+                                         column(2, numericInput("resolution_PNG_Pie_ClusTCR2_plot", "Resolution of PNG", value = 144)),
+                                         column(2, style = "margin-top: 25px;", downloadButton("downloadPlotPNG_Pie_ClusTCR2_plot", "Download PNG"))
+                                       ),
+                              ),
 
-          # GEX -> TCR --------
-          tabPanel(
-            "GEX -> TCR",
-            # h5("Under Development..."),
-            tabsetPanel(
-              ##### annotation GEX -> TCR --------
-              tabPanel("Annotation",
-                       value = "PanelAnno_GEXTCR",
-                       h5("Under Active Development... Only Table is complete"),
-                       fluidRow(
-                         column(3, uiOutput("AddInAnnoUI_man_1")),
-                         column(3, uiOutput("AddInAnnoUI_man_2")),
-                         column(3, selectInput("Slected_annotation", "Select annotation", choices = ""))
+                              tabPanel("Stats",
+                                       value = "ClusPan_stat",
+                                       div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
+                                       div(DT::DTOutput("compare.stat_Cluster_DT")),
+                                       downloadButton("downloadtb_compare.stat_Cluster", "Download table")
+                              ),
+
+                              # dotplot Cluster ------
+                              tabPanel("Dotplot",
+                                       value = "ClusPan_dot",
+                                       fluidRow(
+                                         column(2, colourInput("low.dotplot.clust", "Lower color:", "darkblue")),
+                                         column(2, colourInput("middle.dotplot.clust", "Middle color:", "white")),
+                                         column(2, colourInput("high.dotplot.clust", "High color:", "darkred")),
+                                         column(2, checkboxInput("restrict.dotpot.clust", "Restrict to top list", value = F)),
+                                         column(2, numericInput("restrict.dotpot.num.clust", "Total genes to display:", value = 10))
+                                       ),
+                                       div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
+                                       plotOutput("all_expression_dotplot_cluster", height = "400px"),
+                                       fluidRow(
+                                         column(1, numericInput("width_all_expression_dotplot_clust", "Width of PDF", value = 20)),
+                                         column(1, numericInput("height_all_expression_dotplot_clust", "Height of PDF", value = 8)),
+                                         column(2, style = "margin-top: 25px;", downloadButton("downloadPlot_all_expression_dotplot_clust", "Download PDF")),
+                                         column(2, numericInput("width_png_all_expression_dotplot_clust", "Width of PNG", value = 2400)),
+                                         column(2, numericInput("height_png_all_expression_dotplot_clust", "Height of PNG", value = 700)),
+                                         column(2, numericInput("resolution_PNG_all_expression_dotplot_clust", "Resolution of PNG", value = 144)),
+                                         column(2, style = "margin-top: 25px;", downloadButton("downloadPlotPNG_all_expression_dotplot_clust", "Download PNG"))
+                                       ),
+                              ),
+                              tabPanel("Over-representation",
+                                       value = "ClusPan_OvRep",
+                                       fluidRow(
+                                         column(3, numericInput("in.geneset.cutoff_Clust", "Min number of genes in GeneSet", value = 1, min = 0, step = 1, max = 60000)),
+                                         column(3, numericInput("p.val_cutoff_Clust", "p-val cut-off", value = 0.05, min = 0, max = 1)),
+                                         # column(3,numericInput("adjust_cutoff_Clust","BH cut-off",value = 1, min = 0, max = 1)),
+                                       ),
+                                       div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
+                                       div(DT::DTOutput("Over_rep_Cluster_Tab")),
+                                       downloadButton("downloadtb_over.rep.cluster", "Download table")
+                              )
+                            )
+                   ),
+                   # epitope analysis -----
+                   tabPanel("Epitope",
+                            value = "Epitope",
+                            conditionalPanel(
+                              condition = "input.Panel_TCRUMAP=='Epitope'",
+                              fluidRow(
+                                column(3, uiOutput("classification_to_add_epitope")),
+                                column(3, uiOutput("classification_to_add_epitope2")),
+                                column(3, actionButton("Update_epi", "Add in Epitope list")),
+                                column(3, selectInput("Epi_of_interest", "Epitope of interest", ""))
+                              ),
+                            ),
+                            tabsetPanel(
+                              id = "EpitipeTabs",
+                              # tabPanel("Uploaded Epitope file",
+                              #          add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "200px",width = "200px", color = "#6F00B0"),
+                              #          div(DT::DTOutput("MainTcell_Check")),
+                              # ),
+                              tabPanel(
+                                "Summary Table",
+                                div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
+                                div(DT::DTOutput("Pie_Epitope_dt")),
+                                downloadButton("downloaddf_Pie_Epitope_dt", "Download table")
+                              ),
+                              tabPanel(
+                                "Heatmap",
+                                div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
+                                plotOutput("Heatmap_epi_plot", height = "600px"),
+                                fluidRow(
+                                  column(1, numericInput("width_Heatmap_epi_plot", "Width of PDF", value = 10)),
+                                  column(1, numericInput("height_Heatmap_epi_plot", "Height of PDF", value = 8)),
+                                  column(2, style = "margin-top: 25px;", downloadButton("downloadPlot_Heatmap_epi_plot", "Download PDF")),
+                                  column(2, numericInput("width_png_Heatmap_epi_plot", "Width of PNG", value = 1200)),
+                                  column(2, numericInput("height_png_Heatmap_epi_plot", "Height of PNG", value = 1000)),
+                                  column(2, numericInput("resolution_PNG_Heatmap_epi_plot", "Resolution of PNG", value = 144)),
+                                  column(2, style = "margin-top: 25px;", downloadButton("downloadPlotPNG_Heatmap_epi_plot", "Download PNG"))
+                                ),
+                              ),
+                              tabPanel(
+                                "UMAP",
+                                numericInput("value_size_epi_umap", "Size of epitope dots", value = 2),
+
+                                # column(3,selectInput("epitope_umap_selected","Select",choices = c("beta","epitope","pathology"),selected = "pathology")),
+                                div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
+                                fluidRow(
+                                  column(
+                                    3,
+                                    wellPanel(
+                                      id = "tPanel23", style = "overflow-y:scroll; max-height: 600px",
+                                      uiOutput("myPanel_cols_epitope")
+                                    )
+                                  ),
+                                  column(9, plotOutput("UMAP_Epitope_plot", height = "600px"))
+                                ),
+                                fluidRow(
+                                  column(1, numericInput("width_UMAP_Epitope", "Width of PDF", value = 10)),
+                                  column(1, numericInput("height_UMAP_Epitope", "Height of PDF", value = 8)),
+                                  column(2, style = "margin-top: 25px;", downloadButton("downloadPlot_UMAP_Epitope", "Download PDF")),
+                                  column(2, numericInput("width_png_UMAP_Epitope", "Width of PNG", value = 1200)),
+                                  column(2, numericInput("height_png_UMAP_Epitope", "Height of PNG", value = 1000)),
+                                  column(2, numericInput("resolution_PNG_UMAP_Epitope", "Resolution of PNG", value = 144)),
+                                  column(2, style = "margin-top: 25px;", downloadButton("downloadPlotPNG_UMAP_Epitope", "Download PNG"))
+                                ),
+                              ),
+                              tabPanel(
+                                "Pie (Expression)",
+                                div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
+                                fluidRow(
+                                  column(
+                                    3,
+                                    wellPanel(
+                                      id = "tPanel23", style = "overflow-y:scroll; max-height: 600px",
+                                      uiOutput("myPanel_cols_epitope_pie")
+                                    )
+                                  ),
+                                  column(9, plotOutput("Pie_Epitope_plot", height = "600px"))
+                                ),
+                                fluidRow(
+                                  column(1, numericInput("width_Pie_Epitope", "Width of PDF", value = 10)),
+                                  column(1, numericInput("height_Pie_Epitope", "Height of PDF", value = 8)),
+                                  column(2, style = "margin-top: 25px;", downloadButton("downloadPlot_Pie_Epitope", "Download PDF")),
+                                  column(2, numericInput("width_png_Pie_Epitope", "Width of PNG", value = 1200)),
+                                  column(2, numericInput("height_png_Pie_Epitope", "Height of PNG", value = 1000)),
+                                  column(2, numericInput("resolution_PNG_Pie_Epitope", "Resolution of PNG", value = 144)),
+                                  column(2, style = "margin-top: 25px;", downloadButton("downloadPlotPNG_Pie_Epitope", "Download PNG"))
+                                ),
+                              ),
+                              tabPanel("Stats",
+                                       value = "EpiPan_stat",
+                                       div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
+                                       div(DT::DTOutput("Epi_of_interest_DF")),
+                                       div(DT::DTOutput("compare.stat_Epi_DT")),
+                                       downloadButton("downloadtb_compare.stat_Epi", "Download table")
+                              ),
+                              tabPanel("Dotplot",
+                                       value = "EpiPan_dot",
+                                       fluidRow(
+                                         column(2, colourInput("low.dotplot.epi", "Lower color:", "darkblue")),
+                                         column(2, colourInput("middle.dotplot.epi", "Middle color:", "white")),
+                                         column(2, colourInput("high.dotplot.epi", "High color:", "darkred")),
+                                         column(2, checkboxInput("restrict.dotpot.epi", "Restrict to top list", value = F)),
+                                         column(2, numericInput("restrict.dotpot.num.epi", "Total genes to display:", value = 10))
+                                       ),
+                                       div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
+                                       plotOutput("all_expression_dotplot_epi", height = "400px"),
+                                       fluidRow(
+                                         column(1, numericInput("width_all_expression_dotplot_epi", "Width of PDF", value = 20)),
+                                         column(1, numericInput("height_all_expression_dotplot_epi", "Height of PDF", value = 4)),
+                                         column(2, style = "margin-top: 25px;", downloadButton("downloadPlot_all_expression_dotplot_epi", "Download PDF")),
+                                         column(2, numericInput("width_png_all_expression_dotplot_epi", "Width of PNG", value = 2400)),
+                                         column(2, numericInput("height_png_all_expression_dotplot_epi", "Height of PNG", value = 700)),
+                                         column(2, numericInput("resolution_PNG_all_expression_dotplot_epi", "Resolution of PNG", value = 144)),
+                                         column(2, style = "margin-top: 25px;", downloadButton("downloadPlotPNG_all_expression_dotplot_epi", "Download PNG"))
+                                       ),
+                              ),
+                              tabPanel("Over-representation",
+                                       value = "EpiPan_OvRep",
+                                       fluidRow(
+                                         column(3, numericInput("in.geneset.cutoff_Epi", "Min number of genes in GeneSet", value = 1, min = 0, step = 1, max = 60000)),
+                                         column(3, numericInput("p.val_cutoff_Epi", "p-val cut-off", value = 0.05, min = 0, max = 1)),
+                                       ),
+                                       div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
+                                       div(DT::DTOutput("Over_rep_Epi_Tab")),
+                                       downloadButton("downloadtb_over.rep.Epi", "Download table")
+                                       #
+                              )
+                            ),
+                   ),
+
+                   # Overlap ------
+
+                   # tabPanel("Clonotypes per cluster (Pie/bar plot)"),
+                   # tabPanel("Upset plot")
+                 ),
+        ),
+        ########
+        # prioritization strategy ------
+
+        tabPanel("Automation (TCR -> GEX)",
+                 value = "Prior",
+                 h5("under construction"),
+                 tabsetPanel(
+                   id = "PriorTBMods",
+                   tabPanel("Analysis steps",
+                            value = "ModstoConsid",
+                            p("The prioritization section automates the analysis based on certain thresholds"),
+                            p("There are three section"),
+                            p("1. Clonotype"),
+                            p("    - Single sample: immunodominant based on percentage threshold"),
+                            p("2. Cluster"),
+                            p("3. Epitope"),
+                            p("Note: minimum threshold of expansion (n=3) per analysis. Cannot perform stats on n=1 or n=2"),
+                   ),
+                   # modules of priority Top clone ------
+                   tabPanel("Clonotype",
+                            value = "PriorRepertoireTB",
+                            fluidRow(
+                              column(3, checkboxInput("Download_public_overlapping", "Download Public-like", value = T)),
+                              column(3, checkboxInput("Download_public_overlapping_bar", "Download Public-like Over-rep", value = F)),
+                              column(3, checkboxInput("Download_private_overlapping", "Download Private clone analysis", value = F)),
+                              column(3, checkboxInput("restrict_to_expanded", "Restrict to expanded", value = F))
+                            ),
+                            add_busy_spinner(spin = "fading-circle", position = "top-right",  height = "200px", width = "200px", color = "purple"),
+                            verbatimTextOutput("Simple_workflow_step1"),
+                            verbatimTextOutput("Number_of_clonotypes_to_"),
+                            add_busy_spinner(spin = "fading-circle", position = "top-right",  height = "200px", width = "200px", color = "purple"),
+                            div(DT::DTOutput("PriorClono_Tab")),
+                            uiOutput("Module_case_statements"),
+                            div(DT::DTOutput("private_clonotypes")),
+                   ),
+                   # modules of priority cluster ------
+                   tabPanel("Cluster",
+                            value = "PriorClustTB",
+                            fluidRow(
+                              column(3, uiOutput("Default_priority_cutoffAG")),
+                              column(3, uiOutput("Default_priority_cutoffBD")),
+                              # column(3,numericInput("CloneTotal_input","Select clones > ",value = 2, min = 2)),
+                            ),
+                            fluidRow(
+                              column(3, numericInput("Sample_count_cluster", "AG Sample count >=", value = 2)),
+                              column(3, numericInput("Total_cloneCount_cluster", "AG Clone count >=", value = 3, min = 3)),
+                              column(3, numericInput("Sample_count_clusterBD", "BD Sample count >=", value = 3, min = 3)),
+                              column(3, numericInput("Total_cloneCount_clusterBD", "BD Clone count >=", value = 2)),
+                            ),
+                            add_busy_spinner(spin = "fading-circle", position = "top-right",  height = "200px", width = "200px", color = "purple"),
+                            verbatimTextOutput("number_clusters_to_analyse_AG"),
+                            add_busy_spinner(spin = "fading-circle", position = "top-right",  height = "200px", width = "200px", color = "purple"),
+                            verbatimTextOutput("number_clusters_to_analyse_BD"),
+                            add_busy_spinner(spin = "fading-circle", position = "top-right",  height = "200px", width = "200px", color = "purple"),
+                            uiOutput("Cluster_dowload_button_prior"),
+                            # div(DT::DTOutput("colors.top_dt")),
+                   ),
+                   # modules of priority Epitope ------
+                   tabPanel("Epitope/Annotation",
+                            value = "PriorEpiTB",
+                            add_busy_spinner(spin = "fading-circle", position = "top-right",  height = "200px", width = "200px", color = "purple"),
+                            checkboxInput("epitope_uploaded", "Add in Epitope data", value = T),
+                            fluidRow(
+                              column(3, uiOutput("AddInEpiUI_1")),
+                              column(3, uiOutput("AddInEpiUI_2")),
+                            ),
+                            actionButton("EpitopePrior_Download_Bt", "Automated Epitope analysis"),
+                            div(DT::DTOutput("Test_table_1")),
+                   ),
+
+                   ### end priority
+                 )
+        ),
+
+        # GEX -> TCR --------
+        tabPanel(
+          "GEX -> TCR",
+          # h5("Under Development..."),
+          tabsetPanel(
+            ##### annotation GEX -> TCR --------
+            tabPanel("Annotation",
+                     value = "PanelAnno_GEXTCR",
+                     h5("Under Active Development... Only Table is complete"),
+                     fluidRow(
+                       column(3, uiOutput("AddInAnnoUI_man_1")),
+                       column(3, uiOutput("AddInAnnoUI_man_2")),
+                       column(3, selectInput("Slected_annotation", "Select annotation", choices = ""))
+                     ),
+                     tabsetPanel(
+                       tabPanel(
+                         "Table",
+                         div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
+                         div(DT::DTOutput("AnnoTable_perMarkers")),
+                         downloadButton("downloaddf_AnnoTable_perMarkers", "Download table"),
                        ),
-                       tabsetPanel(
-                         tabPanel(
-                           "Table",
-                           div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
-                           div(DT::DTOutput("AnnoTable_perMarkers")),
-                           downloadButton("downloaddf_AnnoTable_perMarkers", "Download table"),
-                         ),
-                         tabPanel("UMAP"),
-                         tabPanel("TCR per Anno ID"),
-                         tabPanel("Stats"),
-                         tabPanel("Dot plot"),
-                         tabPanel("Over representation")
-                       )
-              ),
+                       tabPanel("UMAP"),
+                       tabPanel("TCR per Anno ID"),
+                       tabPanel("Stats"),
+                       tabPanel("Dot plot"),
+                       tabPanel("Over representation")
+                     )
+            ),
 
-              # marker specific TCR analysis --------
-              tabPanel("Marker",
-                       value = "Marker",
-                       tabsetPanel(
-                         id = "Marker_Panel",
-                         tabPanel(
-                           "Single marker",
-                           actionButton("load_marker_genes_sig", "Load genes"),
-                           fluidRow(
-                             column(4, selectizeInput("Var_to_col_marker", "Marker col", "")),
-                             column(2, numericInput("Filter_lower_UMAP1_marker", "UMAP_1 >", value = -20)),
-                             column(2, numericInput("Filter_lower_UMAP1_marker2", "UMAP_1 <", value = 20)),
-                             column(2, numericInput("Filter_lower_UMAP2_marker", "UMAP_2 >", value = -20)),
-                             column(2, numericInput("Filter_lower_UMAP2_marker2", "UMAP_2 <", value = 20)),
-                           ),
-                           # conditionalPanel(condition="input.Marker_Panel =='Marker_Panel_plot_stats'",
-                           fluidRow(
-                             column(3, selectInput("Analysis_marker_stats_type", "Analysis type", choices = c("Population", "Expanded"))),
-                             column(3, selectInput("Help_marer", "Definitions", choices = c("No", "Yes"))),
-                             column(3, numericInput("cutoff_marker_gt", "Marker +ve cut-off (>)", value = 0, step = 0.1)),
-                             column(3, numericInput("pos_expanded_cut_off", "clone count (>) for +ve", value = 2, min = 1)),
-                           ),
-                           conditionalPanel(
-                             condition = "input.Help_marer == 'Yes'",
-                             # p(strong("1. Total."), "Refers to the marker of interest compared to all negative cells"),
-                             p(strong("1. Population."), "Refers to the the restricted UMAP selected population and compared the +ve to -ve marker population."),
-                             p(strong("2. Expanded."), "Compares the clonal expaned (min 3) vs non-expanded population for all cells +ve for the marker in the restricted UMAP space."),
-                           ),
-                           tabsetPanel(
-                             tabPanel("Table",
-                                      value = "Marker_Panel_table",
-                                      div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
-                                      div(DT::DTOutput("marker_selected_tab")),
-                             ),
-                             tabPanel("UMAP plot",
-                                      value = "Marker_Panel_plot_UMAP",
-                                      h4("Select area of the plot to keep for the specific marker"),
-                                      h6("Recommended to filter to broad populations based on UMAP e.g., CD4, CD8 or other"),
-                                      div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
-                                      numericInput("max_scale", "MAX scale", value = ""),
-                                      plotOutput("marker_selected_UMAP_plot", height = "600px"),
-                                      fluidRow(
-                                        column(3, numericInput("width_marker_selected_UMAP_plot", "Width of PDF", value = 10)),
-                                        column(3, numericInput("height_marker_selected_UMAP_plot", "Height of PDF", value = 8)),
-                                        column(3),
-                                        column(3, style = "margin-top: 25px;", downloadButton("downloadPlot_marker_selected_UMAP_plot", "Download PDF"))
-                                      ),
-                                      fluidRow(
-                                        column(3, numericInput("width_png_marker_selected_UMAP_plot", "Width of PNG", value = 1200)),
-                                        column(3, numericInput("height_png_marker_selected_UMAP_plot", "Height of PNG", value = 1000)),
-                                        column(3, numericInput("resolution_PNG_marker_selected_UMAP_plot", "Resolution of PNG", value = 144)),
-                                        column(3, style = "margin-top: 25px;", downloadButton("downloadPlotPNG_marker_selected_UMAP_plot", "Download PNG"))
-                                      )
-                             ),
-                             tabPanel("Violin/Ridge plot",
-                                      value = "Marker_Panel_plot_VR",
-                                      h4("Filter marker of interest based on threshold"),
-                                      fluidRow(
-                                        column(3, selectInput("select_plot_vio.ridge", "Plot type", choices = c("Violin", "Ridge")))
-                                      ),
-                                      div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
-                                      plotOutput("marker_selected_VioRidge_plot", height = "600px")
-                             ),
-                             # tabPanel("UMAP"),
-                             tabPanel("TCR/BCR mapped",
-                                      value = "Marker_Panel_plot_TCR",
-                                      h4("TCR and/or BCR seqeunces that are positive for that marker"),
-                                      div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
-                                      fluidRow(
-                                        column(6, div(DT::DTOutput("TCR_marker_positive_count"))),
-                                        column(6, div(DT::DTOutput("TCR_marker_neg_count")))
-                                      ),
-                                      div(DT::DTOutput("merged_marker_hist_table")),
-                                      downloadButton("downloaddf_clonotype_distribution", "Download table"),
-                                      div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
-                                      plotOutput("marker_selected_histogram_plot", height = "600px")
-                             ),
-                             tabPanel("Stats",
-                                      value = "MP_plot_stats",
-                                      div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
-                                      div(DT::DTOutput("Compare.stat_marker")),
-                                      downloadButton("downloaddf_Marker_stats", "Download table")
-
-                                      # filtered on marker of interest, broad population
-                                      # determine if
-                                      # segregated into expanded vs non-expaned  expanded clonotypes?
-                             ),
-                             # tabPanel("Dotplot",
-                             #
-                             #
-                             # ),
-                             # tabPanel("Over-representation",
-                             #
-                             # ),
-                           ),
-                           # cut-off 1,
-                           # umap filtering?
+            # marker specific TCR analysis --------
+            tabPanel("Marker",
+                     value = "Marker",
+                     tabsetPanel(
+                       id = "Marker_Panel",
+                       tabPanel(
+                         "Single marker",
+                         actionButton("load_marker_genes_sig", "Load genes"),
+                         fluidRow(
+                           column(4, selectizeInput("Var_to_col_marker", "Marker col", "")),
+                           column(2, numericInput("Filter_lower_UMAP1_marker", "UMAP_1 >", value = -20)),
+                           column(2, numericInput("Filter_lower_UMAP1_marker2", "UMAP_1 <", value = 20)),
+                           column(2, numericInput("Filter_lower_UMAP2_marker", "UMAP_2 >", value = -20)),
+                           column(2, numericInput("Filter_lower_UMAP2_marker2", "UMAP_2 <", value = 20)),
                          ),
-                         # dual marker analysis ------
-                         tabPanel(
-                           "Dual marker analysis",
-                           actionButton("load_marker_genes_dual", "Load genes"),
-                           # marker 1 # cut-off 1
-                           # marker 2 @ cut-off 2 (negative control)
-                           fluidRow(
-                             column(4, selectizeInput("Var_to_col_marker2", "X-axis Marker", "")),
-                             column(4, selectizeInput("Var_to_col_marker3", "Y-axis Marker", ""))
+                         # conditionalPanel(condition="input.Marker_Panel =='Marker_Panel_plot_stats'",
+                         fluidRow(
+                           column(3, selectInput("Analysis_marker_stats_type", "Analysis type", choices = c("Population", "Expanded"))),
+                           column(3, selectInput("Help_marer", "Definitions", choices = c("No", "Yes"))),
+                           column(3, numericInput("cutoff_marker_gt", "Marker +ve cut-off (>)", value = 0, step = 0.1)),
+                           column(3, numericInput("pos_expanded_cut_off", "clone count (>) for +ve", value = 2, min = 1)),
+                         ),
+                         conditionalPanel(
+                           condition = "input.Help_marer == 'Yes'",
+                           # p(strong("1. Total."), "Refers to the marker of interest compared to all negative cells"),
+                           p(strong("1. Population."), "Refers to the the restricted UMAP selected population and compared the +ve to -ve marker population."),
+                           p(strong("2. Expanded."), "Compares the clonal expaned (min 3) vs non-expanded population for all cells +ve for the marker in the restricted UMAP space."),
+                         ),
+                         tabsetPanel(
+                           tabPanel("Table",
+                                    value = "Marker_Panel_table",
+                                    div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
+                                    div(DT::DTOutput("marker_selected_tab")),
                            ),
-                           fluidRow(
-                             column(2, numericInput("Filter_dual_UMAP1_marker", "UMAP_1 >", value = -20)),
-                             column(2, numericInput("Filter_dual_UMAP1_marker2", "UMAP_1 <", value = 20)),
-                             column(2, numericInput("Filter_dual_UMAP2_marker", "UMAP_2 >", value = -20)),
-                             column(2, numericInput("Filter_dual_UMAP2_marker2", "UMAP_2 <", value = 20)),
-                             # column(2),
-                             column(2, numericInput("X_axis_dot_dual", "X-axis line", value = 0, step = 0.1)),
-                             column(2, numericInput("Y_axis_dot_dual", "Y-axis line", value = 0, step = 0.1)),
+                           tabPanel("UMAP plot",
+                                    value = "Marker_Panel_plot_UMAP",
+                                    h4("Select area of the plot to keep for the specific marker"),
+                                    h6("Recommended to filter to broad populations based on UMAP e.g., CD4, CD8 or other"),
+                                    div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
+                                    numericInput("max_scale", "MAX scale", value = ""),
+                                    plotOutput("marker_selected_UMAP_plot", height = "600px"),
+                                    fluidRow(
+                                      column(3, numericInput("width_marker_selected_UMAP_plot", "Width of PDF", value = 10)),
+                                      column(3, numericInput("height_marker_selected_UMAP_plot", "Height of PDF", value = 8)),
+                                      column(3),
+                                      column(3, style = "margin-top: 25px;", downloadButton("downloadPlot_marker_selected_UMAP_plot", "Download PDF"))
+                                    ),
+                                    fluidRow(
+                                      column(3, numericInput("width_png_marker_selected_UMAP_plot", "Width of PNG", value = 1200)),
+                                      column(3, numericInput("height_png_marker_selected_UMAP_plot", "Height of PNG", value = 1000)),
+                                      column(3, numericInput("resolution_PNG_marker_selected_UMAP_plot", "Resolution of PNG", value = 144)),
+                                      column(3, style = "margin-top: 25px;", downloadButton("downloadPlotPNG_marker_selected_UMAP_plot", "Download PNG"))
+                                    )
                            ),
-                           tabsetPanel(
-                             tabPanel(
-                               "table",
-                               div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
-                               div(DT::DTOutput("meta_data_for_features_scale2_df")),
+                           tabPanel("Violin/Ridge plot",
+                                    value = "Marker_Panel_plot_VR",
+                                    h4("Filter marker of interest based on threshold"),
+                                    fluidRow(
+                                      column(3, selectInput("select_plot_vio.ridge", "Plot type", choices = c("Violin", "Ridge")))
+                                    ),
+                                    div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
+                                    plotOutput("marker_selected_VioRidge_plot", height = "600px")
+                           ),
+                           # tabPanel("UMAP"),
+                           tabPanel("TCR/BCR mapped",
+                                    value = "Marker_Panel_plot_TCR",
+                                    h4("TCR and/or BCR seqeunces that are positive for that marker"),
+                                    div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
+                                    fluidRow(
+                                      column(6, div(DT::DTOutput("TCR_marker_positive_count"))),
+                                      column(6, div(DT::DTOutput("TCR_marker_neg_count")))
+                                    ),
+                                    div(DT::DTOutput("merged_marker_hist_table")),
+                                    downloadButton("downloaddf_clonotype_distribution", "Download table"),
+                                    div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
+                                    plotOutput("marker_selected_histogram_plot", height = "600px")
+                           ),
+                           tabPanel("Stats",
+                                    value = "MP_plot_stats",
+                                    div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
+                                    div(DT::DTOutput("Compare.stat_marker")),
+                                    downloadButton("downloaddf_Marker_stats", "Download table")
+
+                                    # filtered on marker of interest, broad population
+                                    # determine if
+                                    # segregated into expanded vs non-expaned  expanded clonotypes?
+                           ),
+                           # tabPanel("Dotplot",
+                           #
+                           #
+                           # ),
+                           # tabPanel("Over-representation",
+                           #
+                           # ),
+                         ),
+                         # cut-off 1,
+                         # umap filtering?
+                       ),
+                       # dual marker analysis ------
+                       tabPanel(
+                         "Dual marker analysis",
+                         actionButton("load_marker_genes_dual", "Load genes"),
+                         # marker 1 # cut-off 1
+                         # marker 2 @ cut-off 2 (negative control)
+                         fluidRow(
+                           column(4, selectizeInput("Var_to_col_marker2", "X-axis Marker", "")),
+                           column(4, selectizeInput("Var_to_col_marker3", "Y-axis Marker", ""))
+                         ),
+                         fluidRow(
+                           column(2, numericInput("Filter_dual_UMAP1_marker", "UMAP_1 >", value = -20)),
+                           column(2, numericInput("Filter_dual_UMAP1_marker2", "UMAP_1 <", value = 20)),
+                           column(2, numericInput("Filter_dual_UMAP2_marker", "UMAP_2 >", value = -20)),
+                           column(2, numericInput("Filter_dual_UMAP2_marker2", "UMAP_2 <", value = 20)),
+                           # column(2),
+                           column(2, numericInput("X_axis_dot_dual", "X-axis line", value = 0, step = 0.1)),
+                           column(2, numericInput("Y_axis_dot_dual", "Y-axis line", value = 0, step = 0.1)),
+                         ),
+                         tabsetPanel(
+                           tabPanel(
+                             "table",
+                             div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
+                             div(DT::DTOutput("meta_data_for_features_scale2_df")),
+                           ),
+                           tabPanel(
+                             "Feature plots",
+                             div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
+                             fluidRow(
+                               column(3, numericInput("max_scale2", "MAX scale (left)", value = "")),
+                               column(3, numericInput("max_scale3", "MAX scale (right)", value = "")),
                              ),
-                             tabPanel(
-                               "Feature plots",
-                               div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
-                               fluidRow(
-                                 column(3, numericInput("max_scale2", "MAX scale (left)", value = "")),
-                                 column(3, numericInput("max_scale3", "MAX scale (right)", value = "")),
-                               ),
-                               div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
-                               fluidRow(
-                                 column(6, plotOutput("marker_selected_UMAP_plot2", height = "600px")),
-                                 column(6, plotOutput("marker_selected_UMAP_plot3", height = "600px")),
-                               )
+                             div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
+                             fluidRow(
+                               column(6, plotOutput("marker_selected_UMAP_plot2", height = "600px")),
+                               column(6, plotOutput("marker_selected_UMAP_plot3", height = "600px")),
+                             )
+                           ),
+                           tabPanel(
+                             "X by Y plot",
+                             div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
+                             plotOutput("df_dotplot_marker_plot", height = "600px"),
+                             fluidRow(
+                               column(1, numericInput("width_df_dotplot_marker_plot", "Width of PDF", value = 10)),
+                               column(1, numericInput("height_df_dotplot_marker_plot", "Height of PDF", value = 8)),
+                               column(2, style = "margin-top: 25px;", downloadButton("downloadPlot_df_dotplot_marker_plot", "Download Network PDF")),
+                               column(2, numericInput("width_png_df_dotplot_marker_plot", "Width of PNG", value = 1200)),
+                               column(2, numericInput("height_png_df_dotplot_marker_plot", "Height of PNG", value = 1000)),
+                               column(2, numericInput("resolution_PNG_df_dotplot_marker_plot", "Resolution of PNG", value = 144)),
+                               column(2, style = "margin-top: 25px;", downloadButton("downloadPlotPNG_df_dotplot_marker_plot", "Download Network PNG")),
                              ),
-                             tabPanel(
-                               "X by Y plot",
-                               div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
-                               plotOutput("df_dotplot_marker_plot", height = "600px"),
-                               fluidRow(
-                                 column(1, numericInput("width_df_dotplot_marker_plot", "Width of PDF", value = 10)),
-                                 column(1, numericInput("height_df_dotplot_marker_plot", "Height of PDF", value = 8)),
-                                 column(2, style = "margin-top: 25px;", downloadButton("downloadPlot_df_dotplot_marker_plot", "Download Network PDF")),
-                                 column(2, numericInput("width_png_df_dotplot_marker_plot", "Width of PNG", value = 1200)),
-                                 column(2, numericInput("height_png_df_dotplot_marker_plot", "Height of PNG", value = 1000)),
-                                 column(2, numericInput("resolution_PNG_df_dotplot_marker_plot", "Resolution of PNG", value = 144)),
-                                 column(2, style = "margin-top: 25px;", downloadButton("downloadPlotPNG_df_dotplot_marker_plot", "Download Network PNG")),
-                               ),
-                             ),
-                             # tabPanel("Violin plot"),# will include splitting by T cell/B cell markers? Ig?
-                             # tabPanel("UMAP"),
-                             tabPanel(
-                               "TCR table",
-                               div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
-                               div(DT::DTOutput("dual_maker_TCR_Sum_DT")),
-                               downloadButton("Dule_marker_TCRsummary_DT", "Download table")
-                             ),
-                             tabPanel(
-                               "Stats",
-                               div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
-                               selectInput("quad_dualmarker", "Quadrant to compute", choices = c("Q1", "Q2", "Q3", "Q4")),
-                               div(DT::DTOutput("dual_maker_TCR_statsTB")),
-                               downloadButton("Dule_marker_statsTBDownload", "Download table")
-                             ),
-                           )
+                           ),
+                           # tabPanel("Violin plot"),# will include splitting by T cell/B cell markers? Ig?
+                           # tabPanel("UMAP"),
+                           tabPanel(
+                             "TCR table",
+                             div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
+                             div(DT::DTOutput("dual_maker_TCR_Sum_DT")),
+                             downloadButton("Dule_marker_TCRsummary_DT", "Download table")
+                           ),
+                           tabPanel(
+                             "Stats",
+                             div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
+                             selectInput("quad_dualmarker", "Quadrant to compute", choices = c("Q1", "Q2", "Q3", "Q4")),
+                             div(DT::DTOutput("dual_maker_TCR_statsTB")),
+                             downloadButton("Dule_marker_statsTBDownload", "Download table")
+                           ),
                          )
                        )
-              ),
-
+                     )
             ),
 
           ),
 
-          ######
-          # tabPanel("Parameters Table",
-          #          div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
-          #          div(DT::DTOutput("parameterTable")),
-          #          # Download button
-          #          downloadButton("downloadData", "Download State"),
-          #
-          #
-          #
-          #          ),
-        )
-
+        ),
 
         ######
+        # tabPanel("Parameters Table",
+        #          div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
+        #          div(DT::DTOutput("parameterTable")),
+        #          # Download button
+        #          downloadButton("downloadData", "Download State"),
+        #
+        #
+        #
+        #          ),
       )
+
+
+      ######
     )
+  )
+),
+# end of Integration -----
+
+navbarMenu(
+  "Post Analysis",
+
+  # Extracting meta data -------
+  tabPanel("Extract meta data",
+           sidebarLayout(
+             sidebarPanel(width = 3,
+                          fileInput("file1_extract.metadata",
+                                    "Upload .rds file",
+                                    multiple = F,
+                                    accept = c(".rds", "rds")
+                          ),
+
+                          downloadButton("download_extracting_md_from_sc_tb","download meta data")
+
+             ),
+             mainPanel(
+               width = 9,
+               div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
+               div(DT::DTOutput("extracting_md_from_sc_tb")),
+             )
+           )
   ),
-  # end of Integration -----
 
-  navbarMenu(
-    "Post Analysis",
+  # filtering CSV files ------
+  tabPanel("Filtering",
+           value = "",
+           sidebarLayout(
+             sidebarPanel(width = 3,
+                          fileInput("file1_FilteringCluster",
+                                    "Upload .csv file",
+                                    multiple = F,
+                                    accept = c(".csv", "csv","csv.gz",".gz")
+                          ),
 
-    # Extracting meta data -------
-    tabPanel("Extract meta data",
-             sidebarLayout(
-               sidebarPanel(width = 3,
-                            fileInput("file1_extract.metadata",
-                                      "Upload .rds file",
-                                      multiple = F,
-                                      accept = c(".rds", "rds")
-                            ),
+                          downloadButton("download_button_filtered_data_df", "Download Filtered Data"),
+                          uiOutput("filter_checkboxes"),
+             ),
+             mainPanel(
+               width = 9,
+               # tabsetPanel(
+               id = "Other_post_analysis",
+               div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
+               uiOutput("filter_inputs"),
+               DTOutput("filtered_table")
 
-                            downloadButton("download_extracting_md_from_sc_tb","download meta data")
-
-               ),
-               mainPanel(
-                 width = 9,
-                 div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
-                 div(DT::DTOutput("extracting_md_from_sc_tb")),
-               )
+               # )
              )
-    ),
+           )
+           # p("Convert .h5Seurat to .rds")
+  ),
+  # summarising the data ------
 
-    # filtering CSV files ------
-    tabPanel("Filtering",
-             value = "",
-             sidebarLayout(
-               sidebarPanel(width = 3,
-                            fileInput("file1_FilteringCluster",
-                                      "Upload .csv file",
-                                      multiple = F,
-                                      accept = c(".csv", "csv","csv.gz",".gz")
-                            ),
+  tabPanel("Summarizing",
+           value = "",
+           sidebarLayout(
+             sidebarPanel(width = 3,
+                          fileInput("file1_summarising_data",
+                                    "Upload .csv file",
+                                    multiple = F,
+                                    accept = c(".csv", "csv","csv.gz",".gz")
+                          ),
+                          downloadButton("download_button_summarising_data", "Download summarised Data"),
+             ),
+             mainPanel(
+               width = 9,
+               # tabsetPanel(
+               id = "summary_for_data_tab",
+               div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
+               selectInput("columns_for_summary","Select columns for summarising",choices = "",multiple = T, width = "1200px"),
+               DTOutput("chain_table_summary_tb"),
+               # uiOutput("filter_inputs"),
+               DTOutput("loaded_for_summary")
 
-                            downloadButton("download_button_filtered_data_df", "Download Filtered Data"),
-                            uiOutput("filter_checkboxes"),
-               ),
-               mainPanel(
-                 width = 9,
-                 # tabsetPanel(
-                 id = "Other_post_analysis",
-                 div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
-                 uiOutput("filter_inputs"),
-                 DTOutput("filtered_table")
-
-                 # )
-               )
+               # )
              )
-             # p("Convert .h5Seurat to .rds")
-    ),
-    # summarising the data ------
-
-    tabPanel("Summarizing",
-             value = "",
-             sidebarLayout(
-               sidebarPanel(width = 3,
-                            fileInput("file1_summarising_data",
-                                      "Upload .csv file",
-                                      multiple = F,
-                                      accept = c(".csv", "csv","csv.gz",".gz")
-                            ),
-                            downloadButton("download_button_summarising_data", "Download summarised Data"),
-               ),
-               mainPanel(
-                 width = 9,
-                 # tabsetPanel(
-                 id = "summary_for_data_tab",
-                 div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
-                 selectInput("columns_for_summary","Select columns for summarising",choices = "",multiple = T, width = "1200px"),
-                 DTOutput("chain_table_summary_tb"),
-                 # uiOutput("filter_inputs"),
-                 DTOutput("loaded_for_summary")
-
-                 # )
-               )
-             )
-             # p("Convert .h5Seurat to .rds")
-    ),
+           )
+           # p("Convert .h5Seurat to .rds")
+  ),
 
 
 
-    # post analysis OLGA ------
-    tabPanel("OLGA",
-             fluidRow(
+  # post analysis OLGA ------
+  tabPanel("OLGA",
+           fluidRow(
 
-               add_busy_spinner(spin = "fading-circle", position = "top-right",  height = "200px", width = "200px", color = "#6F00B0"),
-               column(3,actionButton("load_olga","Use OLGA if present")),
-               conditionalPanel(
-                 condition = "input.load_olga",
-                 add_busy_spinner(spin = "fading-circle", position = "top-right",  height = "200px", width = "200px", color = "#6F00B0"),
-                 column(3,selectInput("Olga_installed","OLGA installed","")),
-
-               )),
-
+             add_busy_spinner(spin = "fading-circle", position = "top-right",  height = "200px", width = "200px", color = "#6F00B0"),
+             column(3,actionButton("load_olga","Use OLGA if present")),
              conditionalPanel(
-               condition = "input.Olga_installed == 'installed'",
+               condition = "input.load_olga",
+               add_busy_spinner(spin = "fading-circle", position = "top-right",  height = "200px", width = "200px", color = "#6F00B0"),
+               column(3,selectInput("Olga_installed","OLGA installed","")),
 
-               sidebarLayout(
-                 sidebarPanel(width = 3,
+             )),
 
-                              fileInput("file1_rds_OLGA",
-                                        "Choose .rds files from merging",
-                                        multiple = FALSE,
-                                        accept = c("rds", ".rds")
-                              ),
-                              selectInput("chain_type_olga","Chain type: ",choices = c("TRB","TRA")),
-                              downloadButton("downloaddf_pgen_dt", "Download Table (.csv)")
-                 ),
+           conditionalPanel(
+             condition = "input.Olga_installed == 'installed'",
 
-                 mainPanel(
-                   width = 9,
-                   tabsetPanel(
-                     id = "OLGA_analysis",
-                     tabPanel("Loaded Table",
-                              add_busy_spinner(spin = "fading-circle", position = "top-right",  height = "200px", width = "200px", color = "#6F00B0"),
-                              div(DT::DTOutput("Pgen_Selected")),
-                     ),
-                     tabPanel("Pgen",
-                              add_busy_spinner(spin = "fading-circle", position = "top-right",  height = "200px", width = "200px", color = "#6F00B0"),
-                              div(DT::DTOutput("Pgen_BD")),
-                     )
+             sidebarLayout(
+               sidebarPanel(width = 3,
+
+                            fileInput("file1_rds_OLGA",
+                                      "Choose .rds files from merging",
+                                      multiple = FALSE,
+                                      accept = c("rds", ".rds")
+                            ),
+                            selectInput("chain_type_olga","Chain type: ",choices = c("TRB","TRA")),
+                            downloadButton("downloaddf_pgen_dt", "Download Table (.csv)")
+               ),
+
+               mainPanel(
+                 width = 9,
+                 tabsetPanel(
+                   id = "OLGA_analysis",
+                   tabPanel("Loaded Table",
+                            add_busy_spinner(spin = "fading-circle", position = "top-right",  height = "200px", width = "200px", color = "#6F00B0"),
+                            div(DT::DTOutput("Pgen_Selected")),
+                   ),
+                   tabPanel("Pgen",
+                            add_busy_spinner(spin = "fading-circle", position = "top-right",  height = "200px", width = "200px", color = "#6F00B0"),
+                            div(DT::DTOutput("Pgen_BD")),
                    )
                  )
                )
-             ),
-             conditionalPanel(
-               condition = "input.Olga_installed == 'Unavailable' && input.load_olga",
-               tabPanel("Instructions",
-
-                        p("Require the user to install python and olga from the command line"),
-                        p("Install OLGA via the following website"),
-                        p("https://github.com/statbiophys/OLGA")
-
-               ),
              )
+           ),
+           conditionalPanel(
+             condition = "input.Olga_installed == 'Unavailable' && input.load_olga",
+             tabPanel("Instructions",
 
-    ),
+                      p("Require the user to install python and olga from the command line"),
+                      p("Install OLGA via the following website"),
+                      p("https://github.com/statbiophys/OLGA")
 
-    #####
-
-  ),
-
-  navbarMenu("Info",
-             tabPanel("Helpful resources"),
-             tabPanel("Citing STEGO.R"),
-             tabPanel("Session Information")
-
-
+             ),
+           )
 
   ),
+
+  #####
+
+),
+
+navbarMenu("Info",
+           tabPanel("Helpful resources"),
+           tabPanel("Citing STEGO.R"),
+           tabPanel("Session Information")
+
+
+
+),
 ) # nav page
   )
 
@@ -3277,7 +3317,7 @@ navbarPage(
     output$classification_to_add_epitope <- renderUI({
       sc <- UMAP_metadata_with_labs()
 
-      epi <- input.data_sc_TCRex()
+      epi <- data_sc_TCRex()
       validate(
         need(
           nrow(sc) > 0 & nrow(epi) > 0,
@@ -3299,7 +3339,7 @@ navbarPage(
 
     output$classification_to_add_epitope2 <- renderUI({
       sc <- UMAP_metadata_with_labs()
-      epi <- input.data_sc_TCRex()
+      epi <- data_sc_TCRex()
       validate(
         need(
           nrow(sc) > 0 & nrow(epi) > 0,
@@ -6684,12 +6724,14 @@ navbarPage(
     # Seurat -----
     ## uploading the raw files ----
 
+    # Define a reactive value to store the data
+    data_sc <- reactiveVal(NULL)
 
-
-    input.data_sc <- reactive({
+    # Update the reactive value with the file data
+    observeEvent(input$file_SC, {
       inFile_sc <- input$file_SC
       if (is.null(inFile_sc)) {
-        return(NULL)
+        data_sc(NULL)  # Clear the data if no file is uploaded
       } else {
         if (input$df_seruatobj_type == "10x_Genomics (raw)") {
           dataframe <- read.csv(inFile_sc$datapath)
@@ -6702,19 +6744,50 @@ navbarPage(
         } else {
           dataframe <- read.csv(inFile_sc$datapath, row.names = 1)
         }
+        data_sc(dataframe)  # Update the reactive value with the new data
       }
     })
 
+    # Use the reactive value to display data in the table
+    output$DEx_header_name_check.dt <- DT::renderDT({
+      sc <- data_sc()
+
+      validate(
+        need(
+          !is.null(sc),
+          "Upload data"
+        )
+      )
+
+      sc
+    })
+
+    observeEvent(input$clearDataBtn, {
+      # Clear the reactive value to remove the data
+      data_sc(NULL)
+      # Reset the text input field
+      shinyjs::reset("project_name")
+      # Use shinyjs to clear file input
+      shinyjs::reset("file_SC")
+    })
+
+    observeEvent(input$clearDataBtn, {
+      data_sc_meta(NULL)
+      # Use shinyjs to clear file inputs
+      shinyjs::reset("file_SC_meta")
+    })
+
+
     output$DEx_header_name_check.dt <- DT::renderDT(escape = FALSE, filter = list(position = "top", clear = FALSE), options = list(autoWidth = FALSE, lengthMenu = c(2, 5, 10, 20, 50, 100), pageLength = 5, scrollX = TRUE), {
-      df.test <- input.data_sc()
+      df.test <- data_sc()
+
       validate(
         need(
           nrow(df.test) > 0,
           error_message_val_sc
         )
       )
-
-
+      req(df.test)
 
       if (input$df_seruatobj_type == "10x_Genomics (raw)") {
         names(df.test) <- gsub("[.]1", "-1", names(df.test))
@@ -6739,7 +6812,7 @@ navbarPage(
     ## reading in 10x and BD data ----
     df_seruatobj <- reactive({
       suppressWarnings({
-        df.test <- input.data_sc()
+        df.test <- data_sc()
         validate(
           need(
             length(df.test) > 0,
@@ -7108,27 +7181,34 @@ navbarPage(
 
     ## Differential expression with two conditions -----
 
-    input.data_sc_meta <- reactive({
+    # Define a reactive value to store the data
+    data_sc_meta <- reactiveVal(NULL)
+
+    observeEvent(input$file_SC_meta, {
       inFile_sc_meta <- input$file_SC_meta
-      if (is.null(inFile_sc_meta)) {
-        return(NULL)
-      } else {
-        dataframe <- read.csv(inFile_sc_meta$datapath)
-      }
+      req(inFile_sc_meta)
+      dataframe <- read.csv(inFile_sc_meta$datapath)
+      data_sc_meta(dataframe)
     })
 
-    output$DEx_view.meta.dt <- DT::renderDT(escape = FALSE, filter = list(position = "top", clear = FALSE), options = list(autoWidth = FALSE, lengthMenu = c(2, 5, 10, 20, 50, 100), pageLength = 2, scrollX = TRUE), {
-      sc <- input.data_sc_meta()
+    # Use the reactive value to display data in the table
+    output$DEx_view.meta.dt <- DT::renderDT({
+      sc <- data_sc_meta()
 
       validate(
         need(
-          nrow(sc) > 0,
+          !is.null(sc),
           "Upload metadata"
         )
       )
+
       sc
     })
+
+
+
     vals_meta.sc <- reactiveValues(metadata_SCobj = NULL)
+
     observeEvent(input$run_metadata, {
       sc <- vals_clust$sc_clustering
       validate(
@@ -7138,7 +7218,7 @@ navbarPage(
         )
       )
 
-      meta.data.import <- input.data_sc_meta()
+      meta.data.import <- data_sc_meta()
       validate(
         need(
           nrow(meta.data.import) > 0,
@@ -9777,7 +9857,7 @@ navbarPage(
     #
 
     observe({
-      sc <- input.data_sc_pro()
+      sc <- data_sc_pro()
       validate(
         need(
           nrow(sc) > 0,
@@ -9822,7 +9902,7 @@ navbarPage(
       }
     })
     ## uploading seruat obj ----
-    input.data_sc_pro <- reactive({
+    data_sc_pro <- reactive({
       inFile_sc_pro <- input$file_SC_pro
       if (is.null(inFile_sc_pro)) {
         return(NULL)
@@ -9830,7 +9910,7 @@ navbarPage(
         dataframe <- LoadSeuratRds(inFile_sc_pro$datapath)
       }
     })
-    input.data_sc_clusTCR_AG <- reactive({
+    data_sc_clusTCR_AG <- reactive({
       inFile_cluster_fileAG <- input$file_cluster_file_AG
       if (is.null(inFile_cluster_fileAG)) {
         return(NULL)
@@ -9840,7 +9920,7 @@ navbarPage(
     })
 
 
-    input.data_sc_clusTCR_BD <- reactive({
+    data_sc_clusTCR_BD <- reactive({
       inFile_cluster_fileBD <- input$file_cluster_file_BD
       if (is.null(inFile_cluster_fileBD)) {
         return(NULL)
@@ -9850,7 +9930,7 @@ navbarPage(
     })
 
 
-    input.data_sc_clusTCR_IgH <- reactive({
+    data_sc_clusTCR_IgH <- reactive({
       inFile_cluster_fileIgH <- input$file_cluster_file_IgH
       if (is.null(inFile_cluster_fileIgH)) {
         return(NULL)
@@ -9859,7 +9939,7 @@ navbarPage(
       }
     })
 
-    input.data_sc_clusTCR_IgKL <- reactive({
+    data_sc_clusTCR_IgKL <- reactive({
       inFile_cluster_fileIgKL <- input$file_cluster_file_IgKL
       if (is.null(inFile_cluster_fileIgKL)) {
         return(NULL)
@@ -9869,7 +9949,7 @@ navbarPage(
     })
 
     ## Add in additional sample identifers - matched to Sample_Name or Orig.indent
-    input.data_sc_Labels_to_add <- reactive({
+    data_sc_Labels_to_add <- reactive({
       inFile_Labels_to_add <- input$file_Labels_to_add
       if (is.null(inFile_Labels_to_add)) {
         return(NULL)
@@ -9879,7 +9959,7 @@ navbarPage(
     })
     ## add additional sample labels to file. -----
     UMAP_metadata_with_labs <- reactive({
-      sc <- input.data_sc_pro()
+      sc <- data_sc_pro()
       validate(
         need(
           nrow(sc) > 0,
@@ -9901,7 +9981,7 @@ navbarPage(
       umap.meta <- merge(UMAP, meta.data, by = "Cell_Index", sort = F)
 
       if (input$add_additional_lables == "yes") {
-        labs <- input.data_sc_Labels_to_add()
+        labs <- data_sc_Labels_to_add()
         validate(
           need(
             nrow(labs) > 0,
@@ -9968,7 +10048,7 @@ navbarPage(
       }
     })
     # upload TCRex file ----
-    input.data_sc_TCRex <- reactive({
+    data_sc_TCRex <- reactive({
       inupload_TCRex_file <- input$upload_TCRex_file
       if (is.null(inupload_TCRex_file)) {
         return(NULL)
@@ -9979,8 +10059,8 @@ navbarPage(
 
     ## uploaded clusTCR table -----
     output$Tb_ClusTCR_test <- DT::renderDT(escape = FALSE, options = list(autoWidth = FALSE, lengthMenu = c(2, 5, 10, 20, 50, 100), pageLength = 2, scrollX = TRUE), {
-      AG_calls <- input.data_sc_clusTCR_AG()
-      BD_calls <- input.data_sc_clusTCR_BD()
+      AG_calls <- data_sc_clusTCR_AG()
+      BD_calls <- data_sc_clusTCR_BD()
       validate(
         need(
           nrow(AG_calls) > 0 & nrow(BD_calls) > 0,
@@ -9991,7 +10071,7 @@ navbarPage(
     })
 
     output$Tb_tcrex_test <- DT::renderDT(escape = FALSE, options = list(autoWidth = FALSE, lengthMenu = c(2, 5, 10, 20, 50, 100), pageLength = 2, scrollX = TRUE), {
-      calls <- input.data_sc_TCRex()
+      calls <- data_sc_TCRex()
       validate(
         need(
           nrow(calls) > 0,
@@ -10021,7 +10101,7 @@ navbarPage(
       )
     })
     observe({
-      sc <- input.data_sc_pro()
+      sc <- data_sc_pro()
       validate(
         need(
           nrow(sc) > 0,
@@ -10038,7 +10118,7 @@ navbarPage(
       )
     })
     observe({
-      sc <- input.data_sc_pro()
+      sc <- data_sc_pro()
       validate(
         need(
           nrow(sc) > 0,
@@ -10729,7 +10809,7 @@ navbarPage(
     })
 
     observe({
-      sc <- input.data_sc_pro()
+      sc <- data_sc_pro()
       validate(
         need(
           nrow(sc) > 0,
@@ -10863,7 +10943,7 @@ navbarPage(
     )
     # Freq ------
     observe({
-      sc <- input.data_sc_pro()
+      sc <- data_sc_pro()
       validate(
         need(
           nrow(sc) > 0,
@@ -11811,7 +11891,7 @@ navbarPage(
     })
 
     output$Classification_clonotype_pie <- renderPlot({
-      sc <- input.data_sc_pro()
+      sc <- data_sc_pro()
       validate(
         need(
           nrow(sc) > 0,
@@ -12628,7 +12708,7 @@ navbarPage(
       # as.data.frame(markers.fm.list2)
     })
     output$Ridge_chart_alpha_gamma_stat_comp <- DT::renderDT(escape = FALSE, options = list(autoWidth = FALSE, lengthMenu = c(2, 5, 10, 20, 50, 100), pageLength = 10, scrollX = TRUE), {
-      sc <- input.data_sc_pro()
+      sc <- data_sc_pro()
 
       validate(
         need(
@@ -12653,7 +12733,7 @@ navbarPage(
     observeEvent(input$run_string.data_Exp_top, {
       # df <- compare.stat()
 
-      sc <- input.data_sc_pro()
+      sc <- data_sc_pro()
 
       validate(
         need(
@@ -12681,7 +12761,7 @@ navbarPage(
 
 
     output$test.table_ridge <- DT::renderDT(escape = FALSE, options = list(autoWidth = FALSE, lengthMenu = c(2, 5, 10, 20, 50, 100), pageLength = 10, scrollX = TRUE), {
-      sc <- input.data_sc_pro()
+      sc <- data_sc_pro()
 
       validate(
         need(
@@ -12697,7 +12777,7 @@ navbarPage(
 
     # ridge plot ------
     Ridge_chart_alpha_gamma_df <- reactive({
-      sc <- input.data_sc_pro()
+      sc <- data_sc_pro()
       validate(
         need(
           nrow(sc) > 0,
@@ -12794,7 +12874,7 @@ navbarPage(
     )
     ### Violin plots top clonotype -----
     Violin_plot_table <- reactive({
-      sc <- input.data_sc_pro()
+      sc <- data_sc_pro()
       need(
         nrow(sc) > 0,
         error_message_val_sc
@@ -12989,7 +13069,7 @@ navbarPage(
 
     ### top dot plot -----
     all_expression_plot_top <- reactive({
-      sc <- input.data_sc_pro()
+      sc <- data_sc_pro()
       validate(
         need(
           nrow(sc) > 0,
@@ -13077,7 +13157,7 @@ navbarPage(
 
     # Over representation analysis for top clonotypes -----
     observe({
-      sc <- input.data_sc_pro()
+      sc <- data_sc_pro()
       validate(
         need(
           nrow(sc) > 0,
@@ -13145,7 +13225,7 @@ navbarPage(
 
 
     Over_rep_Top_clones_old <- reactive({
-      sc <- input.data_sc_pro()
+      sc <- data_sc_pro()
 
       validate(
         need(
@@ -13414,7 +13494,7 @@ navbarPage(
     # # ### add in colouring specific to Expanded
     # #
     output$classification_to_add2 <- renderUI({
-      sc <- input.data_sc_pro()
+      sc <- data_sc_pro()
       validate(
         need(
           nrow(sc) > 0,
@@ -13434,7 +13514,7 @@ navbarPage(
     #
     # ## Expansion UMAP plot -----
     cols_UMAP_Expanded <- reactive({
-      sc <- input.data_sc_pro()
+      sc <- data_sc_pro()
       validate(
         need(
           nrow(sc) > 0,
@@ -13517,7 +13597,7 @@ navbarPage(
       cols_UMAP_Expanded()
     })
     colors_Expanded <- reactive({
-      sc <- input.data_sc_pro()
+      sc <- data_sc_pro()
 
       validate(
         need(
@@ -13547,7 +13627,7 @@ navbarPage(
       })
     })
     UMAP_Expanded_plot <- reactive({
-      sc <- input.data_sc_pro()
+      sc <- data_sc_pro()
       validate(
         need(
           nrow(sc) > 0,
@@ -13679,7 +13759,7 @@ navbarPage(
     # Vals_expanded.stats <- reactiveValues(output_ex1=NULL)
 
     Vals_expanded.stats <- reactive({
-      sc <- input.data_sc_pro()
+      sc <- data_sc_pro()
 
       validate(
         need(
@@ -13704,7 +13784,7 @@ navbarPage(
     })
 
     output$compare.stat_Ex <- DT::renderDT(escape = FALSE, options = list(autoWidth = FALSE, lengthMenu = c(2, 5, 10, 20, 50, 100), pageLength = 10, scrollX = TRUE), {
-      sc <- input.data_sc_pro()
+      sc <- data_sc_pro()
 
       validate(
         need(
@@ -13831,7 +13911,7 @@ navbarPage(
     # Over representation analysis for Expanded  -----
 
     Over_rep_Exp_old <- reactive({
-      sc <- input.data_sc_pro()
+      sc <- data_sc_pro()
 
       validate(
         need(
@@ -13959,7 +14039,7 @@ navbarPage(
     )
     #### Epitope upload -----
     df_tcrex <- reactive({
-      epi <- input.data_sc_TCRex()
+      epi <- data_sc_TCRex()
       epi[!(duplicated(epi$CDR3_beta)), ]
     })
 
@@ -13969,7 +14049,7 @@ navbarPage(
     #### Epitope heatmap -----
     heatmap_epitope <- reactive({
       sc <- UMAP_metadata_with_labs()
-      epi <- input.data_sc_TCRex()
+      epi <- data_sc_TCRex()
       validate(
         need(
           nrow(sc) > 0 & nrow(epi) > 0,
@@ -14059,7 +14139,7 @@ navbarPage(
     #### epitope UMAP interrogation -----
     cols_epitope <- reactive({
       sc <- UMAP_metadata_with_labs()
-      epi <- input.data_sc_TCRex()
+      epi <- data_sc_TCRex()
       validate(
         need(
           nrow(sc) > 0 & nrow(epi) > 0,
@@ -14132,7 +14212,7 @@ navbarPage(
     })
     colors_cols_epitope <- reactive({
       sc <- UMAP_metadata_with_labs()
-      epi <- input.data_sc_TCRex()
+      epi <- data_sc_TCRex()
       validate(
         need(
           nrow(sc) > 0 & nrow(epi) > 0,
@@ -14166,7 +14246,7 @@ navbarPage(
 
     UMAP_Epitope <- reactive({
       sc <- UMAP_metadata_with_labs()
-      epi <- input.data_sc_TCRex()
+      epi <- data_sc_TCRex()
       validate(
         need(
           nrow(sc) > 0 & nrow(epi) > 0,
@@ -14253,7 +14333,7 @@ navbarPage(
 
     cols_epitope_pie <- reactive({
       sc <- UMAP_metadata_with_labs()
-      epi <- input.data_sc_TCRex()
+      epi <- data_sc_TCRex()
       validate(
         need(
           nrow(sc) > 0 & nrow(epi) > 0,
@@ -14328,7 +14408,7 @@ navbarPage(
 
     colors_cols_epitope_pie <- reactive({
       sc <- UMAP_metadata_with_labs()
-      epi <- input.data_sc_TCRex()
+      epi <- data_sc_TCRex()
       validate(
         need(
           nrow(sc) > 0 & nrow(epi) > 0,
@@ -14361,7 +14441,7 @@ navbarPage(
 
     Pie_chart_Epitope <- reactive({
       sc <- UMAP_metadata_with_labs()
-      epi <- input.data_sc_TCRex()
+      epi <- data_sc_TCRex()
       validate(
         need(
           nrow(sc) > 0 & nrow(epi) > 0,
@@ -14431,7 +14511,7 @@ navbarPage(
 
     Pie_Epitope_dt_process <- reactive({
       sc <- UMAP_metadata_with_labs()
-      epi <- input.data_sc_TCRex()
+      epi <- data_sc_TCRex()
       validate(
         need(
           nrow(sc) > 0 & nrow(epi) > 0,
@@ -14478,7 +14558,7 @@ navbarPage(
     # Epitope stat -----
     Epitope_of_interest <- reactive({
       sc <- UMAP_metadata_with_labs()
-      epi <- input.data_sc_TCRex()
+      epi <- data_sc_TCRex()
       validate(
         need(
           nrow(sc) > 0 & nrow(epi) > 0,
@@ -14508,7 +14588,7 @@ navbarPage(
 
     output$Epi_of_interest_DF <- DT::renderDT(escape = FALSE, options = list(autoWidth = FALSE, lengthMenu = c(2, 5, 10, 20, 50, 100), pageLength = 5, scrollX = TRUE), {
       sc <- UMAP_metadata_with_labs()
-      epi <- input.data_sc_TCRex()
+      epi <- data_sc_TCRex()
       validate(
         need(
           nrow(sc) > 0 & nrow(epi) > 0,
@@ -14520,7 +14600,7 @@ navbarPage(
 
     observeEvent(input$Update_epi, {
       sc <- UMAP_metadata_with_labs()
-      epi <- input.data_sc_TCRex()
+      epi <- data_sc_TCRex()
       validate(
         need(
           nrow(sc) > 0 & nrow(epi) > 0,
@@ -14540,7 +14620,7 @@ navbarPage(
 
     compare.stat_Epi <- reactive({
       sc <- UMAP_metadata_with_labs()
-      epi <- input.data_sc_TCRex()
+      epi <- data_sc_TCRex()
       validate(
         need(
           nrow(sc) > 0 & nrow(epi) > 0,
@@ -14583,7 +14663,7 @@ navbarPage(
     })
 
     output$compare.stat_Epi_DT <- DT::renderDT(escape = FALSE, options = list(autoWidth = FALSE, lengthMenu = c(2, 5, 10, 20, 50, 100), pageLength = 10, scrollX = TRUE), {
-      sc <- input.data_sc_pro()
+      sc <- data_sc_pro()
       validate(
         need(
           nrow(sc) > 0,
@@ -14596,7 +14676,7 @@ navbarPage(
     # Epitope dotplot ----
     all_expression_plot_epi <- reactive({
       sc <- UMAP_metadata_with_labs()
-      epi <- input.data_sc_TCRex()
+      epi <- data_sc_TCRex()
       validate(
         need(
           nrow(sc) > 0 & nrow(epi) > 0,
@@ -14661,7 +14741,7 @@ navbarPage(
 
     output$checking_epi_dot_issue <- DT::renderDT(escape = FALSE, filter = list(position = "top", clear = FALSE), options = list(autoWidth = FALSE, lengthMenu = c(1, 2, 5, 10, 20, 50, 100), pageLength = 20, scrollX = TRUE), {
       sc <- UMAP_metadata_with_labs()
-      epi <- input.data_sc_TCRex()
+      epi <- data_sc_TCRex()
       validate(
         need(
           nrow(sc) > 0 & nrow(epi) > 0,
@@ -14746,7 +14826,7 @@ navbarPage(
     # Over representation analysis for Epitope  -----
     Over_rep_Epi_old <- reactive({
       sc <- UMAP_metadata_with_labs()
-      epi <- input.data_sc_TCRex()
+      epi <- data_sc_TCRex()
       validate(
         need(
           nrow(sc) > 0 & nrow(epi) > 0,
@@ -14969,7 +15049,7 @@ navbarPage(
     #### clusTCR2 seting up the dataframe -----
     AG_cluster <- reactive({
       x <- today()
-      clust <- input.data_sc_clusTCR_AG()
+      clust <- data_sc_clusTCR_AG()
       sc <- UMAP_metadata_with_labs()
       validate(
         need(
@@ -15041,7 +15121,7 @@ navbarPage(
     })
     BD_cluster <- reactive({
       sc <- UMAP_metadata_with_labs()
-      clust <- input.data_sc_clusTCR_BD()
+      clust <- data_sc_clusTCR_BD()
 
       validate(
         need(
@@ -15110,12 +15190,12 @@ navbarPage(
 
     clusTCR2_df <- reactive({
       if (input$chain_TCR == "TRAG") {
-        if (length(input.data_sc_clusTCR_AG()) > 0) {
+        if (length(data_sc_clusTCR_AG()) > 0) {
           req(AG_cluster())
           AG_cluster()
         }
       } else if (input$chain_TCR == "TRBD") {
-        if (length(input.data_sc_clusTCR_BD()) > 0) {
+        if (length(data_sc_clusTCR_BD()) > 0) {
           req(BD_cluster())
           BD_cluster()
         }
@@ -16478,7 +16558,7 @@ navbarPage(
 
     # overlap table with UMAP and expression -----
     overlap_table <- reactive({
-      sc <- input.data_sc_pro()
+      sc <- data_sc_pro()
       validate(
         need(
           nrow(sc) > 0,
@@ -16582,7 +16662,7 @@ navbarPage(
     # Over representation analysis for Cluster  -----
 
     Over_rep_Overlap <- reactive({
-      sc <- input.data_sc_pro()
+      sc <- data_sc_pro()
 
       validate(
         need(
@@ -16703,7 +16783,7 @@ navbarPage(
     ### single marker feature plot -----
 
     MainTcell_counts <- reactive({
-      sc <- input.data_sc_pro()
+      sc <- data_sc_pro()
       validate(
         need(
           nrow(sc) > 0,
@@ -16721,7 +16801,7 @@ navbarPage(
     })
 
     MainTcell_counts_names <- reactive({
-      sc <- input.data_sc_pro()
+      sc <- data_sc_pro()
       validate(
         need(
           nrow(sc) > 0,
@@ -16794,7 +16874,7 @@ navbarPage(
     # subset based on UMAP location, subset bashed on norm value for the marker of interest threshold as well. -----
 
     MainTcell_scale <- reactive({
-      sc <- input.data_sc_pro()
+      sc <- data_sc_pro()
       validate(
         need(
           nrow(sc) > 0,
@@ -17150,7 +17230,7 @@ navbarPage(
     })
 
     output$Compare.stat_marker <- DT::renderDT(escape = FALSE, options = list(autoWidth = FALSE, lengthMenu = c(2, 5, 10, 20, 50, 100), pageLength = 10, scrollX = TRUE), {
-      sc <- input.data_sc_pro()
+      sc <- data_sc_pro()
 
       validate(
         need(
@@ -17921,7 +18001,7 @@ navbarPage(
       )
       md <- sc@meta.data
       x <- today()
-      if (length(input.data_sc_clusTCR_AG()) > 0) {
+      if (length(data_sc_clusTCR_AG()) > 0) {
         df7 <- AG_cluster()
 
         df7 <- df7[order(df7$priority, decreasing = F), ]
@@ -17947,7 +18027,7 @@ navbarPage(
       )
       md <- sc@meta.data
       x <- today()
-      if (length(input.data_sc_clusTCR_BD()) > 0) {
+      if (length(data_sc_clusTCR_BD()) > 0) {
         df7 <- BD_cluster()
 
         df7 <- df7[order(df7$priority, decreasing = F), ]
@@ -19883,7 +19963,7 @@ navbarPage(
 
     # epitope code for automated analysis ------
     df_tcrex2 <- reactive({
-      epi <- input.data_sc_TCRex()
+      epi <- data_sc_TCRex()
       req(epi)
       epi[!(duplicated(epi$CDR3_beta)), ]
     })
@@ -19892,7 +19972,7 @@ navbarPage(
       sc <- UMAP_metadata_with_labs()
 
       if (input$epitope_uploaded) {
-        epi <- input.data_sc_TCRex()
+        epi <- data_sc_TCRex()
         validate(
           need(
             nrow(sc) > 0 & nrow(epi) > 0,
@@ -19921,7 +20001,7 @@ navbarPage(
       sc <- UMAP_metadata_with_labs()
 
       if (input$epitope_uploaded) {
-        epi <- input.data_sc_TCRex()
+        epi <- data_sc_TCRex()
         validate(
           need(
             nrow(sc) > 0 & nrow(epi) > 0,
@@ -20958,5 +21038,6 @@ navbarPage(
 
   }
 
-  shinyApp(ui, server)
+  shinyApp(ui = ui, server = server, options = list(launch.browser = TRUE))
+
 }
