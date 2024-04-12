@@ -6,15 +6,16 @@
 \usage{
 scGate_annotating(
   file = file,
-  TcellFunction = F,
-  generic = F,
-  exhausted = F,
-  senescence = F,
-  cycling = F,
-  Th1_cytokines = F,
-  TCRseq = F,
+  TcellFunction = FALSE,
+  generic = FALSE,
+  exhausted = FALSE,
+  senescence = FALSE,
+  cycling = FALSE,
+  Th1_cytokines = FALSE,
+  TCRseq = FALSE,
   threshold = 0.2,
-  reductionType = "harmony"
+  reductionType = "harmony",
+  chunk_size = 5000
 )
 }
 \arguments{
@@ -36,8 +37,10 @@ scGate_annotating(
 
 \item{threshold}{Set the scGate threshold; default is 0.2 for full models and 0.5 for focused models.}
 
-\item{reductionType}{Chose the time of dimentional reduction to use; default = harmony}
+\item{reductionType}{Chose the time of dimensional reduction to use; default = harmony}
+
+\item{chunk_size}{This is the total number of cells to perform the annotation model on. This is to prevent the out of memory issue when annotating. The cells are randomly selected. The same random seed is selected to ensure that random selection is consistent if this has to be repeated. The default is 50,000 cells (we recommend a maximum of 100,000 per loop). However, fewer cells may be required if your RAM is <32 Gb, to ensure each loop is completed.}
 }
 \description{
-This function is to aid in annotating T cells expreiments with or without TCR-seq. There are four avaialbe T cell models including the T cell functions, generic annotations, T cell based stress and cellular cycling
+This function is to aid in annotating T cells expreiments with or without TCR-seq. There are six available T cell models including the T cell functions, generic annotations, exhausted, senescence, Th1_cytokines and cellular cycling (cell division) and a TCR-seq model.
 }

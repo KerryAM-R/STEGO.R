@@ -5,21 +5,21 @@
 \title{Merging RDS Seurat objects}
 \usage{
 merging_multi_SeuratRDS(
-  set_directory = ".",
-  merge_RDS = F,
+  set_directory = "2_scObj/",
+  merge_RDS = FALSE,
   pattern_RDS = ".rds$",
   species = "hs"
 )
 }
 \arguments{
-\item{set_directory}{set the path to the directory with the. Default = current working directory. The program will reset the directory to the original to not impact the function of STEGO.R project file}
+\item{set_directory}{set the path to the directory with the. Default = current working directory. The program will reset the directory to the original to not impact the function of STEGO.R project file. If you stop the script, you will need to manually reset the working directory with setwd("../"), to go back one directory.}
 
 \item{merge_RDS}{Set to TRUE once you have check the directory with the .rds file}
 
-\item{pattern_RDS}{uses the list.files function to identify}
+\item{pattern_RDS}{uses the list.files function to identify the .rds objects for merging in the 2_scObj}
 
-\item{species}{Species: hs or mm, as the humans use upper case and the mouse gene use proper case.}
+\item{species}{Species: hs or mm, as the humans (hs) use upper case and the mouse (mm) gene use proper case.}
 }
 \description{
-This function is to aid im merging multiple Seurat object, which will then need to undergo harmony merging
+This function is to aid im merging multiple Seurat object, which will then need to undergo harmony merging after this step. We have included a loop that merges two Seurat objects at a time to ensure time efficiency  (exponentially gets smaller from the previous sequential merging process)
 }
