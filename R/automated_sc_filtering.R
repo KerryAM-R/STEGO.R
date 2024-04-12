@@ -23,7 +23,7 @@ automated_sc_filtering <- function(folder = "1_SeuratQC",
                                    percent.rb = 5,
                                    dimension_sc = 15,
                                    resolution_sc= 1,
-                                   limit_to_TCR_GEx = T,
+                                   limit_to_TCR_GEx = F,
                                    save_plots = T
 ) {
   suppressMessages(require(Seurat))
@@ -54,7 +54,6 @@ automated_sc_filtering <- function(folder = "1_SeuratQC",
 
     } else {
       message("Started processing",project_name2)
-
       if (dataset_type == "10x") {
         message("reading in matrix file")
         file.exists(paste0(samp_names[i],"_count-matrix_10x.csv.gz"))
@@ -120,19 +119,12 @@ automated_sc_filtering <- function(folder = "1_SeuratQC",
       print(head(sc@meta.data))
 
       if(save_plots) {
+        dir.create(paste0("Figures.Tables/QC_Figures/",project_name2))
         suppressWarnings({
           sc@meta.data$mtDNA[is.na(sc@meta.data$mtDNA)] <- 0
           sc@meta.data$rRNA[is.na(sc@meta.data$rRNA)] <- 0
-
-          # val_mt_rRNA <- sum(sc@meta.data$mtDNA) == 0 || sum(sc@meta.data$rRNA) == 0
-          # if(val_mt_rRNA) {
-          #   message("no MT DNA or no rRNA")
-          #   plot <- suppressWarnings(suppressMessages(VlnPlot(sc, features = c("nFeature_RNA", "nCount_RNA"), ncol = 2)))
-          # } else {
-          plot <- suppressWarnings(suppressMessages(VlnPlot(sc, features = c("nFeature_RNA", "nCount_RNA", "mtDNA", "rRNA"), ncol = 2)))
-          # }
-
-          file_name_before <- paste0("Figures.Tables/QC_Figures/",project_name2,"_1_before_filtering.png")
+            plot <- suppressWarnings(suppressMessages(VlnPlot(sc, features = c("nFeature_RNA", "nCount_RNA", "mtDNA", "rRNA"), ncol = 2)))
+          file_name_before <- paste0("Figures.Tables/QC_Figures/",project_name2,"/",project_name2,"_1_before_filtering.png")
           png(file_name_before, width = 1000, height = 1200, res = 144)
           plot(plot)
           dev.off()
@@ -140,15 +132,6 @@ automated_sc_filtering <- function(folder = "1_SeuratQC",
       }
 
       sc <- suppressWarnings(suppressMessages(subset(sc, subset = nFeature_RNA >= features.min & nFeature_RNA <= features.max & mtDNA <= percent.mt & rRNA >= percent.rb)))
-      # summary(sc@meta.data$nFeature_RNA)
-      # sc <- subset(sc, subset = nFeature_RNA >= features.min)
-      # print(sc)
-      # sc <- subset(sc, subset = nFeature_RNA <= features.max)
-      # print(sc)
-      # sc <- subset(sc, subset = mtDNA <= percent.mt)
-      # print(sc)
-      # sc <- subset(sc, subset = rRNA >= percent.rb)
-      # print(sc)
 
       if(save_plots) {
         suppressWarnings({
@@ -157,7 +140,7 @@ automated_sc_filtering <- function(folder = "1_SeuratQC",
           } else {
             plot <- suppressWarnings(suppressMessages(VlnPlot(sc, features = c("nFeature_RNA", "nCount_RNA", "mtDNA", "rRNA"), ncol = 2)))
           }
-          file_name_after <- paste0("Figures.Tables/QC_Figures/",project_name2,"_2_after_filtering.png")
+          file_name_after <- paste0("Figures.Tables/QC_Figures/",project_name2,"/",project_name2,"_2_after_filtering.png")
           png(file_name_after, width = 1000, height = 1200, res = 144)
           plot(plot)
           dev.off()
@@ -174,7 +157,7 @@ automated_sc_filtering <- function(folder = "1_SeuratQC",
           plot1 <- VariableFeaturePlot(sc)
           plot2 <- LabelPoints(plot = plot1, points = top10, repel = TRUE)
 
-          file_name_top10 <- paste0("Figures.Tables/QC_Figures/",project_name2,"_3_Top_features.png")
+          file_name_top10 <- paste0("Figures.Tables/QC_Figures/",project_name2,"/",project_name2,"_3_Top_features.png")
           png(file_name_top10, width = 1000, height = 1200, res = 144)
           plot(plot2)
           dev.off()
@@ -197,7 +180,7 @@ automated_sc_filtering <- function(folder = "1_SeuratQC",
         suppressWarnings({
           plot <- ElbowPlot(sc)
 
-          file_name_top10 <- paste0("Figures.Tables/QC_Figures/",project_name2,"_4_Elbow_plot.png")
+          file_name_top10 <- paste0("Figures.Tables/QC_Figures/",project_name2,"/",project_name2,"_4_Elbow_plot.png")
           png(file_name_top10, width = 1000, height = 1200, res = 144)
           plot(plot)
           dev.off()
@@ -207,7 +190,7 @@ automated_sc_filtering <- function(folder = "1_SeuratQC",
       if(save_plots) {
         suppressWarnings({
           plot <- DimPlot(sc, reduction = "umap")
-          file_name_top10 <- paste0("Figures.Tables/QC_Figures/",project_name2,"_5_UMAP_plot.png")
+          file_name_top10 <- paste0("Figures.Tables/QC_Figures/",project_name2,"/",project_name2,"_5_UMAP_plot.png")
           png(file_name_top10, width = 1000, height = 1200, res = 144)
           plot(plot)
           dev.off()
