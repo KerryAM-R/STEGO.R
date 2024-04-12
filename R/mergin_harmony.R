@@ -44,23 +44,42 @@ merging_multi_SeuratRDS <- function(set_directory = ".", merge_RDS = FALSE, patt
       list.sc[[i]]@meta.data$Cell_Index_old <- list.sc[[i]]@meta.data$Cell_Index
       print(list.sc[[i]])
       sl <- object.size(list.sc[[i]])
-      message("Stored object is ", round(sl[1]/1000^3, 2), "Gb")
+      message("Stored object is ", round(sl[1]/1000^3, 1), " Gb")
     }
 
     sl <- object.size(list.sc)
-    message("stored object is ", round(sl[1]/1000^3, 2), "Gb")
+    message("stored object is ", round(sl[1]/1000^3, 1), " Gb")
+
+    # Calculate the number of loops required
+    num_objects <- length(list.sc)
+    num_loops <- ceiling(log2(num_objects))
+
+    # Print the estimated number of loops required
+    message("Estimated number of loops required: ", num_loops)
+
+    # Initialize loop count
+    loop_count <- 0
 
     # Loop to merge pairs of Seurat objects until only one is left
     while (length(list.sc) > 1) {
+      loop_count <- loop_count + 1
+      message("Loop ",loop_count,"of estimated",num_loops)
       temp_list <- list()
 
       for (i in seq(1, length(list.sc), by = 2)) {
+
+
         if (i < length(list.sc)) {
           # Merge two Seurat objects
           merged_names <- paste(names(list.sc)[i], names(list.sc)[i + 1], sep = " and ")
           new_name <- paste0("Merged_", i)
           message("Merging ", merged_names, " to create ", new_name)
-          temp_list[[new_name]] <- merge(x = list.sc[[i]], y = list.sc[[i + 1]], merge.data = TRUE)
+          merged_object <- suppressWarnings(merge(x = list.sc[[i]], y = list.sc[[i + 1]], merge.data = TRUE))
+          temp_list[[new_name]] <- merged_object
+
+          # Calculate size of merged object
+          merged_size <- object.size(merged_object)
+          message("Size of ", new_name, ": ", round(merged_size[1] / 1000^3, 1), " Gb")
         } else {
           # If there's an odd number of objects, keep the last one as is
           temp_list[[names(list.sc)[i]]] <- list.sc[[i]]
