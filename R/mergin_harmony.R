@@ -9,56 +9,80 @@
 #' @param species Species: hs or mm, as the humans use upper case and the mouse gene use proper case.
 #' @export
 
-merging_multi_SeuratRDS <- function (set_directory = ".", merge_RDS = F, pattern_RDS = ".rds$",species = "hs") {
-  x <- getwd()
+merging_multi_SeuratRDS <- function(set_directory = ".", merge_RDS = FALSE, pattern_RDS = ".rds$", species = "hs") {
   require(purrr)
   require(Seurat)
+  x <- getwd()
   setwd(set_directory)
-  message(paste(getwd(),"is the current work directory"))
-  temp = list.files(pattern=pattern_RDS)
-  message(paste(temp,""))
+  message(paste(getwd(), "is the current work directory"))
+  temp <- list.files(pattern = pattern_RDS)
+  message(paste(temp, ""))
   len.temp <- length(temp)
-  message(paste("There are",len.temp,"rds files in the directory for merging"))
+  message(paste("There are", len.temp, "rds files in the directory for merging"))
+
   if (merge_RDS) {
     list.sc <- list()
-    features.var.needed <- read.csv(system.file("Kmean","human.variable.features.csv",package = "STEGO.R"))
-    dim(features.var.needed)
+    features.var.needed <- read.csv(system.file("Kmean", "human.variable.features.csv", package = "STEGO.R"))
+
     for (i in 1:len.temp) {
-      model.name <- strsplit(temp,".rds")[[i]][1]
-      message("reading in file ", model.name)
+      model.name <- strsplit(temp[i], ".rds")[[1]]
+      message("Reading in file ", i, " of ", len.temp, ": ", model.name)
       list.sc[[model.name]] <- readRDS(temp[i])
       message("Reducing file size ", model.name)
 
       if (species == "hs") {
-        features.var.needed <- read.csv(system.file("Kmean","human.variable.features.csv",package = "STEGO.R"))
+        features.var.needed <- read.csv(system.file("Kmean", "human.variable.features.csv", package = "STEGO.R"))
       } else {
-        features.var.needed <- read.csv(system.file("Kmean","human.variable.features.csv",package = "STEGO.R"))
-        features.var.needed$V1 <- str_to_title(features.var.needed$V1)
+        features.var.needed <- read.csv(system.file("Kmean", "human.variable.features.csv", package = "STEGO.R"))
+        features.var.needed$V1 <- tools::toTitleCase(features.var.needed$V1)
       }
-      list.sc[[i]] <- subset(list.sc[[i]],features=features.var.needed$V1)
-      message("adding project name")
+
+      list.sc[[i]] <- subset(list.sc[[i]], features = features.var.needed$V1)
+      message("Adding project name")
       list.sc[[i]]@project.name <- model.name
       message("Updating cell Index ID")
       list.sc[[i]]@meta.data$Cell_Index_old <- list.sc[[i]]@meta.data$Cell_Index
       print(list.sc[[i]])
       sl <- object.size(list.sc[[i]])
-      message("stored object is ",round(sl[1]/1000^3,1)," Gb")
+      message("Stored object is ", round(sl[1]/1000^3, 2), "Gb")
     }
-  sl <- object.size(list.sc)
-  message("stored object is ",round(sl[1]/1000^3,1)," Gb")
-  merged_object <- reduce(list.sc, function(x, y) {
-    merge(x = x, y = y, merge.data = TRUE)
-  })
-  merged_object@meta.data$Cell_Index_old <- merged_object@meta.data$Cell_Index
-  merged_object@meta.data$Cell_Index <- rownames(merged_object@meta.data)
-  sl <- object.size(merged_object)
-  message("The merged object is ",round(sl[1]/1000^3,1)," Gb")
 
+    sl <- object.size(list.sc)
+    message("stored object is ", round(sl[1]/1000^3, 2), "Gb")
+
+    # Loop to merge pairs of Seurat objects until only one is left
+    while (length(list.sc) > 1) {
+      temp_list <- list()
+
+      for (i in seq(1, length(list.sc), by = 2)) {
+        if (i < length(list.sc)) {
+          # Merge two Seurat objects
+          merged_names <- paste(names(list.sc)[i], names(list.sc)[i + 1], sep = " and ")
+          new_name <- paste0("Merged_", i)
+          message("Merging ", merged_names, " to create ", new_name)
+          temp_list[[new_name]] <- merge(x = list.sc[[i]], y = list.sc[[i + 1]], merge.data = TRUE)
+        } else {
+          # If there's an odd number of objects, keep the last one as is
+          temp_list[[names(list.sc)[i]]] <- list.sc[[i]]
+        }
+      }
+
+      list.sc <- temp_list
+    }
+    # Calculate total number of files merged
+    total_merged <- length(temp) - 1
+
+    merged_object <- list.sc[[1]]
+    merged_object@meta.data$Cell_Index_old <- merged_object@meta.data$Cell_Index
+    merged_object@meta.data$Cell_Index <- rownames(merged_object@meta.data)
+    sl <- object.size(merged_object)
+    message(paste(total_merged, "files were merged into 1. The merged object is ", round(sl[1]/1000^3, 2), "Gb"))
     setwd(x)
-    merged_object
+    return(merged_object)
   } else {
     setwd(x)
-    message("If these are the files you are looking for, set merge_RDS to T")
+    message("If these are the files you are looking for, set merge_RDS to TRUE")
+    # return(NULL)
   }
 }
 
