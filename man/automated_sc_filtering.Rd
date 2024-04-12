@@ -14,7 +14,7 @@ automated_sc_filtering(
   percent.rb = 5,
   dimension_sc = 15,
   resolution_sc = 1,
-  limit_to_TCR_GEx = T,
+  limit_to_TCR_GEx = F,
   save_plots = T
 )
 }
