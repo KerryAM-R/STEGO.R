@@ -18,7 +18,7 @@
 
 scGate_annotating <- function (file = file, TcellFunction = FALSE, generic = FALSE, exhausted = FALSE,
                                senescence = FALSE, cycling = FALSE, Th1_cytokines = FALSE, TCRseq = FALSE,
-                               threshold = 0.2, reductionType = "harmony", chunk_size = 5000)
+                               threshold = 0.2, reductionType = "harmony", chunk_size = 5000, output_dir = "output")
 {
   set.seed(123) # Set a specific seed value, such as 123
   source(system.file("scGATE", "custom_df_scGATE.R", package = "STEGO.R"))
@@ -27,6 +27,15 @@ scGate_annotating <- function (file = file, TcellFunction = FALSE, generic = FAL
   sc <- file
   len.obj <- dim(sc@meta.data)[1]
   threshold_scGate <- threshold
+  output_dir = output_dir
+  if (!dir.exists(output_dir)) {
+    dir.create(output_dir)
+  }
+
+  # Function to save table to a text file
+  save_table <- function(table_data, output_file) {
+    write.table(table_data, file = output_file, sep = "\t", row.names = TRUE, col.names = TRUE)
+  }
 
   # Define function to apply scGate to a chunk of data
   apply_scGate_to_chunk <- function(sc_chunk, models_list, threshold_scGate, reductionType) {
@@ -64,6 +73,7 @@ scGate_annotating <- function (file = file, TcellFunction = FALSE, generic = FAL
 
   # Loop over chunks
   for (i in 1:num_chunks) {
+    total_cells <- ncol(sc)
     # Determine chunk size for this iteration
     if (i == num_chunks) {
       # Last chunk, use the remaining cells
@@ -71,69 +81,91 @@ scGate_annotating <- function (file = file, TcellFunction = FALSE, generic = FAL
       print(sc_chunk)
     } else {
       current_chunk_size <- chunk_size
-      sampled_idx <- sample(1:total_cells, current_chunk_size, replace = FALSE)
+      sampled_idx <- sample(1:total_cells, current_chunk_size)
       # Extract chunk of data
       sc_chunk <- subset(sc, cells = sampled_idx)
       print(sc_chunk)
 
       # Remove sampled cells from the original object
       sc <- subset(sc, cells = -sampled_idx)
-      print(sc)
+      print(ncol(sc))
     }
 
     # Print number of cells in the chunk
-    cat("Chunk", i, "- Number of cells:", ncol(sc_chunk), "\n")
+    cat("Chunk", i,"of", num_chunks, "- Number of cells:", ncol(sc_chunk), "\n")
 
     # Apply scGate based on selected options
     if (TcellFunction) {
       models_list <- custom_db_scGATE(system.file("scGATE", "human/function", package = "STEGO.R"))
       sc_chunk <- apply_scGate_to_chunk(sc_chunk, models_list, threshold_scGate, reductionType)
       sc_chunk@meta.data$Tcellfunction <- sc_chunk@meta.data$scGate_multi
-      print(table(sc_chunk@meta.data$Tcellfunction))
+
+      tcell_function_table <- table(sc_chunk@meta.data$Tcellfunction)
+      # print(tcell_function_table)
+      save_table(tcell_function_table, paste0(output_dir,"/", "Tcellfunction_table_chunk_", i, ".txt"))
+
 
     }
     if (generic) {
       models_list <- custom_db_scGATE(system.file("scGATE", "human/generic", package = "STEGO.R"))
       sc_chunk <- apply_scGate_to_chunk(sc_chunk, models_list, threshold_scGate, reductionType)
       sc_chunk@meta.data$generic <- sc_chunk@meta.data$scGate_multi
-      print(table(sc_chunk@meta.data$generic))
+      # Print and save meta data
+      tcell_function_table <- table(sc_chunk@meta.data$generic)
+      # print(tcell_function_table)
+      save_table(tcell_function_table, paste0(output_dir,"/", "generic_table_chunk_", i, ".txt"))
     }
     if (exhausted) {
       models_list <- custom_db_scGATE(system.file("scGATE", "human/exhausted", package = "STEGO.R"))
       sc_chunk <- apply_scGate_to_chunk(sc_chunk, models_list, threshold_scGate, reductionType)
       sc_chunk@meta.data$exhausted <- sc_chunk@meta.data$scGate_multi
-      print(table(sc_chunk@meta.data$exhausted))
+
+      tcell_function_table <- table(sc_chunk@meta.data$exhausted)
+      # print(tcell_function_table)
+      save_table(tcell_function_table, paste0(output_dir,"/", "exhausted_table_chunk_", i, ".txt"))
+
     }
     if (senescence) {
       models_list <- custom_db_scGATE(system.file("scGATE", "human/senescence", package = "STEGO.R"))
       sc_chunk <- apply_scGate_to_chunk(sc_chunk, models_list, threshold_scGate, reductionType)
       sc_chunk@meta.data$senescence <- sc_chunk@meta.data$scGate_multi
-      print(table(sc_chunk@meta.data$senescence))
+      # Print and save meta data
+      tcell_function_table <- table(sc_chunk@meta.data$senescence)
+      # print(tcell_function_table)
+      save_table(tcell_function_table, paste0(output_dir,"/", "senescence_table_chunk_", i, ".txt"))
     }
     if (Th1_cytokines) {
       models_list <- custom_db_scGATE(system.file("scGATE", "human/Th1_cytokines", package = "STEGO.R"))
       sc_chunk <- apply_scGate_to_chunk(sc_chunk, models_list, threshold_scGate, reductionType)
       sc_chunk@meta.data$Th1_cytokines <- sc_chunk@meta.data$scGate_multi
-      print(table(sc_chunk@meta.data$Th1_cytokines))
+
+      tcell_function_table <- table(sc_chunk@meta.data$Th1_cytokines)
+      # print(tcell_function_table)
+      save_table(tcell_function_table, paste0(output_dir,"/", "Th1_cytokines_table_chunk_", i, ".txt"))
     }
     if (cycling) {
       models_list <- suppressWarnings(custom_db_scGATE(system.file("scGATE", "human/cycling", package = "STEGO.R")))
       sc_chunk <- apply_scGate_to_chunk(sc_chunk, models_list, threshold_scGate, reductionType)
       sc_chunk@meta.data$cycling <- sc_chunk@meta.data$scGate_multi
-      print(table(sc_chunk@meta.data$cycling))
+
+      tcell_function_table <- table(sc_chunk@meta.data$cycling)
+      # print(tcell_function_table)
+      save_table(tcell_function_table, paste0(output_dir,"/", "cycling_table_chunk_", i, ".txt"))
     }
     if (TCRseq) {
       sc_chunk@meta.data$TCRseq <- ifelse(sc_chunk@meta.data$vj_gene_AG == "TRAV1-2.TRAJ33", "MAIT",
-                                                  ifelse(sc_chunk@meta.data$vj_gene_AG == "TRAV1-2.TRAJ12", "MAIT",
-                                                         ifelse(sc_chunk@meta.data$vj_gene_AG == "TRAV1-2.TRAJ23", "MAIT",
-                                                                ifelse(sc_chunk@meta.data$vj_gene_AG == "TRAV1-2.TRAJ9", "CD1b-restricted(poss)",
-                                                                       ifelse(sc_chunk@meta.data$vj_gene_AG == "TRAV10.TRAJ18", "iNKT",
-                                                                              ifelse(sc_chunk@meta.data$v_gene_BD == "TRBV4-1" & sc_chunk@meta.data$v_gene_AG == "TRAV17", "CD1b-restricted(poss)",
-                                                                                     ifelse(sc_chunk@meta.data$v_gene_BD == "TRBV4-1" & sc_chunk@meta.data$v_gene_AG != "TRAV17", "CD1c-restricted(poss)",
-                                                                                            ifelse(sc_chunk@meta.data$chain_AG == "TRG" & sc_chunk@meta.data$chain_BD == "TRD", "gd T cell",
-                                                                                                   ifelse(sc_chunk@meta.data$chain_AG == "TRA" & sc_chunk@meta.data$chain_BD == "TRB", "ab T cell", "")))))))))
+                                          ifelse(sc_chunk@meta.data$vj_gene_AG == "TRAV1-2.TRAJ12", "MAIT",
+                                                 ifelse(sc_chunk@meta.data$vj_gene_AG == "TRAV1-2.TRAJ23", "MAIT",
+                                                        ifelse(sc_chunk@meta.data$vj_gene_AG == "TRAV1-2.TRAJ9", "CD1b-restricted(poss)",
+                                                               ifelse(sc_chunk@meta.data$vj_gene_AG == "TRAV10.TRAJ18", "iNKT",
+                                                                      ifelse(sc_chunk@meta.data$v_gene_BD == "TRBV4-1" & sc_chunk@meta.data$v_gene_AG == "TRAV17", "CD1b-restricted(poss)",
+                                                                             ifelse(sc_chunk@meta.data$v_gene_BD == "TRBV4-1" & sc_chunk@meta.data$v_gene_AG != "TRAV17", "CD1c-restricted(poss)",
+                                                                                    ifelse(sc_chunk@meta.data$chain_AG == "TRG" & sc_chunk@meta.data$chain_BD == "TRD", "gd T cell",
+                                                                                           ifelse(sc_chunk@meta.data$chain_AG == "TRA" & sc_chunk@meta.data$chain_BD == "TRB", "ab T cell", "")))))))))
 
-      print(table(sc_chunk@meta.data$TCRseq))
+      tcell_function_table <- table(sc_chunk@meta.data$TCRseq)
+      # print(tcell_function_table)
+      save_table(tcell_function_table, paste0(output_dir,"/", "TCRseq_table_chunk_", i, ".txt"))
 
     }
     sc_chunk@meta.data <- sc_chunk@meta.data[!grepl("scGate_multi", names(sc_chunk@meta.data))]
@@ -178,8 +210,14 @@ scGate_annotating <- function (file = file, TcellFunction = FALSE, generic = FAL
   merged_sc <- merged_sc_list[[1]]
 
   join_sc <- JoinLayers(merged_sc)
-  join_sc@reductions$umap <- CreateDimReducObject(embeddings = umap, key = 'UMAP_', assay = 'RNA')
-  join_sc@reductions$harmony <- CreateDimReducObject(embeddings = harmony, key = 'harmony_', assay = 'RNA')
+  print(join_sc)
+
+  barcode_order <- rownames(join_sc@meta.data)
+  umap_reordered <- umap[match(barcode_order, rownames(umap)), ]
+  harmony_reordered <- umap[match(barcode_order, rownames(harmony)),]
+
+  join_sc@reductions$umap <- CreateDimReducObject(embeddings = umap_reordered, key = 'UMAP_', assay = 'RNA')
+  join_sc@reductions$harmony <- CreateDimReducObject(embeddings = harmony_reordered, key = 'harmony_', assay = 'RNA')
   # join_sc_list <- list(sc = join_sc, umap = umap, harmony = harmony)
   return(join_sc)
 }
