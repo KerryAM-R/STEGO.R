@@ -18,7 +18,7 @@
 
 scGate_annotating <- function (file = file, TcellFunction = FALSE, generic = FALSE, exhausted = FALSE,
                                senescence = FALSE, cycling = FALSE, Th1_cytokines = FALSE, TCRseq = FALSE,
-                               threshold = 0.2, reductionType = "harmony", chunk_size = 5000, output_dir = "output")
+                               threshold = 0.2, reductionType = "harmony", chunk_size = 50000, output_dir = "output")
 {
   set.seed(123) # Set a specific seed value, such as 123
   source(system.file("scGATE", "custom_df_scGATE.R", package = "STEGO.R"))
@@ -173,7 +173,7 @@ scGate_annotating <- function (file = file, TcellFunction = FALSE, generic = FAL
 
 
     # Store result in list
-    merged_sc_list[[length(merged_sc_list) + 1]] <- list(sc_chunk = sc_chunk, umap = umap, harmony = harmony)
+    merged_sc_list[[length(merged_sc_list) + 1]] <- sc_chunk
   }
 
   # Loop to merge pairs of Seurat objects with arrays/matrices until only one is left
@@ -190,7 +190,7 @@ scGate_annotating <- function (file = file, TcellFunction = FALSE, generic = FAL
         merged_names <- paste(names(merged_sc_list)[i], names(merged_sc_list)[i + 1], sep = " and ")
         new_name <- paste0("Merged_", i)
         message("Merging ", merged_names, " to create ", new_name)
-        merged_object <- merge(x = merged_sc_list[[i]]$sc_chunk, y = merged_sc_list[[i + 1]]$sc_chunk, merge.data = TRUE)
+        merged_object <- merge(x = merged_sc_list[[i]], y = merged_sc_list[[i + 1]], merge.data = TRUE)
         # scalling <- suppressWarnings(merge(x = merged_sc_list[[i]]$scaling, y = merged_sc_list[[i + 1]]$scaling, merge.data = TRUE))
         temp_list[[new_name]] <- merged_object
 
@@ -218,6 +218,8 @@ scGate_annotating <- function (file = file, TcellFunction = FALSE, generic = FAL
 
   join_sc@reductions$umap <- CreateDimReducObject(embeddings = umap_reordered, key = 'UMAP_', assay = 'RNA')
   join_sc@reductions$harmony <- CreateDimReducObject(embeddings = harmony_reordered, key = 'harmony_', assay = 'RNA')
+  Idents(join_sc) <- join_sc@meta.data$seurat_clusters
   # join_sc_list <- list(sc = join_sc, umap = umap, harmony = harmony)
   return(join_sc)
 }
+
