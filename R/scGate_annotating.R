@@ -208,9 +208,13 @@ scGate_annotating <- function (file = file, TcellFunction = FALSE, generic = FAL
 
   # Extract the merged Seurat object
   merged_sc <- merged_sc_list[[1]]
+  if (num_chunks == 1) {
+    join_sc <- merged_sc
+  } else {
+    join_sc <- JoinLayers(merged_sc)
+    print(join_sc)
+  }
 
-  join_sc <- JoinLayers(merged_sc)
-  print(join_sc)
 
   barcode_order <- rownames(join_sc@meta.data)
   umap_reordered <- umap[match(barcode_order, rownames(umap)), ]
