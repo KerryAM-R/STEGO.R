@@ -1887,7 +1887,7 @@ tabPanel(
         ),
         h4("Plot parameters (all)"),
         fluidRow(
-          column(6, numericInput("text_size", "Size of #", value = 16)),
+          column(6, numericInput("text_size", "Axis number size", value = 16)),
           column(6, numericInput("title.text.sizer2", "Axis text size", value = 30)),
           column(6, numericInput("Legend_size", "Legend text size", value = 12)),
           column(6, selectInput("legend_position", "Legend location", choices = c("top", "bottom", "left", "right", "none"), selected = "right")),
@@ -21039,5 +21039,4 @@ navbarMenu("Info",
   }
 
   shinyApp(ui = ui, server = server, options = list(launch.browser = TRUE))
-
 }
