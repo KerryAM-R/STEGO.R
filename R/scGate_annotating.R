@@ -13,12 +13,14 @@
 #' @param TCRseq Uses the meta data TCR-seq to call MAIT, iNKT, potential CD1 restricted, gd T cells and ab T cells
 #' @param threshold Set the scGate threshold; default is 0.2 for full models and 0.5 for focused models.
 #' @param reductionType Chose the time of dimensional reduction to use; default = harmony
+#' @param Version This can be the seurat version V4 or V5; if you converted from python from anndata to seurat, use the python version
 #' @param chunk_size This is the total number of cells to perform the annotation model on. This is to prevent the out of memory issue when annotating. The cells are randomly selected. The same random seed is selected to ensure that random selection is consistent if this has to be repeated. The default is 50,000 cells (we recommend a maximum of 100,000 per loop). However, fewer cells may be required if your RAM is <32 Gb, to ensure each loop is completed.
 #' @export
 
 scGate_annotating <- function (file = file, TcellFunction = FALSE, generic = FALSE, exhausted = FALSE,
                                senescence = FALSE, cycling = FALSE, Th1_cytokines = FALSE, TCRseq = FALSE,
-                               threshold = 0.2, reductionType = "harmony", chunk_size = 50000, output_dir = "output")
+                               threshold = 0.2, reductionType = "harmony", chunk_size = 50000, output_dir = "output",
+                               Version = c("V5","V4","python"))
 {
   set.seed(123) # Set a specific seed value, such as 123
   source(system.file("scGATE", "custom_df_scGATE.R", package = "STEGO.R"))
@@ -211,17 +213,27 @@ scGate_annotating <- function (file = file, TcellFunction = FALSE, generic = FAL
   if (num_chunks == 1) {
     join_sc <- merged_sc
   } else {
-    join_sc <- JoinLayers(merged_sc)
-    print(join_sc)
-  }
 
+    if (Version == "V4" |Version == "Python") {
+      join_sc <- merged_sc
+
+    } else {
+      join_sc <- JoinLayers(merged_sc)
+    }
+  }
+  print(join_sc)
 
   barcode_order <- rownames(join_sc@meta.data)
   umap_reordered <- umap[match(barcode_order, rownames(umap)), ]
   harmony_reordered <- umap[match(barcode_order, rownames(harmony)),]
 
+
+
   join_sc@reductions$umap <- CreateDimReducObject(embeddings = umap_reordered, key = 'UMAP_', assay = 'RNA')
   join_sc@reductions$harmony <- CreateDimReducObject(embeddings = harmony_reordered, key = 'harmony_', assay = 'RNA')
+  join_sc@assays$RNA@scale.data  <- sc@assays$RNA@scale.data
+  join_sc@assays$RNA@var.features <- sc@assays$RNA@var.features
+
   Idents(join_sc) <- join_sc@meta.data$seurat_clusters
   # join_sc_list <- list(sc = join_sc, umap = umap, harmony = harmony)
   return(join_sc)
