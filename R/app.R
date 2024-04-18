@@ -7076,38 +7076,6 @@ navbarMenu("Info",
       sc <- RunPCA(sc, features = VariableFeatures(object = sc))
       sc
     })
-    create_PCA_heatmap <- reactive({
-      DimHeatmap(create_PCA(), dims = input$dimension_heatmap.min:input$dimension_heatmap.max, cells = input$numberofcells, balanced = TRUE)
-    })
-    output$create_PCA_heatmap_sc <- renderPlot({
-      create_PCA_heatmap()
-    })
-
-
-    output$downloadPlot_heatmap_sc <- downloadHandler(
-      filename = function() {
-        x <- today()
-        paste(input$project_name, "_heatmap_sc_", x, ".pdf", sep = "")
-      },
-      content = function(file) {
-        pdf(file, width = input$width_heatmap_sc, height = input$height_heatmap_sc, onefile = FALSE) # open the pdf device
-        plot(create_PCA_heatmap())
-        dev.off()
-      }, contentType = "application/pdf"
-    )
-
-    output$downloadPlotPNG_after_plot_sc <- downloadHandler(
-      filename = function() {
-        x <- today()
-
-        paste(input$project_name, "_heatmap_sc_", x, ".png", sep = "")
-      },
-      content = function(file) {
-        png(file, width = input$width_png_heatmap_sc, height = input$height_png_heatmap_sc, res = input$resolution_PNG_heatmap_sc)
-        plot(create_PCA_heatmap())
-        dev.off()
-      }, contentType = "application/png" # MIME type of the image
-    )
 
     ##### create elbow plot ----
     create_elbowPlot <- reactive({
@@ -8070,11 +8038,18 @@ navbarMenu("Info",
     })
 
     output$scGATE_verbatum_generic2 <- renderPrint({
+      FN <- tempfile()
+      zz <- file(FN, open = "wt")
+      sink(zz, type = "output")
+      sink(zz, type = "message")
       if (input$hs_generic_scGATE) {
-        print("Running generic model")
+        scGATE_anno_generic()
       } else {
         print("Generic not run")
       }
+      sink(type = "message")
+      sink(type = "output")
+      cat(readLines(FN), sep = "\n")
     })
 
     scGATE_anno_exhausted <- reactive({
@@ -21037,6 +21012,7 @@ navbarMenu("Info",
     })
 
   }
-
+  ########
+  # run the app in browser -----
   shinyApp(ui = ui, server = server, options = list(launch.browser = TRUE))
 }
