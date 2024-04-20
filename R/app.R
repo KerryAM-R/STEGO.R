@@ -1051,7 +1051,7 @@ navbarPage(
                      fileInput("file_SC_meta", "Upload file meta.data file (.csv.gz or .csv)", ),
 
                      # selectInput("species","Species",choices = c("human","mouse","other")),
-                     selectInput("df_seruatobj_type", "Data type", choices = c("10x_Genomics (raw)", "10x_Genomics (.h5)", "BD Rhapsody (Human Immune panel)", "BD Rhapsody (Mouse)", "Array")),
+                     selectInput("df_seruatobj_type", "Data type", choices = c("10x_Genomics (raw)", "10x_Genomics (.h5)","BD Rhapsody (Human Immune panel)","BD Rhapsody (Full panel)", "BD Rhapsody (Mouse)", "Array")),
                      selectInput("stored_in_expression", "Does the .h5 object has multiple part?", choices = c("no", "yes")),
                      uiOutput("feature_input"),
                      actionButton('run_violin', 'Filter', onclick = "$(tab).removeClass('disabled-1')"),
@@ -3384,6 +3384,13 @@ navbarMenu("Info",
           column(6, numericInput("features.max", "Maximum features (<)", value = 6000)),
           column(6, numericInput("percent.mt", "Mitochondrial DNA cut-off (<)", value = 20)),
           column(6, numericInput("percent.rb", "Ribosomal RNA cut-off (>)", value = 0)),
+        )
+      } else if (input$df_seruatobj_type == "BD Rhapsody (Full panel)") {
+        fluidRow(
+          column(6, numericInput("features.min", "minimum features (>)", value = 200)),
+          column(6, numericInput("features.max", "Maximum features (<)", value = 6000)),
+          column(6, numericInput("percent.mt", "Mitochondrial DNA cut-off (<)", value = 20)),
+          column(6, numericInput("percent.rb", "Ribosomal RNA cut-off (>)", value = 5)),
         )
       } else if (input$df_seruatobj_type == "BD Rhapsody (Human Immune panel)") {
         fluidRow(
@@ -6739,7 +6746,9 @@ navbarMenu("Info",
           dataframe <- suppressMessages(Read10X_h5(inFile_sc$datapath, use.names = TRUE, unique.features = TRUE))
         } else if (input$df_seruatobj_type == "BD Rhapsody (Mouse)") {
           dataframe <- read.csv(inFile_sc$datapath, row.names = 1)
-        } else if (input$df_seruatobj_type == "BD Rhapsody (Human Immune panel)") {
+        } else if (input$df_seruatobj_type == "BD Rhapsody (Full panel)") {
+          dataframe <- read.csv(inFile_sc$datapath, row.names = 1)
+        }else if (input$df_seruatobj_type == "BD Rhapsody (Human Immune panel)") {
           dataframe <- read.csv(inFile_sc$datapath, row.names = 1)
         } else {
           dataframe <- read.csv(inFile_sc$datapath, row.names = 1)
@@ -6798,6 +6807,9 @@ navbarMenu("Info",
       } else if (input$df_seruatobj_type == "BD Rhapsody (Mouse)") {
         names(df.test) <- gsub("X", "", names(df.test))
         df.test2 <- df.test[!rownames(df.test) %in% c("Cell_Index"), ]
+      } else if (input$df_seruatobj_type == "BD Rhapsody (Full panel)") {
+        names(df.test) <- gsub("X", "", names(df.test))
+        df.test2 <- df.test[!rownames(df.test) %in% c("Cell_Index"), ]
       } else if (input$df_seruatobj_type == "BD Rhapsody (Human Immune panel)") {
         names(df.test) <- gsub("X", "", names(df.test))
         df.test2 <- df.test[!rownames(df.test) %in% c("Cell_Index"), ]
@@ -6842,20 +6854,18 @@ navbarMenu("Info",
           sc
         } else if (input$df_seruatobj_type == "BD Rhapsody (Mouse)") {
           names(df.test) <- as.character(gsub("X", "", names(df.test)))
-
-          # rownames(df.test) <- make.unique(df.test$Gene_Name)
-          # df.test2 <- df.test[,!names(df.test) %in% c("Gene_Name")]
-
           sc <- CreateSeuratObject(counts = df.test, assay = "RNA", project = input$project_name)
           sc <- PercentageFeatureSet(sc, pattern = "^Mt", col.name = "mtDNA")
           sc <- PercentageFeatureSet(sc, pattern = "Rp[sl]", col.name = "rRNA")
           sc
+        } else if (input$df_seruatobj_type == "BD Rhapsody (Full panel)") {
+          names(df.test) <- as.character(gsub("X", "", names(df.test)))
+          sc <- CreateSeuratObject(counts = df.test, assay = "RNA", project = input$project_name)
+          sc <- PercentageFeatureSet(sc, pattern = "^MT-", col.name = "mtDNA")
+          sc <- PercentageFeatureSet(sc, pattern = "^RP[SL]", col.name = "rRNA")
+          sc
         } else if (input$df_seruatobj_type == "BD Rhapsody (Human Immune panel)") {
           names(df.test) <- as.character(gsub("X", "", names(df.test)))
-
-          # rownames(df.test) <- make.unique(df.test$Gene_Name)
-          # df.test2 <- df.test[,!names(df.test) %in% c("Gene_Name")]
-
           sc <- CreateSeuratObject(counts = df.test, assay = "RNA", project = input$project_name)
           sc <- PercentageFeatureSet(sc, pattern = "^MT-", col.name = "mtDNA")
           sc <- PercentageFeatureSet(sc, pattern = "^RP[SL]", col.name = "rRNA")

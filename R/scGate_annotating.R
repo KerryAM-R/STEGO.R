@@ -15,6 +15,7 @@
 #' @param reductionType Chose the time of dimensional reduction to use; default = harmony
 #' @param Version This can be the seurat version V4 or V5; if you converted from python from anndata to seurat, use the python version
 #' @param chunk_size This is the total number of cells to perform the annotation model on. This is to prevent the out of memory issue when annotating. The cells are randomly selected. The same random seed is selected to ensure that random selection is consistent if this has to be repeated. The default is 50,000 cells (we recommend a maximum of 100,000 per loop). However, fewer cells may be required if your RAM is <32 Gb, to ensure each loop is completed.
+#' @param output_dir Where to store the outputs of this process. If you run this more than once, it is best to change the name.
 #' @export
 
 scGate_annotating <- function (file = file, TcellFunction = FALSE, generic = FALSE, exhausted = FALSE,
@@ -226,8 +227,6 @@ scGate_annotating <- function (file = file, TcellFunction = FALSE, generic = FAL
   barcode_order <- rownames(join_sc@meta.data)
   umap_reordered <- umap[match(barcode_order, rownames(umap)), ]
   harmony_reordered <- umap[match(barcode_order, rownames(harmony)),]
-
-
 
   join_sc@reductions$umap <- CreateDimReducObject(embeddings = umap_reordered, key = 'UMAP_', assay = 'RNA')
   join_sc@reductions$harmony <- CreateDimReducObject(embeddings = harmony_reordered, key = 'harmony_', assay = 'RNA')
