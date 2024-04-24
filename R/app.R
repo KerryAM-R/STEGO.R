@@ -1047,7 +1047,7 @@ navbarPage(
                      div(class = "name-BD",textInput("project_name", h4("Sample/Project Name",class = "name-header2"), value = "")),
                      # selectInput("dataset_sc", "Choose a dataset:", choices = c("test_data_sc", "own_data_sc")),
                      # upload the file
-                     fileInput("file_SC", "Load csv (BDrhap), csv.gz (10x), .h5 (10x)", ),
+                     fileInput("file_SC", "Load count matrix (csv for BDrhap, csv.gz for 10x, .h5 (10x)", ),
                      fileInput("file_SC_meta", "Upload file meta.data file (.csv.gz or .csv)", ),
 
                      # selectInput("species","Species",choices = c("human","mouse","other")),
