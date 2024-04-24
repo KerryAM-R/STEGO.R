@@ -3364,42 +3364,42 @@ navbarMenu("Info",
     output$feature_input <- renderUI({
       if (input$df_seruatobj_type == "10x_Genomics (raw)") {
         fluidRow(
-          column(6, numericInput("features.min", "minimum features (>)", value = 200)),
+          column(6, numericInput("features.min", "Minimum features (>)", value = 200)),
           column(6, numericInput("features.max", "Maximum features (<)", value = 6000)),
           column(6, numericInput("percent.mt", "Mitochondrial DNA cut-off (<)", value = 20)),
           column(6, numericInput("percent.rb", "Ribosomal RNA cut-off (>)", value = 5)),
         )
       } else if (input$df_seruatobj_type == "10x_Genomics (.h5)") {
         fluidRow(
-          column(6, numericInput("features.min", "minimum features (>)", value = 200)),
+          column(6, numericInput("features.min", "Minimum features (>)", value = 200)),
           column(6, numericInput("features.max", "Maximum features (<)", value = 6000)),
           column(6, numericInput("percent.mt", "Mitochondrial DNA cut-off (<)", value = 20)),
           column(6, numericInput("percent.rb", "Ribosomal RNA cut-off (>)", value = 5)),
         )
       } else if (input$df_seruatobj_type == "BD Rhapsody (Mouse)") {
         fluidRow(
-          column(6, numericInput("features.min", "minimum features (>)", value = 200)),
+          column(6, numericInput("features.min", "Minimum features (>)", value = 200)),
           column(6, numericInput("features.max", "Maximum features (<)", value = 6000)),
           column(6, numericInput("percent.mt", "Mitochondrial DNA cut-off (<)", value = 20)),
           column(6, numericInput("percent.rb", "Ribosomal RNA cut-off (>)", value = 0)),
         )
       } else if (input$df_seruatobj_type == "BD Rhapsody (Full panel)") {
         fluidRow(
-          column(6, numericInput("features.min", "minimum features (>)", value = 200)),
+          column(6, numericInput("features.min", "Minimum features (>)", value = 200)),
           column(6, numericInput("features.max", "Maximum features (<)", value = 6000)),
           column(6, numericInput("percent.mt", "Mitochondrial DNA cut-off (<)", value = 20)),
           column(6, numericInput("percent.rb", "Ribosomal RNA cut-off (>)", value = 5)),
         )
       } else if (input$df_seruatobj_type == "BD Rhapsody (Human Immune panel)") {
         fluidRow(
-          column(6, numericInput("features.min", "minimum features (>)", value = 45)),
+          column(6, numericInput("features.min", "Minimum features (>)", value = 45)),
           column(6, numericInput("features.max", "Maximum features (<)", value = 160)),
           column(6, numericInput("percent.mt", "Mitochondrial DNA cut-off (<)", value = 0)),
           column(6, numericInput("percent.rb", "Ribosomal RNA cut-off (>)", value = 0)),
         )
       } else {
         fluidRow(
-          column(6, numericInput("features.min", "minimum features (>)", value = 200)),
+          column(6, numericInput("features.min", "Minimum features (>)", value = 200)),
           column(6, numericInput("features.max", "Maximum features (<)", value = 6000)),
           column(6, numericInput("percent.mt", "Mitochondrial DNA cut-off (<)", value = 20)),
           column(6, numericInput("percent.rb", "Ribosomal RNA cut-off (>)", value = 0)),
