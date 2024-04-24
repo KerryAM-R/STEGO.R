@@ -2008,7 +2008,7 @@ tabPanel(
                               ),
                             ),
                    ),
-                   # TCR overview ontop of UMAP -----
+                   # TCR overview on top of UMAP -----
                    tabPanel(
                      "TCR",
                      tabsetPanel(
@@ -2019,14 +2019,12 @@ tabPanel(
                            tabPanel(
                              "Summary Table",
                              selectInput("other_selected_summary_columns","Add other sumamry columns", multiple = T, "",width = "1200px"),
-
                              div(DT::DTOutput("Summary_TCR_tb")),
                              downloadButton("downloaddf_Summary_TCR_tb", "Download table")
                            ),
 
                            tabPanel(
                              "Upset_table",
-
                              div(DT::DTOutput("Upset_plot_overlap_Tb")),
                              downloadButton("downloaddf_Upset_plot_overlap_Tb", "Download table")
                            ),
@@ -6854,6 +6852,8 @@ navbarMenu("Info",
           sc
         } else if (input$df_seruatobj_type == "BD Rhapsody (Mouse)") {
           names(df.test) <- as.character(gsub("X", "", names(df.test)))
+
+
           sc <- CreateSeuratObject(counts = df.test, assay = "RNA", project = input$project_name)
           sc <- PercentageFeatureSet(sc, pattern = "^Mt", col.name = "mtDNA")
           sc <- PercentageFeatureSet(sc, pattern = "Rp[sl]", col.name = "rRNA")
@@ -10206,9 +10206,8 @@ navbarMenu("Info",
       # print( head(TCR_input))
 
       TCR_total <- as.data.frame(ddply(TCR_input,c(input$V_gene_sc),numcolwise(sum)))
-
       meta2.names <- names(TCR_input)
-      # print(meta2.names)
+
       total.condition <- as.data.frame(ddply(TCR_input, "ID_Column", numcolwise(sum)))
       # print(head(total.condition))
       emtpy <- matrix(nrow = dim(TCR_input)[1], ncol = dim(total.condition)[1])
@@ -16295,16 +16294,12 @@ navbarMenu("Info",
 
           select_top_five()
         }
-
-
     })
-
-
 
     Line_graph_for_tracing <- reactive({
 
       top_5_data_list <- select_top_five()
-
+      print(top_5_data_list)
       if(input$is_a_time_series) {
 
         print(top_5_data_list)
@@ -16314,6 +16309,7 @@ navbarMenu("Info",
 
       } else {
         top_5_data_list <- select_top_five()
+
       }
       # Find the maximum count value across all datasets
       max_count <- max(sapply(top_5_data_list, function(df) max(df)))
@@ -16453,31 +16449,43 @@ navbarMenu("Info",
         print(head(top_5_transposed))
         all_names <- names(top_5_transposed)
         print(all_names)
+        # Find the maximum count value across all datasets
+        max_count <- max(sapply(top_5_data_list, function(df) max(df)))
+        print(max_count)
+        # Round the maximum count value to the nearest 5 and then add 5
+        max_count <- ceiling(max_count / 5) * 5
+        top_5_transposed <- as.data.frame(t(top_5_data_list), stringsAsFactors = FALSE)
+        # Convert row names into a regular column
+        top_5_transposed$Sample_ID <- rownames(top_5_transposed)
+        top_5_transposed
+        # Split Sample_ID into separate columns for Group and Time
+        all_names <- names(top_5_transposed)
+        print(all_names)
         v_gene_names <- all_names[grep("TRAV|TRBV|TRGV|TRDV", all_names)]
-        print(v_gene_names)
+        v_gene_names
 
         # Reshape the data into long format
         data_long <- pivot_longer(top_5_transposed,
                                   cols = v_gene_names,   # Exclude the Sample_ID, Group, and Time columns
                                   names_to = "VDJ",  # New column name for time points
                                   values_to = "Count")     # New column name for values
-        # data_long
-        print(data_long)
-        # Replace underscores with spaces in the VDJ variable
+        #   # data_long
+
+        #   # Replace underscores with spaces in the VDJ variable
         data_long$VDJ <- gsub("_", " ", data_long$VDJ)
         data_long$VDJ <- gsub(" & ", " ", data_long$VDJ)
-        #   # Wrap the Time_Point variable based on spaces
+        #   #   # Wrap the Time_Point variable based on spaces
         data_long$VDJ <- str_wrap(data_long$VDJ, width = 10)  # Adjust width as needed
-        #
-        #   # Determine unique levels of VDJ
+
+        #   #   # Determine unique levels of VDJ
         unique_vdj <- as.data.frame(unique(data_long$VDJ))
         names(unique_vdj) <- "unique_vdj"
-
+        unique_vdj
         set.seed(200)
         unique_vdj$shape <- sample(1:25, nrow(unique_vdj))
         print(data_long)
-
-
+        #
+        #
         plot_list <- ggplot(data_long, aes(x = Sample_ID, y = Count, color = VDJ, shape = VDJ)) +
           geom_point(size = 7) +  # Increased point size
           geom_line(aes(group = paste(VDJ)), linewidth = 1.25) +
@@ -16493,13 +16501,14 @@ navbarMenu("Info",
             axis.title.y  = element_text(colour = "black", family = input$font_type, size = input$title.text.sizer2),
             axis.title.x  = element_blank()
           ) +
-          labs(x = "", y = "")
-        guides(color = guide_legend(
-          title.theme = element_text(margin = margin(b = 0)),  # Increase margin between title and items
-          label.theme = element_text(margin = margin(t = 15)),
-          override.aes = list(size = 7)# Increase margin between items
-        )) +
+          guides(color = guide_legend(
+            title.theme = element_text(margin = margin(b = 0)),  # Increase margin between title and items
+            label.theme = element_text(margin = margin(t = 15)),
+            override.aes = list(size = 7)# Increase margin between items
+          )) +
           ylim(0, max_count)  # Set y-axis limits
+        # }
+
       }
       plot_list
     })
