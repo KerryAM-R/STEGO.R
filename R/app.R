@@ -2018,7 +2018,7 @@ tabPanel(
                          tabsetPanel(
                            tabPanel(
                              "Summary Table",
-                             selectInput("other_selected_summary_columns","Add other sumamry columns", multiple = T, "",width = "1200px"),
+                             selectInput("other_selected_summary_columns","Add other summary columns", multiple = T, "",width = "1200px"),
                              div(DT::DTOutput("Summary_TCR_tb")),
                              downloadButton("downloaddf_Summary_TCR_tb", "Download table")
                            ),
