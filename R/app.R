@@ -1510,8 +1510,9 @@ tabPanel(
             fluidRow(
               div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
               column(3, checkboxInput("hs_function_scGATE", "Function (Human)", value = F)),
-              column(3, checkboxInput("hs_generic_scGATE", "Generic (Human)", value = F)),
-              column(3, checkboxInput("hs_exhausted_scGATE", "Exhausted (Human)", value = F)),
+              # column(3, checkboxInput("hs_generic_scGATE", "Generic (Human)", value = F)),
+              column(3, checkboxInput("hs_pbmc_scGATE", "PBMC (Human; scGate)", value = F)),
+              column(3, checkboxInput("hs_IC_scGATE", "Immune checkpoint (Human)", value = F)),
               column(3, checkboxInput("hs_senescence_scGATE", "Senescence (Human)", value = F)),
               column(3, checkboxInput("hs_cycling_scGATE", "Cycling (Human)", value = F)),
               column(3, checkboxInput("hs_TCRseq_scGATE", "TCR-seq (Human)", value = F)),
@@ -1562,7 +1563,7 @@ tabPanel(
             div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
             verbatimTextOutput("scGATE_verbatum_generic2"),
             div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
-            verbatimTextOutput("scGATE_verbatum_exhausted"),
+            verbatimTextOutput("scGATE_verbatum_immune_check"),
             div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
             verbatimTextOutput("scGATE_verbatum_senescence"),
             div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
@@ -8062,7 +8063,7 @@ navbarMenu("Info",
       cat(readLines(FN), sep = "\n")
     })
 
-    scGATE_anno_exhausted <- reactive({
+    scGATE_anno_immune_checkpoint <- reactive({
       sc <- getData_2()
       validate(
         need(
@@ -8074,8 +8075,8 @@ navbarMenu("Info",
 
       len <- length(rownames(sc@assays$RNA$scale.data))
 
-      if (input$hs_exhausted_scGATE) {
-        scGate_models_DB <- custom_db_scGATE(system.file("scGATE", "human/exhausted", package = "STEGO.R"))
+      if (input$hs_IC_scGATE) {
+        scGate_models_DB <- custom_db_scGATE(system.file("scGATE", "human/immune_checkpoint", package = "STEGO.R"))
 
         models.list <- scGate_models_DB
 
@@ -8088,7 +8089,7 @@ navbarMenu("Info",
                      ncores = 8, min.cells = 1
         )
 
-        sc@meta.data$exhausted <- sc@meta.data$scGate_multi
+        sc@meta.data$IC <- sc@meta.data$scGate_multi
         sc@meta.data <- sc@meta.data[!grepl("_UCell", names(sc@meta.data))]
         sc@meta.data <- sc@meta.data[!grepl("is.pure_", names(sc@meta.data))]
         sc@meta.data <- sc@meta.data[!grepl("scGate_multi", names(sc@meta.data))]
@@ -8098,15 +8099,15 @@ navbarMenu("Info",
       }
       sc
     })
-    output$scGATE_verbatum_exhausted <- renderPrint({
+    output$scGATE_verbatum_immune_check <- renderPrint({
       FN <- tempfile()
       zz <- file(FN, open = "wt")
       sink(zz, type = "output")
       sink(zz, type = "message")
-      if (input$hs_exhausted_scGATE) {
-        scGATE_anno_exhausted()
+      if (input$hs_IC_scGATE) {
+        scGATE_anno_immune_checkpoint()
       } else {
-        print("exhausted not run")
+        print("immune checkpoint not run")
       }
       sink(type = "message")
       sink(type = "output")
@@ -9290,17 +9291,23 @@ navbarMenu("Info",
 
       if (input$hs_function_scGATE) {
         obj <- scGATE_anno_function()
-        sc@meta.data$Tcell.function <- obj@meta.data$Tcell.function
+        sc@meta.data$Tcellfunction <- obj@meta.data$Tcell.function
+        sc@meta.data$major <-ifelse(grepl("CD4",sc@meta.data$Tcell.function),"CD4",
+                                    ifelse(grepl("CD8ab",sc@meta.data$Tcell.function),"CD8ab",
+                                           ifelse(grepl("CD8aa",sc@meta.data$Tcell.function),"CD8ab",
+                                                  ifelse(grepl("DN",sc@meta.data$Tcell.function),"DN","other"
+                                                  ))))
+
       }
       if (input$hs_generic_scGATE) {
         obj <- scGATE_anno_generic()
+
         sc@meta.data$generic <- obj@meta.data$generic
       }
 
-
-      if (input$hs_exhausted_scGATE) {
-        obj <- scGATE_anno_exhausted()
-        sc@meta.data$exhausted <- obj@meta.data$exhausted
+      if (input$hs_IC_scGATE) {
+        obj <- scGATE_anno_immune_checkpoint()
+        sc@meta.data$IC <- obj@meta.data$IC
       }
       if (input$hs_senescence_scGATE) {
         obj <- scGATE_anno_senescence()
