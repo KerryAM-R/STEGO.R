@@ -8,7 +8,6 @@
 #' @param Threshold_test Testing the scGate threshold for identifying the sub populations. I recommend using this function in the case of BD Rhapsody immune panel,
 #' @param signature_for_testing signature for testing purposes. I use CD8A and CD8B for the default setting.
 #' #' @param threshold Set the scGate threshold; default is 0.2 for full models and 0.55 for focused models. Please check with the test_to compare the CD8A expression vs the projected.
-#' @param generic generic annotations to identify T cells vs other immune cells.
 #' @param immune_checkpoint T cell based stress models of exhaustion
 #' @param senescence T cell based stress models of Senescence
 #' @param Th1_cytokines T cell based stress models of IFNG and TNF
@@ -25,7 +24,6 @@ scGate_annotating <- function (file = file,
                                signature_for_testing = c("CD8A","CD8B"),
                                threshold = 0.2,
                                TcellFunction = FALSE,
-                               generic = FALSE,
                                immune_checkpoint = FALSE,
                                senescence = FALSE, cycling = FALSE, Th1_cytokines = FALSE, TCRseq = FALSE,
                                 reductionType = "harmony", chunk_size = 50000, output_dir = "output",
@@ -66,7 +64,7 @@ scGate_annotating <- function (file = file,
 
   if  (Threshold_test) {
     message("Testing scGate threshold")
-  } else if (!TcellFunction & !generic & !immune_checkpoint & !senescence & !cycling & !Th1_cytokines & !TCRseq) {
+  } else if (!TcellFunction & !immune_checkpoint & !senescence & !cycling & !Th1_cytokines & !TCRseq) {
     message("No function selected. Please set at least one of the function flags to TRUE.")
   }
 
@@ -134,15 +132,15 @@ scGate_annotating <- function (file = file,
 
 
       }
-      if (generic) {
-        models_list <- custom_db_scGATE(system.file("scGATE", "human/generic", package = "STEGO.R"))
-        sc_chunk <- apply_scGate_to_chunk(sc_chunk, models_list, threshold_scGate, reductionType)
-        sc_chunk@meta.data$generic <- sc_chunk@meta.data$scGate_multi
-        # Print and save meta data
-        tcell_function_table <- table(sc_chunk@meta.data$generic)
-        # print(tcell_function_table)
-        save_table(tcell_function_table, paste0(output_dir,"/", "generic_table_chunk_", i, ".txt"))
-      }
+      # if (generic) {
+      #   models_list <- custom_db_scGATE(system.file("scGATE", "human/generic", package = "STEGO.R"))
+      #   sc_chunk <- apply_scGate_to_chunk(sc_chunk, models_list, threshold_scGate, reductionType)
+      #   sc_chunk@meta.data$generic <- sc_chunk@meta.data$scGate_multi
+      #   # Print and save meta data
+      #   tcell_function_table <- table(sc_chunk@meta.data$generic)
+      #   # print(tcell_function_table)
+      #   save_table(tcell_function_table, paste0(output_dir,"/", "generic_table_chunk_", i, ".txt"))
+      # }
       if (immune_checkpoint) {
         models_list <- custom_db_scGATE(system.file("scGATE", "human/immune_checkpoint", package = "STEGO.R"))
         sc_chunk <- apply_scGate_to_chunk(sc_chunk, models_list, threshold_scGate, reductionType)
