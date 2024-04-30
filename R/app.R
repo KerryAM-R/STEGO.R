@@ -232,7 +232,57 @@ runSTEGO <- function(){
 
   # UI page -----
   ui <- fluidPage(
-
+    # add hint explination -----
+    tags$head(
+      tags$style(HTML(
+        "
+      .hint-text {
+        display: none;
+        position: absolute; /* Change position to relative */
+        background-color: #d8ffc2;
+        border: 4px solid #41b000;
+        border-radius: 5px;
+        padding: 12px; /* Increased padding */
+        z-index: 1000; /* Ensure hint text is above other elements */
+        font-size: 14px; /* Decreased font size */
+        text-align: center; /* Center alignment */
+        width: 150px; /* Set width to prevent stretching */
+        color: #41b000; /* Change text color to purple */
+      }
+      .hint-icon {
+        font-size: 24px; /* Decreased icon size */
+        color: #41b000; /* Change icon color to #41b000 (purple) */
+        vertical-align: top; /* Align icon vertically */
+        margin-left: 5px; /* Add left margin */
+        cursor: pointer; /* Change cursor to pointer */
+      }
+      .hint-icon2 {
+        font-size: 24px; /* Decreased icon size */
+        color: #FF5733; /* Change icon color to #FF5733 (orange) */
+        vertical-align: top; /* Align icon vertically */
+        margin-left: 5px; /* Add left margin */
+        cursor: pointer; /* Change cursor to pointer */
+      }
+      .select-input-container {
+        display: flex; /* Use Flexbox */
+        align-items: top; /* Center items vertically */
+        justify-content: space-between; /* Space items evenly */
+      }
+      "
+      )),
+      tags$script(HTML(
+        "
+      $(document).ready(function(){
+        $('.hint-icon, .hint-icon2').mouseenter(function(){
+          $(this).siblings('.hint-text').show();
+        });
+        $('.hint-icon, .hint-icon2').mouseleave(function(){
+          $(this).siblings('.hint-text').hide();
+        });
+      });
+      "
+      ))
+    ),
     # progress bar colouring, position --------
     tags$style(HTML("
   .dataTables_wrapper .dataTable td {
@@ -328,7 +378,7 @@ tags$head(tags$style(
 ")
 )),
 
-# if I want to update the grey colour of the side bar panel
+# if I want to update the grey colour of the side bar panel -----
 tags$head(tags$style(
   HTML('
          .well {
@@ -876,7 +926,7 @@ navbarPage(
           fileInput("file2_TCRexMerge", "Select files to merge",
                     multiple = TRUE,
           ),
-          downloadButton("downloaddf_TCRexFiltered", "Download table")
+          downloadButton("downloaddf_TCRexFiltered", "Download table"),
         ),
         mainPanel(
           width = 9,
@@ -1821,9 +1871,23 @@ tabPanel(
           condition = "input.Panel_TCRUMAP == 'Expanded'",
           h4("Expanded cut-offs and colouring"),
           fluidRow(
+            column(6, div(class = "select-input-container",
+                          numericInput("cutoff.expanded", "Cut off greater than", value = 0.5, step = 0.01, min = 0, max = 0.99),
+                          div(class = "hint-icon",
+                              icon("circle-question", lib = "font-awesome")),
+                          div(class = "hint-text", "This is to calculate the number of clone cut-off that is deemed to be expanded. e.g., >0.5 == 50% or more of the repertoire that is used to calculate the count cut-off for what is deemed to be expanded"),
+            )
+            ),
+            column(6,
+                   # div(class = "select-input-container",
+                   uiOutput("cut.off_expanded2"),
+                   # div(class = "hint-icon",
+                   #     icon("triangle-exclamation", lib = "font-awesome")),
+                   # div(class = "hint-text", "Select an option to continue."),
+                   #
+                   # )
 
-            column(6, numericInput("cutoff.expanded", "Cut off greater than", value = 0.5, step = 0.01, min = 0, max = 0.99)),
-            column(6, uiOutput("cut.off_expanded2")),
+            ),
             column(6, uiOutput("classification_to_add2")),
           ),
           fluidRow(
@@ -2305,7 +2369,7 @@ tabPanel(
                                 downloadButton("download_Top_clonotype_sum", "Download table")
                               ),
                               tabPanel(
-                                "Bar graph",
+                                "Bar graph (count)",
                                 div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
                                 fluidRow(
                                   column(
@@ -2327,11 +2391,7 @@ tabPanel(
                                   column(2, style = "margin-top: 25px;", downloadButton("downloadPlotPNG_top_clonotype", "Download PNG"))
                                 ),
                               ),
-                              # tabPanel("Pie labs",
-                              #          add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "200px",width = "200px", color = "#6F00B0"),
-                              #          div(DT::DTOutput("Top_clonotype_Labs")),
-                              #
-                              # ),
+
 
                               tabPanel("heatmap",
                                        value = "TopHeat",
@@ -2349,12 +2409,17 @@ tabPanel(
                                        ),
                               ),
                               #####.
+                              # tabPanel("Pie labs",
+                              #          add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "200px",width = "200px", color = "#6F00B0"),
+                              #          div(DT::DTOutput("Top_clonotype_Labs")),
+                              #
+                              # ),
                               tabPanel(
-                                "Pie/UMAP chart",
+                                "Percentage",
                                 div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
                                 fluidRow(
-                                  column(3, selectInput("Plot_type_selected", "Plot", choices = c("pie", "UMAP"))),
-                                  column(3, numericInput("size_selected_top", "Size of Point", value = 2)),
+                                  column(3, selectInput("Plot_type_selected", "Plot", choices = c("pie", "bar", "UMAP"))),
+                                  # column(3, numericInput("size_selected_top", "Size of Point", value = 2)),
                                 ),
                                 fluidRow(
                                   column(
@@ -2377,13 +2442,7 @@ tabPanel(
                                 ),
                               ),
                               # add in find marker for comparing population to other for top clonotype
-                              # tabPanel("FindMarker"),
 
-                              # tabPanel("Expression",
-
-
-
-                              # tabsetPanel(
                               tabPanel(
                                 "Ridge/Violin plots",
                                 div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
@@ -3216,12 +3275,16 @@ navbarMenu("Info",
 
 
 ),
-) # nav page
+), # nav page
   )
 
   ########
   # server ------
   server <- function(input, output, session) {
+    # tool tips in server ----
+
+
+
     # convert ------
     Convert_to_RDS <- reactive({
       inFile_sc_pro2 <- input$file1_h5Seurat.file
@@ -9999,8 +10062,11 @@ navbarMenu("Info",
         )
       )
       umap.meta <- sc@meta.data
-      names(umap.meta)[names(umap.meta) %in% input$Samp_col] <- "ID_Column"
-      names(umap.meta)[names(umap.meta) %in% input$V_gene_sc] <- "v_gene_selected"
+      umap.meta$ID_Column <- umap.meta[,names(umap.meta) %in% input$Samp_col]
+      umap.meta$v_gene_selected <- umap.meta[,names(umap.meta) %in% input$V_gene_sc]
+
+      # names(umap.meta)[names(umap.meta) %in% input$Samp_col] <- "ID_Column"
+      # names(umap.meta)[names(umap.meta) %in% input$V_gene_sc] <- "v_gene_selected"
       if (nrow(umap.meta) > 0) {
         umap.meta
       } else {
@@ -10022,11 +10088,13 @@ navbarMenu("Info",
       umap.meta <- sc@meta.data
       if (length(input$Samp_col) > 0) {
         # message(paste("the ID column selected is: ",input$Samp_col))
-        names(umap.meta)[names(umap.meta) %in% input$Samp_col] <- "ID_Column"
+        umap.meta$ID_Column <- umap.meta[,names(umap.meta) %in% input$Samp_col]
+        # names(umap.meta)[names(umap.meta) %in% input$Samp_col] <- "ID_Column"
       }
 
       if (length(input$V_gene_sc) > 0) {
-        names(umap.meta)[names(umap.meta) %in% input$V_gene_sc] <- "v_gene_selected"
+        # names(umap.meta)[names(umap.meta) %in% input$V_gene_sc] <- "v_gene_selected"
+        umap.meta$v_gene_selected <- umap.meta[,names(umap.meta) %in% input$V_gene_sc]
       }
       umap.meta
       req(TCR_Expanded())
@@ -10308,22 +10376,24 @@ navbarMenu("Info",
 
       df4 <- df3 %>%
         mutate(Frequency_expanded = case_when(
-          frequency <= 1e-4 ~ "1. Rare (0 > X < 1e-4)",
-          frequency <= 0.001 ~ "2. Small (1e-4 > X <= 0.001)",
-          frequency <= 0.01 ~ "3. Medium (0.001 > X <= 0.01)",
-          frequency <= 0.10 ~ "4. Large (0.01 > X <= 0.1)",
-          frequency <= 0.50 ~ "5. Gigantic (0.1 > X <= 0.5)",
-          frequency <= 1 ~ "6. Hyperexpanded (0.5 > X <= 1)",
+          frequency <= 1e-5 ~ "1. Very rare (0 > X < 1e-5)",
+          frequency <= 1e-4 ~ "2. Rare (1e-5 > X ≤ 1e-4)",
+          frequency <= 0.001 ~ "3. Small (1e-4 > X ≤ 0.001)",
+          frequency <= 0.01 ~ "4. Medium (0.001 > X ≤ 0.01)",
+          frequency <= 0.10 ~ "5. Large (0.01 > X ≤ 0.1)",
+          frequency <= 0.50 ~ "6. Hyperexpanded (0.1 > X ≤ 0.5)",
+          frequency <= 1 ~ "7. Hyperexpanded (0.5 > X ≤ 1)",
           TRUE ~ "Other"
         ))
 
       df4 <- df4 %>%
         mutate(Number_expanded = case_when(
-          samp.count <= 1 ~ "1. Single (0 < X <= 1)",
-          samp.count <= 5 ~ "2. Small (1 < X <= 5)",
-          samp.count <= 20 ~ "3. Medium (5 < X <= 20)",
-          samp.count <= 100 ~ "4. Large (20 < X <= 100)",
-          samp.count <= 500 ~ "5. Hyperexpanded (100 < X <= 500)",
+          samp.count <= 1 ~ "1. Single (X = 1)",
+          samp.count <= 5 ~ "2. Small (1 < X ≤ 5)",
+          samp.count <= 20 ~ "3. Medium (5 < X ≤ 20)",
+          samp.count <= 100 ~ "4. Large (20 < X ≤ 100)",
+          samp.count <= 500 ~ "5. Hyperexpanded (100 < X ≤ 500)",
+          samp.count > 500 ~ "6. Hyperexpanded (X > 500)",
           TRUE ~ "6. Hyperexpanded (>500)"
         ))
       df4
@@ -11616,8 +11686,8 @@ navbarMenu("Info",
         col.file$col <- unlist(colors_UMAP_all_classification())
         col.file
       }
-
-      names(top_BD_cluster)[names(top_BD_cluster) %in% input$Samp_col] <- "ID_Column"
+      top_BD_cluster$ID_Column <- top_BD_cluster[,names(top_BD_cluster) %in% input$Samp_col]
+      # names(top_BD_cluster)[names(top_BD_cluster) %in% input$Samp_col] <- "ID_Column"
 
       if (input$by_indiv_pie_epi == "yes") {
         top_BD_cluster <- top_BD_cluster[top_BD_cluster$ID_Column %in% input$selected_Indiv, ]
@@ -11703,15 +11773,6 @@ navbarMenu("Info",
         )
       )
       meta.data <- sc@meta.data
-
-      # if(names(meta.data) %in% "T_cells") {
-      #   updateSelectInput(
-      #     session,
-      #     "Split_group_by_",
-      #     choices=names(meta.data),
-      #     selected = "T_cells")
-      # } else {
-
       updateSelectInput(
         session,
         "Split_group_by_",
@@ -11843,7 +11904,8 @@ navbarMenu("Info",
       top_BD_cluster$Selected_group <- top_BD_cluster[, names(top_BD_cluster) %in% input$Split_group_by_]
 
       df.col <- unlist(colors_pie())
-      names(top_BD_cluster)[names(top_BD_cluster) %in% input$Samp_col] <- "ID_Column"
+      top_BD_cluster$ID_Column <- top_BD_cluster[,names(top_BD_cluster) %in% input$Samp_col]
+      # names(top_BD_cluster)[names(top_BD_cluster) %in% input$Samp_col] <- "ID_Column"
 
       if (input$by_indiv_pie_epi == "yes") {
         top_BD_cluster <- top_BD_cluster[top_BD_cluster$ID_Column %in% input$selected_Indiv, ]
@@ -12042,7 +12104,8 @@ navbarMenu("Info",
         )
       )
       dataframe_one <- sc@meta.data
-      names(dataframe_one)[names(dataframe_one) %in% input$Samp_col] <- "ID_Column"
+      dataframe_one$ID_Column <- dataframe_one[,names(dataframe_one) %in% input$Samp_col]
+      # names(dataframe_one)[names(dataframe_one) %in% input$Samp_col] <- "ID_Column"
 
       if (input$by_indiv_pie_epi == "yes") {
         df3.meta <- dataframe_one[dataframe_one$ID_Column %in% input$selected_Indiv, ]
@@ -12447,45 +12510,57 @@ navbarMenu("Info",
       total.group.condition
     })
 
-    output$Top_clonotype_Labs <- DT::renderDT(escape = FALSE, options = list(autoWidth = FALSE, lengthMenu = c(2, 5, 10, 20, 50, 100), pageLength = 10, scrollX = TRUE), {
-      pie_ag_bd_table()
-    })
+    # output$Top_clonotype_Labs <- DT::renderDT(escape = FALSE, options = list(autoWidth = FALSE, lengthMenu = c(2, 5, 10, 20, 50, 100), pageLength = 10, scrollX = TRUE), {
+    #   pie_ag_bd_table()
+    # })
 
     Pie_chart_alpha_gamma <- reactive({
       df.col <- unlist(colors_cols_Top_pie_clonotype())
 
       total.group.condition <- pie_ag_bd_table()
 
-
       total.group.condition$Selected_function <- gsub("_", " ", total.group.condition$Selected_function)
       total.group.condition$Selected_function <- gsub("[.]", " ", total.group.condition$Selected_function)
 
-      # ggplot(dtop_clonotype_bar_code, aes(x=Selected_group, fill=Selected_chain3,colour = Selected_chain3, label = Selected_chain3)) +
-      #   geom_bar() +
-      #   theme_bw()+
-      #   scale_color_manual(labels = ~ stringr::str_wrap(.x, width = 10), values = colorblind_vector, na.value=input$NA_col_analysis)+
-      #   scale_fill_manual(labels = ~ stringr::str_wrap(.x, width = 10), values = colorblind_vector, na.value=input$NA_col_analysis)+
+      if (input$Plot_type_selected == "pie") {
+        ggplot(total.group.condition, aes(x = "", y = n, fill = as.character(Selected_function), group = as.character(Selected_group), label = Selected_function)) +
+          geom_bar(stat = "identity", width = 1) +
+          coord_polar("y", start = 0) +
+          theme_void(20) +
+          facet_wrap(~Selected_group, nrow = input$wrap_row) +
+          theme(
+            legend.key.size = unit(1, "cm"),
+            legend.title = element_blank()
+          ) +
+          scale_fill_manual(labels = ~ stringr::str_wrap(.x, width = 10), values = df.col, na.value = input$NA_col_analysis) +
+          theme(
+            strip.text = element_text(size = input$Strip_text_size, family = input$font_type),
+            legend.text = element_text(colour = "black", size = input$Legend_size, family = input$font_type),
+            legend.position = input$legend_position,
+            legend.title = element_blank()
+          )
+      } else {
+        ggplot(total.group.condition, aes(x = Selected_group, y = n, fill = Selected_function)) +
+          geom_bar(stat = "identity",width = 0.9) +
+          theme_bw() +
+          theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) +
+          coord_cartesian(ylim = c(0, 1)) +  # Adjust multiplier as needed
+          scale_fill_manual(labels = ~ stringr::str_wrap(.x, width = 10), values = df.col, na.value = input$NA_col_analysis) +
+          theme(
+            axis.title.y = element_blank(),
+            axis.text.y = element_text(colour = "black", family = input$font_type, size = input$text_size),
+            axis.text.x = element_text(colour = "black", family = input$font_type, size = input$text_size, angle = 90),
+            axis.title.x = element_blank(),
+            legend.text = element_text(colour = "black", size = input$Legend_size, family = input$font_type),
+            legend.position = input$legend_position,
+            legend.title = element_blank()
+          )
+      }
 
-      ggplot(total.group.condition, aes(x = "", y = n, fill = as.character(Selected_function), group = as.character(Selected_group), label = Selected_function)) +
-        geom_bar(stat = "identity", width = 1) +
-        coord_polar("y", start = 0) +
-        theme_void(20) +
-        facet_wrap(~Selected_group, nrow = input$wrap_row) +
-        theme(
-          legend.key.size = unit(1, "cm"),
-          legend.title = element_blank()
-        ) +
-        scale_fill_manual(labels = ~ stringr::str_wrap(.x, width = 10), values = df.col, na.value = input$NA_col_analysis) +
-        theme(
-          strip.text = element_text(size = input$Strip_text_size, family = input$font_type),
-          legend.text = element_text(colour = "black", size = input$Legend_size, family = input$font_type),
-          legend.position = input$legend_position,
-          legend.title = element_blank()
-        )
     })
 
     output$top_clonotype_pie <- renderPlot({
-      if (input$Plot_type_selected == "pie") {
+      if (input$Plot_type_selected == "pie" |input$Plot_type_selected == "bar" ) {
         Pie_chart_alpha_gamma()
       } else {
         UMAP_chart_alpha_gamma()
