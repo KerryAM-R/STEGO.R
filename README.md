@@ -6,6 +6,6 @@
 <!-- badges: start -->
 <!-- badges: end -->
 
-For a complete Tutorial of Using STEGO please go to [Tutorial](https://stegor-documents.readthedocs.io/en/latest/index.html)
+For a complete Tutorial of Using STEGO please go to [Tutorial](https://stegor.readthedocs.io/en/latest/index.html)
 
 
