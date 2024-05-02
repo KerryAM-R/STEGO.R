@@ -8126,7 +8126,58 @@ navbarMenu("Info",
       cat(readLines(FN), sep = "\n")
     })
 
-    scGATE_anno_immune_checkpoint <- reactive({
+    scGATE_anno_cytotoxic <- reactive({
+      sc <- getData_2()
+      validate(
+        need(
+          nrow(sc) > 0,
+          "Upload file for annotation"
+        )
+      )
+      req(input$threshold_scGate)
+
+      len <- length(rownames(sc@assays$RNA$scale.data))
+
+      if (input$hs_IC_scGATE) {
+        scGate_models_DB <- custom_db_scGATE(system.file("scGATE", "human/immune_checkpoint", package = "STEGO.R"))
+
+        models.list <- scGate_models_DB
+
+        sc <- scGate(sc,
+                     model = models.list,
+                     pos.thr = input$threshold_scGate,
+                     neg.thr = input$threshold_scGate,
+                     nfeatures = len,
+                     reduction = input$reduction_anno,
+                     ncores = 8, min.cells = 1
+        )
+
+        sc@meta.data$IC <- sc@meta.data$scGate_multi
+        sc@meta.data <- sc@meta.data[!grepl("_UCell", names(sc@meta.data))]
+        sc@meta.data <- sc@meta.data[!grepl("is.pure_", names(sc@meta.data))]
+        sc@meta.data <- sc@meta.data[!grepl("scGate_multi", names(sc@meta.data))]
+        sc
+      } else {
+        sc
+      }
+      sc
+    })
+    output$scGATE_verbatum_cytotoxic <- renderPrint({
+      FN <- tempfile()
+      zz <- file(FN, open = "wt")
+      sink(zz, type = "output")
+      sink(zz, type = "message")
+      if (input$hs_IC_scGATE) {
+        scGATE_anno_cytotoxic()
+      } else {
+        print("immune checkpoint not run")
+      }
+      sink(type = "message")
+      sink(type = "output")
+      cat(readLines(FN), sep = "\n")
+    })
+
+    scGATE_anno_cytotoxic <- reactive({
       sc <- getData_2()
       validate(
         need(
@@ -8176,6 +8227,7 @@ navbarMenu("Info",
       sink(type = "output")
       cat(readLines(FN), sep = "\n")
     })
+
 
     scGATE_anno_senescence <- reactive({
       sc <- getData_2()
