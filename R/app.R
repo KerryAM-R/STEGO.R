@@ -1561,8 +1561,9 @@ tabPanel(
               div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
               column(3, checkboxInput("hs_function_scGATE", "Function (Human)", value = F)),
               # column(3, checkboxInput("hs_generic_scGATE", "Generic (Human)", value = F)),
-              column(3, checkboxInput("hs_pbmc_scGATE", "PBMC (Human; scGate)", value = F)),
+              # column(3, checkboxInput("hs_pbmc_scGATE", "PBMC (Human; scGate)", value = F)),
               column(3, checkboxInput("hs_IC_scGATE", "Immune checkpoint (Human)", value = F)),
+              column(3, checkboxInput("hs_cytotoxic_scGATE", "Cytotoxic (Human)", value = F)),
               column(3, checkboxInput("hs_senescence_scGATE", "Senescence (Human)", value = F)),
               column(3, checkboxInput("hs_cycling_scGATE", "Cycling (Human)", value = F)),
               column(3, checkboxInput("hs_TCRseq_scGATE", "TCR-seq (Human)", value = F)),
@@ -1615,6 +1616,8 @@ tabPanel(
             div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
             verbatimTextOutput("scGATE_verbatum_immune_check"),
             div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
+            verbatimTextOutput("scGATE_verbatum_cytotoxic"),
+
             verbatimTextOutput("scGATE_verbatum_senescence"),
             div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
             verbatimTextOutput("scGATE_verbatum_cycling"),
@@ -1897,13 +1900,18 @@ tabPanel(
         ),
       ),
       conditionalPanel(
-        condition = "input.PriorTBMods == 'PriorRepertoireTB' || input.Panel_TCRUMAP == 'Expanded'",
-        fluidRow(
-          column(12, uiOutput("Expanded.dotplot.cutoffs")),
-          column(12, selectizeInput("selected_Indiv_Ex_1", "Samp 1", choices = "", multiple = T)),
-          column(12, selectizeInput("selected_Indiv_Ex_2", "Samp 2", choices = "", multiple = T)),
+        condition = "input.check_up_files == 'TCR_and_GEX_tb'",
+
+        conditionalPanel(
+          condition = "input.Panel_TCRUMAP == 'Expanded'",
+          fluidRow(
+            column(12, uiOutput("Expanded.dotplot.cutoffs")),
+            column(12, selectizeInput("selected_Indiv_Ex_1", "Samp 1", choices = "", multiple = T)),
+            column(12, selectizeInput("selected_Indiv_Ex_2", "Samp 2", choices = "", multiple = T)),
+          )
         )
       ),
+
       conditionalPanel(
         condition = "input.PriorTBMods == 'PriorClustTB' || input.Panel_TCRUMAP == 'ClusTCR2'",
         selectInput("Clusters_to_dis_PIE", "Clusters to display", choices = "", multiple = F)
@@ -1933,15 +1941,19 @@ tabPanel(
           column(6, colourInput("one.colour.default", "One colour", "grey50")),
           column(6, colourInput("NA_col_analysis", "NA colour", "grey90"), )
         ),
+
         conditionalPanel(
           condition = "input.check_up_files == 'up2' || input.check_up_files == 'Prior'",
-
-          fluidRow(column(12, selectInput("Graph_type_bar", "Type of graph", choices = c("Number_expanded", "Frequency_expanded", "Top_clonotypes")))),
           conditionalPanel(
-            condition = "input.Graph_type_bar == 'Top_clonotypes'",
-            fluidRow(
-              column(12, numericInput("top_no_clonotypes", "Top clonotypes per group", value = 1, step = 1, min = 0, max = 20))
-            )),
+            condition = "input.QC_panel == 'TCR'",
+
+            fluidRow(column(12, selectInput("Graph_type_bar", "Type of graph", choices = c("Number_expanded", "Frequency_expanded", "Top_clonotypes")))),
+            conditionalPanel(
+              condition = "input.Graph_type_bar == 'Top_clonotypes'",
+              fluidRow(
+                column(12, numericInput("top_no_clonotypes", "Top clonotypes per group", value = 1, step = 1, min = 0, max = 20))
+              )),
+          )
         ),
 
         h4("What individuals to include"),
@@ -2040,13 +2052,16 @@ tabPanel(
                                          column(2, style = "margin-top: 25px;", downloadButton("downloadPlotPNG_UMAP_all_classification", "Download PNG"))
                                        ),
                               ),
-                              tabPanel("Pie chart",
+                              tabPanel("Summary chart",
                                        value = 15,
                                        div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
                                        fluidRow(
                                          # column(3),
                                          # column(9, h5("pie segments (Colour by:) & separation (Split graph by:)"))
                                        ),
+
+                                       selectInput("chart_overview","Chart type", choices = c("pie","bar")),
+
                                        fluidRow(
                                          column(
                                            3,
@@ -2114,15 +2129,21 @@ tabPanel(
                                 fluidRow(column(2,actionButton("load_samp_name_list","Load samples"))),
                                 fluidRow(
                                   column(2,checkboxInput("is_a_time_series",h4("Time series?"),value = T)),
-                                  column(2,selectInput("separator_input", "Select Separators:",
-                                                       choices = c("_" = "_.*", "-" = "-.*", "." = "\\..*", "|" = "\\|.*", "#" = "#*", "^" = "\\^*", "&" = "&.*"),
-                                                       multiple = F),),
-                                  column(2,selectInput("comparison_operator", "Choose comparison operator:",
-                                                       choices = c("Equal to" = "==", "Greater than or equal to" = ">="),
-                                                       selected = c("Greater than or equal to" = ">=")),),
-                                  column(2,numericInput("cutoff_upset", "Enter cutoff value:", value = 2),),
+
+                                  conditionalPanel(
+                                    condition = "input.is_a_time_series",
+
+                                    column(2,selectInput("separator_input", "Select Separators:",
+                                                         choices = c("_" = "_.*", "-" = "-.*", "." = "\\..*", "|" = "\\|.*", "#" = "#*", "^" = "\\^*", "&" = "&.*"),
+                                                         multiple = F),),
+                                    column(2,selectInput("comparison_operator", "Choose comparison operator:",
+                                                         choices = c("Equal to" = "==", "Greater than or equal to" = ">="),
+                                                         selected = c("Greater than or equal to" = ">=")),),
+                                    column(2,numericInput("cutoff_upset", "Enter cutoff value:", value = 2),)
+                                  ),
                                   column(2,numericInput("max_number_lines_to","Maximum to display",value = 20)),
                                   column(2,numericInput("Total_count_Cutoff","Min count threshold",value = 1)),
+
 
                                 ),
 
@@ -2139,16 +2160,18 @@ tabPanel(
                                   ),
                                   tabPanel("Line graph",
                                            fluidRow(
-                                             column(2,sliderInput("number_of_conditions","Number of conditions",value = 2, min = 2 , max = 3)),
-                                             column(2,selectInput("separator_input2", "Select Separators:",
-                                                                  choices = c("_" = "_", "-" = "-", "." = "\\.", "|" = "\\|", "#" = "#", "^" = "\\^", "&" = "&"),
-                                                                  selected = "_",
-                                                                  multiple = T)),
-                                             column(2,selectInput("display_all_samps_line","Display all?",choices = c("no","yes"))),
-
-                                             column(3,
-                                                    conditionalPanel(
-                                                      condition = "input.number_of_conditions == 3",textInput("shape_legend_name","Shape legend name",value = ""))
+                                             conditionalPanel(
+                                               condition = "input.is_a_time_series",
+                                               column(2,sliderInput("number_of_conditions","Number of conditions",value = 2, min = 2 , max = 3)),
+                                               column(2,selectInput("separator_input2", "Select Separators:",
+                                                                    choices = c("_" = "_", "-" = "-", "." = "\\.", "|" = "\\|", "#" = "#", "^" = "\\^", "&" = "&"),
+                                                                    selected = "_",
+                                                                    multiple = T)),
+                                               column(2,selectInput("display_all_samps_line","Display all?",choices = c("no","yes"))),
+                                               column(3,
+                                                      conditionalPanel(
+                                                        condition = "input.number_of_conditions == 3",textInput("shape_legend_name","Shape legend name",value = ""))
+                                               ),
                                              ),
                                            ),
 
@@ -8126,58 +8149,7 @@ navbarMenu("Info",
       cat(readLines(FN), sep = "\n")
     })
 
-    scGATE_anno_cytotoxic <- reactive({
-      sc <- getData_2()
-      validate(
-        need(
-          nrow(sc) > 0,
-          "Upload file for annotation"
-        )
-      )
-      req(input$threshold_scGate)
-
-      len <- length(rownames(sc@assays$RNA$scale.data))
-
-      if (input$hs_IC_scGATE) {
-        scGate_models_DB <- custom_db_scGATE(system.file("scGATE", "human/immune_checkpoint", package = "STEGO.R"))
-
-        models.list <- scGate_models_DB
-
-        sc <- scGate(sc,
-                     model = models.list,
-                     pos.thr = input$threshold_scGate,
-                     neg.thr = input$threshold_scGate,
-                     nfeatures = len,
-                     reduction = input$reduction_anno,
-                     ncores = 8, min.cells = 1
-        )
-
-        sc@meta.data$IC <- sc@meta.data$scGate_multi
-        sc@meta.data <- sc@meta.data[!grepl("_UCell", names(sc@meta.data))]
-        sc@meta.data <- sc@meta.data[!grepl("is.pure_", names(sc@meta.data))]
-        sc@meta.data <- sc@meta.data[!grepl("scGate_multi", names(sc@meta.data))]
-        sc
-      } else {
-        sc
-      }
-      sc
-    })
-    output$scGATE_verbatum_cytotoxic <- renderPrint({
-      FN <- tempfile()
-      zz <- file(FN, open = "wt")
-      sink(zz, type = "output")
-      sink(zz, type = "message")
-      if (input$hs_IC_scGATE) {
-        scGATE_anno_cytotoxic()
-      } else {
-        print("immune checkpoint not run")
-      }
-      sink(type = "message")
-      sink(type = "output")
-      cat(readLines(FN), sep = "\n")
-    })
-
-    scGATE_anno_cytotoxic <- reactive({
+    scGATE_anno_immune_checkpoint <- reactive({
       sc <- getData_2()
       validate(
         need(
@@ -8222,6 +8194,58 @@ navbarMenu("Info",
         scGATE_anno_immune_checkpoint()
       } else {
         print("immune checkpoint not run")
+      }
+      sink(type = "message")
+      sink(type = "output")
+      cat(readLines(FN), sep = "\n")
+    })
+
+    scGATE_anno_cytotoxic <- reactive({
+      sc <- getData_2()
+      validate(
+        need(
+          nrow(sc) > 0,
+          "Upload file for annotation"
+        )
+      )
+      req(input$threshold_scGate)
+
+      len <- length(rownames(sc@assays$RNA$scale.data))
+
+      if (input$hs_cytotoxic_scGATE) {
+        scGate_models_DB <- custom_db_scGATE(system.file("scGATE", "human/cytotoxic", package = "STEGO.R"))
+
+        models.list <- scGate_models_DB
+
+        sc <- scGate(sc,
+                     model = models.list,
+                     pos.thr = input$threshold_scGate,
+                     neg.thr = input$threshold_scGate,
+                     nfeatures = len,
+                     reduction = input$reduction_anno,
+                     ncores = 8, min.cells = 1
+        )
+
+        sc@meta.data$cytotoxic <- sc@meta.data$scGate_multi
+        sc@meta.data <- sc@meta.data[!grepl("_UCell", names(sc@meta.data))]
+        sc@meta.data <- sc@meta.data[!grepl("is.pure_", names(sc@meta.data))]
+        sc@meta.data <- sc@meta.data[!grepl("scGate_multi", names(sc@meta.data))]
+        sc
+      } else {
+        sc
+      }
+      sc
+    })
+
+    output$scGATE_verbatum_cytotoxic <- renderPrint({
+      FN <- tempfile()
+      zz <- file(FN, open = "wt")
+      sink(zz, type = "output")
+      sink(zz, type = "message")
+      if (input$hs_cytotoxic_scGATE) {
+        scGATE_anno_cytotoxic()
+      } else {
+        print("Cytotoxic not run")
       }
       sink(type = "message")
       sink(type = "output")
@@ -9424,6 +9448,14 @@ navbarMenu("Info",
         obj <- scGATE_anno_immune_checkpoint()
         sc@meta.data$IC <- obj@meta.data$IC
       }
+
+      if (input$hs_cytotoxic_scGATE) {
+        obj <- scGATE_anno_cytotoxic()
+
+        sc@meta.data$cytotoxic <- obj@meta.data$cytotoxic
+      }
+
+
       if (input$hs_senescence_scGATE) {
         obj <- scGATE_anno_senescence()
         sc@meta.data$senescence <- obj@meta.data$senescence
@@ -11844,9 +11876,9 @@ navbarMenu("Info",
       )
       top_BD_cluster <- sc@meta.data
       top_BD_cluster$Selected_function <- top_BD_cluster[, names(top_BD_cluster) %in% input$Colour_By_this_overview]
-      top_BD_cluster$Selected_function <- ifelse(top_BD_cluster$Selected_function == "NA", "-", top_BD_cluster$Selected_function)
+      top_BD_cluster$Selected_function <- ifelse(top_BD_cluster$Selected_function == "NA", NA, top_BD_cluster$Selected_function)
       top_BD_cluster <- top_BD_cluster[order(top_BD_cluster$Selected_function), ]
-
+      top_BD_cluster$Selected_function <- ifelse(top_BD_cluster$Selected_function == "Neg",NA,top_BD_cluster$Selected_function)
       # top_BD_cluster$Selected_function <- factor(top_BD_cluster$Selected_function,levels = unique(top_BD_cluster$Selected_function))
       num <- as.data.frame(unique(top_BD_cluster$Selected_function))
       num <- as.data.frame(num[complete.cases(num) == T, ])
@@ -11893,9 +11925,13 @@ navbarMenu("Info",
         })
       } # one colour
     })
+
+
+
     output$myPanel_pie <- renderUI({
       cols_pie()
     })
+
     colors_pie <- reactive({
       sc <- UMAP_metadata_with_labs()
       validate(
@@ -11957,38 +11993,76 @@ navbarMenu("Info",
 
       df.col <- unlist(colors_pie())
       top_BD_cluster$ID_Column <- top_BD_cluster[,names(top_BD_cluster) %in% input$Samp_col]
+
+      top_BD_cluster <- top_BD_cluster[top_BD_cluster$ID_Column %in% input$ID_Column_factor,]
+      top_BD_cluster$ID_Column <- factor(top_BD_cluster$ID_Column,levels = input$ID_Column_factor)
+
       # names(top_BD_cluster)[names(top_BD_cluster) %in% input$Samp_col] <- "ID_Column"
 
       if (input$by_indiv_pie_epi == "yes") {
         top_BD_cluster <- top_BD_cluster[top_BD_cluster$ID_Column %in% input$selected_Indiv, ]
       }
 
-      df3.meta3 <- as.data.frame(table(top_BD_cluster$Selected_group, top_BD_cluster$Selected_function))
-      total.condition <- as.data.frame(ddply(df3.meta3, "Var1", numcolwise(sum)))
-      emtpy <- matrix(nrow = dim(df3.meta3)[1], ncol = dim(total.condition)[1])
+      meta_all <- top_BD_cluster
+      meta_all$cloneCount <- 1
+      # print(head(meta_all))
+      meta_all$Selected_function <- ifelse(meta_all$Selected_function == "Neg",NA,meta_all$Selected_function)
+      # print(head(meta_all))
+      meta <- meta_all[,names(meta_all) %in% c("ID_Column","Selected_function","cloneCount")]
+      # print(head(meta))
+
+      meta$ID_Column <- as.character(meta$ID_Colum)
+      total.condition <- as.data.frame(ddply(meta, "ID_Column", numcolwise(sum)))
+      # print(total.condition)
+      total_condition_function <- as.data.frame(ddply(meta, c("ID_Column","Selected_function"), numcolwise(sum)))
+      # print(total_condition_function)
+
+      emtpy_mat <- matrix(nrow = dim(total_condition_function)[1], ncol = dim(total.condition)[1])
 
       for (j in 1:dim(total.condition)[1]) {
-        for (i in 1:dim(df3.meta3)[1]) {
-          emtpy[i, j] <- ifelse(df3.meta3$Var1[i] == total.condition$Var1[j], total.condition$Freq[j], F)
+        for (i in 1:dim(total_condition_function)[1]) {
+          emtpy_mat[i, j] <- ifelse(total_condition_function$ID_Column[i] == total.condition$ID_Column[j], total.condition$cloneCount[j], F)
         }
       }
+      total_condition_function$freq <- total_condition_function$cloneCount / rowSums(emtpy_mat)
+      print(total_condition_function)
+      if (input$chart_overview == "pie") {
+        ggplot(total_condition_function, aes(x = "", y = freq, fill = as.character(Selected_function), group = ID_Column)) +
+          geom_bar(stat = "identity", width = 1) +
+          coord_polar("y", start = 0) +
+          theme_void(20) +
+          facet_wrap(~ID_Column, nrow = input$wrap_row) +
+          theme(
+            legend.key.size = unit(1, "cm")
+          ) +
+          scale_fill_manual(values = df.col, na.value = input$NA_col_analysis) +
+          theme(
+            strip.text = element_text(size = input$Strip_text_size, family = input$font_type),
+            legend.text = element_text(size = input$Legend_size, family = input$font_type),
+            legend.title = element_blank()
+          )
+      } else {
 
-      df3.meta3$n <- df3.meta3$Freq / rowSums(emtpy)
+        ggplot(total_condition_function, aes(x = ID_Column, y = freq, fill = as.character(Selected_function))) +
+          geom_bar(stat = "identity",width = 0.9) +
+          theme_bw() +
+          theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) +
+          scale_y_continuous(expand = c(0,0)) +
+          coord_cartesian(ylim = c(0, 1)) +  # Adjust multiplier as needed
+          scale_fill_manual(labels = ~ stringr::str_wrap(.x, width = 10), values = df.col, na.value = input$NA_col_analysis) +
+          theme(
+            axis.title.y = element_blank(),
+            axis.text.y = element_text(colour = "black", family = input$font_type, size = input$text_size),
+            axis.text.x = element_text(colour = "black", family = input$font_type, size = input$text_size, angle = 90),
+            axis.title.x = element_blank(),
+            legend.text = element_text(colour = "black", size = input$Legend_size, family = input$font_type),
+            legend.position = input$legend_position,
+            legend.title = element_blank()
+          )
 
-      ggplot(df3.meta3, aes(x = "", y = n, fill = Var2, group = Var1)) +
-        geom_bar(stat = "identity", width = 1) +
-        coord_polar("y", start = 0) +
-        theme_void(20) +
-        facet_wrap(~Var1, nrow = input$wrap_row) +
-        theme(
-          legend.key.size = unit(1, "cm")
-        ) +
-        scale_fill_manual(values = df.col, na.value = input$NA_col_analysis) +
-        theme(
-          strip.text = element_text(size = input$Strip_text_size, family = input$font_type),
-          legend.text = element_text(size = input$Legend_size, family = input$font_type),
-          legend.title = element_blank()
-        )
+      }
+
+
 
       # theme(strip.background =element_rect(fill=input$strip.colour.tree))+
       # theme(strip.text = element_text(colour = input$strip.text.colour.tree))
