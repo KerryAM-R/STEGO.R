@@ -15,7 +15,9 @@ update_sc(
 \arguments{
 \item{sc}{Add the merged and annotated file}
 
-\item{updateID}{file with the new id's based on '\link{colName}}
+\item{add_additional_lables}{Allows the user to add in other ID's}
+
+\item{updateID}{file with the new id's based on colName}
 
 \item{colName}{for the merging of the meta data with the updated ID, and will default to 'Sample_Name'}
 

@@ -12,6 +12,7 @@
 #' @param percent.rb Ribosomal RNA cut-off (>)
 #' @param dimension_sc Set number of dimentions to use for the dimentional reduction.
 #' @param resolution_sc Set the Seurat unsupervised clustering; however, this wont be used for annotation purposes in this pipeline.
+#' @param limit_to_TCR_GEx Reduce the file to limit to the TCR seq and GEx only (recommended for large data sets)
 #' @param save_plots Save the plots
 #' @export
 

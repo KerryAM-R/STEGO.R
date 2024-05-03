@@ -37,6 +37,8 @@ automated_sc_filtering(
 
 \item{resolution_sc}{Set the Seurat unsupervised clustering; however, this wont be used for annotation purposes in this pipeline.}
 
+\item{limit_to_TCR_GEx}{Reduce the file to limit to the TCR seq and GEx only (recommended for large data sets)}
+
 \item{save_plots}{Save the plots}
 }
 \description{

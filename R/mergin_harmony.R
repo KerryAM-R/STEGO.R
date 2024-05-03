@@ -111,7 +111,7 @@ merging_multi_SeuratRDS <- function(set_directory = "2_scObj/", merge_RDS = FALS
 #' This function is to aid im merging multiple Seurat object, which will then need to undergo harmony merging
 #'
 #' @param file merged seurat object
-#' @param feature_total total number of Fetures to find. If there are fewer then the selected total, it will use that length instead
+#' @param feature_total_limit limit number of features to create the scaled data for the harmony batch correction.
 #' @export
 #'
 
@@ -223,8 +223,12 @@ harmony_batch_correction_4_Harmony <- function(file = sc,selected_column_for_red
 #' @export
 #'
 
-Down_sampling_Seurat_OBJ <- function(file = file) {
+Down_sampling_Seurat_OBJ <- function(file = file, selected_column_for_reduction= "Sample_Name",Maximum_PC_to_use = 15,resolution_of_clusters=1) {
   sc = file
+  selected_column_for_reduction
+  Maximum_PC_to_use
+  print("under development, not yet in use")
+
 
 }
 

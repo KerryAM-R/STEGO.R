@@ -4,7 +4,12 @@
 \alias{Down_sampling_Seurat_OBJ}
 \title{Create the finding the PCA, identifical to the Seurat pipeline}
 \usage{
-Down_sampling_Seurat_OBJ(file = file)
+Down_sampling_Seurat_OBJ(
+  file = file,
+  selected_column_for_reduction = "Sample_Name",
+  Maximum_PC_to_use = 15,
+  resolution_of_clusters = 1
+)
 }
 \arguments{
 \item{file}{merged seurat object}

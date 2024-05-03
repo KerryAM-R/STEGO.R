@@ -6,26 +6,33 @@
 \usage{
 scGate_annotating(
   file = file,
+  Threshold_test = FALSE,
+  signature_for_testing = c("CD8A", "CD8B"),
+  threshold = 0.2,
   TcellFunction = FALSE,
-  generic = FALSE,
-  exhausted = FALSE,
+  immune_checkpoint = FALSE,
   senescence = FALSE,
   cycling = FALSE,
   Th1_cytokines = FALSE,
   TCRseq = FALSE,
-  threshold = 0.2,
   reductionType = "harmony",
-  chunk_size = 5000
+  chunk_size = 50000,
+  output_dir = "output",
+  Version = c("V5", "V4", "python")
 )
 }
 \arguments{
 \item{file}{Seurat object file. This requires the file to have the scaled data available for annotation purposes.}
 
+\item{Threshold_test}{Testing the scGate threshold for identifying the sub populations. I recommend using this function in the case of BD Rhapsody immune panel,}
+
+\item{signature_for_testing}{signature for testing purposes. I use CD8A and CD8B for the default setting.}
+
+\item{threshold}{Set the scGate threshold; default is 0.2 for full models and 0.55 for focused models. Please check with the test_to compare the CD8A expression vs the projected.}
+
 \item{TcellFunction}{T or F; set to T if you want to include the current T cell model}
 
-\item{generic}{generic annotations to identify T cells vs other immune cells.}
-
-\item{exhausted}{T cell based stress models of exhaustion}
+\item{immune_checkpoint}{T cell based stress models of exhaustion}
 
 \item{senescence}{T cell based stress models of Senescence}
 
@@ -35,12 +42,14 @@ scGate_annotating(
 
 \item{TCRseq}{Uses the meta data TCR-seq to call MAIT, iNKT, potential CD1 restricted, gd T cells and ab T cells}
 
-\item{threshold}{Set the scGate threshold; default is 0.2 for full models and 0.5 for focused models.}
-
 \item{reductionType}{Chose the time of dimensional reduction to use; default = harmony}
 
 \item{chunk_size}{This is the total number of cells to perform the annotation model on. This is to prevent the out of memory issue when annotating. The cells are randomly selected. The same random seed is selected to ensure that random selection is consistent if this has to be repeated. The default is 50,000 cells (we recommend a maximum of 100,000 per loop). However, fewer cells may be required if your RAM is <32 Gb, to ensure each loop is completed.}
+
+\item{output_dir}{Where to store the outputs of this process. If you run this more than once, it is best to change the name.}
+
+\item{Version}{This can be the seurat version V4 or V5; if you converted from python from anndata to seurat, use the python version}
 }
 \description{
-This function is to aid in annotating T cells expreiments with or without TCR-seq. There are six available T cell models including the T cell functions, generic annotations, exhausted, senescence, Th1_cytokines and cellular cycling (cell division) and a TCR-seq model.
+This function is to aid in annotating T cells expreiments with or without TCR-seq. There are six available T cell models including the T cell functions, generic annotations, immune_checkpoint, senescence, Th1_cytokines and cellular cycling (cell division) and a TCR-seq model.
 }

@@ -7,7 +7,7 @@
 #' @param file Seurat object file. This requires the file to have the scaled data available for annotation purposes.
 #' @param Threshold_test Testing the scGate threshold for identifying the sub populations. I recommend using this function in the case of BD Rhapsody immune panel,
 #' @param signature_for_testing signature for testing purposes. I use CD8A and CD8B for the default setting.
-#' #' @param threshold Set the scGate threshold; default is 0.2 for full models and 0.55 for focused models. Please check with the test_to compare the CD8A expression vs the projected.
+#' @param threshold Set the scGate threshold; default is 0.2 for full models and 0.55 for focused models. Please check with the test_to compare the CD8A expression vs the projected.
 #' @param immune_checkpoint T cell based stress models of exhaustion
 #' @param senescence T cell based stress models of Senescence
 #' @param Th1_cytokines T cell based stress models of IFNG and TNF
@@ -78,7 +78,7 @@ scGate_annotating <- function (file = file,
                  pos.thr = threshold_scGate,
                  reduction = reductionType, min.cells = 1)
 
-    DimPlot(sc) | FeaturePlot(sc, feature = signature_for_testing)
+    DimPlot(sc) | FeaturePlot(sc, features = signature_for_testing)
   } else {
 
 

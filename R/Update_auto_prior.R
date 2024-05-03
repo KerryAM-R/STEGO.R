@@ -13,7 +13,8 @@ gg_fill_hue <- function(n) {
 #'
 #' @param sc Add the merged and annotated file
 #' @param update_sc If you have added in the additional labels if required
-#' @param updateID file with the new id's based on '[colName]
+#' @param add_additional_lables Allows the user to add in other ID's
+#' @param updateID file with the new id's based on colName
 #' @param colName for the merging of the meta data with the updated ID, and will default to 'Sample_Name'
 #' @export
 
@@ -315,11 +316,13 @@ TCR_Expanded <- function (sc = sc,
 #' @param Samp_col Sample column name with the default being "Sample_Name"
 #' @param V_gene_sc column name vdj_gene_cdr3_AG_BD
 #' @param colourtype colour types include: default, hcl.colors, topo.colors, heat.colors, terrain.colors, rainbow, random
+#' @param Graph_type_bar This choses between the calculated frequency or binned based on count. Count variables are based on scRepertiore.
 #' @param NA_col_analysis If NA's are present it will make them coloured as grey90
 #' @param font_type from the extrafont package; default: Times New Roman
 #' @param title_size Size of the graph plot in 20
 #' @param text_size Size of the text 12
 #' @param Legend_size Size of the text 12
+#' @param legend_position Position of the legend e.g., right, left, top, bottom, none
 #' @param height_px Height of plot 1200
 #' @param resolution_px Width of plot 144
 #' @param save_file save file to director or you can store as an object
@@ -417,21 +420,10 @@ clonal_plot_multi <- function (sc = sc,
 #' This section is to add the factor order for the graphs
 #'
 #' @param sc Add the merged and annotated file
-#' @param Samp_col Sample column name with the default being "Sample_Name"
-#' @param V_gene_sc column name vdj_gene_cdr3_AG_BD
-#' @param colourtype colour types include: default, hcl.colors, topo.colors, heat.colors, terrain.colors, rainbow, random
-#' @param NA_col_analysis If NA's are present it will make them coloured as grey90
-#' @param font_type from the extrafont package; default: Times New Roman
-#' @param title_size Size of the graph plot in 20
-#' @param text_size Size of the text 12
-#' @param Legend_size Size of the text 12
-#' @param height_px Height of plot 1200
-#' @param resolution_px Width of plot 144
-#' @param save_file save file to director or you can store as an object
+#' @param restrict_to_expanded restrict to expanded
 #' @import ggplot2
 #' @export
 #'
-
 
 selected_clonotypes <- function (sc = sc, restrict_to_expanded = F) {
   sc <- sc
@@ -482,7 +474,7 @@ selected_clonotypes <- function (sc = sc, restrict_to_expanded = F) {
 #' @param legend_position location of the legend: right, left, top, bottom or none
 #' @param height_px Height of plot 1200
 #' @param resolution_px Width of plot 144
-#' @param save_file save file to director or you can store as an object
+#' @param cutoff_priority cut-off for priority
 #' @import ggplot2
 #' @export
 #'

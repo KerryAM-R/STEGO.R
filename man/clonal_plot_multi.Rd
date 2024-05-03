@@ -30,9 +30,13 @@ clonal_plot_multi(
 
 \item{colourtype}{colour types include: default, hcl.colors, topo.colors, heat.colors, terrain.colors, rainbow, random}
 
+\item{Graph_type_bar}{This choses between the calculated frequency or binned based on count. Count variables are based on scRepertiore.}
+
 \item{NA_col_analysis}{If NA's are present it will make them coloured as grey90}
 
 \item{font_type}{from the extrafont package; default: Times New Roman}
+
+\item{legend_position}{Position of the legend e.g., right, left, top, bottom, none}
 
 \item{title_size}{Size of the graph plot in 20}
 
