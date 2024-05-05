@@ -6,7 +6,7 @@
 #' @import ComplexHeatmap
 #' @import corrplot
 #' @importFrom cowplot plot_grid
-#' @importFrom dplyr %>%
+#' @importFrom dplyr %>% select
 #' @importFrom DT DTOutput renderDT
 #' @importFrom extrafont fonttable
 #' @importFrom foreach foreach
@@ -39,18 +39,47 @@
 #' @import shinyBS
 #' @import shinybusy
 #' @import shinyWidgets
-#' @import showtext
-#' @importFrom stringr str_wrap str_to_title
+#' @importFrom stringr str_wrap str_to_title str_detect
 #' @import tibble
 #' @importFrom shinyjs useShinyjs toggle
 #' @importFrom colourpicker colourInput updateColourInput colourWidget
 #' @import chisq.posthoc.test
+#' @import reticulate
 #' @export
 
+
+
 runSTEGO <- function(){
+  # Check and load required packages
+  if (!requireNamespace("bslib", quietly = TRUE)) {
+    stop("Package 'bslib' is not installed.")
+  }
+  if (!requireNamespace("circlize", quietly = TRUE)) {
+    stop("Package 'circlize' is not installed.")
+  }
+  if (!requireNamespace("ClusTCR2", quietly = TRUE)) {
+    stop("Package 'ClusTCR2' is not installed.")
+  }
+  if (!requireNamespace("corrplot", quietly = TRUE)) {
+    stop("Package 'corrplot' is not installed.")
+  }
+  if (!requireNamespace("dplyr", quietly = TRUE)) {
+    stop("Package 'dplyr' is not installed.")
+  }
+  if (!requireNamespace("DT", quietly = TRUE)) {
+    stop("Package 'DT' is not installed.")
+  }
+  if (!requireNamespace("extrafont", quietly = TRUE)) {
+    stop("Package 'extrafont' is not installed.")
+  }
+  if (!requireNamespace("foreach", quietly = TRUE)) {
+    stop("Package 'foreach' is not installed.")
+  }
+  if (!requireNamespace("fpc", quietly = TRUE)) {
+    stop("Package 'fpc' is not installed.")
+  }
 
-  # base functions include: strsplit()
-
+  # Repeat this block for each package
 
   # font ------
   fonts <- fonttable()
@@ -95,7 +124,9 @@ runSTEGO <- function(){
   error_message_val_UMAP <- "Upload .h5Seurat file"
 
   #### check if OLGA is installed ----
-  require(reticulate)
+  if (!requireNamespace("reticulate", quietly = TRUE)) {
+    stop("Package 'reticulate' is not installed.")
+  }
   olgafunction_BD <- function(y) {
     olga <- system2('olga-compute_pgen', args=c("--humanTRB ",
                                                 y),
@@ -7457,7 +7488,7 @@ runSTEGO <- function(){
       )
       gene.names <- rownames(sc@assays$RNA$counts)
 
-      gene.names_hs <- gene.names[str_detect(gene.names, "^[A-Z][A-Z/0-9][A-Z/0-9]") &
+      gene.names_hs <- gene.names[stringr(gene.names, "^[A-Z][A-Z/0-9][A-Z/0-9]") &
                                     !str_detect(gene.names, "^X[0-9][0-9][0-9]") &
                                     !str_detect(gene.names, "^A[0-9][0-9][0-9]") & !str_detect(gene.names, "^AC[0-9][0-9][0-9]") &
                                     !str_detect(gene.names, "^B[0-9][0-9][0-9]") & !str_detect(gene.names, "^BC[0-9][0-9][0-9]") &
@@ -13430,8 +13461,7 @@ runSTEGO <- function(){
       }
 
       if (input$species_analysis == "mm") { # selectInput("datasource", "Data source",choices=c("10x_Genomics","BD_Rhapsody_Paired","BD_Rhapsody_AIRR")),
-        require(stringr)
-        geneSet$GeneSet <- str_to_title(geneSet$GeneSet)
+        geneSet$GeneSet <- stringr::str_to_title(geneSet$GeneSet)
       }
 
       for (i in 1:dim(geneSet)[1]) {
@@ -14112,8 +14142,8 @@ runSTEGO <- function(){
       }
 
       if (input$species_analysis == "mm") { # selectInput("datasource", "Data source",choices=c("10x_Genomics","BD_Rhapsody_Paired","BD_Rhapsody_AIRR")),
-        require(stringr)
-        geneSet$GeneSet <- str_to_title(geneSet$GeneSet)
+
+        geneSet$GeneSet <- stringr::str_to_title(geneSet$GeneSet)
       }
 
       for (i in 1:dim(geneSet)[1]) {
@@ -15054,8 +15084,7 @@ runSTEGO <- function(){
       }
 
       if (input$species_analysis == "mm") { # selectInput("datasource", "Data source",choices=c("10x_Genomics","BD_Rhapsody_Paired","BD_Rhapsody_AIRR")),
-        require(stringr)
-        geneSet$GeneSet <- str_to_title(geneSet$GeneSet)
+        geneSet$GeneSet <- stringr::str_to_title(geneSet$GeneSet)
       }
 
       for (i in 1:dim(geneSet)[1]) {

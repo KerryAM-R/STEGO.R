@@ -10,7 +10,8 @@ gg_fill_hue <- function(n) {
 #' @name Updating_IDs
 #' @description
 #' This function will add in the additional labels required for the analysis if needed. this process is also required to add in the reductions to the meta.data
-#'
+#' @importFrom plyr ddply mutate
+#' @import Seurat
 #' @param sc Add the merged and annotated file
 #' @param update_sc If you have added in the additional labels if required
 #' @param add_additional_lables Allows the user to add in other ID's
@@ -49,7 +50,7 @@ update_sc <- function (sc = sc,
 #' @name Summary_TCR_table
 #' @description
 #' This function will add in the additional labels required for the analysis if needed. this process is also required to add in the reductions to the meta.data
-#'
+#' @importFrom dplyr %>% select
 #' @param sc Add the merged and annotated file
 #' @param Samp_col Sample column name with the default being "Sample_Name"
 #' @param V_gene_sc The vdj and CDR3 sequence "vdj_gene_cdr3_AG_BD"
@@ -70,7 +71,6 @@ Summary_TCR_table <- function (sc = sc,
   unique.df <- unique(df[,names(df) %in% c( Samp_col, V_gene_sc) ])
   unique.df <- unique.df %>%
     select( Samp_col, everything())
-
   # count data of unique ------
   names(unique.df) <- c("group","chain")
   unique.df <- subset(unique.df,unique.df$chain != "NA")
