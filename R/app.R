@@ -6,7 +6,7 @@
 #' @import ComplexHeatmap
 #' @import corrplot
 #' @importFrom cowplot plot_grid
-#' @importFrom dplyr %>% select
+#' @importFrom dplyr %>% select case_when
 #' @importFrom DT DTOutput renderDT
 #' @importFrom extrafont fonttable
 #' @importFrom foreach foreach
