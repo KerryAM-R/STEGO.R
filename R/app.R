@@ -6,7 +6,7 @@
 #' @import ComplexHeatmap
 #' @import corrplot
 #' @importFrom cowplot plot_grid
-#' @importFrom dplyr %>% select case_when
+#' @importFrom dplyr %>% select case_when slice_max
 #' @importFrom DT DTOutput renderDT
 #' @importFrom extrafont fonttable
 #' @importFrom foreach foreach
@@ -16,7 +16,7 @@
 #' @import ggrepel
 #' @import ggridges
 #' @import ggseqlogo
-#' @importFrom grid grid.text textGrob
+#' @importFrom grid grid.text textGrob gpar
 #' @importFrom gridExtra grid.arrange arrangeGrob
 #' @import harmony
 #' @import iterators
@@ -12764,11 +12764,11 @@ runSTEGO <- function(){
       ht <- Heatmap(df.1,
                     heatmap_legend_param = list(
                       title = "Count",
-                      title_gp = gpar(
+                      title_gp = grid::gpar(
                         fontsize = input$Legend_size,
                         fontface = "bold", fontfamily = input$font_type
                       ),
-                      labels_gp = gpar(fontsize = input$Legend_size, fontfamily = input$font_type)
+                      labels_gp = grid::gpar(fontsize = input$Legend_size, fontfamily = input$font_type)
                     ),
                     col = colorRamp2(c(min.FC,med.FC, max.FC), c(input$min_FC_col, input$med_FC_col, input$max_FC_col)),
                     row_names_gp = grid::gpar(fontsize = input$text_size, fontfamily = input$font_type),
