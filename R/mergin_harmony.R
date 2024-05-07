@@ -7,11 +7,12 @@
 #' @param merge_RDS Set to TRUE once you have check the directory with the .rds file
 #' @param pattern_RDS uses the list.files function to identify the .rds objects for merging in the 2_scObj
 #' @param species Species: hs or mm, as the humans (hs) use upper case and the mouse (mm) gene use proper case.
+#' @import Seurat
+#' @importFrom purrr reduce
 #' @export
 
 merging_multi_SeuratRDS <- function(set_directory = "2_scObj/", merge_RDS = FALSE, pattern_RDS = ".rds$", species = "hs") {
-  require(purrr)
-  require(Seurat)
+
   x <- getwd()
   setwd(set_directory)
   message(paste(getwd(), "is the current work directory"))
@@ -96,6 +97,8 @@ merging_multi_SeuratRDS <- function(set_directory = "2_scObj/", merge_RDS = FALS
     merged_object@meta.data$Cell_Index <- rownames(merged_object@meta.data)
     sl <- object.size(merged_object)
     message(paste(total_merged, "files were merged into 1. The merged object is ", round(sl[1]/1000^3, 2), "Gb"))
+
+    #reset the working directory to the project directory
     setwd(x)
     return(merged_object)
   } else {
@@ -112,11 +115,11 @@ merging_multi_SeuratRDS <- function(set_directory = "2_scObj/", merge_RDS = FALS
 #'
 #' @param file merged seurat object
 #' @param feature_total_limit limit number of features to create the scaled data for the harmony batch correction.
+#' @import Seurat
 #' @export
 #'
 
 harmony_batch_correction_1_variableFeatures <- function(file = sc, feature_total_limit = 3000) {
-  require(Seurat)
   sc <- file
   all.genes <- rownames(sc)
   feature_total <- length(all.genes)
@@ -136,6 +139,7 @@ harmony_batch_correction_1_variableFeatures <- function(file = sc, feature_total
 #' @description
 #' Scales the Seurat object and ensure that the correct genes are present for annotating purposes
 #'
+#' @import Seurat
 #' @param file merged seurat object
 #' @param Seruat_version Seurat version
 #' @param species select either human 'hs' or mouse 'mm'
@@ -143,6 +147,7 @@ harmony_batch_correction_1_variableFeatures <- function(file = sc, feature_total
 #'
 
 harmony_batch_correction_2_Scaling <- function(file = sc,  Seruat_version = "V4",species = "hs") {
+
   sc <- file
   kmeans <- read.csv(system.file("Kmean","Kmeans.requires.annotation.csv",package = "STEGO.R"))
   if(Seruat_version=="V4") {
@@ -171,12 +176,13 @@ harmony_batch_correction_2_Scaling <- function(file = sc,  Seruat_version = "V4"
   sc
 }
 
-#' Create the finding the PCA, identifical to the Seurat pipeline
+#' Create the finding the PCA, identical to the Seurat pipeline
 #' @name harmony_batch_correction_3_PC
 #' @description
 #' This function is to aid im merging multiple Seurat object, which will then need to undergo harmony merging
 #'
-#' @param file merged seurat object
+#' @param file merged Seurat object
+#' @import Seurat
 #' @export
 #'
 
@@ -190,6 +196,8 @@ harmony_batch_correction_3_PC <- function(file = sc) {
 #' @description
 #' This function is to aid im merging multiple Seurat object, which will then need to undergo harmony merging
 #'
+#' @import Seurat
+#' @import harmony
 #' @param file merged seurat object
 #' @param selected_column_for_reduction select the column to use for the harmony e.g., orig.ident, Sample_name,
 #' @param Maximum_PC_to_use Maximum number principle components (PC) to use. Default30
@@ -198,7 +206,7 @@ harmony_batch_correction_3_PC <- function(file = sc) {
 #'
 
 harmony_batch_correction_4_Harmony <- function(file = sc,selected_column_for_reduction = "orig.ident", Maximum_PC_to_use = 30, resolution_of_clusters = 0.5) {
-  require("harmony")
+
   sc <- file
   sc <- sc %>%
     RunHarmony(selected_column_for_reduction, plot_convergence = TRUE)

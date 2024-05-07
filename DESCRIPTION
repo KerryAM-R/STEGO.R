@@ -1,6 +1,6 @@
 Package: STEGO.R
 Title: Analysis of single cell RNA-seq with paired T cell receptor repertiore datasets
-Version: 1.9.9-02
+Version: 1.9.9-04
 Authors@R: 
     person("Kerry", "Mullan", , "Kerry.Mullan@uantwerpen.be", role = c("aut", "cre"),
            comment = c(ORCID = "0000-0003-4400-1198"))
@@ -42,6 +42,7 @@ Imports:
     RColorBrewer,
     Rcpp,
     reshape2,
+    readr,
     reticulate,
     scales,
     scGate,
@@ -62,5 +63,5 @@ Remotes:
   github::omarwagih/ggseqlogo,
   github::MarioniLab/DropletUtils,
   github::jokergoo/ComplexHeatmap,
-  gitHub::immunogenomics/presto
+  github::immunogenomics/presto
 biocViews: SummarizedExperiment, SingleCellExperiment

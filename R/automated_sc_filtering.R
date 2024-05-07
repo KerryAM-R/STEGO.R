@@ -5,6 +5,8 @@
 #'
 #' @param folder This is the location of the matrix and md files from the automated pre-processing
 #' @param dataset_type Dataset types. Please use "10x" or "BD_rap". There is a slight difference in how the barcodes are labeled with 10x having strings while BD has numbers
+#' @import Seurat
+#' @import ggplot2
 #' @param species either select hs or mm. This is due to the gene case with all caps for hs and proper case for mm.
 #' @param features.min minimum number of features
 #' @param features.max Maximum features
@@ -27,8 +29,6 @@ automated_sc_filtering <- function(folder = "1_SeuratQC",
                                    limit_to_TCR_GEx = F,
                                    save_plots = T
 ) {
-  suppressMessages(require(Seurat))
-  suppressMessages(require(ggplot2))
 
   main_directory <- "1_SeuratQC"
   # main_directory <- main_directory
@@ -97,8 +97,9 @@ automated_sc_filtering <- function(folder = "1_SeuratQC",
         rm(mat)
         rm(mat2)
 
-        sc <- suppressMessages( PercentageFeatureSet(sc, pattern = "^Mt", col.name = "mtDNA"))
+        sc <- suppressMessages(PercentageFeatureSet(sc, pattern = "^Mt", col.name = "mtDNA"))
         sc <- suppressMessages(PercentageFeatureSet(sc, pattern = "Rp[sl]", col.name = "rRNA"))
+
       } else if (dataset_type == "BD_rap" && species == "mm") {
         names(mat) <- as.character(gsub("X", "", names(mat)))
         sc <- CreateSeuratObject(counts = mat, assay = "RNA", project = project_name2)

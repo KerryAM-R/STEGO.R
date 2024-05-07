@@ -4,6 +4,11 @@
 #' This function performs the pre-processing equivalent to STEP 1. This requires the user to name their folders indiv_group. Please use the _ to separate the values, this particularly important for the TCR_Explore as it will separate out the indiv from the group column.
 #' Each folder should contain one of each that have the following words: barcode, features, matrix and contig
 #'
+#' @importFrom dplyr %>% select case_when slice_max
+#' @importFrom plyr ddply mutate
+#' @importFrom lubridate today
+#' @importFrom Matrix readMM
+#' @importFrom readr write_csv
 #' @param downloadSeurat T or F; set to T if you want to include the current T cell model
 #' @param downloadTCRex Seurat object file. This requires the file to have the scaled data available for annotation purposes.
 #' @param downloadClusTCR generic annotations to identify T cells vs other immune cells.
@@ -16,11 +21,7 @@ preprocessing_10x <- function (downloadTCRex = F, downloadClusTCR = F, downloadT
                                downloadSeurat = F, csv_contig_file = "csv", main_directory = "0_RAW_files/")
 {
   message("Loading packages")
-  suppressMessages(require(magrittr))
-  suppressMessages(require(plyr))
-  suppressMessages(require(dplyr))
-  suppressMessages(require(lubridate))
-  suppressMessages(require(readr))
+
   message("loaded packages complete")
   main_directory = "0_RAW_files/"
   main_directory <- main_directory
@@ -93,7 +94,6 @@ preprocessing_10x <- function (downloadTCRex = F, downloadClusTCR = F, downloadT
       file_name_tcrex <- paste0("1_TCRex/", sub_directory,
                                 "_TCRex.tsv")
 
-
       if(file.exists(file_name_tcrex)) {
         message(file_name_tcrex," already exists")
       } else {
@@ -102,10 +102,11 @@ preprocessing_10x <- function (downloadTCRex = F, downloadClusTCR = F, downloadT
           names(contigs) <- gsub("call", "gene", names(contigs))
           names(contigs) <- gsub("junction_aa", "cdr3",
                                  names(contigs))
-        } else {
         }
+
         contigs2 <- contigs[, names(contigs) %in% c("v_gene",
                                                     "j_gene", "cdr3")]
+
         names(contigs2)[names(contigs2) %in% c("cdr3")] <- "CDR3_beta"
         if (nrow(contigs2[-c(grep("[*]", contigs2$CDR3_beta)),
         ] > 0)) {
@@ -132,14 +133,16 @@ preprocessing_10x <- function (downloadTCRex = F, downloadClusTCR = F, downloadT
         contigs2$TRBV_gene <- gsub("[*]0.", "", contigs2$TRBV_gene)
         contigs2$TRBJ_gene <- gsub("[*]0.", "", contigs2$TRBJ_gene)
         contigs2$cloneCount <- 1
-        calls_TCR_paired.fun3 <- ddply(contigs2, names(contigs2)[-c(4)],
+        calls_TCR_paired.fun3 <- plyr::ddply(contigs2, names(contigs2)[-c(4)],
                                        numcolwise(sum))
+
         calls_TCR_paired.fun3 <- calls_TCR_paired.fun3[grepl("TRB",
                                                              calls_TCR_paired.fun3$TRBV_gene), ]
-        file_name_tcrex <- paste0("1_TCRex/", sub_directory,
-                                  "_TCRex.tsv")
-        write.table(calls_TCR_paired.fun3, file_name_tcrex,
-                    row.names = F, sep = "\t", quote = F)
+
+        file_name_tcrex <- paste0("1_TCRex/", sub_directory, "_TCRex.tsv")
+
+        write.table(calls_TCR_paired.fun3, file_name_tcrex,row.names = F, sep = "\t", quote = F)
+
         message(paste0("Downloaded TCRex for ", sub_directory))
       }
     }
@@ -147,6 +150,7 @@ preprocessing_10x <- function (downloadTCRex = F, downloadClusTCR = F, downloadT
     if (downloadClusTCR) {
 
       AG_file_name_clust <- paste0("1_ClusTCR/", "AG_", sub_directory, "_clusTCR_10x.csv")
+
       BD_file_name_clust <- paste0("1_ClusTCR/", "BD_", sub_directory, "_clusTCR_10x.csv")
 
       if(file.exists(AG_file_name_clust) || file.exists(BD_file_name_clust)) {
@@ -157,10 +161,11 @@ preprocessing_10x <- function (downloadTCRex = F, downloadClusTCR = F, downloadT
         contigs <- TCR
         if (csv_contig_file == "tsv") {
           names(contigs) <- gsub("call", "gene", names(contigs))
-          names(contigs) <- gsub("junction_aa", "cdr3",
-                                 names(contigs))
-        } else {
+
+          names(contigs) <- gsub("junction_aa", "cdr3",names(contigs))
+
         }
+
         contigs2 <- contigs[names(contigs) %in% c("v_gene",
                                                   "cdr3")]
         contigs2$Sample_Name <- sub_directory

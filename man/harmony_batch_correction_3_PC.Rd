@@ -2,12 +2,12 @@
 % Please edit documentation in R/mergin_harmony.R
 \name{harmony_batch_correction_3_PC}
 \alias{harmony_batch_correction_3_PC}
-\title{Create the finding the PCA, identifical to the Seurat pipeline}
+\title{Create the finding the PCA, identical to the Seurat pipeline}
 \usage{
 harmony_batch_correction_3_PC(file = sc)
 }
 \arguments{
-\item{file}{merged seurat object}
+\item{file}{merged Seurat object}
 }
 \description{
 This function is to aid im merging multiple Seurat object, which will then need to undergo harmony merging
