@@ -46,6 +46,8 @@ Clonotypes_PublicLike(
 
 \item{Split_group_by_}{split the bar graph by this variable. Defaulted to Tcellfunction}
 
+\item{cutoff_priority}{cut-off for priority}
+
 \item{font_type}{from the extrafont package; default: Times New Roman}
 
 \item{NA_col_analysis}{If NA's are present it will make them coloured as grey90}
@@ -77,8 +79,6 @@ Clonotypes_PublicLike(
 \item{height_px}{Height of plot 1200}
 
 \item{resolution_px}{Width of plot 144}
-
-\item{save_file}{save file to director or you can store as an object}
 }
 \description{
 This section is to add the factor order for the graphs

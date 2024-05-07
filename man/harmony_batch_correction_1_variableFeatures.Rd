@@ -12,7 +12,7 @@ harmony_batch_correction_1_variableFeatures(
 \arguments{
 \item{file}{merged seurat object}
 
-\item{feature_total}{total number of Fetures to find. If there are fewer then the selected total, it will use that length instead}
+\item{feature_total_limit}{limit number of features to create the scaled data for the harmony batch correction.}
 }
 \description{
 This function is to aid im merging multiple Seurat object, which will then need to undergo harmony merging

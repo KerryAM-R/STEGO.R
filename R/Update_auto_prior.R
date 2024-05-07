@@ -1,6 +1,11 @@
 
 
 
+
+#' Default colours
+#' @name gg_fill_hue
+#' @export
+
 gg_fill_hue <- function(n) {
   hues = seq(15, 375, length = n + 1)
   hcl(h = hues, l = 65, c = 100)[1:n]
@@ -10,10 +15,12 @@ gg_fill_hue <- function(n) {
 #' @name Updating_IDs
 #' @description
 #' This function will add in the additional labels required for the analysis if needed. this process is also required to add in the reductions to the meta.data
-#'
+#' @importFrom plyr ddply mutate
+#' @import Seurat
 #' @param sc Add the merged and annotated file
 #' @param update_sc If you have added in the additional labels if required
-#' @param updateID file with the new id's based on '[colName]
+#' @param add_additional_lables Allows the user to add in other ID's
+#' @param updateID file with the new id's based on colName
 #' @param colName for the merging of the meta data with the updated ID, and will default to 'Sample_Name'
 #' @export
 
@@ -48,7 +55,7 @@ update_sc <- function (sc = sc,
 #' @name Summary_TCR_table
 #' @description
 #' This function will add in the additional labels required for the analysis if needed. this process is also required to add in the reductions to the meta.data
-#'
+#' @importFrom dplyr %>% select
 #' @param sc Add the merged and annotated file
 #' @param Samp_col Sample column name with the default being "Sample_Name"
 #' @param V_gene_sc The vdj and CDR3 sequence "vdj_gene_cdr3_AG_BD"
@@ -61,15 +68,13 @@ Summary_TCR_table <- function (sc = sc,
                                V_gene_sc = "vdj_gene_cdr3_AG_BD",
                                save_file = T
 ) {
-  library(magrittr)
-  library(dplyr)
+
   sc <- sc
   df <- sc@meta.data
   df <- as.data.frame(df)
   unique.df <- unique(df[,names(df) %in% c( Samp_col, V_gene_sc) ])
   unique.df <- unique.df %>%
     select( Samp_col, everything())
-
   # count data of unique ------
   names(unique.df) <- c("group","chain")
   unique.df <- subset(unique.df,unique.df$chain != "NA")
@@ -81,7 +86,8 @@ Summary_TCR_table <- function (sc = sc,
   names(Count_data) <- "V1"
 
   # Total count ------
-  unique.df <- (df[,names(df) %in% c(Samp_col, V_gene_sc) ])
+  unique.df <- df[,names(df) %in% c(Samp_col, V_gene_sc)]
+
   unique.df <- unique.df %>%
     select(all_of(Samp_col), everything())
 
@@ -98,7 +104,7 @@ Summary_TCR_table <- function (sc = sc,
   mat$CloneTotal <-sum_data$V1
   mat <- mat[order(mat$CloneTotal, decreasing = T),]
   mat <- mat[order(mat$TotalSamps, decreasing = T),]
-  # print(as.data.frame(mat))
+
   if(save_file) {
     newfolder <- "Clonotypes"
     newpath <- file.path(newfolder)
@@ -140,7 +146,10 @@ ID_Column_factor_function <- function (sc = sc, Samp_col = "Sample_Name") {
 #' @name Upset_plot_multi
 #' @description
 #' This section is to add the factor order for the graphs
-#'
+#' @import extrafont
+#' @import ComplexHeatmap
+#' @importFrom reshape2 acast
+#' @importFrom dplyr %>% select
 #' @param sc Add the merged and annotated file
 #' @param Samp_col Sample column name with the default being "Sample_Name"
 #' @param V_gene_sc column name vdj_gene_cdr3_AG_BD
@@ -161,10 +170,6 @@ Upset_plot_multi <- function (sc = sc,
                               height_px = 1200,
                               resolution_px = 144
 ) {
-  require(extrafont)
-  require(ComplexHeatmap)
-  require(dplyr)
-  require(reshape2)
 
   newfolder <- "Clonotypes"
   newpath <- file.path(newfolder)
@@ -245,8 +250,7 @@ TCR_Expanded <- function (sc = sc,
                           V_gene_sc = "vdj_gene_cdr3_AG_BD",
                           font_type = "Times New Roman"
 ) {
-  require(plyr)
-  require(extrafont)
+
   sc <- sc
   df3.meta <- sc@meta.data
   df3.meta2 <- df3.meta[, names(df3.meta) %in% c(Samp_col, V_gene_sc)]
@@ -315,11 +319,13 @@ TCR_Expanded <- function (sc = sc,
 #' @param Samp_col Sample column name with the default being "Sample_Name"
 #' @param V_gene_sc column name vdj_gene_cdr3_AG_BD
 #' @param colourtype colour types include: default, hcl.colors, topo.colors, heat.colors, terrain.colors, rainbow, random
+#' @param Graph_type_bar This choses between the calculated frequency or binned based on count. Count variables are based on scRepertiore.
 #' @param NA_col_analysis If NA's are present it will make them coloured as grey90
 #' @param font_type from the extrafont package; default: Times New Roman
 #' @param title_size Size of the graph plot in 20
 #' @param text_size Size of the text 12
 #' @param Legend_size Size of the text 12
+#' @param legend_position Position of the legend e.g., right, left, top, bottom, none
 #' @param height_px Height of plot 1200
 #' @param resolution_px Width of plot 144
 #' @param save_file save file to director or you can store as an object
@@ -343,7 +349,6 @@ clonal_plot_multi <- function (sc = sc,
                                save_file = F
 ) {
 
-  require(ggplot2)
   sc <- sc
 
   # this is already loaded and
@@ -417,21 +422,9 @@ clonal_plot_multi <- function (sc = sc,
 #' This section is to add the factor order for the graphs
 #'
 #' @param sc Add the merged and annotated file
-#' @param Samp_col Sample column name with the default being "Sample_Name"
-#' @param V_gene_sc column name vdj_gene_cdr3_AG_BD
-#' @param colourtype colour types include: default, hcl.colors, topo.colors, heat.colors, terrain.colors, rainbow, random
-#' @param NA_col_analysis If NA's are present it will make them coloured as grey90
-#' @param font_type from the extrafont package; default: Times New Roman
-#' @param title_size Size of the graph plot in 20
-#' @param text_size Size of the text 12
-#' @param Legend_size Size of the text 12
-#' @param height_px Height of plot 1200
-#' @param resolution_px Width of plot 144
-#' @param save_file save file to director or you can store as an object
-#' @import ggplot2
+#' @param restrict_to_expanded restrict to expanded
 #' @export
 #'
-
 
 selected_clonotypes <- function (sc = sc, restrict_to_expanded = F) {
   sc <- sc
@@ -482,8 +475,11 @@ selected_clonotypes <- function (sc = sc, restrict_to_expanded = F) {
 #' @param legend_position location of the legend: right, left, top, bottom or none
 #' @param height_px Height of plot 1200
 #' @param resolution_px Width of plot 144
-#' @param save_file save file to director or you can store as an object
+#' @param cutoff_priority cut-off for priority
 #' @import ggplot2
+#' @import Seurat
+#' @import scales
+#' @importFrom stringr str_wrap str_to_title str_detect
 #' @export
 #'
 
@@ -510,8 +506,7 @@ Clonotypes_PublicLike <- function (sc = sc,
                                    height_px = 1200,
                                    resolution_px = 144
 ) {
-  require(Seurat)
-  require(scales)
+
   sc <- sc
 
   newfolder = "Clonotypes/Multi/Private"
@@ -606,6 +601,7 @@ Clonotypes_PublicLike <- function (sc = sc,
 
 
       newfolder = "Clonotypes/Multi/Private/"
+
       top.name.clonotypes.top_png <- paste(newfolder,i,"_top_clone_",gsub("[/]","",gsub("&","",name.clone)),".png",sep="")
 
       num_width <- length(unique(dtop_clonotype_bar_code$Selected_group))
@@ -703,7 +699,7 @@ Clonotypes_PublicLike <- function (sc = sc,
         # }
 
         if(species_analysis == "mm") {
-          require(stringr)
+
           geneSet$GeneSet <- str_to_title(geneSet$GeneSet)
         }
 
@@ -763,6 +759,7 @@ Clonotypes_PublicLike <- function (sc = sc,
           geneSet2$Bonferroni <- p.adjust(geneSet2$p.val, method = "bonferroni")
 
           newfolder = "Clonotypes/Multi/Private/"
+
           top.name.overrep <- paste(newfolder,i,"_",gsub("[/]","",gsub("&","",name.clone)),"_OverRep.csv", sep = "")
           write.csv(geneSet2,top.name.overrep, row.names = F)
 

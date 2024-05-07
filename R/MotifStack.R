@@ -45,9 +45,7 @@ setClass(
 #' @rdname pcm-class
 #' @aliases $,pcm-method $<-,pcm-method
 #' @docType methods
-#' @param x An object of class \code{pcm}. For \code{getIC}, if parameter p is
-#' followed, x should be an object of matrix.  For \code{pcm2pfm}, x also could
-#' be an object of matrix.
+#' @param x An object of class \code{pcm}.
 #' @param y Not use.
 #' @param p p is the background frequency.
 #' @param n how many spaces should be added.
@@ -65,9 +63,6 @@ setClass(
 #' \item{coerce}{\code{signature(from = "pcm", to = "matrix")}: convert object
 #' pcm to matrix }
 #'
-#' \item{getIC}{\code{signature(x = "pcm",)} Calculate information content
-#' profile for position frequency matrix. }
-#'
 #' \item{matrixReverseComplement}{\code{signature(x = "pcm")} get the reverse
 #' complement of position frequency matrix.}
 #'
@@ -82,18 +77,6 @@ setClass(
 #' \item{as.data.frame}{convert \code{\link{pcm-class}} to a data.frame}
 #' \item{format}{return the name_pcm of \code{\link{pcm-class}}} }
 #' @keywords classes
-#' @examples
-#'
-#' pcm <- read.table(file.path(find.package("motifStack"), "extdata", "bin_SOLEXA.pcm"))
-#' pcm <- pcm[,3:ncol(pcm)]
-#' rownames(pcm) <- c("A","C","G","T")
-#' motif <- new("pcm", mat=as.matrix(pcm), name="bin_SOLEXA")
-#' getIC(motif)
-#' matrixReverseComplement(motif)
-#' as(motif,"matrix")
-#' pcm2pfm(motif)
-#' as.data.frame(motif)
-#' format(motif)
 #'
 #' @exportMethod `$` `$<-`
 setMethod("$", "pcm", function(x, name) slot(x, name))
@@ -248,7 +231,7 @@ setMethod("addBlank", signature(x="pcm", n="numeric", b="logical"), function(x, 
 #' @rdname pcm-class
 #' @exportMethod getIC
 #' @aliases getIC getIC,pcm,ANY-method
-setGeneric("getIC", function(x, p) standardGeneric("getIC"))
+setGeneric("getIC", function(x, p)  standardGeneric("getIC"))
 setMethod("getIC", signature(x="pcm"), function(x, p="missing"){
     mat<-pcm2pfm(x@mat)
     colSums(mat * (addPseudolog2(mat) - addPseudolog2(x@background)))

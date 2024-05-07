@@ -7,7 +7,7 @@
 #' @param file Seurat object file. This requires the file to have the scaled data available for annotation purposes.
 #' @param Threshold_test Testing the scGate threshold for identifying the sub populations. I recommend using this function in the case of BD Rhapsody immune panel,
 #' @param signature_for_testing signature for testing purposes. I use CD8A and CD8B for the default setting.
-#' #' @param threshold Set the scGate threshold; default is 0.2 for full models and 0.55 for focused models. Please check with the test_to compare the CD8A expression vs the projected.
+#' @param threshold Set the scGate threshold; default is 0.2 for full models and 0.55 for focused models. Please check with the test_to compare the CD8A expression vs the projected.
 #' @param immune_checkpoint T cell based stress models of exhaustion
 #' @param senescence T cell based stress models of Senescence
 #' @param Th1_cytokines T cell based stress models of IFNG and TNF
@@ -17,6 +17,8 @@
 #' @param Version This can be the seurat version V4 or V5; if you converted from python from anndata to seurat, use the python version
 #' @param chunk_size This is the total number of cells to perform the annotation model on. This is to prevent the out of memory issue when annotating. The cells are randomly selected. The same random seed is selected to ensure that random selection is consistent if this has to be repeated. The default is 50,000 cells (we recommend a maximum of 100,000 per loop). However, fewer cells may be required if your RAM is <32 Gb, to ensure each loop is completed.
 #' @param output_dir Where to store the outputs of this process. If you run this more than once, it is best to change the name.
+#' @import Seurat
+#' @import scGate
 #' @export
 
 scGate_annotating <- function (file = file,
@@ -31,8 +33,7 @@ scGate_annotating <- function (file = file,
 {
   set.seed(123) # Set a specific seed value, such as 123
   source(system.file("scGATE", "custom_df_scGATE.R", package = "STEGO.R"))
-  require(Seurat)
-  require(scGate)
+
   sc <- file
   len.obj <- dim(sc@meta.data)[1]
   threshold_scGate <- threshold
@@ -78,7 +79,7 @@ scGate_annotating <- function (file = file,
                  pos.thr = threshold_scGate,
                  reduction = reductionType, min.cells = 1)
 
-    DimPlot(sc) | FeaturePlot(sc, feature = signature_for_testing)
+    DimPlot(sc) | FeaturePlot(sc, features = signature_for_testing)
   } else {
 
 
