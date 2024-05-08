@@ -10,9 +10,6 @@ if (!require("devtools", quietly = TRUE))
 if (!require("usethis", quietly = TRUE))
   install.packages("usethis")
 
-if (!require("startup", quietly = TRUE))
-  install.packages("startup")
-
 if (!require("RcppArmadillo", quietly = TRUE))
   install.packages("RcppArmadillo")
 
@@ -39,7 +36,7 @@ STEGO.R::runSTEGO()
 
 
 
-
+# remove packages for testing purposes ------
 installed.packages.full <- as.data.frame(installed.packages())
 installed_packages <- rownames(installed.packages.full)
 
