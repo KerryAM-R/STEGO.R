@@ -11,7 +11,12 @@ install.packages("usethis")
 if (!require("startup", quietly = TRUE))
   install.packages("startup")
 
-remotes::install_github("KerryAM-R/STEGO.R", ref = "beta-version")
+# if (!require("BiocManager", quietly = TRUE))
+#   install.packages("BiocManager")
+#
+# BiocManager::install("IRanges")
+
+devtools::install_github("KerryAM-R/STEGO.R", ref = "beta-version")
 
 # installing STEGO
 install.packages("usethis")
