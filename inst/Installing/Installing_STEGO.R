@@ -13,13 +13,8 @@ install.packages("usethis")
 if (!require("startup", quietly = TRUE))
   install.packages("startup")
 
-if (!require("RcppArmadillo", quietly = TRUE))
-  install.packages("RcppArmadillo")
-
-# if (!require("BiocManager", quietly = TRUE))
-#   install.packages("BiocManager")
-#
-# BiocManager::install("IRanges")
+# if (!require("RcppArmadillo", quietly = TRUE))
+#   install.packages("RcppArmadillo")
 
 devtools::install_github("KerryAM-R/STEGO.R", ref = "beta-version")
 
@@ -39,7 +34,7 @@ n
 # STEGO.R::Load_required_packages()
 STEGO.R::runSTEGO()
 
-
+# dir.create("/Users/kerrymullan/Library/R/arm64/4.4/library", recursive = TRUE)
 
 
 
