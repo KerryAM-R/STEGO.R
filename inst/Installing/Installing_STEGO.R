@@ -8,13 +8,13 @@ if (!require("devtools", quietly = TRUE))
   install.packages("devtools")
 
 if (!require("usethis", quietly = TRUE))
-install.packages("usethis")
+  install.packages("usethis")
 
 if (!require("startup", quietly = TRUE))
   install.packages("startup")
 
-# if (!require("RcppArmadillo", quietly = TRUE))
-#   install.packages("RcppArmadillo")
+if (!require("RcppArmadillo", quietly = TRUE))
+  install.packages("RcppArmadillo")
 
 devtools::install_github("KerryAM-R/STEGO.R", ref = "beta-version")
 
