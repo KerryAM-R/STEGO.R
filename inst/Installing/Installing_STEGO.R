@@ -8,7 +8,7 @@ if (!require("devtools", quietly = TRUE))
 if (!require("usethis", quietly = TRUE))
 install.packages("usethis")
 
-devtools::install_github("KerryAM-R/STEGO.R")
+remotes::install_github("KerryAM-R/STEGO.R", ref = "beta-version")
 
 # installing STEGO
 install.packages("usethis")
@@ -25,7 +25,7 @@ n
 # Run the application
 # STEGO.R::Load_required_packages()
 STEGO.R::runSTEGO()
-remotes::install_github("KerryAM-R/STEGO.R", ref = "beta-version")
+
 
 
 

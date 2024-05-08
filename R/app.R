@@ -34,8 +34,6 @@
 #' @import scales
 #' @import scGate
 #' @import Seurat
-#' @import SeuratObject
-#' @import SeuratData
 #' @import shiny
 #' @import shinyBS
 #' @import shinybusy
