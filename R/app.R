@@ -1078,7 +1078,7 @@ runSTEGO <- function(){
                          div(class = "name-BD",textInput("project_name", h4("Sample/Project Name",class = "name-header2"), value = "")),
                          # selectInput("dataset_sc", "Choose a dataset:", choices = c("test_data_sc", "own_data_sc")),
                          # upload the file
-                         fileInput("file_SC", "Load count matrix (csv for BDrhap, csv.gz or .h5 for 10x", ),
+                         fileInput("file_SC", "Load count matrix (csv for BDrhap, csv.gz or .h5 for 10x)"),
                          fileInput("file_SC_meta", "Upload file meta.data file (.csv.gz or .csv)", ),
 
                          # selectInput("species","Species",choices = c("human","mouse","other")),
@@ -6693,20 +6693,21 @@ runSTEGO <- function(){
       Network_df <- vals_ClusTCR2$output_dt2
       set.seed(123)
       # ?netplot
-      netplot_ClusTCR2(Network_df,
-                       filter_plot = input$filter_connections,
-                       Clust_selected = input$selected_Cluster,
-                       label = input$lab_clust_by,
-                       Clust_column_name = "Clust_size_order",
-                       colour = input$colour_ClusTCR2,
-                       selected_text_size = input$text_size1,
-                       non_selected_text_size = input$text_size2,
-                       alpha_selected = 1, alpha_non_selected = 1,
-                       selected_text_col = "black",
-                       non_selected_text_col = "black",
-                       all.colour = input$colour_ClusTCR2_types,
-                       selected_col = input$sel_colour_netplot,
-                       non_selected_col = input$nonsel_colour_netplot
+
+      ClusTCR2::netplot_ClusTCR2(Network_df,
+                                 filter_plot = input$filter_connections,
+                                 Clust_selected = input$selected_Cluster,
+                                 label = input$lab_clust_by,
+                                 Clust_column_name = "Clust_size_order",
+                                 colour = input$colour_ClusTCR2,
+                                 selected_text_size = input$text_size1,
+                                 non_selected_text_size = input$text_size2,
+                                 alpha_selected = 1, alpha_non_selected = 1,
+                                 selected_text_col = "black",
+                                 non_selected_text_col = "black",
+                                 all.colour = input$colour_ClusTCR2_types,
+                                 selected_col = input$sel_colour_netplot,
+                                 non_selected_col = input$nonsel_colour_netplot
       )
     })
 
@@ -6827,9 +6828,13 @@ runSTEGO <- function(){
           dataframe <- read.csv(inFile_sc$datapath, row.names = 1)
         }else if (input$df_seruatobj_type == "BD Rhapsody (Human Immune panel)") {
           dataframe <- read.csv(inFile_sc$datapath, row.names = 1)
+
+
         } else {
           dataframe <- read.csv(inFile_sc$datapath, row.names = 1)
         }
+
+
         data_sc(dataframe)  # Update the reactive value with the new data
       }
     })
@@ -6883,17 +6888,27 @@ runSTEGO <- function(){
         df.test2 <- as.data.frame("file possibly too big and will not be rendered")
       } else if (input$df_seruatobj_type == "BD Rhapsody (Mouse)") {
         names(df.test) <- gsub("X", "", names(df.test))
-        df.test2 <- df.test[!rownames(df.test) %in% c("Cell_Index"), ]
+        rownames(df.test) <- make.unique(df.test$Gene_Name)
+        df.test2 <- df.test[, !names(df.test) %in% c("Gene_Name")]
+        df.test2 <- df.test2[!rownames(df.test2) %in% c("Cell_Index"), ]
+
       } else if (input$df_seruatobj_type == "BD Rhapsody (Full panel)") {
         names(df.test) <- gsub("X", "", names(df.test))
-        df.test2 <- df.test[!rownames(df.test) %in% c("Cell_Index"), ]
+        rownames(df.test) <- make.unique(df.test$Gene_Name)
+        df.test2 <- df.test[, !names(df.test) %in% c("Gene_Name")]
+        df.test2 <- df.test2[!rownames(df.test2) %in% c("Cell_Index"), ]
+
       } else if (input$df_seruatobj_type == "BD Rhapsody (Human Immune panel)") {
         names(df.test) <- gsub("X", "", names(df.test))
-        df.test2 <- df.test[!rownames(df.test) %in% c("Cell_Index"), ]
+        rownames(df.test) <- make.unique(df.test$Gene_Name)
+        df.test2 <- df.test[, !names(df.test) %in% c("Gene_Name")]
+        df.test2 <- df.test2[!rownames(df.test2) %in% c("Cell_Index"), ]
       } else {
         names(df.test) <- gsub("[.]", "-", names(df.test))
+        rownames(df.test) <- make.unique(df.test$Gene_Name)
         rownames(df.test) <- gsub("[.]", "-", rownames(df.test))
-        df.test2 <- df.test[!rownames(df.test) %in% c("Cell_Index"), ]
+        df.test2 <- df.test[, !names(df.test) %in% c("Gene_Name")]
+        df.test2 <- df.test2[!rownames(df.test2) %in% c("Cell_Index"), ]
       }
       head(df.test2)[1:6]
     })
@@ -6931,21 +6946,31 @@ runSTEGO <- function(){
           sc
         } else if (input$df_seruatobj_type == "BD Rhapsody (Mouse)") {
           names(df.test) <- as.character(gsub("X", "", names(df.test)))
+          rownames(df.test) <- make.unique(df.test$Gene_Name)
+          df.test2 <- df.test[, !names(df.test) %in% c("Gene_Name")]
+          df.test2 <- df.test2[!rownames(df.test2) %in% c("Cell_Index"), ]
 
-
-          sc <- CreateSeuratObject(counts = df.test, assay = "RNA", project = input$project_name)
+          sc <- CreateSeuratObject(counts = df.test2, assay = "RNA", project = input$project_name)
           sc <- PercentageFeatureSet(sc, pattern = "^Mt", col.name = "mtDNA")
           sc <- PercentageFeatureSet(sc, pattern = "Rp[sl]", col.name = "rRNA")
           sc
         } else if (input$df_seruatobj_type == "BD Rhapsody (Full panel)") {
           names(df.test) <- as.character(gsub("X", "", names(df.test)))
-          sc <- CreateSeuratObject(counts = df.test, assay = "RNA", project = input$project_name)
+          rownames(df.test) <- make.unique(df.test$Gene_Name)
+          df.test2 <- df.test[, !names(df.test) %in% c("Gene_Name")]
+          df.test2 <- df.test2[!rownames(df.test2) %in% c("Cell_Index"), ]
+
+          sc <- CreateSeuratObject(counts = df.test2, assay = "RNA", project = input$project_name)
           sc <- PercentageFeatureSet(sc, pattern = "^MT-", col.name = "mtDNA")
           sc <- PercentageFeatureSet(sc, pattern = "^RP[SL]", col.name = "rRNA")
           sc
         } else if (input$df_seruatobj_type == "BD Rhapsody (Human Immune panel)") {
           names(df.test) <- as.character(gsub("X", "", names(df.test)))
-          sc <- CreateSeuratObject(counts = df.test, assay = "RNA", project = input$project_name)
+          rownames(df.test) <- make.unique(df.test$Gene_Name)
+          df.test2 <- df.test[, !names(df.test) %in% c("Gene_Name")]
+          df.test2 <- df.test2[!rownames(df.test2) %in% c("Cell_Index"), ]
+
+          sc <- CreateSeuratObject(counts = df.test2, assay = "RNA", project = input$project_name)
           sc <- PercentageFeatureSet(sc, pattern = "^MT-", col.name = "mtDNA")
           sc <- PercentageFeatureSet(sc, pattern = "^RP[SL]", col.name = "rRNA")
           sc
@@ -8323,7 +8348,7 @@ runSTEGO <- function(){
                      ncores = 8, min.cells = 1
         )
 
-        sc@meta.data$Tcell.function <- sc@meta.data$scGate_multi
+        sc@meta.data$Tcellfunction <- sc@meta.data$scGate_multi
         sc@meta.data <- sc@meta.data[!grepl("_UCell", names(sc@meta.data))]
         sc@meta.data <- sc@meta.data[!grepl("is.pure_", names(sc@meta.data))]
         sc@meta.data <- sc@meta.data[!grepl("scGate_multi", names(sc@meta.data))]
@@ -8337,7 +8362,7 @@ runSTEGO <- function(){
     output$scGATE_verbatum_function <- renderPrint({
       if (input$hs_function_scGATE) {
         sc <- scGATE_anno_function()
-        table(sc@meta.data$Tcell.function)
+        table(sc@meta.data$Tcellfunction)
       } else {
         print("Function not run")
       }
@@ -9422,11 +9447,11 @@ runSTEGO <- function(){
 
       if (input$hs_function_scGATE) {
         obj <- scGATE_anno_function()
-        sc@meta.data$Tcellfunction <- obj@meta.data$Tcell.function
-        sc@meta.data$major <-ifelse(grepl("CD4",sc@meta.data$Tcell.function),"CD4",
-                                    ifelse(grepl("CD8ab",sc@meta.data$Tcell.function),"CD8ab",
-                                           ifelse(grepl("CD8aa",sc@meta.data$Tcell.function),"CD8ab",
-                                                  ifelse(grepl("DN",sc@meta.data$Tcell.function),"DN","other"
+        sc@meta.data$Tcellfunction <- obj@meta.data$Tcellfunction
+        sc@meta.data$major <-ifelse(grepl("CD4",sc@meta.data$Tcellfunction),"CD4",
+                                    ifelse(grepl("CD8ab",sc@meta.data$Tcellfunction),"CD8ab",
+                                           ifelse(grepl("CD8aa",sc@meta.data$Tcellfunction),"CD8ab",
+                                                  ifelse(grepl("DN",sc@meta.data$Tcellfunction),"DN","other"
                                                   ))))
 
       }
