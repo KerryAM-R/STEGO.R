@@ -1,7 +1,3 @@
-
-
-
-
 #' Default colours
 #' @name gg_fill_hue
 #' @export

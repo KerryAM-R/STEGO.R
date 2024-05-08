@@ -46,9 +46,10 @@
 #' @importFrom colourpicker colourInput updateColourInput colourWidget
 #' @import chisq.posthoc.test
 #' @import reticulate
+#' @examples
+#' library(STEGO.R)
+#' runSTEGO()
 #' @export
-
-
 
 runSTEGO <- function(){
 

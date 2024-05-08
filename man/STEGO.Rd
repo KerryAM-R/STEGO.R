@@ -10,3 +10,7 @@ runSTEGO()
 \description{
 STEGO application
 }
+\examples{
+library(STEGO.R)
+runSTEGO()
+}
