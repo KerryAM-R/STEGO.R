@@ -14,6 +14,12 @@ if (!require("RcppArmadillo", quietly = TRUE))
   install.packages("RcppArmadillo")
 
 devtools::install_github("KerryAM-R/STEGO.R", ref = "beta-version")
+3
+n
+
+
+if (!require("startup", quietly = TRUE))
+  install.packages("startup")
 
 # installing STEGO
 install.packages("usethis")
@@ -45,7 +51,7 @@ base_packages
 
 installed_packages[installed_packages %in% c(base_packages,"fonts","extrafont")]
 
-non_base_packages <- installed_packages[!installed_packages %in% c(base_packages,"fonts","extrafont")]
+non_base_packages <- installed_packages[!installed_packages %in% c(base_packages,"fonts","extrafont","startup")]
 non_base_packages %in% "fonts"
 
 remove.packages(non_base_packages)
