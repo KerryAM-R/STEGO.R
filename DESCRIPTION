@@ -55,10 +55,10 @@ Imports:
     tibble,
     chisq.posthoc.test,
     stats4
+biocViews: SummarizedExperiment, SingleCellExperiment, ComplexHeatmap
 Remotes:
   github::KerryAM-R/ClusTCR2,
   github::omarwagih/ggseqlogo,
   github::MarioniLab/DropletUtils,
-  github::jokergoo/ComplexHeatmap,
   github::immunogenomics/presto
-biocViews: SummarizedExperiment, SingleCellExperiment
+

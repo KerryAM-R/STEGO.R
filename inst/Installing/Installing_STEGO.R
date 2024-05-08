@@ -34,8 +34,7 @@ STEGO.R::runSTEGO()
 
 
 .libPaths(.libPaths()[!grepl("/Users/kerrymullan/Library/R/arm64/4.4/library", .libPaths())])
-.libPaths("/Library/Frameworks/R.framework/Versions/4.4-arm64/Resources/library")
-.libPaths("/Users/kerrymullan/Library/R/arm64/4.4/library")
+.libPaths()
 
 installed.packages.full <- as.data.frame(installed.packages())
 installed_packages <- rownames(installed.packages.full)
