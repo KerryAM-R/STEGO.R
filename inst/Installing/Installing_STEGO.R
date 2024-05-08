@@ -8,6 +8,9 @@ if (!require("devtools", quietly = TRUE))
 if (!require("usethis", quietly = TRUE))
 install.packages("usethis")
 
+if (!require("startup", quietly = TRUE))
+  install.packages("startup")
+
 remotes::install_github("KerryAM-R/STEGO.R", ref = "beta-version")
 
 # installing STEGO
