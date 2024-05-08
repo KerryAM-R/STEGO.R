@@ -58,7 +58,6 @@ Imports:
 biocViews: BiocParallel,Biobase, S4Vectors, IRanges, BiocNeighbors, GenomeInfoDb, GenomicRanges,  SingleCellExperiment, SummarizedExperiment, ComplexHeatmap
 Remotes:
   github::KerryAM-R/ClusTCR2,
-  github::omarwagih/ggseqlogo,
   github::MarioniLab/DropletUtils,
   github::immunogenomics/presto
 
