@@ -1,3 +1,5 @@
+Sys.setenv("CXX" = "g++")
+
 # installing STEGO.R
 if (!require("BiocManager", quietly = TRUE))
   install.packages("BiocManager")
@@ -10,6 +12,9 @@ install.packages("usethis")
 
 if (!require("startup", quietly = TRUE))
   install.packages("startup")
+
+if (!require("RcppArmadillo", quietly = TRUE))
+  install.packages("RcppArmadillo")
 
 # if (!require("BiocManager", quietly = TRUE))
 #   install.packages("BiocManager")
@@ -38,8 +43,7 @@ STEGO.R::runSTEGO()
 
 
 
-.libPaths(.libPaths()[!grepl("/Users/kerrymullan/Library/R/arm64/4.4/library", .libPaths())])
-.libPaths()
+
 
 installed.packages.full <- as.data.frame(installed.packages())
 installed_packages <- rownames(installed.packages.full)
@@ -47,8 +51,9 @@ installed_packages <- rownames(installed.packages.full)
 base_packages <- rownames(installed.packages.full[installed.packages.full$Priority %in% "base",])
 base_packages
 
+installed_packages[installed_packages %in% c(base_packages,"fonts","extrafont")]
 
-non_base_packages <- installed_packages[!installed_packages %in% base_packages]
-non_base_packages
+non_base_packages <- installed_packages[!installed_packages %in% c(base_packages,"fonts","extrafont")]
+non_base_packages %in% "fonts"
 
 remove.packages(non_base_packages)
