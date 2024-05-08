@@ -55,7 +55,7 @@ Imports:
     tibble,
     chisq.posthoc.test,
     stats4
-biocViews: BiocParallel,Biobase, BiocNeighbors, GenomeInfoDb,GenomicRanges, S4Vectors, IRanges, ComplexHeatmap, SingleCellExperiment, SummarizedExperiment
+biocViews: BiocParallel,Biobase, S4Vectors, IRanges, BiocNeighbors, GenomeInfoDb,GenomicRanges,  SingleCellExperiment, SummarizedExperiment, ComplexHeatmap
 Remotes:
   github::KerryAM-R/ClusTCR2,
   github::omarwagih/ggseqlogo,
