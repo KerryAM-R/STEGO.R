@@ -7,11 +7,14 @@
 #' @param merge_RDS Set to TRUE once you have check the directory with the .rds file
 #' @param pattern_RDS uses the list.files function to identify the .rds objects for merging in the 2_scObj
 #' @param species Species: hs or mm, as the humans (hs) use upper case and the mouse (mm) gene use proper case.
+#' @param reduce_size Reduce the size of the matrix to the most variable TCR based on the 12 dataset.
+#' @param own_features If you want to reduce the file size to your own features change to TRUE
+#' @param own_features_df Add in a data frame of the list of your features of one column only.
 #' @import Seurat
 #' @importFrom purrr reduce
 #' @export
 
-merging_multi_SeuratRDS <- function(set_directory = "2_scObj/", merge_RDS = FALSE, pattern_RDS = ".rds$", species = "hs") {
+merging_multi_SeuratRDS <- function(set_directory = "2_scObj/", merge_RDS = FALSE, pattern_RDS = ".rds$", species = "hs", reduce_size = TRUE, own_features = FALSE, own_features_df = own_features_df) {
 
   x <- getwd()
   setwd(set_directory)
@@ -29,16 +32,30 @@ merging_multi_SeuratRDS <- function(set_directory = "2_scObj/", merge_RDS = FALS
       model.name <- strsplit(temp[i], ".rds")[[1]]
       message("Reading in file ", i, " of ", len.temp, ": ", model.name)
       list.sc[[model.name]] <- readRDS(temp[i])
+      if (reduce_size) {
       message("Reducing file size ", model.name)
+
 
       if (species == "hs") {
         features.var.needed <- read.csv(system.file("Kmean", "human.variable.features.csv", package = "STEGO.R"))
+        if (own_features) {
+          features.var.needed <- as.data.frame(own_features_df)
+          names(features.var.needed) <- "V1"
+        }
+
       } else {
         features.var.needed <- read.csv(system.file("Kmean", "human.variable.features.csv", package = "STEGO.R"))
         features.var.needed$V1 <- tools::toTitleCase(features.var.needed$V1)
+
+        if (own_features) {
+          features.var.needed <- own_features_df
+          features.var.needed$V1 <- tools::toTitleCase(features.var.needed$V1)
+        }
       }
 
+
       list.sc[[i]] <- subset(list.sc[[i]], features = features.var.needed$V1)
+      }
       message("Adding project name")
       list.sc[[i]]@project.name <- model.name
       message("Updating cell Index ID")

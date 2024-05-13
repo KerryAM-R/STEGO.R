@@ -7358,42 +7358,7 @@ runSTEGO <- function(){
     getData <- reactive({
       inFile.seq <- input$file1_rds.file
 
-      num <- dim(inFile.seq)[1]
-      seurat_object_list <- vector("list", length = num)
-      list.sc <- list()
-
-      for (i in 1:num) {
-        message("reading in file ", i)
-        list.sc[[i]] <- LoadSeuratRds(input$file1_rds.file[[i, "datapath"]])
-
-        message("Reducing file size for file ", i)
-        if (input$sample.type.source_merging == "hs") {
-
-
-          if (length(data_user_genes())>0 & input$include_additional_genes) {
-            features.var.needed <- read.csv(system.file("Kmean", "human.variable.features.csv", package = "STEGO.R"))
-            user_required_genes <- data_user_genes()
-            names(user_required_genes) <- "V1"
-
-            features.var.needed <- merge(features.var.needed,user_required_genes,by = "V1",all = T)
-            print(dim(features.var.needed))
-          } else {
-
-            features.var.needed <- read.csv(system.file("Kmean", "human.variable.features.csv", package = "STEGO.R"))
-          }
-
-          list.sc[[i]] <- subset(list.sc[[i]], features = features.var.needed$V1)
-        } else {
-          features.var.needed <- read.csv(system.file("Kmean", "human.variable.features.csv", package = "STEGO.R"))
-          features.var.needed$V1 <- str_to_title(features.var.needed$V1)
-          list.sc[[i]] <- subset(list.sc[[i]], features = features.var.needed$V1)
-        }
-        list.sc[[i]]@project.name <- "SeuratProject"
-        message("Updating cell Index ID for ", i)
-        list.sc[[i]]@meta.data$Cell_Index_old <- list.sc[[i]]@meta.data$Cell_Index
-        sl <- object.size(list.sc[[i]])
-        message(i, " object is ", round(sl[1] / 1000^3, 1), " Gb in R env.")
-      }
+      list.sc <- merging_multi_SeuratRDS(inFile.seq)
 
 
       list.sc

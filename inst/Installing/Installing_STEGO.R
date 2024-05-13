@@ -10,13 +10,16 @@ if (!require("devtools", quietly = TRUE))
 if (!require("usethis", quietly = TRUE))
   install.packages("usethis")
 
-if (!require("RcppArmadillo", quietly = TRUE))
-  install.packages("RcppArmadillo")
+# if (!require("RcppArmadillo", quietly = TRUE))
+#   install.packages("RcppArmadillo")
+
+# BiocManager::install("ComplexHeatmap")
 
 devtools::install_github("KerryAM-R/STEGO.R", ref = "beta-version")
-3
-n
 
+3 # do not re-install stuff.
+y # for Seurat source
+y # biomanager packages for the M1 or greater chip
 
 if (!require("startup", quietly = TRUE))
   install.packages("startup")
@@ -55,3 +58,4 @@ non_base_packages <- installed_packages[!installed_packages %in% c(base_packages
 non_base_packages %in% "fonts"
 
 remove.packages(non_base_packages)
+
