@@ -230,7 +230,7 @@ runSTEGO <- function(){
         z-index: 1000; /* Ensure hint text is above other elements */
         font-size: 14px; /* Decreased font size */
         text-align: center; /* Center alignment */
-        width: 150px; /* Set width to prevent stretching */
+        width: 300px; /* Set width to prevent stretching */
         color: #41b000; /* Change text color to purple */
       }
       .hint-icon {
@@ -334,7 +334,7 @@ runSTEGO <- function(){
       ))
     ),
 
-    # change highlighted text in dropdown menue ------
+    # change highlighted text in drop down menu ------
     tags$head(tags$style(
       HTML("
                   .selectize-dropdown-content .active {
@@ -869,7 +869,7 @@ runSTEGO <- function(){
           sidebarLayout(
             sidebarPanel(
               width = 3,
-              div(class = "name-BD",textInput("project_name5", h4("Name of Project", class = "name-header2"), value = "")),
+              div(class = "name-BD",textInput("project_name5", h4("Name of Project", class = "name-header2"), value = "Proj")),
               # textInput("", "Name of Project", value = ""),
               fileInput("file1_h5Seurat.file",
                         "Choose .h5Seurat files from directory",
@@ -1353,15 +1353,25 @@ runSTEGO <- function(){
             # Sidebar with a slider input
             sidebarPanel(
               id = "tPanel5", style = "overflow-y:scroll; max-height: 800px; position:relative;", width = 3,
-              div(class = "name-BD",textInput("project_name2", h4("Name of Project", class = "name-header2"), value = "")),
+              div(class = "name-BD",textInput("project_name2", h4("Name of Project", class = "name-header2"), value = "Proj")),
               conditionalPanel(
                 condition = "input.Merging_and_batching == 'Merging_Harmony'",
                 selectInput("sample.type.source_merging", "Species", choices = c("hs", "mm")),
+
                 fileInput("file1_rds.file",
                           "Choose .rds files from merging",
                           multiple = TRUE,
                           accept = c("rds", ".rds")
                 ),
+                fluidRow(
+                  column(12, div(class = "select-input-container",
+                                 checkboxInput("reduce_file_size",p("Reduce number of transcripts?",class = "name-header2"),value = T),
+                                 div(class = "hint-icon",
+                                     icon("circle-question", lib = "font-awesome")),
+                                 div(class = "hint-text", "When merging a large number of cells, to ensure this works on the local computer this will limit the transcripts to the most variable based on the 5036 transcripts that includes the 5000 most variabloe and those required for annotating e.g., CD8A"),
+                  )
+                  )),
+
                 checkboxInput("include_additional_genes",p("Add additional genes?",class = "name-header2"),value = F),
 
                 fileInput("file_user_genes",
@@ -1369,13 +1379,15 @@ runSTEGO <- function(){
                           multiple = F,
                           accept = c("csv", ".csv","comma")
                 ),
-
+                div(class = "select-input-container",
+                    checkboxInput("different_tech",p("Remove genes that are not present in all runs",class = "name-header2"),value = F)),
                 downloadButton("downloaddf_SeruatObj_merged2", "Download Merged Seurat")
               ),
               conditionalPanel(
                 condition = "input.Merging_and_batching != 'Merging_Harmony'",
                 selectInput("Seruat_version_merge", "Seurat Version", choices = c("V4", "V5"), selected = "V5"),
                 selectInput("sample.type.source", "Species", choices = ""),
+
                 fileInput("file1_rds.Merged_data_for_harmony",
                           "Upload .rds file for Batch correction with Harmony",
                           multiple = F,
@@ -1397,6 +1409,12 @@ runSTEGO <- function(){
                            tabPanel(
                              "uploaded",
                              verbatimTextOutput("testing_mult"),
+                             conditionalPanel(condition = "input.different_tech'",
+                                              verbatimTextOutput("testing_mult_same"),
+                             ),
+
+
+
                            ),
                            tabPanel(
                              "merging",
@@ -1440,6 +1458,8 @@ runSTEGO <- function(){
                            tabPanel(
                              "harmony",
                              div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
+                             selectInput("meta_data_for_harmony","Group by variable", choices = "", selected = ""),
+                             numericInput("Theta_for_harmony","theta",value = 2),
                              actionButton("run_harmony", "Run Harmony"),
                              div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
                              verbatimTextOutput("harmony_verbrose"),
@@ -7358,11 +7378,60 @@ runSTEGO <- function(){
     getData <- reactive({
       inFile.seq <- input$file1_rds.file
 
-      list.sc <- merging_multi_SeuratRDS(inFile.seq)
+      num <- dim(inFile.seq)[1]
+      seurat_object_list <- vector("list", length = num)
+      list.sc <- list()
+
+      for (i in 1:num) {
+        message("reading in file ", i)
+        File_order <- paste0("File_",i)
+        list.sc[[File_order]] <- LoadSeuratRds(input$file1_rds.file[[i, "datapath"]])
+
+        message("Reducing file size for file ", File_order)
+
+        if(input$reduce_file_size) {
+
+
+          if (input$sample.type.source_merging == "hs") {
+
+
+            if (length(data_user_genes())>0 & input$include_additional_genes) {
+              features.var.needed <- read.csv(system.file("Kmean", "human.variable.features.csv", package = "STEGO.R"))
+
+
+              user_required_genes <- data_user_genes()
+              names(user_required_genes) <- "V1"
+
+              features.var.needed <- merge(features.var.needed,user_required_genes,by = "V1",all = T)
+              print(dim(features.var.needed))
+            } else {
+
+              features.var.needed <- read.csv(system.file("Kmean", "human.variable.features.csv", package = "STEGO.R"))
+            }
+            list.sc[[File_order]] <- subset(list.sc[[File_order]], features = features.var.needed$V1)
+          } else {
+            features.var.needed <- read.csv(system.file("Kmean", "human.variable.features.csv", package = "STEGO.R"))
+            features.var.needed$V1 <- str_to_title(features.var.needed$V1)
+
+            list.sc[[File_order]] <- subset(list.sc[[File_order]], features = features.var.needed$V1)
+          }
+
+        }
+
+        list.sc[[File_order]]@project.name <- "SeuratProject"
+        message("Updating cell Index ID for ", File_order)
+        list.sc[[File_order]]@meta.data$Cell_Index_old <- list.sc[[File_order]]@meta.data$Cell_Index
+        sl <- object.size(list.sc[[File_order]])
+        message(File_order, " object is ", round(sl[1] / 1000^3, 1), " Gb in R env.")
+      }
+
 
 
       list.sc
+
+
     })
+
 
     output$testing_mult <- renderPrint({
       sc <- input$file1_rds.file
@@ -7374,7 +7443,62 @@ runSTEGO <- function(){
       )
       df <- getData()
       print(df)
+
+
+
     })
+
+    getData_same <- reactive({
+      sc <- input$file1_rds.file
+      validate(
+        need(
+          nrow(sc) > 0,
+          "Upload files"
+        )
+      )
+      df <- getData()
+      list.sc <- df
+
+      if(input$different_tech) {
+        File_order <- paste0("File_",1)
+        message(File_order, " extracting overlapping features with all datasets")
+        print(list.sc[[File_order]])
+        feature_list <- as.data.frame(rownames(list.sc[[File_order]]@assays$RNA@features))
+        names(feature_list) <- "V1"
+        print(head(feature_list))
+        #
+        for (j in 2:length(list.sc)) {
+          message("creating list of",j)
+          File_order <- paste0("File_",j)
+          feature_list2 <- as.data.frame(rownames(list.sc[[File_order]]@assays$RNA@features))
+          names(feature_list2) <- "V1"
+          message("merging",j)
+          feature_list <- merge(feature_list,feature_list2)
+        }
+
+        for (i in 1:length(list.sc)) {
+          File_order <- paste0("File_",i)
+          list.sc[[File_order]] <- subset(list.sc[[File_order]], features = feature_list$V1)
+
+        }
+        print(dim(feature_list))
+        print(list.sc)
+      }
+    })
+
+
+    output$testing_mult_same <- renderPrint({
+      sc <- input$file1_rds.file
+      validate(
+        need(
+          nrow(sc) > 0,
+          "Upload files"
+        )
+      )
+      df <- getData_same()
+      print(df)
+    })
+
 
     merging_sc_ob <- reactiveValues(Val2 = NULL)
 
@@ -7386,21 +7510,66 @@ runSTEGO <- function(){
           "Upload files"
         )
       )
-      list_seurat <- getData()
-      num <- length(list_seurat)
+      if(input$different_tech) {
+        list.sc <- getData_same()
+      } else {
+        list.sc <- getData()
+      }
+
+
+      num <- length(list.sc)
       validate(
         need(input$project_name2 != "", "Please enter a project name.")
       )
 
-      if (num > 1) {
-        merged_object <- reduce(list_seurat, function(x, y) {
-          merge(x = x, y = y, merge.data = TRUE, project = input$project_name2)
-        })
-        sl <- object.size(merged_object)
-        message("The merged object is ", round(sl[1] / 1000^3, 1), " Gb in R env.")
-        getData
-        merging_sc_ob$Val2 <- merged_object
+      sl <- object.size(list.sc)
+      message("stored object is ", round(sl[1]/1000^3, 1), " Gb")
+
+      # Calculate the number of loops required
+      num_objects <- length(list.sc)
+      num_loops <- ceiling(log2(num_objects))
+      print(names(list.sc))
+      # Print the estimated number of loops required
+      message("Estimated number of loops required: ", num_loops)
+
+      # Initialize loop count
+      loop_count <- 0
+
+      message("Loop ", loop_count, "of estimated", num_loops)
+      # Loop to merge pairs of Seurat objects until only one is left
+      while (length(list.sc) > 1) {
+        loop_count <- loop_count + 1
+
+        temp_list <- list()
+        for (i in seq(1, length(list.sc), by = 2)) {
+          if (i < length(list.sc)) {
+            # Merge two Seurat objects
+            merged_names <- paste(names(list.sc)[i], names(list.sc)[i + 1], sep = " and ")
+            message(merged_names)
+            new_name <- paste0("Merged_", i)
+            message("Merging ", merged_names, " to create ", new_name)
+            merged_object <- suppressWarnings(merge(x = list.sc[[i]], y = list.sc[[i + 1]], merge.data = TRUE))
+            temp_list[[new_name]] <- merged_object
+
+            # Calculate size of merged object
+            merged_size <- object.size(merged_object)
+            message("Size of ", new_name, ": ", round(merged_size[1] / 1000^3, 1), " Gb")
+          } else {
+            # If there's an odd number of objects, keep the last one as is
+            temp_list[[names(list.sc)[i]]] <- list.sc[[i]]
+          }
+        }
+
+        list.sc <- temp_list
       }
+      # Calculate total number of files merged
+      merged_object <- list.sc[[1]]
+      merged_object@meta.data$Cell_Index_old <- merged_object@meta.data$Cell_Index
+      merged_object@meta.data$Cell_Index <- rownames(merged_object@meta.data)
+      sl <- object.size(merged_object)
+      message(paste("files were merged into 1. The merged object is ", round(sl[1]/1000^3, 2), "Gb"))
+      merging_sc_ob$Val2 <- merged_object
+
     })
     merging_sc <- reactive({
       merging_sc_ob$Val2
@@ -7694,6 +7863,37 @@ runSTEGO <- function(){
       head(sc@meta.data)
     })
 
+
+    observe({
+      sc <- Vals_norm2$Norm1
+      validate(
+        need(
+          nrow(sc) > 0,
+          "Upload .h5Seurat object"
+        )
+      )
+      if (length(sc)>0) {
+        df3.meta <- sc@meta.data
+        updateSelectInput(
+          session,
+          "meta_data_for_harmony",
+          choices = names(df3.meta),
+          selected = "orig.ident"
+        )
+      } else {
+        updateSelectInput(
+          session,
+          "meta_data_for_harmony",
+          choices = "orig.ident",
+          selected = "orig.ident"
+        )
+      }
+
+
+    })
+
+
+
     observeEvent(input$run_harmony, {
       sc <- Vals_norm2$Norm1
       validate(
@@ -7702,7 +7902,14 @@ runSTEGO <- function(){
           "Run Harmony"
         )
       )
-      sc <- RunHarmony(sc, "orig.ident", plot_convergence = TRUE)
+
+      print(unique(sc@meta.data[,names(sc@meta.data) %in% input$meta_data_for_harmony]))
+
+      sc@meta.data$group_by_var <- sc@meta.data[,names(sc@meta.data) %in% input$meta_data_for_harmony]
+      sc@meta.data$group_by_var[is.na(sc@meta.data$group_by_var)] <- "unknown"
+
+
+      sc <- RunHarmony(sc, group.by.vars = "group_by_var", theta = input$Theta_for_harmony, plot_convergence = TRUE)
       Vals_norm3$Norm1 <- sc
     })
 
