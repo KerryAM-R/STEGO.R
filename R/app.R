@@ -233,6 +233,20 @@ runSTEGO <- function(){
         width: 300px; /* Set width to prevent stretching */
         color: #41b000; /* Change text color to purple */
       }
+      .hint-text2 {
+        display: none;
+        position: absolute; /* Change position to relative */
+        background-color: #d8ffc2;
+        border: 4px solid #41b000;
+        border-radius: 5px;
+        padding: 12px; /* Increased padding */
+        z-index: 1000; /* Ensure hint text is above other elements */
+        font-size: 14px; /* Decreased font size */
+        text-align: center; /* Center alignment */
+        width: 150px; /* Set width to prevent stretching */
+        color: #41b000; /* Change text color to purple */
+      }
+
       .hint-icon {
         font-size: 24px; /* Decreased icon size */
         color: #41b000; /* Change icon color to #41b000 (purple) */
@@ -258,10 +272,10 @@ runSTEGO <- function(){
         "
       $(document).ready(function(){
         $('.hint-icon, .hint-icon2').mouseenter(function(){
-          $(this).siblings('.hint-text').show();
+          $(this).siblings('.hint-text, .hint-text2').show();
         });
         $('.hint-icon, .hint-icon2').mouseleave(function(){
-          $(this).siblings('.hint-text').hide();
+          $(this).siblings('.hint-text, .hint-text2').hide();
         });
       });
       "
@@ -1409,8 +1423,9 @@ runSTEGO <- function(){
                            tabPanel(
                              "uploaded",
                              verbatimTextOutput("testing_mult"),
-                             conditionalPanel(condition = "input.different_tech'",
-                                              verbatimTextOutput("testing_mult_same"),
+                             conditionalPanel(
+                               condition = "input.different_tech == true",
+                               verbatimTextOutput("testing_mult_same"),
                              ),
 
 
@@ -1876,17 +1891,13 @@ runSTEGO <- function(){
                                 numericInput("cutoff.expanded", "Cut off greater than", value = 0.5, step = 0.01, min = 0, max = 0.99),
                                 div(class = "hint-icon",
                                     icon("circle-question", lib = "font-awesome")),
-                                div(class = "hint-text", "This is to calculate the number of clone cut-off that is deemed to be expanded. e.g., >0.5 == 50% or more of the repertoire that is used to calculate the count cut-off for what is deemed to be expanded"),
+                                div(class = "hint-text2", "This is to calculate the number of clone cut-off that is deemed to be expanded. e.g., >0.5 == 50% or more of the repertoire that is used to calculate the count cut-off for what is deemed to be expanded"),
                   )
                   ),
+
+                  h5("Expansion Dot plot"),
                   column(6,
-                         # div(class = "select-input-container",
                          uiOutput("cut.off_expanded2"),
-                         # div(class = "hint-icon",
-                         #     icon("triangle-exclamation", lib = "font-awesome")),
-                         # div(class = "hint-text", "Select an option to continue."),
-                         #
-                         # )
 
                   ),
                   column(6, uiOutput("classification_to_add2")),
@@ -1924,6 +1935,7 @@ runSTEGO <- function(){
             conditionalPanel(
               condition = "input.PriorTBMods == 'PriorRepertoireTB' || input.check_up_files == 'TCR_and_GEX_tb' ",
               fluidRow(
+                h4("Cut-offs for Find Marker"),
                 column(4, numericInput("min_point_", "Min point cut off", value = 0.25)),
                 column(4, numericInput("LogFC_", "Min LogFC cut off", value = 0.25)),
                 column(4, numericInput("pval.ex.filter", "adj.p-val cut-off", value = 0.1)),
@@ -2506,7 +2518,6 @@ runSTEGO <- function(){
                                       div(DT::DTOutput("Ridge_chart_alpha_gamma_stat_comp")),
                                       downloadButton("downloaddf_FindMarker_Top", "Download stat (Right)")
                                     ),
-                                    # dotplot top-----
                                     tabPanel(
                                       "Dotplot",
                                       fluidRow(
@@ -2546,9 +2557,13 @@ runSTEGO <- function(){
                                   ),
                          ),
 
-                         # expanded phenotype -----
+                         ###### Expanded phenotype -----
                          tabPanel("Expanded",
                                   value = "Expanded",
+                                  fluidRow(
+                                    column(9, selectInput("Graph_split_order_EXP","Order of expanded",choices = "", width = "900px", multiple = TRUE),),
+                                    column(3,  actionButton("caluclate_Exp","Calc Expansion Stats"),)
+                                  ),
                                   tabsetPanel(
                                     id = "ExPan",
                                     tabPanel(
@@ -2604,6 +2619,18 @@ runSTEGO <- function(){
                                                column(2, style = "margin-top: 25px;", downloadButton("downloadPlotPNG_all_expression_dotplot_ex", "Download PNG"))
                                              ),
                                     ),
+                                    tabPanel("Violin",
+                                             selectInput("Ex_transcripts_of_interest","Significant genes",choices = ""),
+                                             # tabsetPanel(
+                                             # tabPanel("Table",
+                                             #          div(DT::DTOutput("Selected_transcript_exp")),
+                                             #          ),
+                                             tabPanel("plot",
+                                                      plotOutput("Violin_expanded_sig", height = "600px")
+                                             )
+                                             # )
+                                    ),
+
                                     tabPanel("Over-representation",
                                              value = "ExPan_OvRep",
                                              fluidRow(
@@ -11813,6 +11840,8 @@ runSTEGO <- function(){
           error_message_val_UMAP
         )
       )
+      req(input$Samp_col, input$Colour_By_this_overview)
+
       meta.data <- sc@meta.data
       totals <- meta.data[, names(meta.data) %in% c(input$Samp_col, input$Colour_By_this_overview)]
 
@@ -11826,6 +11855,14 @@ runSTEGO <- function(){
 
     # output$Percent_tab <- renderPrint(escape = FALSE, filter = list(position = 'top', clear = FALSE), options = list(autoWidth = FALSE, lengthMenu = c(2,5,10,20,50,100), pageLength = 10, scrollX = TRUE),{
     output$Percent_tab <- renderPrint({
+      sc <- UMAP_metadata_with_labs()
+      validate(
+        need(
+          nrow(sc) > 0,
+          error_message_val_UMAP
+        )
+      )
+      req(Percent_tab_df())
       percent <- Percent_tab_df()
 
       round(percent,4)
@@ -13820,67 +13857,7 @@ runSTEGO <- function(){
       Expansion_check_tb()
     })
 
-    select_group_metadata_ex <- reactive({
-      df <- Expansion_check_tb()
-      validate(
-        need(
-          nrow(df) > 0,
-          error_message_val1
-        )
-      )
-      req(df)
-      df2 <- df$expansion.status
-      df2 <- as.data.frame(df2)
-      df2
-    })
-    observe({
-      df2 <- select_group_metadata_ex()
 
-      validate(
-        need(
-          nrow(df2) > 0,
-          error_message_val1
-        )
-      )
-      req(df2)
-
-      df2 <- as.data.frame(df2)
-      names(df2) <- "V1"
-      df2 <- as.data.frame(df2[order(df2$V1), ])
-      names(df2) <- "V1"
-      df2
-      df2 <- subset(df2, df2$V1 != "NA")
-      df3 <- unique(df2$V1)
-      updateSelectizeInput(
-        session,
-        "selected_Indiv_Ex_1",
-        choices = df3,
-        selected = df3[1]
-      )
-    })
-    observe({
-      df2 <- select_group_metadata_ex()
-      validate(
-        need(
-          nrow(df2) > 0,
-          error_message_val1
-        )
-      )
-      req(df2)
-      df2 <- as.data.frame(df2)
-      names(df2) <- "V1"
-      df2 <- as.data.frame(df2[order(df2$V1), ])
-      names(df2) <- "V1"
-      df2
-      df2 <- subset(df2, df2$V1 != "NA")
-      df3 <- unique(df2$V1)
-      updateSelectizeInput(
-        session,
-        "selected_Indiv_Ex_2",
-        choices = df3,
-        selected = df3[2]
-      )
-    })
     # #
     # # ### table check ------
     Vals_Expans_table <- reactiveValues(output_expTab = NULL)
@@ -14097,6 +14074,8 @@ runSTEGO <- function(){
       }
       df
     })
+
+
     output$UMAP_Expanded <- renderPlot({
       UMAP_Expanded_plot()
     })
@@ -14130,7 +14109,7 @@ runSTEGO <- function(){
       }, contentType = "application/png" # MIME type of the image
     )
 
-    # ## Expanded Violin plot ------
+    # ## Expanded stats plot ------
     #
     compare.stat_Expanded <- reactive({
       sc <- UMAP_metadata_with_labs()
@@ -14140,18 +14119,101 @@ runSTEGO <- function(){
           error_message_val_UMAP
         )
       )
-      req(input$Samp_col, Expansion_check_tb())
-      md <- sc@meta.data
+      req(input$Samp_col, Expansion_check_tb(), input$Split_group_by_)
+
+      md <- as.data.frame(sc@meta.data)
+
+      print(md[, names(md) %in% input$Split_group_by_])
+
+      md$ID_Column <- md[, names(md) %in% input$Split_group_by_]
+      print(dim(md))
+      print(names(md))
       ex.md <- Expansion_check_tb()
+      print(dim(ex.md))
       ex.md2 <- ex.md[, names(ex.md) %in% c("Cell_Index", "expanded.singlets", "Selected_Status", "expansion.status")]
       md.ex <- merge(md, ex.md2, sort = F)
+
       rownames(md.ex) <- md.ex$Cell_Index
       sc@meta.data <- md.ex
+      print(sc)
       sc
     })
-    # Vals_expanded.stats <- reactiveValues(output_ex1=NULL)
 
-    Vals_expanded.stats <- reactive({
+
+    select_group_metadata_ex <- reactive({
+      sc <- compare.stat_Expanded()
+      validate(
+        need(
+          nrow(sc) > 0,
+          error_message_val1
+        )
+      )
+      req(sc)
+      df <- sc@meta.data
+      df2 <- df$expansion.status
+      df2 <- as.data.frame(df2)
+      df2
+    })
+
+
+    observe({
+      df2 <- select_group_metadata_ex()
+
+      validate(
+        need(
+          nrow(df2) > 0,
+          error_message_val1
+        )
+      )
+      req(df2)
+      req(input$Split_group_by_)
+      df2 <- as.data.frame(df2)
+      names(df2) <- "V1"
+      df2 <- as.data.frame(df2[order(df2$V1), ])
+      names(df2) <- "V1"
+      df2
+      df2 <- subset(df2, df2$V1 != "NA")
+      df3 <- unique(df2$V1)
+
+      updateSelectizeInput(
+        session,
+        "selected_Indiv_Ex_1",
+        choices = df3,
+        selected = df3[1]
+      )
+    })
+    observe({
+      df2 <- select_group_metadata_ex()
+      validate(
+        need(
+          nrow(df2) > 0,
+          error_message_val1
+        )
+      )
+      req(df2)
+      print(unique(df2))
+
+      df2 <- as.data.frame(df2)
+      names(df2) <- "V1"
+      df2 <- as.data.frame(df2[order(df2$V1), ])
+      names(df2) <- "V1"
+      df2
+      df2 <- subset(df2, df2$V1 != "NA")
+      df3 <- unique(df2$V1)
+      req(df3)
+
+      updateSelectizeInput(
+        session,
+        "selected_Indiv_Ex_2",
+        choices = df3,
+        selected = df3[2]
+      )
+    })
+
+    Vals_expanded.stats_fn <- reactiveValues(output_ex1=NULL)
+
+    observeEvent(input$caluclate_Exp, {
+
       sc <- data_sc_pro()
 
       validate(
@@ -14160,21 +14222,38 @@ runSTEGO <- function(){
           error_message_val_sc
         )
       )
-
+      req(Expansion_check_tb())
       sc <- compare.stat_Expanded()
+
       req(input$selected_Indiv_Ex_1, input$selected_Indiv_Ex_2, input$pval.ex.filter)
-      # head(sc@meta.data)
+
       message("Updating Ident")
       Idents(object = sc) <- sc@meta.data$expansion.status
 
       min.pct.expression <- input$min_point_ # standard setting: 0.25
       min.logfc <- input$LogFC_ # 0.25 is standard
+
       message(paste0(" Calculating markers for cluster ", c(input$selected_Indiv_Ex_1), " vs ", c(input$selected_Indiv_Ex_2)))
+
+      req(input$selected_Indiv_Ex_1,input$selected_Indiv_Ex_2)
+
       markers.fm.list <- FindMarkers(sc, ident.1 = input$selected_Indiv_Ex_1, ident.2 = c(input$selected_Indiv_Ex_2), min.pct = min.pct.expression, logfc.threshold = min.logfc, only.pos = TRUE)
       markers.fm.list2 <- subset(markers.fm.list, markers.fm.list$p_val_adj < input$pval.ex.filter)
       Vals_expanded.stats <- as.data.frame(markers.fm.list2)
-      Vals_expanded.stats
+      rownames(Vals_expanded.stats) <- make.unique(rownames(Vals_expanded.stats))
+      Vals_expanded.stats_fn$output_ex1 <- Vals_expanded.stats
+
     })
+
+    Vals_expanded.stats <- reactive({
+
+      Vals_expanded.stats_fn$output_ex1
+    })
+
+
+
+
+
 
     output$compare.stat_Ex <- DT::renderDT(escape = FALSE, options = list(autoWidth = FALSE, lengthMenu = c(2, 5, 10, 20, 50, 100), pageLength = 10, scrollX = TRUE), {
       sc <- data_sc_pro()
@@ -14182,9 +14261,10 @@ runSTEGO <- function(){
       validate(
         need(
           nrow(sc) > 0,
-          error_message_val_sc
+          "Calc Expansion Stats"
         )
       )
+      req(Expansion_check_tb())
       as.data.frame(Vals_expanded.stats())
     })
     #
@@ -14197,6 +14277,11 @@ runSTEGO <- function(){
         write.csv(df, file, row.names = T)
       }
     )
+
+    # req(Expansion_check_tb())
+
+
+
     ## dot plot Expanded ----
     relative_expression_plot_ex <- reactive({
       sc <- Vals_expanded.stats()
@@ -14206,6 +14291,8 @@ runSTEGO <- function(){
           error_message_val_sc
         )
       )
+
+
 
       if (input$restrict.dotpot == "yes") {
         list.names <- rownames(Vals_expanded.stats())[1:input$restrict.dotpot.num]
@@ -14220,6 +14307,8 @@ runSTEGO <- function(){
           error_message_val_sc
         )
       )
+
+      sc@meta.data$expansion.status <- factor(sc@meta.data$expansion.status, levels = input$Graph_split_order_EXP)
 
       Idents(object = sc) <- sc@meta.data$expansion.status
 
@@ -14238,7 +14327,11 @@ runSTEGO <- function(){
         ) +
         scale_colour_gradient2(low = input$low.dotplot.ex, mid = input$middle.dotplot.ex, high = input$high.dotplot.ex) +
         scale_x_discrete(labels = label_wrap(20)) +
-        scale_y_discrete(labels = label_wrap(20))
+        scale_y_discrete(labels = label_wrap(20)) +
+        guides(
+          color = guide_colorbar(title = "Average", order = 1),
+          size = guide_legend(title = "Percent", order = 1)
+        )
     })
 
     output$relative_expression_dotplot_ex <- renderPlot({
@@ -14275,13 +14368,102 @@ runSTEGO <- function(){
       }, contentType = "application/png" # MIME type of the image
     )
 
-    # expression for one gene -------
+    #### violin plot of detected gene differences -------
 
-    Violin_chart_Expanded <- reactive({
-      df <- Ridge_chart_alpha_gamma_df()
+    observe({
+      stats_for_violin <- Vals_expanded.stats()
+      req(stats_for_violin)
 
-      df2$Selected_function <- factor(df2$Selected_function, levels = input$Graph_split_order)
-      ggplot(df2, aes(y = get(input$string.data_Exp_top), x = Selected_function, fill = Selected_function)) +
+      genes <- as.data.frame(rownames(stats_for_violin))
+      names(genes) <- "V1"
+
+      updateSelectInput(
+        session,
+        "Ex_transcripts_of_interest",
+        choices = genes$V1,
+        selected = genes$V1[1]
+      )
+
+    })
+
+
+    observe({
+      df2 <- Expansion_check_tb()
+      validate(
+        need(
+          nrow(df2) > 0,
+          error_message_val1
+        )
+      )
+      req(df2)
+
+      df2 <- as.data.frame(unique(df2$expansion.status))
+      names(df2) <- "V1"
+      df2 <- (df2[order(df2$V1), ])
+
+      updateSelectInput(
+        session,
+        "Graph_split_order_EXP",
+        choices = df2,
+        selected = df2
+      )
+    })
+
+
+    # extracting table for 1 gene ------
+
+    expanded_with_gene <- reactive({
+      sc <- data_sc_pro()
+      validate(
+        need(
+          nrow(sc) > 0,
+          error_message_val1
+        )
+      )
+      req(input$Colour_By_this_Expanded, input$wrap_row)
+      top_BD_cluster <- Expansion_check_tb()
+      req(Expansion_check_tb())
+
+      gene <- as.data.frame(sc@assays$RNA$scale.data[rownames(sc@assays$RNA$scale.data)  %in% input$Ex_transcripts_of_interest,])
+      names(gene) <- "V1"
+      gene$Cell_Index <- rownames(gene)
+      print(input$Graph_split_order_EXP)
+      md_gene <- merge(top_BD_cluster,gene,by = "Cell_Index")
+      md_gene
+    })
+
+    output$Selected_transcript_exp <- DT::renderDT(escape = FALSE, filter = list(position = "top", clear = FALSE), options = list(autoWidth = FALSE, lengthMenu = c(1, 2, 5, 10, 20, 50, 100), pageLength = 20, scrollX = TRUE), {
+      sc <- data_sc_pro()
+      validate(
+        need(
+          nrow(sc) > 0,
+          error_message_val1
+        )
+      )
+      expanded_with_gene()
+
+    })
+
+    output$Selected_transcript_exp <- DT::renderDT(escape = FALSE, filter = list(position = "top", clear = FALSE), options = list(autoWidth = FALSE, lengthMenu = c(1, 2, 5, 10, 20, 50, 100), pageLength = 20, scrollX = TRUE), {
+      expanded_with_gene()
+    })
+
+    # Violin plot for expanded -------
+
+    Violin_plot_Exp <- reactive({
+      sc <- data_sc_pro()
+
+      validate(
+        need(
+          nrow(sc) > 0,
+          error_message_val_sc
+        )
+      )
+
+
+      md_gene <- expanded_with_gene()
+
+      ggplot(md_gene, aes(y = V1, x = expansion.status, fill = expansion.status)) +
         geom_violin() +
         geom_jitter(height = 0, width = 0.1) +
         theme(legend.position = "none", ) +
@@ -14289,18 +14471,28 @@ runSTEGO <- function(){
         theme(
           axis.title.y = element_blank(),
           axis.text.y = element_text(colour = "black", family = input$font_type, size = input$text_size),
-          axis.text.x = element_text(colour = "black", family = input$font_type, size = input$text_size, angle = 90),
           axis.title.x = element_blank(),
+          axis.text.x = element_text(colour = "black", family = input$font_type, size = input$text_size, angle = 90),
+          title = element_blank(),
           legend.text = element_text(colour = "black", size = input$Legend_size, family = input$font_type),
-          legend.title = element_text(colour = "black", size = 20, family = input$font_type),
-          legend.position = "none",
-          title = element_text(colour = "black", family = input$font_type, size = input$Strip_text_size),
-        ) +
-        ggtitle(input$string.data_Exp_top)
+          legend.title = element_blank(),
+          legend.position = input$legend_position,
+        )
+
     })
 
+    output$Violin_expanded_sig <- renderPlot({
+      sc <- data_sc_pro()
 
+      validate(
+        need(
+          nrow(sc) > 0,
+          error_message_val_sc
+        )
+      )
+      Violin_plot_Exp()
 
+    })
 
     # Over representation analysis for Expanded  -----
 
@@ -14407,15 +14599,9 @@ runSTEGO <- function(){
 
       geneSet2 <- geneSet2[order(geneSet2$p.val, decreasing = F), ]
       geneSet2 <- subset(geneSet2, geneSet2$in.geneset >= input$in.geneset.cutoff_Exp)
-
-      # geneSet2 <- subset(geneSet2,geneSet2$pval.BH.adj<=input$adjust_cutoff_Exp)
-
       geneSet2$FDR <- p.adjust(geneSet2$p.val, method = "fdr")
       geneSet2$Bonferroni <- p.adjust(geneSet2$p.val, method = "bonferroni")
       geneSet2 <- subset(geneSet2, geneSet2$p.val <= input$p.val_cutoff_Exp)
-      # name.list <- c("Geneset_ID","p.val","FDR","Bonferroni","OR","lowerCI","upperCI","in.geneset.name","in.geneset","background.geneset","total.sig","background.genes","background.geneset.name")
-      # geneSet2 <- geneSet2 %>%
-      #   select(all_of(name.list), everything())
       geneSet2
     })
     output$Over_rep_Exp_Tab <- DT::renderDT(escape = FALSE, filter = list(position = "top", clear = FALSE), options = list(autoWidth = FALSE, lengthMenu = c(1, 2, 5, 10, 20, 50, 100), pageLength = 20, scrollX = TRUE), {
@@ -14662,8 +14848,8 @@ runSTEGO <- function(){
       df3.meta <- df3.meta[order(df3.meta$selected, decreasing = F), ]
       df3.meta$selected <- factor(df3.meta$selected, levels = unique(df3.meta$selected))
 
-
-      names(df3.meta)[names(df3.meta) %in% input$Split_group_by_] <- "ID_Column"
+      df3.meta$ID_Column <-  df3.meta[,names(df3.meta) %in% input$Split_group_by_]
+      # names(df3.meta)[names(df3.meta) %in% input$Split_group_by_] <- "ID_Column"
       # df3.meta$ID_Column<- df3.meta[df3.meta$ID_Column %in% input$ID_Column_factor,]
       df3.meta$ID_Column <- factor(df3.meta$ID_Column, levels = input$Graph_split_order)
 
@@ -15583,15 +15769,27 @@ runSTEGO <- function(){
       clusterBD
     })
 
+    clusTCR_values <- reactiveValues(clusta = NULL)
+
     clusTCR2_df <- reactive({
+      sc <- UMAP_metadata_with_labs()
+      validate(
+        need(
+          nrow(sc) > 0,
+          "Upload File"
+        )
+      )
+      req(sc)
+
       if (input$chain_TCR == "TRAG") {
+        req(AG_cluster())
         if (length(data_sc_clusTCR_AG()) > 0) {
-          req(AG_cluster())
           AG_cluster()
         }
       } else if (input$chain_TCR == "TRBD") {
+        req(BD_cluster())
         if (length(data_sc_clusTCR_BD()) > 0) {
-          req(BD_cluster())
+
           BD_cluster()
         }
       } else {
@@ -16651,18 +16849,18 @@ runSTEGO <- function(){
         }
 
       } else {
-        print(names(original_data))
+        # print(names(original_data))
         # print(check_sep())
         group_data <- original_data[,!names(original_data) %in% c("background", "TotalSamps", "CloneTotal")]
-        print(head(group_data))
+        # print(head(group_data))
         group_data$CloneTotal <- rowSums(group_data)
-        print(head(group_data))
+        # print(head(group_data))
         group_data <- subset(group_data,group_data$CloneTotal >= input$Total_count_Cutoff)
         group_data <- group_data[order(-group_data$CloneTotal), ]
         top_5_group <- group_data %>%
           slice_max(CloneTotal, n = input$max_number_lines_to)
         top_5_group <- top_5_group[, !grepl("^CloneTotal", colnames(top_5_group))]
-        print(top_5_group)
+        # print(top_5_group)
         top_5_data_list <- top_5_group
         print(top_5_data_list)
       }
