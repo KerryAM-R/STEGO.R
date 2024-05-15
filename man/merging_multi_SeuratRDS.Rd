@@ -8,7 +8,10 @@ merging_multi_SeuratRDS(
   set_directory = "2_scObj/",
   merge_RDS = FALSE,
   pattern_RDS = ".rds$",
-  species = "hs"
+  species = "hs",
+  reduce_size = TRUE,
+  own_features = FALSE,
+  own_features_df = own_features_df
 )
 }
 \arguments{
@@ -19,6 +22,12 @@ merging_multi_SeuratRDS(
 \item{pattern_RDS}{uses the list.files function to identify the .rds objects for merging in the 2_scObj}
 
 \item{species}{Species: hs or mm, as the humans (hs) use upper case and the mouse (mm) gene use proper case.}
+
+\item{reduce_size}{Reduce the size of the matrix to the most variable TCR based on the 12 dataset.}
+
+\item{own_features}{If you want to reduce the file size to your own features change to TRUE}
+
+\item{own_features_df}{Add in a data frame of the list of your features of one column only.}
 }
 \description{
 This function is to aid im merging multiple Seurat object, which will then need to undergo harmony merging after this step. We have included a loop that merges two Seurat objects at a time to ensure time efficiency  (exponentially gets smaller from the previous sequential merging process)
