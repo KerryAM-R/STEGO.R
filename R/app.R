@@ -1798,19 +1798,18 @@ runSTEGO <- function(){
         ),
         ###################
         # 3e. Re-formatting meta-data  -------
-        # 3e. Re-formatting meta-data  -------
         tabPanel("3e. Re-formatting meta-data",
                  sidebarLayout(
                    sidebarPanel(
                      id = "tPanelSamps", style = "max-height: 800px; position:relative;", width = 3,
                      div(class = "name-BD",textInput("project_name_remove", h4("Name of Project", class = "name-header2"), value = "")),
-
+                     selectInput("sample_name_column_reformatting","Sample_Name column in meta-data",""),
                      fileInput("file1_rds.reformatting_md",
                                "Upload .rds file",
                                multiple = F,
                                accept = c(".rds", "rds")
                      ),
-                     selectInput("Type_of_source_formatting", "TCR_processing", choices = c("scRepertiore","manual")),
+                     # selectInput("Type_of_source_formatting", "TCR_processing", choices = c("scRepertiore","manual")),
                      downloadButton("downloaddf_SeruatObj_reformatted_md", "Download .rds"),
                    ),
                    mainPanel(
@@ -3425,7 +3424,10 @@ runSTEGO <- function(){
 
       navbarMenu("Info",
                  tabPanel("Helpful resources"),
-                 tabPanel("Citing STEGO.R"),
+                 tabPanel("Citing STEGO.R",
+                          # add a notebook with STEGO.R preprint and the other articles
+
+                 ),
                  tabPanel("Session Information")
 
 
@@ -3482,7 +3484,7 @@ runSTEGO <- function(){
         }
       },
       content = function(file) {
-        SaveSeuratRds(Convert_to_RDS(), file)
+        saveRDS(Convert_to_RDS(), file)
         # SaveH5Seurat(vals_meta.sc$metadata_SCobj,file)
       }
     )
@@ -7490,7 +7492,7 @@ runSTEGO <- function(){
         paste(input$project_name, "_SC.obj_", x, ".rds", sep = "")
       },
       content = function(file) {
-        SaveSeuratRds(vals_meta.sc$metadata_SCobj, file)
+        saveRDS(vals_meta.sc$metadata_SCobj, file)
         # SaveH5Seurat(vals_meta.sc$metadata_SCobj,file)
       }
     )
@@ -7728,7 +7730,7 @@ runSTEGO <- function(){
 
       },
       content = function(file) {
-        SaveSeuratRds(merging_sc_ob$Val2, file)
+        saveRDS(merging_sc_ob$Val2, file)
       }
     )
 
@@ -8120,7 +8122,7 @@ runSTEGO <- function(){
         paste(input$project_name2, "_harmony_", x, ".rds", sep = "")
       },
       content = function(file) {
-        SaveSeuratRds(Vals_norm$Norm1, file)
+        saveRDS(Vals_norm$Norm1, file)
       }
     )
 
@@ -8263,7 +8265,7 @@ runSTEGO <- function(){
       },
       content = function(file) {
         sc <- Filtered_samp_to_remove_process()
-        SaveSeuratRds(sc, file)
+        saveRDS(sc, file)
       }
     )
 
@@ -8388,20 +8390,15 @@ runSTEGO <- function(){
       )
 
       if (input$sample.type.source.markers == "hs") {
-        sc@meta.data$unconventional <- ifelse(sc@meta.data$vj_gene_AG == "TRAV1-2.TRAJ33", "MAIT",
-                                              ifelse(sc@meta.data$vj_gene_AG == "TRAV1-2.TRAJ12", "MAIT",
-                                                     ifelse(sc@meta.data$vj_gene_AG == "TRAV1-2.TRAJ23", "MAIT",
-                                                            ifelse(sc@meta.data$vj_gene_AG == "TRAV10.TRAJ18", "iNKT",
-                                                                   ifelse(sc@meta.data$v_gene_BD == "TRBV4-1" & sc@meta.data$v_gene_AG == "TRAV17", "CD1b-restricted",
-                                                                          ifelse(sc@meta.data$v_gene_BD == "TRBV4-1" & sc@meta.data$v_gene_AG != "TRAV17", "CD1c-restricted (possible)",
-                                                                                 # ifelse(sc@meta.data$chain_AG == 'TRG' & sc@meta.data$chain_BD == 'TRB',"gb T cell",
-                                                                                 ifelse(sc@meta.data$chain_AG == "TRG" & sc@meta.data$chain_BD == "TRD", "gd T cell", NA)
-                                                                          )
-                                                                   )
-                                                            )
-                                                     )
-                                              )
-        )
+        sc_chunk@meta.data$TCRseq <- ifelse(sc_chunk@meta.data$vj_gene_AG == "TRAV1-2.TRAJ33", "MAIT",
+                                            ifelse(sc_chunk@meta.data$vj_gene_AG == "TRAV1-2.TRAJ12", "MAIT",
+                                                   ifelse(sc_chunk@meta.data$vj_gene_AG == "TRAV1-2.TRAJ23", "MAIT",
+                                                          ifelse(sc_chunk@meta.data$vj_gene_AG == "TRAV1-2.TRAJ9", "CD1b-restricted(poss)",
+                                                                 ifelse(sc_chunk@meta.data$vj_gene_AG == "TRAV10.TRAJ18", "iNKT",
+                                                                        ifelse(sc_chunk@meta.data$v_gene_BD == "TRBV4-1" & sc_chunk@meta.data$v_gene_AG == "TRAV17", "CD1b-restricted(poss)",
+                                                                               ifelse(sc_chunk@meta.data$v_gene_BD == "TRBV4-1" & sc_chunk@meta.data$v_gene_AG != "TRAV17", "CD1c-restricted(poss)",
+                                                                                      ifelse(sc_chunk@meta.data$chain_AG == "TRG" & sc_chunk@meta.data$chain_BD == "TRD", "gd T cell",
+                                                                                             ifelse(sc_chunk@meta.data$chain_AG == "TRA" & sc_chunk@meta.data$chain_BD == "TRB", "ab T cell", "")))))))))
       } else {
 
       }
@@ -8732,6 +8729,7 @@ runSTEGO <- function(){
       )
       if (input$hs_TCRseq_scGATE) {
         if (input$sample.type.source.markers == "hs") {
+          print(head(sc@meta.data$TCRseq))
           sc@meta.data$TCRseq <- ifelse(sc@meta.data$vj_gene_AG == "TRAV1-2.TRAJ33", "MAIT",
                                         ifelse(sc@meta.data$vj_gene_AG == "TRAV1-2.TRAJ12", "MAIT",
                                                ifelse(sc@meta.data$vj_gene_AG == "TRAV1-2.TRAJ23", "MAIT",
@@ -8750,6 +8748,8 @@ runSTEGO <- function(){
                                                )
                                         )
           )
+
+          print(table(sc@meta.data$TCRseq))
           sc
         } else {
         }
@@ -10034,27 +10034,27 @@ runSTEGO <- function(){
       content = function(file) {
         if (input$Data_types == "10x_HS") {
           sc <- scGATE_anno_HS()
-          SaveSeuratRds(sc, file)
+          saveRDS(sc, file)
         } else if (input$Data_types == "BD_HS.Immune.Panel") {
           sc <- scGATE_anno_HS()
-          SaveSeuratRds(sc, file)
+          saveRDS(sc, file)
         } else if (input$Data_types == "BD_HS.Full.Panel") {
           sc <- scGATE_anno_HS()
-          SaveSeuratRds(sc, file)
+          saveRDS(sc, file)
         }
         # mouse panels
         else if (input$Data_types == "10x_MM") {
           sc <- scGATE_anno_BD_MM.FP()
-          SaveSeuratRds(sc, file)
+          saveRDS(sc, file)
         } else if (input$Data_types == "BD_MM_Full.Panel") {
           sc <- scGATE_anno_BD_MM.FP()
-          SaveSeuratRds(sc, file)
+          saveRDS(sc, file)
         } else if (input$Data_types == "BD_MM_Immune.Panel") {
           sc <- scGATE_anno_BD_MM.IP()
-          SaveSeuratRds(sc, file)
+          saveRDS(sc, file)
         } else if (input$Data_types == "TCR-seq") {
           sc <- TCR_seq_classification()
-          SaveSeuratRds(sc, file)
+          saveRDS(sc, file)
         } else {
 
         }
@@ -10314,6 +10314,26 @@ runSTEGO <- function(){
       umap.meta
 
     })
+
+    # for  TCR2 in scRepertoire -----
+    observe({
+      sc <- data_sc_reformatting()
+      validate(
+        need(
+          nrow(sc) > 0,
+          "Upload .rds"
+        )
+      )
+
+      umap.meta <- sc@meta.data
+
+      updateSelectInput(
+        session,
+        "sample_name_column_reformatting",
+        choices = names(umap.meta),
+        selected = "orig.ident"
+      )
+    }) # cluster to display
     # for  TCR1 in scRepertoire -----
     observe({
       sc <- data_sc_reformatting()
@@ -10325,9 +10345,6 @@ runSTEGO <- function(){
       )
 
       umap.meta <- sc@meta.data
-      umap.meta
-
-      # cluster <- cluster[cluster$Clust_size_order %in% input$lower_cluster:input$upper_cluster,]
       updateSelectInput(
         session,
         "TCR_alpha_gamma_cdr3_reformatting",
@@ -10417,7 +10434,6 @@ runSTEGO <- function(){
 
     })
 
-
     reformatting_md_scRep <- reactive({
       sc <- data_sc_reformatting()
       validate(
@@ -10428,9 +10444,122 @@ runSTEGO <- function(){
       )
 
       sc@meta.data <- sc@meta.data[,!names(sc@meta.data) %in% c("cloneType","Clonotype_2","Clonotype_3","Clonotype_4","CTstrict","CTnt","cdr3_nt2","cdr3_nt1","CTaa")]
-
+      sc@meta.data
       sc
 
+
+      sc@meta.data$Sample_Name <- sc@meta.data[,names(sc@meta.data) %in% input$sample_name_column_reformatting]
+      sc@meta.data$Cell_Index <- rownames(sc@meta.data)
+
+      # reorders the data so these are first ------
+      sc@meta.data <- sc@meta.data %>%
+        select(
+          all_of(c("Cell_Index", "orig.ident","Sample_Name"
+
+          )),
+          everything()
+        )
+
+      # Alpha/Gamma chain -----
+
+      if(TRUE %in% grepl("[;]",sc@meta.data[,names(sc@meta.data) %in% input$TCR_alpha_gamma_cdr3_reformatting])) {
+        list_df <- sc@meta.data[,names(sc@meta.data) %in% input$TCR_alpha_gamma_cdr3_reformatting]
+
+        df_ <- t(as.data.frame(strsplit(list_df, "[;]")))
+        df <- as.data.frame(strsplit(df_[,1], "[.]"))
+        df <-  as.data.frame(t(df))
+        print(head(df))
+      } else {
+
+        list_df <- sc@meta.data[,names(sc@meta.data) %in% input$TCR_alpha_gamma_cdr3_reformatting]
+        df <- t(as.data.frame(strsplit(list_df, "[.]")))
+        # df <- as.data.frame(strsplit(df_[,1], "[.]"))
+        df <-  as.data.frame(t(df))
+        print(head(df))
+
+      }
+
+      names(df) <- c("v_gene_AG","j_gene_AG","c_gene_AG")
+      print(head(df))
+
+      sc@meta.data$v_gene_AG <- df$v_gene_AG
+      sc@meta.data$j_gene_AG <- df$j_gene_AG
+      sc@meta.data$c_gene_AG <- df$c_gene_AG
+
+      if(TRUE %in% grepl("[;]",sc@meta.data[,names(sc@meta.data) %in% input$TCR_alpha_gamma_cdr3_reformatting2])) {
+        list_df2 <- sc@meta.data[,names(sc@meta.data) %in% input$TCR_alpha_gamma_cdr3_reformatting2]
+        df2_ <- t(as.data.frame(strsplit(list_df2, "[;]")))
+        print(head(df2_))
+        df2 <- as.data.frame(strsplit(df_[,1], "[.]"))
+        df2 <- as.data.frame(t(df2))
+        print(head(df2))
+      } else {
+
+        list_df2 <- sc@meta.data[,names(sc@meta.data) %in% input$TCR_alpha_gamma_cdr3_reformatting2]
+        df2 <- as.data.frame(strsplit(list_df2, "[.]"))
+        # df <- as.data.frame(strsplit(df_[,1], "[.]"))
+        df2 <- as.data.frame(t(df2))
+        print(head(df2))
+
+      }
+
+      names(df2) <- c("v_gene_BD","d_gene_BD","j_gene_BD","c_gene_BD")
+
+      sc@meta.data$v_gene_BD <- df2$v_gene_BD
+      sc@meta.data$d_gene_BD <- df2$d_gene_BD
+      sc@meta.data$j_gene_BD <- df2$j_gene_BD
+      sc@meta.data$c_gene_BD <- df2$c_gene_BD
+
+      sc@meta.data$junction_aa_AG <- sc@meta.data[,names(sc@meta.data) %in% input$TCR_alpha_gamma_cdr3_reformatting_ag_cd3]
+      sc@meta.data$junction_aa_BD <- sc@meta.data[,names(sc@meta.data) %in% input$TCR_alpha_gamma_cdr3_reformatting_bd_cd3]
+
+      sc@meta.data$vj_gene_AG <- paste(sc@meta.data$v_gene_AG, sc@meta.data$j_gene_AG, sep = ".")
+      sc@meta.data$vj_gene_AG <- gsub("NA.NA","", sc@meta.data$vj_gene_AG)
+
+      sc@meta.data$vj_gene_BD <- paste(sc@meta.data$v_gene_BD, sc@meta.data$j_gene_BD, sep = ".")
+      sc@meta.data$vj_gene_BD <- gsub(".NA.", ".", sc@meta.data$vj_gene_BD)
+      sc@meta.data$vj_gene_BD <- gsub("NA[.]NA","", sc@meta.data$vj_gene_BD)
+      sc@meta.data$vj_gene_BD <- gsub("[.]None[.]", ".", sc@meta.data$vj_gene_BD)
+      sc@meta.data$vj_gene_BD <- gsub("None.None", "", sc@meta.data$vj_gene_BD)
+
+      sc@meta.data$vdj_gene_BD <- paste(sc@meta.data$v_gene_BD, sc@meta.data$d_gene_BD, sc@meta.data$j_gene_BD, sep = ".")
+      sc@meta.data$vdj_gene_BD <- gsub(".NA.", ".", sc@meta.data$vdj_gene_BD)
+      sc@meta.data$vdj_gene_BD <- gsub("NA_NA", ".", sc@meta.data$vdj_gene_BD)
+      sc@meta.data$vdj_gene_BD <- gsub("NA[.]NA","", sc@meta.data$vdj_gene_BD)
+
+      sc@meta.data$vj_gene_cdr3_AG <- paste(sc@meta.data$vj_gene_AG, sc@meta.data$junction_aa_AG, sep = "_")
+      sc@meta.data$vj_gene_cdr3_BD <- paste(sc@meta.data$vj_gene_BD, sc@meta.data$junction_aa_BD, sep = "_")
+      sc@meta.data$vj_gene_cdr3_BD <- gsub("_None", "", sc@meta.data$vj_gene_cdr3_BD)
+
+      sc@meta.data$vdj_gene_cdr3_BD <- paste(sc@meta.data$vdj_gene_BD, sc@meta.data$junction_aa_BD, sep = "_")
+      sc@meta.data$vdj_gene_cdr3_BD <- gsub("_None", "", sc@meta.data$vdj_gene_cdr3_BD)
+
+      sc@meta.data$vj_gene_AG_BD <- paste(sc@meta.data$vj_gene_AG, sc@meta.data$vj_gene_BD, sep = " & ")
+      sc@meta.data$vj_gene_AG_BD <- gsub("^ & ", "", sc@meta.data$vj_gene_AG_BD)
+      sc@meta.data$vj_gene_AG_BD <- gsub(" & $", "", sc@meta.data$vj_gene_AG_BD)
+
+      sc@meta.data$vdj_gene_AG_BD <- paste(sc@meta.data$vj_gene_AG, sc@meta.data$vdj_gene_BD, sep = " & ")
+      sc@meta.data$vdj_gene_AG_BD <- gsub("^ & ", "", sc@meta.data$vdj_gene_AG_BD)
+      sc@meta.data$vdj_gene_AG_BD <- gsub(" & $", "", sc@meta.data$vdj_gene_AG_BD)
+      print(head(sc@meta.data))
+
+      # #updating names to be consistent....
+      sc@meta.data$vj_gene_cdr3_AG_BD <- paste(sc@meta.data$vj_gene_cdr3_AG, sc@meta.data$vj_gene_cdr3_BD, sep = " & ")
+      sc@meta.data$vj_gene_cdr3_AG_BD <- gsub("^ & ", "", sc@meta.data$vj_gene_cdr3_AG_BD)
+      sc@meta.data$vj_gene_cdr3_AG_BD <- gsub(" & $", "", sc@meta.data$vj_gene_cdr3_AG_BD)
+
+      sc@meta.data$vdj_gene_cdr3_AG_BD <- paste(sc@meta.data$vj_gene_cdr3_AG, sc@meta.data$vdj_gene_cdr3_BD, sep = " & ")
+      sc@meta.data$vdj_gene_cdr3_AG_BD <- gsub("^ & ", "", sc@meta.data$vdj_gene_cdr3_AG_BD)
+      sc@meta.data$vdj_gene_cdr3_AG_BD <- gsub(" & $", "", sc@meta.data$vdj_gene_cdr3_AG_BD)
+
+      sc@meta.data$chain_AG <- ifelse(grepl("TRA",sc@meta.data$vdj_gene_cdr3_AG_BD),"TRA",
+                                      ifelse(grepl("TRG",sc@meta.data$vdj_gene_cdr3_AG_BD),"TRG",NA))
+
+      sc@meta.data$chain_BD <- ifelse(grepl("TRB",sc@meta.data$vdj_gene_cdr3_AG_BD),"TRB",
+                                      ifelse(grepl("TRD",sc@meta.data$vdj_gene_cdr3_AG_BD),"TRD",NA))
+
+
+      sc
 
     })
 
@@ -10448,6 +10577,17 @@ runSTEGO <- function(){
       umap.meta
 
     })
+
+    output$downloaddf_SeruatObj_reformatted_md <- downloadHandler(
+      filename = function() {
+        x <- today()
+        paste(input$project_name_remove, "_reformatted_md_", x, ".rds", sep = "")
+      },
+      content = function(file) {
+        sc <- reformatting_md_scRep()
+        saveRDS(sc, file)
+      }
+    )
 
     # Analysis -----
     observe({
