@@ -231,7 +231,7 @@ runSTEGO <- function(){
         z-index: 1000; /* Ensure hint text is above other elements */
         font-size: 14px; /* Decreased font size */
         text-align: center; /* Center alignment */
-        width: 300px; /* Set width to prevent stretching */
+        width: 200px; /* Set width to prevent stretching */
         color: #41b000; /* Change text color to purple */
       }
       .hint-text2 {
@@ -1798,6 +1798,7 @@ runSTEGO <- function(){
         ),
         ###################
         # 3e. Re-formatting meta-data  -------
+        # 3e. Re-formatting meta-data  -------
         tabPanel("3e. Re-formatting meta-data",
                  sidebarLayout(
                    sidebarPanel(
@@ -1818,9 +1819,15 @@ runSTEGO <- function(){
                        tabPanel(
                          "Reformatting",
                          fluidRow(
-                           column(3,selectInput("TCR_alpha_gamma_cdr3","Alpha/gamma with cdr3",""))
+                           column(3,selectInput("TCR_alpha_gamma_cdr3_reformatting","Alpha/gamma vj_gene","")),
+                           column(3,selectInput("TCR_alpha_gamma_cdr3_reformatting_ag_cd3","Alpha/gamma cdr3","")),
+                           column(3,selectInput("TCR_alpha_gamma_cdr3_reformatting2","Beta/delta vdj_gene","")),
+                           column(3,selectInput("TCR_alpha_gamma_cdr3_reformatting_bd_cd3","Beta/delta cdr3","")),
                          ),
-                         column(12, div(DT::DTOutput("Sample_names_merging_sc",height = "200px"))),
+                         column(12, div(DT::DTOutput("DT_reformatting_before",height = "200px"))),
+                         column(12, div(DT::DTOutput("DT_reformatting_after",height = "200px"))),
+
+
                        ),
 
                      )
@@ -7509,7 +7516,7 @@ runSTEGO <- function(){
       for (i in 1:num) {
         message("reading in file ", i)
         File_order <- paste0("File_",i)
-        list.sc[[File_order]] <- LoadSeuratRds(input$file1_rds.file[[i, "datapath"]])
+        list.sc[[File_order]] <- readRDS(input$file1_rds.file[[i, "datapath"]])
 
         message("Reducing file size for file ", File_order)
 
@@ -7733,7 +7740,7 @@ runSTEGO <- function(){
         return(NULL)
       }
 
-      LoadSeuratRds(inFile_sc_Merged_data_for_harmony$datapath)
+      readRDS(inFile_sc_Merged_data_for_harmony$datapath)
     })
     output$testing_mult3 <- renderPrint({
       Merged_data_for_harmony()
@@ -8124,7 +8131,7 @@ runSTEGO <- function(){
         return(NULL)
       }
 
-      LoadSeuratRds(inFile_sc_SampRemove$datapath)
+      readRDS(inFile_sc_SampRemove$datapath)
     })
     output$Preliminary_samp_to_remove <- renderPrint({
       inFile_sc_SampRemove <- input$file1_rds.fileSampsRemove
@@ -8132,7 +8139,7 @@ runSTEGO <- function(){
         return(NULL)
       }
 
-      LoadSeuratRds(inFile_sc_SampRemove$datapath)
+      readRDS(inFile_sc_SampRemove$datapath)
     })
     observe({
       sc <- getData_SampRemove()
@@ -8266,7 +8273,7 @@ runSTEGO <- function(){
       if (is.null(inFile_sc_pro2)) {
         return(NULL)
       } else {
-        dataframe <- LoadSeuratRds(inFile_sc_pro2$datapath)
+        dataframe <- readRDS(inFile_sc_pro2$datapath)
       }
     })
 
@@ -10290,7 +10297,7 @@ runSTEGO <- function(){
       if (is.null(inFile_sc_reformatting_md)) {
         return(NULL)
       } else {
-        dataframe <- LoadSeuratRds(inFile_sc_reformatting_md$datapath)
+        dataframe <- readRDS(inFile_sc_reformatting_md$datapath)
       }
     })
 
@@ -10323,11 +10330,124 @@ runSTEGO <- function(){
       # cluster <- cluster[cluster$Clust_size_order %in% input$lower_cluster:input$upper_cluster,]
       updateSelectInput(
         session,
-        "TCR_alpha_gamma_cdr3",
+        "TCR_alpha_gamma_cdr3_reformatting",
         choices = names(umap.meta),
         selected = "TCR1"
       )
     }) # cluster to display
+
+
+    observe({
+      sc <- data_sc_reformatting()
+      validate(
+        need(
+          nrow(sc) > 0,
+          "Upload non-STEGO.R .rds that requires reformatting to match STEGO.R"
+        )
+      )
+
+      umap.meta <- sc@meta.data
+      umap.meta
+
+      # cluster <- cluster[cluster$Clust_size_order %in% input$lower_cluster:input$upper_cluster,]
+      updateSelectInput(
+        session,
+        "TCR_alpha_gamma_cdr3_reformatting_ag_cd3",
+        choices = names(umap.meta),
+        selected = "cdr3_aa1"
+      )
+    }) # cluster to display
+
+    # for  TCR2 in scRepertoire -----
+    observe({
+      sc <- data_sc_reformatting()
+      validate(
+        need(
+          nrow(sc) > 0,
+          "Upload non-STEGO.R .rds that requires reformatting to match STEGO.R"
+        )
+      )
+
+      umap.meta <- sc@meta.data
+      umap.meta
+
+      # cluster <- cluster[cluster$Clust_size_order %in% input$lower_cluster:input$upper_cluster,]
+      updateSelectInput(
+        session,
+        "TCR_alpha_gamma_cdr3_reformatting2",
+        choices = names(umap.meta),
+        selected = "TCR2"
+      )
+    }) # cluster to display
+
+
+    observe({
+      sc <- data_sc_reformatting()
+      validate(
+        need(
+          nrow(sc) > 0,
+          "Upload non-STEGO.R .rds that requires reformatting to match STEGO.R"
+        )
+      )
+
+      umap.meta <- sc@meta.data
+      umap.meta
+
+      # cluster <- cluster[cluster$Clust_size_order %in% input$lower_cluster:input$upper_cluster,]
+      updateSelectInput(
+        session,
+        "TCR_alpha_gamma_cdr3_reformatting_bd_cd3",
+        choices = names(umap.meta),
+        selected = "cdr3_aa2"
+      )
+    }) # cluster to display
+
+    output$DT_reformatting_before <- DT::renderDT(escape = FALSE, options = list(autoWidth = FALSE, lengthMenu = c(2, 5, 10, 20, 50, 100), pageLength = 2, scrollX = TRUE), {
+      sc <- data_sc_reformatting()
+      validate(
+        need(
+          nrow(sc) > 0,
+          "Upload non-STEGO.R .rds that requires reformatting to match STEGO.R"
+        )
+      )
+
+      umap.meta <- sc@meta.data
+      umap.meta
+
+
+    })
+
+
+    reformatting_md_scRep <- reactive({
+      sc <- data_sc_reformatting()
+      validate(
+        need(
+          nrow(sc) > 0,
+          "Upload non-STEGO.R .rds that requires reformatting to match STEGO.R"
+        )
+      )
+
+      sc@meta.data <- sc@meta.data[,!names(sc@meta.data) %in% c("cloneType","Clonotype_2","Clonotype_3","Clonotype_4","CTstrict","CTnt","cdr3_nt2","cdr3_nt1","CTaa")]
+
+      sc
+
+
+    })
+
+
+    output$DT_reformatting_after <- DT::renderDT(escape = FALSE, options = list(autoWidth = FALSE, lengthMenu = c(2, 5, 10, 20, 50, 100), pageLength = 2, scrollX = TRUE), {
+      sc <- data_sc_reformatting()
+      validate(
+        need(
+          nrow(sc) > 0,
+          "Upload non-STEGO.R .rds that requires reformatting to match STEGO.R"
+        )
+      )
+      sc <- reformatting_md_scRep()
+      umap.meta <- sc@meta.data
+      umap.meta
+
+    })
 
     # Analysis -----
     observe({
@@ -10381,7 +10501,7 @@ runSTEGO <- function(){
       if (is.null(inFile_sc_pro)) {
         return(NULL)
       } else {
-        dataframe <- LoadSeuratRds(inFile_sc_pro$datapath)
+        dataframe <- readRDS(inFile_sc_pro$datapath)
       }
     })
 
@@ -21322,7 +21442,7 @@ runSTEGO <- function(){
         return(NULL)
       }
 
-      LoadSeuratRds(inFile_sc_OLGA$datapath)
+      readRDS(inFile_sc_OLGA$datapath)
     })
 
     observe({
@@ -21486,7 +21606,7 @@ runSTEGO <- function(){
       if (is.null(inFile_extract.metadata)) {
         return(NULL)
       }
-      LoadSeuratRds(inFile_extract.metadata$datapath)
+      readRDS(inFile_extract.metadata$datapath)
     })
 
     extracting_md_from_sc <- reactive({
