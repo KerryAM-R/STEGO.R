@@ -2,15 +2,18 @@
 % Please edit documentation in R/Update_auto_prior.R
 \name{ID_Column_factor_function}
 \alias{ID_Column_factor_function}
-\title{Column factor ID function}
+\title{Generate Factor Levels for Sample Column}
 \usage{
 ID_Column_factor_function(sc = sc, Samp_col = "Sample_Name")
 }
 \arguments{
-\item{sc}{Add the merged and annotated file}
+\item{sc}{Merged and annotated Seurat object.}
 
-\item{Samp_col}{Sample column name with the default being "Sample_Name"}
+\item{Samp_col}{Sample column name. Default is "Sample_Name".}
+}
+\value{
+A data frame containing unique factor levels for the specified sample column.
 }
 \description{
-This section is to add the factor order for the graphs
+This function generates factor levels for a specified sample column, ensuring consistent ordering in graphs or analyses.
 }

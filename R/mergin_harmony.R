@@ -12,6 +12,7 @@
 #' @param own_features_df Add in a data frame of the list of your features of one column only.
 #' @import Seurat
 #' @importFrom purrr reduce
+#' @return A merged Seurat RDS object.
 #' @export
 
 merging_multi_SeuratRDS <- function(set_directory = "2_scObj/", merge_RDS = FALSE, pattern_RDS = ".rds$", species = "hs", reduce_size = TRUE, own_features = FALSE, own_features_df = own_features_df) {
@@ -130,9 +131,10 @@ merging_multi_SeuratRDS <- function(set_directory = "2_scObj/", merge_RDS = FALS
 #' @description
 #' This function is to aid im merging multiple Seurat object, which will then need to undergo harmony merging
 #'
-#' @param file merged seurat object
-#' @param feature_total_limit limit number of features to create the scaled data for the harmony batch correction.
+#' @param file merged Seurat object
+#' @param feature_total_limit limit number of features to create the scaled data for the harmony batch correction. Default = 3000 features.
 #' @import Seurat
+#' @return Seurat object with the variable features.
 #' @export
 #'
 
@@ -154,12 +156,13 @@ harmony_batch_correction_1_variableFeatures <- function(file = sc, feature_total
 #' Create the scaling data
 #' @name harmony_batch_correction_2_scaling
 #' @description
-#' Scales the Seurat object and ensure that the correct genes are present for annotating purposes
-#'
+#' This function scales a Seurat object and ensures that the correct genes are present for annotating purposes.
+#' It is intended to be used sequentially following `harmony_batch_correction_1_variableFeatures`.
 #' @import Seurat
 #' @param file merged seurat object
 #' @param Seruat_version Seurat version
 #' @param species select either human 'hs' or mouse 'mm'
+#' @return A Seurat object with scaled gene expression data.
 #' @export
 #'
 
@@ -196,10 +199,10 @@ harmony_batch_correction_2_Scaling <- function(file = sc,  Seruat_version = "V4"
 #' Create the finding the PCA, identical to the Seurat pipeline
 #' @name harmony_batch_correction_3_PC
 #' @description
-#' This function is to aid im merging multiple Seurat object, which will then need to undergo harmony merging
-#'
+#' This function is to aid in merging multiple Seurat object, which will then need to undergo harmony merging
 #' @param file merged Seurat object
 #' @import Seurat
+#' @return A Seurat object containing the results of PCA.
 #' @export
 #'
 
@@ -211,14 +214,22 @@ harmony_batch_correction_3_PC <- function(file = sc) {
 #' Performign the Haromy integration
 #' @name harmony_batch_correction_4_Harmony
 #' @description
-#' This function is to aid im merging multiple Seurat object, which will then need to undergo harmony merging
+#' This function facilitates the integration of multiple Seurat objects using the Harmony algorithm for batch correction.
+#'
+#' @param file Merged Seurat object.
+#' @param selected_column_for_reduction The column used for reducing batch effects, e.g., 'orig.ident', 'Sample_name'.
+#' @param Maximum_PC_to_use Maximum number of principal components (PCs) to use. Default is 30.
+#' @param resolution_of_clusters Resolution parameter for clustering. Default is 0.5.
+#'
+#' @details
+#' Harmony is a method for removing batch effects from single-cell RNA-seq data by aligning subpopulations of cells across different batches.
+#' This function applies Harmony to the merged Seurat object provided, using the specified column for batch identification.
 #'
 #' @import Seurat
 #' @import harmony
-#' @param file merged seurat object
-#' @param selected_column_for_reduction select the column to use for the harmony e.g., orig.ident, Sample_name,
-#' @param Maximum_PC_to_use Maximum number principle components (PC) to use. Default30
-#' @param resolution_of_clusters Resolutions of the clusters - default 0.5
+#'
+#' @return A Seurat object after Harmony integration, UMAP dimensionality reduction, neighbor finding, and clustering.
+#'
 #' @export
 #'
 
@@ -235,25 +246,3 @@ harmony_batch_correction_4_Harmony <- function(file = sc,selected_column_for_red
     identity()
   sc
 }
-
-#' Create the finding the PCA, identifical to the Seurat pipeline
-#' @name Down_sampling_Seurat_OBJ
-#' @description
-#' This function is to aid im merging multiple Seurat object, which will then need to undergo harmony merging
-#'
-#' @param file merged seurat object
-#' @param selected_column_for_reduction select the column to use for the harmony e.g., orig.ident, Sample_name,
-#' @param Maximum_PC_to_use Maximum number principle components (PC) to use. Default30
-#' @param resolution_of_clusters Resolutions of the clusters - default 0.5
-#' @export
-#'
-
-Down_sampling_Seurat_OBJ <- function(file = file, selected_column_for_reduction= "Sample_Name",Maximum_PC_to_use = 15,resolution_of_clusters=1) {
-  sc = file
-  selected_column_for_reduction
-  Maximum_PC_to_use
-  print("under development, not yet in use")
-
-
-}
-

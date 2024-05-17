@@ -9,6 +9,9 @@ harmony_batch_correction_3_PC(file = sc)
 \arguments{
 \item{file}{merged Seurat object}
 }
+\value{
+A Seurat object containing the results of PCA.
+}
 \description{
-This function is to aid im merging multiple Seurat object, which will then need to undergo harmony merging
+This function is to aid in merging multiple Seurat object, which will then need to undergo harmony merging
 }

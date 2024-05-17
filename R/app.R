@@ -5,7 +5,7 @@
 #' @import ClusTCR2
 #' @import ComplexHeatmap
 #' @import corrplot
-#' @importFrom cowplot plot_grid
+#' @importFrom cowplot plot_grid as_gtable align_plots
 #' @importFrom dplyr %>% select case_when slice_max
 #' @importFrom DT DTOutput renderDT
 #' @importFrom extrafont fonttable
@@ -44,6 +44,7 @@
 #' @importFrom colourpicker colourInput updateColourInput colourWidget
 #' @import chisq.posthoc.test
 #' @import reticulate
+#' @return A shiny R application called STEGO.R
 #' @examples
 #' library(STEGO.R)
 #' runSTEGO()
@@ -1101,7 +1102,6 @@ runSTEGO <- function(){
                          uiOutput("feature_input"),
                          actionButton('run_violin', 'Filter', onclick = "$(tab).removeClass('disabled-1')"),
 
-                         ######
                          # actionButton("run_violin", "Update Violin plot", onclick = "$(tab1).removeClass('disabled_after')"),
                          conditionalPanel(
                            condition = ("input.run_violin != 0"),
@@ -1360,7 +1360,7 @@ runSTEGO <- function(){
           ),
         ),
         ###################
-        # Merge multiple Seurat objects -----
+        # 3b. Merge multiple Seurat objects -----
         tabPanel(
           "3b. Merge & Batch correction",
           sidebarLayout(
@@ -1509,9 +1509,11 @@ runSTEGO <- function(){
           )
         ),
 
-        ###################
 
-        # Add annotations -----
+
+        ###################
+        # 3c. Add annotations -----
+
         tabPanel(
           "3c. Annotations",
           sidebarLayout(
@@ -1543,7 +1545,8 @@ runSTEGO <- function(){
                   "scGATE",
                   selectInput("reduction_anno", "Reduction to use", choices = c("calculate", "pca", "umap", "harmony"), selected = "harmony"),
 
-                  # custom annotations databases -----
+
+                  # custom annotations databases
                   conditionalPanel(
                     condition = "input.Require_custom_geneset == 'yes'",
                     fluidRow(
@@ -1569,7 +1572,7 @@ runSTEGO <- function(){
                   ),
 
 
-                  # human 10x annotations -----
+                  # human 10x annotations
                   conditionalPanel(
                     condition = "input.Data_types == '10x_HS' || input.Data_types == 'BD_HS.Full.Panel' || 'BD_HS.Immune.Panel'",
                     div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
@@ -1759,9 +1762,10 @@ runSTEGO <- function(){
             )
           )
         ),
-        # remove cells based on one factor -----
+        ###################
+        # 3d. remove cells based on one factor -----
         tabPanel(
-          "3d. Remove/Edit Samps",
+          "3d. Remove Samps",
           sidebarLayout(
             sidebarPanel(
               id = "tPanelSamps", style = "max-height: 800px; position:relative;", width = 3,
@@ -1782,22 +1786,57 @@ runSTEGO <- function(){
                   h5("Before Samples are removed"),
                   actionButton("run_remove_samps", "Remove samples"),
                   verbatimTextOutput("Preliminary_samp_to_remove"),
-                  selectInput("DownVColumn", "Chose subset type:", choices = c("Meta_data", "Down_sampling")),
+                  # selectInput("DownVColumn", "Chose subset type:", choices = c("Meta_data", "Down_sampling")),
                   numericInput("downsamp_limit", "Down sampling limit", value = 1000),
                   selectInput("ID_Column_factor_SampToRemove", "Order of graph", choices = "", multiple = T, width = "1400px"),
                   h5("After Samples are removed"),
                   verbatimTextOutput("Filtered_samp_to_remove"),
                 ),
-                tabPanel("Update Meta data")
               )
             )
           )
         ),
+        ###################
+        # 3e. Re-formatting meta-data  -------
+        tabPanel("3e. Re-formatting meta-data",
+                 sidebarLayout(
+                   sidebarPanel(
+                     id = "tPanelSamps", style = "max-height: 800px; position:relative;", width = 3,
+                     div(class = "name-BD",textInput("project_name_remove", h4("Name of Project", class = "name-header2"), value = "")),
+
+                     fileInput("file1_rds.reformatting_md",
+                               "Upload .rds file",
+                               multiple = F,
+                               accept = c(".rds", "rds")
+                     ),
+                     selectInput("Type_of_source_formatting", "TCR_processing", choices = c("scRepertiore","manual")),
+                     downloadButton("downloaddf_SeruatObj_reformatted_md", "Download .rds"),
+                   ),
+                   mainPanel(
+                     width = 9,
+                     tabsetPanel(
+                       tabPanel(
+                         "Reformatting",
+                         fluidRow(
+                           column(3,selectInput("TCR_alpha_gamma_cdr3","Alpha/gamma with cdr3",""))
+                         ),
+                         column(12, div(DT::DTOutput("Sample_names_merging_sc",height = "200px"))),
+                       ),
+
+                     )
+                   )
+                 )
+
+
+
+
+        ),
+
         # tabPanel("STEP3. Markdown"),
       ),
 
       ###################
-      # Analysis (UI side panel) ---------
+      # 4. Analysis (UI side panel) ---------
       tabPanel(
         "STEP 4. Analysis", id = "step4_analysis",
 
@@ -1808,26 +1847,59 @@ runSTEGO <- function(){
             id = "tPanel4", style = "overflow-y:scroll; max-height: 1000px; position:relative;", width = 3,
             conditionalPanel(
               condition = "input.check_up_files== 'up'",
-              fileInput("file_SC_pro", "Upload seurat file",
-                        accept = c("rds", ".rds", "rds")
+
+              div(class = "select-input-container",
+                  fileInput("file_SC_pro", "Upload seurat file",
+                            accept = c("rds", ".rds", "rds"), width = "600px"
+                  ),
+                  div(class = "hint-icon",
+                      icon("circle-question", lib = "font-awesome")),
+                  div(class = "hint-text", "This .rds file should contain the annotated data in the meta-data."),
               ),
-              selectInput("add_additional_lables", "add additional labels", choices = c("no", "yes")),
+
+              div(class = "select-input-container",
+                  selectInput("add_additional_lables", "add additional labels", choices = c("no", "yes"), width = "600px"),
+                  div(class = "hint-icon",
+                      icon("circle-question", lib = "font-awesome")),
+                  div(class = "hint-text", "To ensure that the user does not have to restart the quality control process (STEP 1 to 3), the user can add in additional identifiers in the analysis section. This allows the user to correct the naming convention as well. The use can update the 'Update_labels.csv' file."),
+              ),
+
+
+
               conditionalPanel(
                 condition = "input.add_additional_lables== 'yes'",
-                p("The .csv file first column should be label 'ID' and match the selected column"),
-                selectInput("Samp_col2", "Sample column name", choices = ""),
+                p(""),
+                div(class = "select-input-container",
+                    selectInput("Samp_col2", "Sample column name", choices = "", width = "600px"),
+                    div(class = "hint-icon",
+                        icon("circle-question", lib = "font-awesome")),
+                    div(class = "hint-text", "The .csv file first column should be labelled 'ID' and match the selected column (e.g., Sample_Name). The user can also add other identifers to the 'Update_labels.csv' file."),
+                ),
+
                 fileInput("file_Labels_to_add", "Upload other identifiers (.csv)",
-                          accept = c(".csv", "csv")
+                          accept = c(".csv", "csv"), width = "600px"
                 ),
               ),
-              selectInput("Type_of_receptor", "Type of receptor", choices = c("TCR", "BCR"), selected = "TCR"),
+
+
+              div(class = "select-input-container",
+                  selectInput("Type_of_receptor", "Type of receptor", choices = c("TCR", "BCR"), selected = "TCR", width = "600px"),
+                  div(class = "hint-icon",
+                      icon("circle-question", lib = "font-awesome")),
+                  div(class = "hint-text", "The user can switch between TCR and BCR. The user needs to upload the AG_ClusTCR2_output.csv and/or BD_ClusTCR2_output.csv"),
+              ),
+
+
               conditionalPanel(
                 condition = "input.Type_of_receptor== 'TCR'",
+
+
+
                 fileInput("file_cluster_file_AG", "Upload AG clusTCR2 file (.csv)",
-                          accept = c(".csv", "csv")
+                          accept = c(".csv", "csv"), width = "600px"
                 ),
                 fileInput("file_cluster_file_BD", "Upload BD clusTCR2 file (.csv)",
-                          accept = c(".csv", "csv")
+                          accept = c(".csv", "csv"), width = "600px"
                 ),
               ),
               conditionalPanel(
@@ -1840,12 +1912,26 @@ runSTEGO <- function(){
                 ),
               ),
               numericInput("skip_TCRex_up", "Skip # of lines for TCRex file", value = 7),
-              fileInput("upload_TCRex_file", "Upload TCRex (.tsv)",
-                        accept = c("tsv", ".tsv")
+
+              div(class = "select-input-container",
+                  fileInput("upload_TCRex_file", "Upload TCRex (.tsv)",
+                            accept = c("tsv", ".tsv"), width = "600px"
+                  ),
+                  div(class = "hint-icon",
+                      icon("circle-question", lib = "font-awesome")),
+                  div(class = "hint-text", "The user will upload the .tsv file created from the TCRex website. This is usually has tcrex_unique-string.tsv"),
               ),
-              selectInput("datasource", "Data source", choices = ""),
+
+              div(class = "select-input-container",
+                  selectInput("datasource", "Data source", choices = "", width = "600px"),
+                  div(class = "hint-icon",
+                      icon("circle-question", lib = "font-awesome")),
+                  div(class = "hint-text", "Automatically detects the formatting of the TCR-seq so it can match both the TCRex and ClusTCR2 formats."),
+              ),
+
               selectInput("species_analysis", "Species", choices = ""),
             ),
+
             selectInput("V_gene_sc", "V gene with/without CDR3", choices = ""),
 
             conditionalPanel(
@@ -1970,7 +2056,13 @@ runSTEGO <- function(){
 
               fluidRow(
                 column(6, selectInput("by_indiv_pie_epi", "Display one individual?", choices = c("no", "yes"))),
-                column(6, selectInput("selected_Indiv", "Display one individual", choices = ""), )
+                column(6, conditionalPanel(
+                  condition = "input.by_indiv_pie_epi == 'yes'",
+                  fluidRow(
+                    selectInput("selected_Indiv", "Display one individual", choices = "")
+                  )
+                )
+                ),
               ),
               h4("Plot parameters (all)"),
               fluidRow(
@@ -2891,7 +2983,6 @@ runSTEGO <- function(){
 
               tabPanel("Automation (TCR -> GEX)",
                        value = "Prior",
-                       h5("under construction"),
                        tabsetPanel(
                          id = "PriorTBMods",
                          tabPanel("Analysis steps",
@@ -2966,28 +3057,28 @@ runSTEGO <- function(){
                 # h5("Under Development..."),
                 tabsetPanel(
                   ##### annotation GEX -> TCR --------
-                  tabPanel("Annotation",
-                           value = "PanelAnno_GEXTCR",
-                           h5("Under Active Development... Only Table is complete"),
-                           fluidRow(
-                             column(3, uiOutput("AddInAnnoUI_man_1")),
-                             column(3, uiOutput("AddInAnnoUI_man_2")),
-                             column(3, selectInput("Slected_annotation", "Select annotation", choices = ""))
-                           ),
-                           tabsetPanel(
-                             tabPanel(
-                               "Table",
-                               div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
-                               div(DT::DTOutput("AnnoTable_perMarkers")),
-                               downloadButton("downloaddf_AnnoTable_perMarkers", "Download table"),
-                             ),
-                             tabPanel("UMAP"),
-                             tabPanel("TCR per Anno ID"),
-                             tabPanel("Stats"),
-                             tabPanel("Dot plot"),
-                             tabPanel("Over representation")
-                           )
-                  ),
+                  # tabPanel("Annotation",
+                  #          value = "PanelAnno_GEXTCR",
+                  #          h5("Under Active Development... Only Table is complete"),
+                  #          fluidRow(
+                  #            column(3, uiOutput("AddInAnnoUI_man_1")),
+                  #            column(3, uiOutput("AddInAnnoUI_man_2")),
+                  #            column(3, selectInput("Slected_annotation", "Select annotation", choices = ""))
+                  #          ),
+                  #          tabsetPanel(
+                  #            tabPanel(
+                  #              "Table",
+                  #              div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
+                  #              div(DT::DTOutput("AnnoTable_perMarkers")),
+                  #              downloadButton("downloaddf_AnnoTable_perMarkers", "Download table"),
+                  #            ),
+                  #            tabPanel("UMAP"),
+                  #            tabPanel("TCR per Anno ID"),
+                  #            tabPanel("Stats"),
+                  #            tabPanel("Dot plot"),
+                  #            tabPanel("Over representation")
+                  #          )
+                  # ),
 
                   # marker specific TCR analysis --------
                   tabPanel("Marker",
@@ -7354,6 +7445,12 @@ runSTEGO <- function(){
           "Impute Metadata"
         )
       )
+      if(TRUE %in% unique(duplicated(meta.data.import$Cell_Index))) {
+        message("Duplicate tcr detected, randomly chosing the first in the list")
+      }
+
+      meta.data.import <- meta.data.import[!duplicated(meta.data.import$Cell_Index),]
+
       sc@meta.data$Cell_Index <- rownames(sc@meta.data)
 
       sc@meta.data$order <- 1:length(sc@meta.data$Cell_Index)
@@ -8106,23 +8203,23 @@ runSTEGO <- function(){
         )
       )
 
-      if (input$DownVColumn == "Meta_data") {
-        sc <- getData_SampRemove()
+      # if (input$DownVColumn == "Meta_data") {
+      sc <- getData_SampRemove()
 
-        sc@meta.data$selected <- sc@meta.data[, names(sc@meta.data) %in% input$Samp_col_SampToRemove]
-        sc@meta.data$keep <- ifelse(sc@meta.data$selected %in% c(input$ID_Column_factor_SampToRemove), "keep", "NS")
-        sc <- subset(x = sc, subset = keep == "keep")
-        sc@meta.data <- sc@meta.data[, !names(sc@meta.data) %in% c("selected", "keep")]
-        Samps_to_remove$Samp1 <- sc
-      } else {
-        sc <- getData_SampRemove()
-        sc@meta.data$orig.ident_old <- sc@meta.data$orig.ident
-        Idents(sc) <- sc@meta.data[, names(sc@meta.data) %in% input$Samp_col_SampToRemove]
-
-        sc2 <- subset(x = sc, downsample = input$downsamp_limit)
-        Idents(sc2) <- sc2@meta.data$orig.ident_old
-        Samps_to_remove$Samp1 <- sc2
-      }
+      sc@meta.data$selected <- sc@meta.data[, names(sc@meta.data) %in% input$Samp_col_SampToRemove]
+      sc@meta.data$keep <- ifelse(sc@meta.data$selected %in% c(input$ID_Column_factor_SampToRemove), "keep", "NS")
+      sc <- subset(x = sc, subset = keep == "keep")
+      sc@meta.data <- sc@meta.data[, !names(sc@meta.data) %in% c("selected", "keep")]
+      Samps_to_remove$Samp1 <- sc
+      # } else {
+      #   sc <- getData_SampRemove()
+      #   sc@meta.data$orig.ident_old <- sc@meta.data$orig.ident
+      #   Idents(sc) <- sc@meta.data[, names(sc@meta.data) %in% input$Samp_col_SampToRemove]
+      #
+      #   sc2 <- subset(x = sc, downsample = input$downsamp_limit)
+      #   Idents(sc2) <- sc2@meta.data$orig.ident_old
+      #   Samps_to_remove$Samp1 <- sc2
+      # }
     })
 
     Filtered_samp_to_remove_process <- reactive({
@@ -10186,23 +10283,53 @@ runSTEGO <- function(){
 
 
 
-    # Analysis -----
-    # observe({
-    #
-    #
-    #   # if (input$colourtype == "Paired") {
-    #     updateSelectInput(
-    #       session,
-    #       "colourtype",
-    #       choices = names(input.data.TCR.BD()),
-    #       selected = "chain"
-    #     )
-    #   # } else {
-    #
-    #   # }
-    # })
-    #
 
+    # re-formatting md to match STEGO.R formatting ------
+    data_sc_reformatting <- reactive({
+      inFile_sc_reformatting_md <- input$file1_rds.reformatting_md
+      if (is.null(inFile_sc_reformatting_md)) {
+        return(NULL)
+      } else {
+        dataframe <- LoadSeuratRds(inFile_sc_reformatting_md$datapath)
+      }
+    })
+
+    output$sc_formatting_table <- DT::renderDT(escape = FALSE, options = list(autoWidth = FALSE, lengthMenu = c(2, 5, 10, 20, 50, 100), pageLength = 2, scrollX = TRUE), {
+      sc <- data_sc_reformatting()
+      validate(
+        need(
+          nrow(sc) > 0,
+          "Upload non-STEGO.R .rds that requires reformatting to match STEGO.R"
+        )
+      )
+
+      umap.meta <- sc@meta.data
+      umap.meta
+
+    })
+    # for  TCR1 in scRepertoire -----
+    observe({
+      sc <- data_sc_reformatting()
+      validate(
+        need(
+          nrow(sc) > 0,
+          "Upload non-STEGO.R .rds that requires reformatting to match STEGO.R"
+        )
+      )
+
+      umap.meta <- sc@meta.data
+      umap.meta
+
+      # cluster <- cluster[cluster$Clust_size_order %in% input$lower_cluster:input$upper_cluster,]
+      updateSelectInput(
+        session,
+        "TCR_alpha_gamma_cdr3",
+        choices = names(umap.meta),
+        selected = "TCR1"
+      )
+    }) # cluster to display
+
+    # Analysis -----
     observe({
       sc <- data_sc_pro()
       validate(
@@ -10257,6 +10384,7 @@ runSTEGO <- function(){
         dataframe <- LoadSeuratRds(inFile_sc_pro$datapath)
       }
     })
+
     data_sc_clusTCR_AG <- reactive({
       inFile_cluster_fileAG <- input$file_cluster_file_AG
       if (is.null(inFile_cluster_fileAG)) {
@@ -16726,16 +16854,32 @@ runSTEGO <- function(){
 
       df <- sc@meta.data
       df <- as.data.frame(df)
+      name_obj <- input$Samp_col
       unique.df <- unique(df[, names(df) %in% c(input$Samp_col, input$V_gene_sc)])
+      print(head(unique.df))
+      unique.df <- unique.df %>%
+        select(name_obj, everything())
+      print(head(unique.df))
       names(unique.df) <- c("group", "chain")
+
+
       unique.df <- subset(unique.df, unique.df$chain != "NA")
+
       unique.df <- subset(unique.df, unique.df$group != "NA")
+
       unique.df$cloneCount <- 1
+
       mat <- acast(unique.df, chain ~ group, value.var = "cloneCount")
       mat[is.na(mat)] <- 0
       Count_data <- as.data.frame(rowSums(mat))
       names(Count_data) <- "V1"
-      unique.df <- (df[, names(df) %in% c(input$Samp_col, input$V_gene_sc)])
+      unique.df <- df[, names(df) %in% c(input$Samp_col, input$V_gene_sc)]
+
+      unique.df <- unique.df %>%
+        select(name_obj, everything())
+
+      print(head(unique.df))
+
       names(unique.df) <- c("group", "chain")
       unique.df <- subset(unique.df, unique.df$chain != "NA")
       unique.df <- subset(unique.df, unique.df$group != "NA")
@@ -16785,8 +16929,13 @@ runSTEGO <- function(){
         original_data <- subset(clones, TotalSamps >= input$cutoff_upset)
       }
 
+      original_data[1:6,1:6]
+
       # Get the group names from the column names
       group_names <- unique(gsub(input$separator_input,"", colnames(original_data)))
+
+
+
       group_names <- group_names[!(group_names %in% c("background", "TotalSamps", "CloneTotal"))]
       print(group_names)
       group_names

@@ -18,6 +18,10 @@ harmony_batch_correction_2_Scaling(
 
 \item{species}{select either human 'hs' or mouse 'mm'}
 }
+\value{
+A Seurat object with scaled gene expression data.
+}
 \description{
-Scales the Seurat object and ensure that the correct genes are present for annotating purposes
+This function scales a Seurat object and ensures that the correct genes are present for annotating purposes.
+It is intended to be used sequentially following \code{harmony_batch_correction_1_variableFeatures}.
 }

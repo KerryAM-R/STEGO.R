@@ -2,7 +2,7 @@
 % Please edit documentation in R/Update_auto_prior.R
 \name{Summary_TCR_table}
 \alias{Summary_TCR_table}
-\title{TCR-seq summary table for both group and total expansion}
+\title{Generate Summary Table for TCR-seq Data}
 \usage{
 Summary_TCR_table(
   sc = sc,
@@ -12,14 +12,17 @@ Summary_TCR_table(
 )
 }
 \arguments{
-\item{sc}{Add the merged and annotated file}
+\item{sc}{Merged and annotated Seurat object.}
 
-\item{Samp_col}{Sample column name with the default being "Sample_Name"}
+\item{Samp_col}{Sample column name. Default is "Sample_Name".}
 
-\item{V_gene_sc}{The vdj and CDR3 sequence "vdj_gene_cdr3_AG_BD"}
+\item{V_gene_sc}{Column name containing VDJ gene and CDR3 sequence. Default is "vdj_gene_cdr3_AG_BD".}
 
-\item{save_file}{save file to the Clonotypes folder}
+\item{save_file}{Logical indicating whether to save the summary table as a CSV file. Default is TRUE.}
+}
+\value{
+A data frame containing the summary table.
 }
 \description{
-This function will add in the additional labels required for the analysis if needed. this process is also required to add in the reductions to the meta.data
+This function generates a summary table for TCR-seq data, providing counts of clonotypes per group and total counts.
 }
