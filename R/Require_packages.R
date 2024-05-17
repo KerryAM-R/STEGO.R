@@ -1,15 +1,3 @@
-#' gg_fill_hue
-#' @description
-#' This create a list of colours
-#'@name gg_fill_hue
-#' @param n length of object to colour
-#' @export
-
-gg_fill_hue <- function(n) {
-  hues = seq(15, 375, length = n + 1)
-  hcl(h = hues, l = 65, c = 100)[1:n]
-}
-
 #' TCR_Expanded_fun
 #' @name TCR_Expanded_fun
 #' @param sc seurat object description

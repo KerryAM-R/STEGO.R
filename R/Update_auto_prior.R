@@ -1,23 +1,36 @@
-#' Default colours
+#' Generate Default Fill Colors for ggplot2 Using Hues
 #' @name gg_fill_hue
+#' @description
+#' This function generates a sequence of default fill colors suitable for use in ggplot2 plots by varying hues.
+#'
+#' @param n Number of colors to generate.
+#'
+#' @return A vector of colors in HCL space.
+#'
 #' @export
-
+#'
 gg_fill_hue <- function(n) {
   hues = seq(15, 375, length = n + 1)
   hcl(h = hues, l = 65, c = 100)[1:n]
 }
 
-#' Merging RDS Seurat objects
-#' @name Updating_IDs
+#' Update Seurat Object with Additional Labels and Embeddings
+#' @name update_sc
 #' @description
-#' This function will add in the additional labels required for the analysis if needed. this process is also required to add in the reductions to the meta.data
+#' This function adds additional labels and embeddings to a Seurat object if needed.
+#' It merges the new IDs with the existing metadata based on a specified column name.
+#' This process is essential for incorporating additional information into the analysis.
+#'
 #' @importFrom plyr ddply mutate
 #' @import Seurat
-#' @param sc Add the merged and annotated file
-#' @param update_sc If you have added in the additional labels if required
-#' @param add_additional_lables Allows the user to add in other ID's
-#' @param updateID file with the new id's based on colName
-#' @param colName for the merging of the meta data with the updated ID, and will default to 'Sample_Name'
+#'
+#' @param sc Merged and annotated Seurat object.
+#' @param add_additional_lables Boolean indicating whether to add additional labels. Default is TRUE.
+#' @param updateID File with new IDs to be merged with metadata.
+#' @param colName Column name for merging metadata with updated IDs. Default is "Sample_Name".
+#'
+#' @return Updated Seurat object with additional labels and embeddings.
+#'
 #' @export
 
 update_sc <- function (sc = sc,
@@ -47,17 +60,20 @@ update_sc <- function (sc = sc,
 
 }
 
-#' TCR-seq summary table for both group and total expansion
+#' Generate Summary Table for TCR-seq Data
 #' @name Summary_TCR_table
 #' @description
-#' This function will add in the additional labels required for the analysis if needed. this process is also required to add in the reductions to the meta.data
-#' @importFrom dplyr %>% select
-#' @param sc Add the merged and annotated file
-#' @param Samp_col Sample column name with the default being "Sample_Name"
-#' @param V_gene_sc The vdj and CDR3 sequence "vdj_gene_cdr3_AG_BD"
-#' @param save_file save file to the Clonotypes folder
-#' @export
+#' This function generates a summary table for TCR-seq data, providing counts of clonotypes per group and total counts.
 #'
+#' @importFrom dplyr %>% select
+#' @param sc Merged and annotated Seurat object.
+#' @param Samp_col Sample column name. Default is "Sample_Name".
+#' @param V_gene_sc Column name containing VDJ gene and CDR3 sequence. Default is "vdj_gene_cdr3_AG_BD".
+#' @param save_file Logical indicating whether to save the summary table as a CSV file. Default is TRUE.
+#'
+#' @return A data frame containing the summary table.
+#'
+#' @export
 
 Summary_TCR_table <- function (sc = sc,
                                Samp_col = "Sample_Name",
@@ -115,15 +131,17 @@ Summary_TCR_table <- function (sc = sc,
   mat
 }
 
-#' Column factor ID function
+#' Generate Factor Levels for Sample Column
 #' @name ID_Column_factor_function
 #' @description
-#' This section is to add the factor order for the graphs
+#' This function generates factor levels for a specified sample column, ensuring consistent ordering in graphs or analyses.
 #'
-#' @param sc Add the merged and annotated file
-#' @param Samp_col Sample column name with the default being "Sample_Name"
+#' @param sc Merged and annotated Seurat object.
+#' @param Samp_col Sample column name. Default is "Sample_Name".
+#'
+#' @return A data frame containing unique factor levels for the specified sample column.
+#'
 #' @export
-#'
 
 ID_Column_factor_function <- function (sc = sc, Samp_col = "Sample_Name") {
   sc <- sc
@@ -138,22 +156,27 @@ ID_Column_factor_function <- function (sc = sc, Samp_col = "Sample_Name") {
 
 }
 
-#' Creating the summary table in the form of an UPSET plot
+#' Generate UpSet Plot for Multiple Samples
 #' @name Upset_plot_multi
 #' @description
-#' This section is to add the factor order for the graphs
+#' This function generates an UpSet plot to visualize overlap of clonotypes across multiple samples.
+#'
 #' @import extrafont
 #' @import ComplexHeatmap
 #' @importFrom reshape2 acast
 #' @importFrom dplyr %>% select
-#' @param sc Add the merged and annotated file
-#' @param Samp_col Sample column name with the default being "Sample_Name"
-#' @param V_gene_sc column name vdj_gene_cdr3_AG_BD
-#' @param font_type from the extrafont package; default: Times New Roman
-#' @param save_plots save file to director or you can store as an object
-#' @param width_px Width of plot 2000
-#' @param height_px Height of plot 1200
-#' @param resolution_px Width of plot 144
+#'
+#' @param sc Merged and annotated Seurat object.
+#' @param Samp_col Sample column name. Default is "Sample_Name".
+#' @param V_gene_sc Column name containing VDJ gene and CDR3 sequence. Default is "vdj_gene_cdr3_AG_BD".
+#' @param font_type Font type for plot. Default is "Times New Roman".
+#' @param save_plots Logical indicating whether to save the plot as a PNG file. Default is TRUE.
+#' @param width_px Width of the plot in pixels. Default is 2000.
+#' @param height_px Height of the plot in pixels. Default is 1200.
+#' @param resolution_px Resolution of the plot in pixels per inch (PPI). Default is 144.
+#'
+#' @return An UpSet plot object.
+#'
 #' @export
 #'
 
@@ -227,19 +250,21 @@ Upset_plot_multi <- function (sc = sc,
 
 }
 
-#' Function for summarising the TCR-seq based on scRepertiore categories
+#' Summarize TCR-seq Data Based on scRepertoire Categories
 #' @name TCR_Expanded
 #' @description
-#' This section is to add the factor order for the graphs
+#' This function summarizes TCR-seq data based on scRepertoire categories, providing counts, frequencies, and percentages of expanded clones.
 #'
-#' @param sc Add the merged and annotated file
-#' @param Samp_col Sample column name with the default being "Sample_Name"
-#' @param V_gene_sc column name vdj_gene_cdr3_AG_BD
-#' @param font_type from the extrafont package; default: Times New Roman
+#' @param sc Merged and annotated Seurat object.
+#' @param Samp_col Sample column name. Default is "Sample_Name".
+#' @param V_gene_sc Column name containing VDJ gene and CDR3 sequence. Default is "vdj_gene_cdr3_AG_BD".
+#' @param font_type Font type for plot. Default is "Times New Roman".
+#'
+#' @return A data frame summarizing TCR-seq data based on scRepertoire categories.
+#'
 #' @import plyr
 #' @import extrafont
 #' @export
-#'
 
 TCR_Expanded <- function (sc = sc,
                           Samp_col = "Sample_Name",
@@ -285,46 +310,49 @@ TCR_Expanded <- function (sc = sc,
 
   df4 <- df3 %>%
     mutate(Frequency_expanded = case_when(
-      frequency <= 1e-4 ~ "1. Rare (0 > X < 1e-4)",
-      frequency <= 0.001 ~ "2. Small (1e-4 > X <= 0.001)",
-      frequency <= 0.01 ~ "3. Medium (0.001 > X <= 0.01)",
-      frequency <= 0.10 ~ "4. Large (0.01 > X <= 0.1)",
-      frequency <= 0.50 ~ "5. Gigantic (0.1 > X <= 0.5)",
-      frequency <= 1 ~ "6. Hyperexpanded (0.5 > X <= 1)",
+      frequency <= 1e-5 ~ "1. Very rare (0 > X \u2264 1e-5)",
+      frequency <= 1e-4 ~ "2. Rare (1e-5 > X \u2264 1e-4)",
+      frequency <= 0.001 ~ "3. Small (1e-4 > X \u2264 0.001)",
+      frequency <= 0.01 ~ "4. Medium (0.001 > X \u2264 0.01)",
+      frequency <= 0.10 ~ "5. Large (0.01 > X \u2264 0.1)",
+      frequency <= 0.50 ~ "6. Hyperexpanded (0.1 > X \u2264 0.5)",
+      frequency <= 1 ~ "7. Hyperexpanded (0.5 > X \u2264 1)",
       TRUE ~ "Other"
     ))
 
   df4 <- df4 %>%
     mutate(Number_expanded = case_when(
-      samp.count <= 1 ~ "1. Single (0 < X <= 1)",
-      samp.count <= 5 ~ "2. Small (1 < X <= 5)",
-      samp.count <= 20 ~ "3. Medium (5 < X <= 20)",
-      samp.count <= 100 ~ "4. Large (20 < X <= 100)",
-      samp.count <= 500 ~ "5. Hyperexpanded (100 < X <= 500)",
+      samp.count <= 1 ~ "1. Single (X = 1)",
+      samp.count <= 5 ~ "2. Small (1 < X \u2264 5)",
+      samp.count <= 20 ~ "3. Medium (5 < X \u2264 20)",
+      samp.count <= 100 ~ "4. Large (20 < X \u2264 100)",
+      samp.count <= 500 ~ "5. Hyperexpanded (100 < X \u2264 500)",
+      samp.count > 500 ~ "6. Hyperexpanded (X > 500)",
       TRUE ~ "6. Hyperexpanded (>500)"
     ))
   df4
 }
 
-#' Frequency distribution or count
+#' Generate Clonal Plot with Multiple Samples
 #' @name clonal_plot_multi
 #' @description
-#' This section is to add the factor order for the graphs
+#' This function generates a clonal plot to visualize the frequency distribution or count of clonotypes across multiple samples.
 #'
-#' @param sc Add the merged and annotated file
-#' @param Samp_col Sample column name with the default being "Sample_Name"
-#' @param V_gene_sc column name vdj_gene_cdr3_AG_BD
-#' @param colourtype colour types include: default, hcl.colors, topo.colors, heat.colors, terrain.colors, rainbow, random
-#' @param Graph_type_bar This choses between the calculated frequency or binned based on count. Count variables are based on scRepertiore.
-#' @param NA_col_analysis If NA's are present it will make them coloured as grey90
-#' @param font_type from the extrafont package; default: Times New Roman
-#' @param title_size Size of the graph plot in 20
-#' @param text_size Size of the text 12
-#' @param Legend_size Size of the text 12
-#' @param legend_position Position of the legend e.g., right, left, top, bottom, none
-#' @param height_px Height of plot 1200
-#' @param resolution_px Width of plot 144
-#' @param save_file save file to director or you can store as an object
+#' @param sc Merged and annotated Seurat object.
+#' @param Samp_col Sample column name. Default is "Sample_Name".
+#' @param V_gene_sc Column name containing VDJ gene and CDR3 sequence. Default is "vdj_gene_cdr3_AG_BD".
+#' @param colourtype Type of colors to use for bars. Options: "default", "hcl.colors", "topo.colors", "heat.colors", "terrain.colors", "rainbow", "random". Default is "default".
+#' @param Graph_type_bar Variable to plot on the y-axis. Options: "Frequency_expanded", "Number_expanded". Default is "Frequency_expanded".
+#' @param NA_col_analysis Color for NA values. Default is "grey90".
+#' @param font_type Font type for plot. Default is "Times New Roman".
+#' @param legend_position Position of the legend. Options: "right", "left", "top", "bottom", "none". Default is "right".
+#' @param title_size Size of the title. Default is 20.
+#' @param text_size Size of the text. Default is 12.
+#' @param Legend_size Size of the legend text. Default is 12.
+#' @param height_px Height of the plot. Default is 1200.
+#' @param resolution_px Resolution of the plot. Default is 144.
+#' @param save_file Logical indicating whether to save the plot as a PNG file. Default is FALSE.
+#'
 #' @import ggplot2
 #' @export
 #'
@@ -412,13 +440,14 @@ clonal_plot_multi <- function (sc = sc,
   pl_bar
 }
 
-#' Selected clones function for the automated process
+#' Identify Selected Clonotypes for Automated Process
 #' @name selected_clonotypes
 #' @description
-#' This section is to add the factor order for the graphs
+#' This function identifies selected clonotypes for an automated process, optionally restricting to expanded clonotypes.
 #'
-#' @param sc Add the merged and annotated file
-#' @param restrict_to_expanded restrict to expanded
+#' @param sc Merged and annotated Seurat object.
+#' @param restrict_to_expanded Logical indicating whether to restrict to expanded clonotypes. Default is FALSE.
+#' @return A data frame containing selected clonotypes.
 #' @export
 #'
 
@@ -444,34 +473,35 @@ selected_clonotypes <- function (sc = sc, restrict_to_expanded = F) {
 
 }
 
-#' Automated function for the PublicLike clonotypes
+#' Automated function for analyzing clonotypes with public-like characteristics
 #' @name Clonotypes_PublicLike
 #' @description
-#' This section is to add the factor order for the graphs
-#' @param sc seurat file
-#' @param restrict_to_expanded Restrict the analysis to include only expanded. removed 1 count in every individual.
-#' @param Samp_col Sample column name with the default being "Sample_Name"
-#' @param V_gene_sc column name vdj_gene_cdr3_AG_BD
-#' @param species_analysis Different types of specifices of either human (hs) or mouse (mm)
-#' @param colourtype colour types include: default, hcl.colors, topo.colors, heat.colors, terrain.colors, rainbow, random
-#' @param Split_group_by_ split the bar graph by this variable. Defaulted to Tcellfunction
-#' @param NA_col_analysis If NA's are present it will make them coloured as grey90
-#' @param font_type from the extrafont package; default: Times New Roman
-#' @param LogFC_ logFC variable for the findmarkers function
-#' @param min_point_ Minimum point value
-#' @param pval.ex.filter Find Marker P-value cut-off
-#' @param low.dotplot lower colour of the dot plot
-#' @param middle.dotplot middle colour of the dot plot
-#' @param high.dotplot high colour of the dot plot
-#' @param gene_set_min_count minumim number of genes for each gene set
-#' @param p.val_cutoff_top p-value cut-off for the over-representation nalysis
-#' @param title_size Size of the graph plot in 20
-#' @param text_size Size of the text 12
-#' @param Legend_size Size of the text 12
-#' @param legend_position location of the legend: right, left, top, bottom or none
-#' @param height_px Height of plot 1200
-#' @param resolution_px Width of plot 144
-#' @param cutoff_priority cut-off for priority
+#' This function performs automated analysis of clonotypes with public-like characteristics, including generating bar plots, dot plots, and over-representation analysis.
+#'
+#' @param sc Seurat object containing the single-cell data
+#' @param restrict_to_expanded Logical indicating whether to restrict the analysis to include only expanded clonotypes
+#' @param Samp_col Sample column name in the Seurat object, default is "Sample_Name"
+#' @param V_gene_sc Column name for the V gene in the Seurat object, default is "vdj_gene_cdr3_AG_BD"
+#' @param species_analysis Species analysis type, either "hs" for human or "mm" for mouse
+#' @param colourtype Color palette for plots, options include "default", "hcl.colors", "topo.colors", "heat.colors", "terrain.colors", "rainbow", "random"
+#' @param Split_group_by_ Variable to split the bar graph by, default is "Tcellfunction"
+#' @param cutoff_priority Priority cutoff for selecting clonotypes, default is 1
+#' @param font_type Font type for plot labels, default is "Times New Roman"
+#' @param NA_col_analysis Color for NA values in plots, default is "grey90"
+#' @param min_point_ Minimum point value for dot plots, default is 0.25
+#' @param LogFC_ Log fold change threshold for marker identification, default is 0.25
+#' @param pval.ex.filter P-value cutoff for marker identification, default is 0.05
+#' @param low.dotplot Color for low expression in dot plots, default is "darkblue"
+#' @param middle.dotplot Color for middle expression in dot plots, default is "white"
+#' @param high.dotplot Color for high expression in dot plots, default is "darkred"
+#' @param gene_set_min_count Minimum number of genes for each gene set in over-representation analysis, default is 1
+#' @param p.val_cutoff_top P-value cutoff for over-representation analysis, default is 1
+#' @param title_size Size of the graph plot title, default is 20
+#' @param text_size Size of the text in the plot, default is 12
+#' @param Legend_size Size of the legend text, default is 12
+#' @param legend_position Position of the legend in the plot, options include "right", "left", "top", "bottom", or "none", default is "right"
+#' @param height_px Height of the plot in pixels, default is 1200
+#' @param resolution_px Resolution of the plot in pixels per inch, default is 144
 #' @import ggplot2
 #' @import Seurat
 #' @import scales

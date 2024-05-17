@@ -10,9 +10,12 @@ harmony_batch_correction_1_variableFeatures(
 )
 }
 \arguments{
-\item{file}{merged seurat object}
+\item{file}{merged Seurat object}
 
-\item{feature_total_limit}{limit number of features to create the scaled data for the harmony batch correction.}
+\item{feature_total_limit}{limit number of features to create the scaled data for the harmony batch correction. Default = 3000 features.}
+}
+\value{
+Seurat object with the variable features.
 }
 \description{
 This function is to aid im merging multiple Seurat object, which will then need to undergo harmony merging

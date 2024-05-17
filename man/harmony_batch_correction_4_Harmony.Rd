@@ -12,14 +12,21 @@ harmony_batch_correction_4_Harmony(
 )
 }
 \arguments{
-\item{file}{merged seurat object}
+\item{file}{Merged Seurat object.}
 
-\item{selected_column_for_reduction}{select the column to use for the harmony e.g., orig.ident, Sample_name,}
+\item{selected_column_for_reduction}{The column used for reducing batch effects, e.g., 'orig.ident', 'Sample_name'.}
 
-\item{Maximum_PC_to_use}{Maximum number principle components (PC) to use. Default30}
+\item{Maximum_PC_to_use}{Maximum number of principal components (PCs) to use. Default is 30.}
 
-\item{resolution_of_clusters}{Resolutions of the clusters - default 0.5}
+\item{resolution_of_clusters}{Resolution parameter for clustering. Default is 0.5.}
+}
+\value{
+A Seurat object after Harmony integration, UMAP dimensionality reduction, neighbor finding, and clustering.
 }
 \description{
-This function is to aid im merging multiple Seurat object, which will then need to undergo harmony merging
+This function facilitates the integration of multiple Seurat objects using the Harmony algorithm for batch correction.
+}
+\details{
+Harmony is a method for removing batch effects from single-cell RNA-seq data by aligning subpopulations of cells across different batches.
+This function applies Harmony to the merged Seurat object provided, using the specified column for batch identification.
 }

@@ -2,7 +2,7 @@
 % Please edit documentation in R/Update_auto_prior.R
 \name{Upset_plot_multi}
 \alias{Upset_plot_multi}
-\title{Creating the summary table in the form of an UPSET plot}
+\title{Generate UpSet Plot for Multiple Samples}
 \usage{
 Upset_plot_multi(
   sc = sc,
@@ -16,22 +16,25 @@ Upset_plot_multi(
 )
 }
 \arguments{
-\item{sc}{Add the merged and annotated file}
+\item{sc}{Merged and annotated Seurat object.}
 
-\item{Samp_col}{Sample column name with the default being "Sample_Name"}
+\item{Samp_col}{Sample column name. Default is "Sample_Name".}
 
-\item{V_gene_sc}{column name vdj_gene_cdr3_AG_BD}
+\item{V_gene_sc}{Column name containing VDJ gene and CDR3 sequence. Default is "vdj_gene_cdr3_AG_BD".}
 
-\item{font_type}{from the extrafont package; default: Times New Roman}
+\item{font_type}{Font type for plot. Default is "Times New Roman".}
 
-\item{save_plots}{save file to director or you can store as an object}
+\item{save_plots}{Logical indicating whether to save the plot as a PNG file. Default is TRUE.}
 
-\item{width_px}{Width of plot 2000}
+\item{width_px}{Width of the plot in pixels. Default is 2000.}
 
-\item{height_px}{Height of plot 1200}
+\item{height_px}{Height of the plot in pixels. Default is 1200.}
 
-\item{resolution_px}{Width of plot 144}
+\item{resolution_px}{Resolution of the plot in pixels per inch (PPI). Default is 144.}
+}
+\value{
+An UpSet plot object.
 }
 \description{
-This section is to add the factor order for the graphs
+This function generates an UpSet plot to visualize overlap of clonotypes across multiple samples.
 }

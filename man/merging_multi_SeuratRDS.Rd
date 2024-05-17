@@ -29,6 +29,9 @@ merging_multi_SeuratRDS(
 
 \item{own_features_df}{Add in a data frame of the list of your features of one column only.}
 }
+\value{
+A merged Seurat RDS object.
+}
 \description{
 This function is to aid im merging multiple Seurat object, which will then need to undergo harmony merging after this step. We have included a loop that merges two Seurat objects at a time to ensure time efficiency  (exponentially gets smaller from the previous sequential merging process)
 }

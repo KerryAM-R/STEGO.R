@@ -7,6 +7,9 @@
 \usage{
 runSTEGO()
 }
+\value{
+A shiny R application called STEGO.R
+}
 \description{
 STEGO application
 }

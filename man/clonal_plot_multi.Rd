@@ -2,7 +2,7 @@
 % Please edit documentation in R/Update_auto_prior.R
 \name{clonal_plot_multi}
 \alias{clonal_plot_multi}
-\title{Frequency distribution or count}
+\title{Generate Clonal Plot with Multiple Samples}
 \usage{
 clonal_plot_multi(
   sc = sc,
@@ -22,34 +22,34 @@ clonal_plot_multi(
 )
 }
 \arguments{
-\item{sc}{Add the merged and annotated file}
+\item{sc}{Merged and annotated Seurat object.}
 
-\item{Samp_col}{Sample column name with the default being "Sample_Name"}
+\item{Samp_col}{Sample column name. Default is "Sample_Name".}
 
-\item{V_gene_sc}{column name vdj_gene_cdr3_AG_BD}
+\item{V_gene_sc}{Column name containing VDJ gene and CDR3 sequence. Default is "vdj_gene_cdr3_AG_BD".}
 
-\item{colourtype}{colour types include: default, hcl.colors, topo.colors, heat.colors, terrain.colors, rainbow, random}
+\item{colourtype}{Type of colors to use for bars. Options: "default", "hcl.colors", "topo.colors", "heat.colors", "terrain.colors", "rainbow", "random". Default is "default".}
 
-\item{Graph_type_bar}{This choses between the calculated frequency or binned based on count. Count variables are based on scRepertiore.}
+\item{Graph_type_bar}{Variable to plot on the y-axis. Options: "Frequency_expanded", "Number_expanded". Default is "Frequency_expanded".}
 
-\item{NA_col_analysis}{If NA's are present it will make them coloured as grey90}
+\item{NA_col_analysis}{Color for NA values. Default is "grey90".}
 
-\item{font_type}{from the extrafont package; default: Times New Roman}
+\item{font_type}{Font type for plot. Default is "Times New Roman".}
 
-\item{legend_position}{Position of the legend e.g., right, left, top, bottom, none}
+\item{legend_position}{Position of the legend. Options: "right", "left", "top", "bottom", "none". Default is "right".}
 
-\item{title_size}{Size of the graph plot in 20}
+\item{title_size}{Size of the title. Default is 20.}
 
-\item{text_size}{Size of the text 12}
+\item{text_size}{Size of the text. Default is 12.}
 
-\item{Legend_size}{Size of the text 12}
+\item{Legend_size}{Size of the legend text. Default is 12.}
 
-\item{height_px}{Height of plot 1200}
+\item{height_px}{Height of the plot. Default is 1200.}
 
-\item{resolution_px}{Width of plot 144}
+\item{resolution_px}{Resolution of the plot. Default is 144.}
 
-\item{save_file}{save file to director or you can store as an object}
+\item{save_file}{Logical indicating whether to save the plot as a PNG file. Default is FALSE.}
 }
 \description{
-This section is to add the factor order for the graphs
+This function generates a clonal plot to visualize the frequency distribution or count of clonotypes across multiple samples.
 }

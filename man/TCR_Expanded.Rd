@@ -2,7 +2,7 @@
 % Please edit documentation in R/Update_auto_prior.R
 \name{TCR_Expanded}
 \alias{TCR_Expanded}
-\title{Function for summarising the TCR-seq based on scRepertiore categories}
+\title{Summarize TCR-seq Data Based on scRepertoire Categories}
 \usage{
 TCR_Expanded(
   sc = sc,
@@ -12,14 +12,17 @@ TCR_Expanded(
 )
 }
 \arguments{
-\item{sc}{Add the merged and annotated file}
+\item{sc}{Merged and annotated Seurat object.}
 
-\item{Samp_col}{Sample column name with the default being "Sample_Name"}
+\item{Samp_col}{Sample column name. Default is "Sample_Name".}
 
-\item{V_gene_sc}{column name vdj_gene_cdr3_AG_BD}
+\item{V_gene_sc}{Column name containing VDJ gene and CDR3 sequence. Default is "vdj_gene_cdr3_AG_BD".}
 
-\item{font_type}{from the extrafont package; default: Times New Roman}
+\item{font_type}{Font type for plot. Default is "Times New Roman".}
+}
+\value{
+A data frame summarizing TCR-seq data based on scRepertoire categories.
 }
 \description{
-This section is to add the factor order for the graphs
+This function summarizes TCR-seq data based on scRepertoire categories, providing counts, frequencies, and percentages of expanded clones.
 }

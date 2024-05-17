@@ -2,7 +2,7 @@
 % Please edit documentation in R/Update_auto_prior.R
 \name{Clonotypes_PublicLike}
 \alias{Clonotypes_PublicLike}
-\title{Automated function for the PublicLike clonotypes}
+\title{Automated function for analyzing clonotypes with public-like characteristics}
 \usage{
 Clonotypes_PublicLike(
   sc = sc,
@@ -32,54 +32,54 @@ Clonotypes_PublicLike(
 )
 }
 \arguments{
-\item{sc}{seurat file}
+\item{sc}{Seurat object containing the single-cell data}
 
-\item{restrict_to_expanded}{Restrict the analysis to include only expanded. removed 1 count in every individual.}
+\item{restrict_to_expanded}{Logical indicating whether to restrict the analysis to include only expanded clonotypes}
 
-\item{Samp_col}{Sample column name with the default being "Sample_Name"}
+\item{Samp_col}{Sample column name in the Seurat object, default is "Sample_Name"}
 
-\item{V_gene_sc}{column name vdj_gene_cdr3_AG_BD}
+\item{V_gene_sc}{Column name for the V gene in the Seurat object, default is "vdj_gene_cdr3_AG_BD"}
 
-\item{species_analysis}{Different types of specifices of either human (hs) or mouse (mm)}
+\item{species_analysis}{Species analysis type, either "hs" for human or "mm" for mouse}
 
-\item{colourtype}{colour types include: default, hcl.colors, topo.colors, heat.colors, terrain.colors, rainbow, random}
+\item{colourtype}{Color palette for plots, options include "default", "hcl.colors", "topo.colors", "heat.colors", "terrain.colors", "rainbow", "random"}
 
-\item{Split_group_by_}{split the bar graph by this variable. Defaulted to Tcellfunction}
+\item{Split_group_by_}{Variable to split the bar graph by, default is "Tcellfunction"}
 
-\item{cutoff_priority}{cut-off for priority}
+\item{cutoff_priority}{Priority cutoff for selecting clonotypes, default is 1}
 
-\item{font_type}{from the extrafont package; default: Times New Roman}
+\item{font_type}{Font type for plot labels, default is "Times New Roman"}
 
-\item{NA_col_analysis}{If NA's are present it will make them coloured as grey90}
+\item{NA_col_analysis}{Color for NA values in plots, default is "grey90"}
 
-\item{min_point_}{Minimum point value}
+\item{min_point_}{Minimum point value for dot plots, default is 0.25}
 
-\item{LogFC_}{logFC variable for the findmarkers function}
+\item{LogFC_}{Log fold change threshold for marker identification, default is 0.25}
 
-\item{pval.ex.filter}{Find Marker P-value cut-off}
+\item{pval.ex.filter}{P-value cutoff for marker identification, default is 0.05}
 
-\item{low.dotplot}{lower colour of the dot plot}
+\item{low.dotplot}{Color for low expression in dot plots, default is "darkblue"}
 
-\item{middle.dotplot}{middle colour of the dot plot}
+\item{middle.dotplot}{Color for middle expression in dot plots, default is "white"}
 
-\item{high.dotplot}{high colour of the dot plot}
+\item{high.dotplot}{Color for high expression in dot plots, default is "darkred"}
 
-\item{gene_set_min_count}{minumim number of genes for each gene set}
+\item{gene_set_min_count}{Minimum number of genes for each gene set in over-representation analysis, default is 1}
 
-\item{p.val_cutoff_top}{p-value cut-off for the over-representation nalysis}
+\item{p.val_cutoff_top}{P-value cutoff for over-representation analysis, default is 1}
 
-\item{title_size}{Size of the graph plot in 20}
+\item{title_size}{Size of the graph plot title, default is 20}
 
-\item{text_size}{Size of the text 12}
+\item{text_size}{Size of the text in the plot, default is 12}
 
-\item{Legend_size}{Size of the text 12}
+\item{Legend_size}{Size of the legend text, default is 12}
 
-\item{legend_position}{location of the legend: right, left, top, bottom or none}
+\item{legend_position}{Position of the legend in the plot, options include "right", "left", "top", "bottom", or "none", default is "right"}
 
-\item{height_px}{Height of plot 1200}
+\item{height_px}{Height of the plot in pixels, default is 1200}
 
-\item{resolution_px}{Width of plot 144}
+\item{resolution_px}{Resolution of the plot in pixels per inch, default is 144}
 }
 \description{
-This section is to add the factor order for the graphs
+This function performs automated analysis of clonotypes with public-like characteristics, including generating bar plots, dot plots, and over-representation analysis.
 }

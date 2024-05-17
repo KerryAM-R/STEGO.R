@@ -2,15 +2,18 @@
 % Please edit documentation in R/Update_auto_prior.R
 \name{selected_clonotypes}
 \alias{selected_clonotypes}
-\title{Selected clones function for the automated process}
+\title{Identify Selected Clonotypes for Automated Process}
 \usage{
 selected_clonotypes(sc = sc, restrict_to_expanded = F)
 }
 \arguments{
-\item{sc}{Add the merged and annotated file}
+\item{sc}{Merged and annotated Seurat object.}
 
-\item{restrict_to_expanded}{restrict to expanded}
+\item{restrict_to_expanded}{Logical indicating whether to restrict to expanded clonotypes. Default is FALSE.}
+}
+\value{
+A data frame containing selected clonotypes.
 }
 \description{
-This section is to add the factor order for the graphs
+This function identifies selected clonotypes for an automated process, optionally restricting to expanded clonotypes.
 }
