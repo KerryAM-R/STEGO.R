@@ -56,6 +56,7 @@ Imports:
     chisq.posthoc.test,
     stats4
 biocViews: DropletUtils, SingleCellExperiment, SummarizedExperiment, ComplexHeatmap
-Remotes:
-  github::KerryAM-R/ClusTCR2
-
+Suggests: 
+    knitr,
+    rmarkdown
+VignetteBuilder: knitr

@@ -1,0 +1,30 @@
+---
+title: "STEGO"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{STEGO}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+Single cell TCR and Expression Grouped Ontologies (STEGO) was built for standardising the processing and analysis of single cell (sc) RNA-seq with T cell receptor (TCR) seq datasets. 
+
+Please refer to the online tutorial https://stegor.readthedocs.io/en/latest/ for more details. 
+
+```{}
+
+
+
+```
+
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+```{r setup}
+library(STEGO.R)
+```
