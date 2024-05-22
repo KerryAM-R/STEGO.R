@@ -15,7 +15,8 @@ automated_sc_filtering(
   dimension_sc = 15,
   resolution_sc = 1,
   limit_to_TCR_GEx = F,
-  save_plots = T
+  save_plots = T,
+  output_dir = "3_SCobj/3a/"
 )
 }
 \arguments{
@@ -33,13 +34,15 @@ automated_sc_filtering(
 
 \item{percent.rb}{Ribosomal RNA cut-off (>)}
 
-\item{dimension_sc}{Set number of dimentions to use for the dimentional reduction.}
+\item{dimension_sc}{Set number of dimensions to use for the dimensional reduction.}
 
 \item{resolution_sc}{Set the Seurat unsupervised clustering; however, this wont be used for annotation purposes in this pipeline.}
 
 \item{limit_to_TCR_GEx}{Reduce the file to limit to the TCR seq and GEx only (recommended for large data sets)}
 
 \item{save_plots}{Save the plots}
+
+\item{output_dir}{Location of the process .rds Seurat object filtered files}
 }
 \value{
 Seurat object per file.

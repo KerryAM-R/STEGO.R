@@ -6,7 +6,7 @@
 #' @import ComplexHeatmap
 #' @import corrplot
 #' @importFrom cowplot plot_grid as_gtable align_plots
-#' @importFrom dplyr %>% select case_when slice_max
+#' @importFrom dplyr %>% select case_when slice_max distinct
 #' @importFrom DT DTOutput renderDT
 #' @import extrafont
 #' @importFrom foreach foreach
@@ -752,26 +752,26 @@ runSTEGO <- function(){
                   conditionalPanel(
                     condition = "input.Format_bd=='cellXgene'",
                     div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
-                    div(DT::DTOutput("test.files3"))
+                    div(DT::DTOutput("test.files3", height = "200px"))
                   ),
                   conditionalPanel(
                     condition = "input.Format_bd=='Barcode_features_matrix'",
                     div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
-                    div(DT::DTOutput("test.files.bd1")),
+                    div(DT::DTOutput("test.files.bd1", height = "200px")),
                     div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
-                    div(DT::DTOutput("test.files.bd2")),
+                    div(DT::DTOutput("test.files.bd2", height = "200px")),
                     div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
-                    div(DT::DTOutput("test.files.bd3")),
+                    div(DT::DTOutput("test.files.bd3", height = "200px")),
                   ),
                   conditionalPanel(
                     condition = "input.filtered_list=='Paired'",
                     div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
-                    div(DT::DTOutput("test.files2"))
+                    div(DT::DTOutput("test.files2", height = "200px"))
                   ),
                   conditionalPanel(
                     condition = "input.filtered_list=='Dominant' || input.filtered_list=='Unfiltered'",
                     div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
-                    div(DT::DTOutput("test.files.bd4")),
+                    div(DT::DTOutput("test.files.bd4", height = "200px")),
                   ),
                 ),
                 # tabPanel("Checking Merge",
@@ -783,23 +783,23 @@ runSTEGO <- function(){
                   "clusTCR2",
                   tags$head(tags$style("#tb_clusTCR  {white-space: nowrap;  }")),
                   div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
-                  div(DT::DTOutput("tb_clusTCR")),
+                  div(DT::DTOutput("tb_clusTCR", height = "200px")),
                   selectInput("chain_clusTCR2_bd", "Select to download", choices = c("AG", "BD", "IgH", "IgLK")),
                   downloadButton("downloaddf_clusTCR", "Download table")
                 ),
                 tabPanel(
                   "TCRex",
                   div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
-                  div(DT::DTOutput("tb_TCRex_BDrap_df")),
+                  div(DT::DTOutput("tb_TCRex_BDrap_df", height = "200px")),
                   downloadButton("downloaddf_TCRex_BDrap", "Download table")
                 ),
                 tabPanel(
                   "For Seurat",
                   tags$head(tags$style("#tb_count_matrix  {white-space: nowrap;  }")),
                   div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
-                  div(DT::DTOutput("tb_count_matrix")),
+                  div(DT::DTOutput("tb_count_matrix", height = "200px")),
                   div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
-                  div(DT::DTOutput("tb_metadata_sc")),
+                  div(DT::DTOutput("tb_metadata_sc", height = "200px")),
                   fluidRow(
                     column(3, downloadButton("downloadtb_count_matrix", "Download count table")),
                     column(3),
@@ -810,19 +810,19 @@ runSTEGO <- function(){
                   "TCR_Explore",
                   tags$head(tags$style("#tb_TCR_Explore  {white-space: nowrap;  }")),
                   div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
-                  div(DT::DTOutput("tb_TCR_Explore")),
+                  div(DT::DTOutput("tb_TCR_Explore", height = "200px")),
                   downloadButton("downloadtb_TCR_Explore", "Download table")
                 ),
                 tabPanel(
                   "Multi-TCR",
-                  div(DT::DTOutput("tb_multiTCR")),
+                  div(DT::DTOutput("tb_multiTCR", height = "200px")),
                   downloadButton("downloadtb_multiTCR", "Download Multi-TCR table")
                 ),
                 tabPanel(
                   "Create Sample Tags file",
                   tags$head(tags$style("#tb_sample_tags_created  {white-space: nowrap;  }")),
                   div(class = "name-BD",textInput("sample_tags_name", "Name of sample", value = "BD EA splenocyte")),
-                  div(DT::DTOutput("tb_sample_tags_created")),
+                  div(DT::DTOutput("tb_sample_tags_created", height = "200px")),
                   downloadButton("downloadtb_sample_tags", "Download Tags")
                 ),
               )
@@ -1658,21 +1658,45 @@ runSTEGO <- function(){
                     verbatimTextOutput("scGATE_verbatum_BDrhapsody_MM.FP.other")
                   ),
                 ),
+                ##### custom gates ------
                 tabPanel(
                   "Check custom scGate annotations",
-
-                  fluidRow(
-                    column(4, plotOutput("create_custom_1", height = "600px")),
-                    column(4, plotOutput("create_custom_2", height = "600px"), ),
-                    column(4, plotOutput("create_custom_3", height = "600px")),
-                    column(4, plotOutput("create_custom_4", height = "600px"), ),
-                    column(4, plotOutput("create_custom_5", height = "600px")),
-                    column(4, plotOutput("create_custom_6", height = "600px"), ),
-                    column(4, plotOutput("create_custom_7", height = "600px")),
-                    column(4, plotOutput("create_custom_8", height = "600px"), ),
-                    column(4, plotOutput("create_custom_9", height = "600px")),
-                  )
-                  # plotOutput("create_custom_1", height = "600px"),
+                  conditionalPanel(
+                    condition = "input.GeneSet1_scGate == true",
+                    column(6, plotOutput("create_custom_1", height = "600px"))
+                  ),
+                  conditionalPanel(
+                    condition = "input.GeneSet2_scGate == true",
+                    column(6, plotOutput("create_custom_2", height = "600px")),
+                  ),
+                  conditionalPanel(
+                    condition = "input.GeneSet3_scGate == true",
+                    column(6, plotOutput("create_custom_3", height = "600px")),
+                  ),
+                  conditionalPanel(
+                    condition = "input.GeneSet4_scGate == true",
+                    column(6, plotOutput("create_custom_4", height = "600px")),
+                  ),
+                  conditionalPanel(
+                    condition = "input.GeneSet5_scGate == true",
+                    column(6, plotOutput("create_custom_5", height = "600px")),
+                  ),
+                  conditionalPanel(
+                    condition = "input.GeneSet6_scGate == true",
+                    column(6, plotOutput("create_custom_6", height = "600px"), ),
+                  ),
+                  conditionalPanel(
+                    condition = "input.GeneSet7_scGate == true",
+                    column(6, plotOutput("create_custom_7", height = "600px")),
+                  ),
+                  conditionalPanel(
+                    condition = "input.GeneSet8_scGate == true",
+                    column(6, plotOutput("create_custom_8", height = "600px")),
+                  ),
+                  conditionalPanel(
+                    condition = "input.GeneSet9_scGate == true",
+                    column(6, plotOutput("create_custom_9", height = "600px"))
+                  ),
                 ),
                 # classification based on TCR_seq -----
                 # display metadata -----
@@ -6887,7 +6911,8 @@ runSTEGO <- function(){
       req(vals_ClusTCR2$output_dt2)
       Network_df <- vals_ClusTCR2$output_dt2
       set.seed(123)
-      source(system.file("Functions","motifStack.functions.R",package = "ClusTCR2"))
+      source(system.file("Functions", "motifStack.functions.R",
+                         package = "ClusTCR2"))
 
       motif_plot(Network_df, Clust_selected = input$selected_Cluster, Clust_column_name = "Clust_size_order")
     })
@@ -7860,7 +7885,7 @@ runSTEGO <- function(){
       if (input$Seruat_version_merge == "V4") {
         # var.genes <- as.data.frame(sc@assays$RNA@var.features)
       } else if (input$Seruat_version_merge == "V5") {
-        sc <- JoinLayers(sc,  assay = "RNA")
+        sc <- SeuratObject::JoinLayers(sc,  assay = "RNA")
       } else {
 
       }
@@ -9229,9 +9254,10 @@ runSTEGO <- function(){
 
         sc
       } else {
+        sc <- data.frame()
         sc
       }
-      sc
+
     })
 
     create_UMAP_custom_1 <- reactive({
@@ -9240,16 +9266,21 @@ runSTEGO <- function(){
       validate(
         need(
           nrow(sc) > 0,
-          "Run Clustering"
+          "GeneSet1 not run"
         )
       )
 
       DimPlot(sc, reduction = "umap", group.by = "geneSet1", pt.size = 1)
+
     })
+
+
     output$create_custom_1 <- renderPlot({
       sc <- scGate_anno_GeneSet1()
       req(sc)
-      create_UMAP_custom_1()
+      plot <- create_UMAP_custom_1()
+      req(plot)
+      plot
     })
     output$scGATE_verbatum_GeneSet1 <- renderPrint({
       FN <- tempfile()
@@ -9293,9 +9324,9 @@ runSTEGO <- function(){
 
         sc
       } else {
+        sc <- data.frame()
         sc
       }
-      sc
     })
 
     create_UMAP_custom_2 <- reactive({
@@ -9304,7 +9335,7 @@ runSTEGO <- function(){
       validate(
         need(
           nrow(sc) > 0,
-          "Run Clustering"
+          "GeneSet2 not run"
         )
       )
       DimPlot(sc, reduction = "umap", group.by = "geneSet2", pt.size = 1)
@@ -9312,7 +9343,9 @@ runSTEGO <- function(){
     output$create_custom_2 <- renderPlot({
       sc <- scGate_anno_GeneSet2()
       req(sc)
-      create_UMAP_custom_2()
+      plot <- create_UMAP_custom_2()
+      req(plot)
+      plot
     })
 
     output$scGATE_verbatum_GeneSet2 <- renderPrint({
@@ -9357,9 +9390,9 @@ runSTEGO <- function(){
 
         sc
       } else {
+        sc <- data.frame()
         sc
       }
-      sc
     })
 
     create_UMAP_custom_3 <- reactive({
@@ -9368,14 +9401,19 @@ runSTEGO <- function(){
       validate(
         need(
           nrow(sc) > 0,
-          "Run Clustering"
+          "Geneset3 not run"
         )
       )
 
       DimPlot(sc, reduction = "umap", group.by = "geneSet3", pt.size = 1)
     })
     output$create_custom_3 <- renderPlot({
-      create_UMAP_custom_3()
+      sc <- scGate_anno_GeneSet3()
+      req(sc)
+      plot <- create_UMAP_custom_3()
+      req(plot)
+      plot
+
     })
 
     output$scGATE_verbatum_GeneSet3 <- renderPrint({
@@ -9417,9 +9455,9 @@ runSTEGO <- function(){
 
         sc
       } else {
+        sc <- data.frame()
         sc
       }
-      sc
     })
 
     create_UMAP_custom_4 <- reactive({
@@ -9428,14 +9466,18 @@ runSTEGO <- function(){
       validate(
         need(
           nrow(sc) > 0,
-          "Run Clustering"
+          "GeneSet4 not run"
         )
       )
 
       DimPlot(sc, reduction = "umap", group.by = "geneSet4", pt.size = 1)
     })
     output$create_custom_4 <- renderPlot({
-      create_UMAP_custom_4()
+      sc <- scGate_anno_GeneSet4()
+      req(sc)
+      plot <- create_UMAP_custom_4()
+      req(plot)
+      plot
     })
 
     output$scGATE_verbatum_GeneSet4 <- renderPrint({
@@ -9479,9 +9521,9 @@ runSTEGO <- function(){
 
         sc
       } else {
+        sc <- data.frame()
         sc
       }
-      sc
     })
 
     create_UMAP_custom_5 <- reactive({
@@ -9490,14 +9532,18 @@ runSTEGO <- function(){
       validate(
         need(
           nrow(sc) > 0,
-          "Run Clustering"
+          "GeneSet5 not run"
         )
       )
 
       DimPlot(sc, reduction = "umap", group.by = "geneSet5", pt.size = 1)
     })
     output$create_custom_5 <- renderPlot({
-      create_UMAP_custom_5()
+      sc <- scGate_anno_GeneSet5()
+      req(sc)
+      plot <- create_UMAP_custom_5()
+      req(plot)
+      plot
     })
 
     output$scGATE_verbatum_GeneSet5 <- renderPrint({
@@ -9540,9 +9586,9 @@ runSTEGO <- function(){
 
         sc
       } else {
+        sc <- data.frame()
         sc
       }
-      sc
     })
 
     create_UMAP_custom_6 <- reactive({
@@ -9551,14 +9597,18 @@ runSTEGO <- function(){
       validate(
         need(
           nrow(sc) > 0,
-          "Run Clustering"
+          "GeneSet6 not run"
         )
       )
 
       DimPlot(sc, reduction = "umap", group.by = "geneSet6", pt.size = 1)
     })
     output$create_custom_6 <- renderPlot({
-      create_UMAP_custom_6()
+      sc <- scGate_anno_GeneSet6()
+      req(sc)
+      plot <- create_UMAP_custom_6()
+      req(plot)
+      plot
     })
 
     output$scGATE_verbatum_GeneSet6 <- renderPrint({
@@ -9596,9 +9646,9 @@ runSTEGO <- function(){
 
         sc
       } else {
+        sc <- data.frame()
         sc
       }
-      sc
     })
 
     create_UMAP_custom_7 <- reactive({
@@ -9607,14 +9657,18 @@ runSTEGO <- function(){
       validate(
         need(
           nrow(sc) > 0,
-          "Run Clustering"
+          "GeneSet7 not run"
         )
       )
 
       DimPlot(sc, reduction = "umap", group.by = "geneSet7", pt.size = 1)
     })
     output$create_custom_7 <- renderPlot({
-      create_UMAP_custom_7()
+      sc <- scGate_anno_GeneSet7()
+      req(sc)
+      plot <- create_UMAP_custom_7()
+      req(plot)
+      plot
     })
 
     output$scGATE_verbatum_GeneSet7 <- renderPrint({
@@ -9652,9 +9706,9 @@ runSTEGO <- function(){
 
         sc
       } else {
+        sc <- data.frame()
         sc
       }
-      sc
     })
 
     create_UMAP_custom_8 <- reactive({
@@ -9663,14 +9717,18 @@ runSTEGO <- function(){
       validate(
         need(
           nrow(sc) > 0,
-          "Run Clustering"
+          "GeneSet8 not run"
         )
       )
 
       DimPlot(sc, reduction = "umap", group.by = "geneSet8", pt.size = 1)
     })
     output$create_custom_8 <- renderPlot({
-      create_UMAP_custom_8()
+      sc <- scGate_anno_GeneSet8()
+      req(sc)
+      plot <- create_UMAP_custom_8()
+      req(plot)
+      plot
     })
     output$scGATE_verbatum_GeneSet8 <- renderPrint({
       FN <- tempfile()
@@ -9707,9 +9765,9 @@ runSTEGO <- function(){
 
         sc
       } else {
+        sc <- data.frame()
         sc
       }
-      sc
     })
 
     create_UMAP_custom_9 <- reactive({
@@ -9718,14 +9776,18 @@ runSTEGO <- function(){
       validate(
         need(
           nrow(sc) > 0,
-          "Run Clustering"
+          "GeneSet9 not run"
         )
       )
 
       DimPlot(sc, reduction = "umap", group.by = "geneSet9", pt.size = 1)
     })
     output$create_custom_9 <- renderPlot({
-      create_UMAP_custom_9()
+      sc <- scGate_anno_GeneSet9()
+      req(sc)
+      plot <- create_UMAP_custom_9()
+      req(plot)
+      plot
     })
 
     output$scGATE_verbatum_GeneSet9 <- renderPrint({
@@ -20412,7 +20474,7 @@ runSTEGO <- function(){
 
             Network_df <- cluster[order(cluster$Updated_order), ]
             Network_df <- Network_df %>% distinct(CDR3_Vgene, .keep_all = TRUE) # make Unique
-            motifplot <- Motif_from_cluster_file(Network_df, Clust_selected = i, selected_cluster_column = "Updated_order")
+            motifplot <- ClusTCR2::Motif_from_cluster_file(Network_df, Clust_selected = i, selected_cluster_column = "Updated_order")
 
             message(paste(i, " Downloading motif plot"))
             top.name.clonotypes.top_png <- paste(dirName, i, "_", Vgene, "_AG_motif_", x, ".png", sep = "")
@@ -20672,7 +20734,7 @@ runSTEGO <- function(){
             ## Motif plot -----
             Network_df <- cluster[order(cluster$Updated_order), ]
             Network_df <- Network_df %>% distinct(CDR3_Vgene, .keep_all = TRUE) # make Unique
-            motifplot <- Motif_from_cluster_file(Network_df, Clust_selected = i, selected_cluster_column = "Updated_order")
+            motifplot <- ClusTCR2::Motif_from_cluster_file(Network_df, Clust_selected = i, selected_cluster_column = "Updated_order")
 
             message(paste(i, " Downloading motif plot"))
             top.name.clonotypes.top_png <- paste(dirName, i, "_", Vgene, "_BD_motif_", x, ".png", sep = "")
@@ -20743,7 +20805,7 @@ runSTEGO <- function(){
             ## Motif plot -----
             Network_df <- cluster[order(cluster$Updated_order), ]
             Network_df <- Network_df %>% distinct(CDR3_Vgene, .keep_all = TRUE) # make Unique
-            motifplot <- Motif_from_cluster_file(Network_df, Clust_selected = i, selected_cluster_column = "Updated_order")
+            motifplot <- ClusTCR2::Motif_from_cluster_file(Network_df, Clust_selected = i, selected_cluster_column = "Updated_order")
 
             message(paste(i, " Downloading motif plot"))
             top.name.clonotypes.top_png <- paste(dirName, i, "_", Vgene, "_BD_motif_", x, ".png", sep = "")

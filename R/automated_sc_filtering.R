@@ -30,7 +30,7 @@ automated_sc_filtering <- function(folder = "1_SeuratQC",
                                    resolution_sc= 1,
                                    limit_to_TCR_GEx = F,
                                    save_plots = T,
-                                   output_dir = "3_SCobj/3a/",
+                                   output_dir = "3_SCobj/3a/"
 ) {
 
   main_directory <- "1_SeuratQC"
