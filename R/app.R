@@ -37,8 +37,9 @@
 #' @import shiny
 #' @import shinyBS
 #' @import shinybusy
+#' @importFrom shinyjs hide
 #' @import shinyWidgets
-#' @importFrom stringr str_wrap str_to_title str_detect
+#' @importFrom stringr str_wrap str_to_title str_detect str_replace
 #' @import tibble
 #' @importFrom shinyjs useShinyjs toggle
 #' @importFrom colourpicker colourInput updateColourInput colourWidget
@@ -218,6 +219,23 @@ runSTEGO <- function(){
     mat$No.TimePoints <-Count_data$V1
     mat$CloneTotal <-sum_data$V1
     mat
+  }
+
+  # olga -----
+
+  olgafunction_BD <- function(y) {
+    olga <- system2('olga-compute_pgen', args=c("--humanTRB ",
+                                                y),
+                    wait=TRUE, stdout=TRUE)
+    olga
+
+  }
+
+  olgafunction_AG <- function(y) {
+    olga <- system2('olga-compute_pgen', args=c("--humanTRA ",
+                                                y),
+                    wait=TRUE, stdout=TRUE)
+    olga
   }
 
   ###################
@@ -21619,6 +21637,8 @@ runSTEGO <- function(){
     ### pgen -----
 
     observeEvent(input$load_olga,{
+      reticulate::py_module_available("olga")
+
       if(py_module_available("olga")) {
         message("OLGA is installed")
 
@@ -21638,8 +21658,8 @@ runSTEGO <- function(){
 
 
       }
-      hide(id = "load_olga")
-      hide(id = "Olga_installed")
+      shinyjs::hide(id = "load_olga")
+      shinyjs::hide(id = "Olga_installed")
 
     })
 
@@ -21773,7 +21793,7 @@ runSTEGO <- function(){
         split_substring <- str_split(text, " ")[[1]]
 
         # Remove the colon character from the first element
-        split_substring[7] <- str_replace_all(split_substring[7], ":", "")
+        split_substring[7] <- stringr::str_replace_all(split_substring[7], ":", "")
         pgen_dat[i,1] <- split_substring[7]
         pgen_dat[i,2] <- as.numeric(split_substring[8])
         message(paste("Compeleted",i,"of",length(df)))
