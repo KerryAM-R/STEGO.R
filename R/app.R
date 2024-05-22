@@ -752,26 +752,26 @@ runSTEGO <- function(){
                   conditionalPanel(
                     condition = "input.Format_bd=='cellXgene'",
                     div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
-                    div(DT::DTOutput("test.files3"))
+                    div(DT::DTOutput("test.files3", height = "200px"))
                   ),
                   conditionalPanel(
                     condition = "input.Format_bd=='Barcode_features_matrix'",
                     div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
-                    div(DT::DTOutput("test.files.bd1")),
+                    div(DT::DTOutput("test.files.bd1", height = "200px")),
                     div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
-                    div(DT::DTOutput("test.files.bd2")),
+                    div(DT::DTOutput("test.files.bd2", height = "200px")),
                     div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
-                    div(DT::DTOutput("test.files.bd3")),
+                    div(DT::DTOutput("test.files.bd3", height = "200px")),
                   ),
                   conditionalPanel(
                     condition = "input.filtered_list=='Paired'",
                     div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
-                    div(DT::DTOutput("test.files2"))
+                    div(DT::DTOutput("test.files2", height = "200px"))
                   ),
                   conditionalPanel(
                     condition = "input.filtered_list=='Dominant' || input.filtered_list=='Unfiltered'",
                     div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
-                    div(DT::DTOutput("test.files.bd4")),
+                    div(DT::DTOutput("test.files.bd4", height = "200px")),
                   ),
                 ),
                 # tabPanel("Checking Merge",
@@ -783,23 +783,23 @@ runSTEGO <- function(){
                   "clusTCR2",
                   tags$head(tags$style("#tb_clusTCR  {white-space: nowrap;  }")),
                   div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
-                  div(DT::DTOutput("tb_clusTCR")),
+                  div(DT::DTOutput("tb_clusTCR", height = "200px")),
                   selectInput("chain_clusTCR2_bd", "Select to download", choices = c("AG", "BD", "IgH", "IgLK")),
                   downloadButton("downloaddf_clusTCR", "Download table")
                 ),
                 tabPanel(
                   "TCRex",
                   div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
-                  div(DT::DTOutput("tb_TCRex_BDrap_df")),
+                  div(DT::DTOutput("tb_TCRex_BDrap_df", height = "200px")),
                   downloadButton("downloaddf_TCRex_BDrap", "Download table")
                 ),
                 tabPanel(
                   "For Seurat",
                   tags$head(tags$style("#tb_count_matrix  {white-space: nowrap;  }")),
                   div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
-                  div(DT::DTOutput("tb_count_matrix")),
+                  div(DT::DTOutput("tb_count_matrix", height = "200px")),
                   div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
-                  div(DT::DTOutput("tb_metadata_sc")),
+                  div(DT::DTOutput("tb_metadata_sc", height = "200px")),
                   fluidRow(
                     column(3, downloadButton("downloadtb_count_matrix", "Download count table")),
                     column(3),
@@ -810,19 +810,19 @@ runSTEGO <- function(){
                   "TCR_Explore",
                   tags$head(tags$style("#tb_TCR_Explore  {white-space: nowrap;  }")),
                   div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
-                  div(DT::DTOutput("tb_TCR_Explore")),
+                  div(DT::DTOutput("tb_TCR_Explore", height = "200px")),
                   downloadButton("downloadtb_TCR_Explore", "Download table")
                 ),
                 tabPanel(
                   "Multi-TCR",
-                  div(DT::DTOutput("tb_multiTCR")),
+                  div(DT::DTOutput("tb_multiTCR", height = "200px")),
                   downloadButton("downloadtb_multiTCR", "Download Multi-TCR table")
                 ),
                 tabPanel(
                   "Create Sample Tags file",
                   tags$head(tags$style("#tb_sample_tags_created  {white-space: nowrap;  }")),
                   div(class = "name-BD",textInput("sample_tags_name", "Name of sample", value = "BD EA splenocyte")),
-                  div(DT::DTOutput("tb_sample_tags_created")),
+                  div(DT::DTOutput("tb_sample_tags_created", height = "200px")),
                   downloadButton("downloadtb_sample_tags", "Download Tags")
                 ),
               )
@@ -6887,7 +6887,8 @@ runSTEGO <- function(){
       req(vals_ClusTCR2$output_dt2)
       Network_df <- vals_ClusTCR2$output_dt2
       set.seed(123)
-      source(system.file("Functions","motifStack.functions.R",package = "ClusTCR2"))
+      source(system.file("Functions", "motifStack.functions.R",
+                         package = "ClusTCR2"))
 
       motif_plot(Network_df, Clust_selected = input$selected_Cluster, Clust_column_name = "Clust_size_order")
     })
@@ -7860,7 +7861,7 @@ runSTEGO <- function(){
       if (input$Seruat_version_merge == "V4") {
         # var.genes <- as.data.frame(sc@assays$RNA@var.features)
       } else if (input$Seruat_version_merge == "V5") {
-        sc <- JoinLayers(sc,  assay = "RNA")
+        sc <- SeuratObject::JoinLayers(sc,  assay = "RNA")
       } else {
 
       }
@@ -20412,7 +20413,7 @@ runSTEGO <- function(){
 
             Network_df <- cluster[order(cluster$Updated_order), ]
             Network_df <- Network_df %>% distinct(CDR3_Vgene, .keep_all = TRUE) # make Unique
-            motifplot <- Motif_from_cluster_file(Network_df, Clust_selected = i, selected_cluster_column = "Updated_order")
+            motifplot <- ClusTCR2::Motif_from_cluster_file(Network_df, Clust_selected = i, selected_cluster_column = "Updated_order")
 
             message(paste(i, " Downloading motif plot"))
             top.name.clonotypes.top_png <- paste(dirName, i, "_", Vgene, "_AG_motif_", x, ".png", sep = "")
@@ -20672,7 +20673,7 @@ runSTEGO <- function(){
             ## Motif plot -----
             Network_df <- cluster[order(cluster$Updated_order), ]
             Network_df <- Network_df %>% distinct(CDR3_Vgene, .keep_all = TRUE) # make Unique
-            motifplot <- Motif_from_cluster_file(Network_df, Clust_selected = i, selected_cluster_column = "Updated_order")
+            motifplot <- ClusTCR2::Motif_from_cluster_file(Network_df, Clust_selected = i, selected_cluster_column = "Updated_order")
 
             message(paste(i, " Downloading motif plot"))
             top.name.clonotypes.top_png <- paste(dirName, i, "_", Vgene, "_BD_motif_", x, ".png", sep = "")
@@ -20743,7 +20744,7 @@ runSTEGO <- function(){
             ## Motif plot -----
             Network_df <- cluster[order(cluster$Updated_order), ]
             Network_df <- Network_df %>% distinct(CDR3_Vgene, .keep_all = TRUE) # make Unique
-            motifplot <- Motif_from_cluster_file(Network_df, Clust_selected = i, selected_cluster_column = "Updated_order")
+            motifplot <- ClusTCR2::Motif_from_cluster_file(Network_df, Clust_selected = i, selected_cluster_column = "Updated_order")
 
             message(paste(i, " Downloading motif plot"))
             top.name.clonotypes.top_png <- paste(dirName, i, "_", Vgene, "_BD_motif_", x, ".png", sep = "")
