@@ -12,10 +12,11 @@
 #' @param features.max Maximum features
 #' @param percent.mt Mitochondria DNA cut-off (<)
 #' @param percent.rb Ribosomal RNA cut-off (>)
-#' @param dimension_sc Set number of dimentions to use for the dimentional reduction.
+#' @param dimension_sc Set number of dimensions to use for the dimensional reduction.
 #' @param resolution_sc Set the Seurat unsupervised clustering; however, this wont be used for annotation purposes in this pipeline.
 #' @param limit_to_TCR_GEx Reduce the file to limit to the TCR seq and GEx only (recommended for large data sets)
 #' @param save_plots Save the plots
+#' @param output_dir Location of the process .rds Seurat object filtered files
 #' @return Seurat object per file.
 #' @export
 
@@ -28,7 +29,8 @@ automated_sc_filtering <- function(folder = "1_SeuratQC",
                                    dimension_sc = 15,
                                    resolution_sc= 1,
                                    limit_to_TCR_GEx = F,
-                                   save_plots = T
+                                   save_plots = T,
+                                   output_dir = "3_SCobj/3a/",
 ) {
 
   main_directory <- "1_SeuratQC"
@@ -47,7 +49,7 @@ automated_sc_filtering <- function(folder = "1_SeuratQC",
     project_name
     project_name2 <- samp_names2[i]
     print(project_name2)
-    sc_processed <- paste0("2_SCobj/",project_name2,"_md_added",".rds")
+    sc_processed <- paste0(output_dir,project_name2,"_md_added",".rds")
 
     if(file.exists(sc_processed)) {
 
@@ -216,7 +218,7 @@ automated_sc_filtering <- function(folder = "1_SeuratQC",
         print(sc)
       }
 
-      sc_processed <- paste0("2_SCobj/",project_name2,"_md_added",".rds")
+      sc_processed <- paste0(output_dir,project_name2,"_md_added",".rds")
 
       saveRDS(sc,sc_processed)
       message("Saved ", sc_processed)
