@@ -16,6 +16,7 @@
 #' @param resolution_sc Set the Seurat unsupervised clustering; however, this wont be used for annotation purposes in this pipeline.
 #' @param limit_to_TCR_GEx Reduce the file to limit to the TCR seq and GEx only (recommended for large data sets)
 #' @param save_plots Save the plots
+#' @return Seurat object per file.
 #' @export
 
 automated_sc_filtering <- function(folder = "1_SeuratQC",

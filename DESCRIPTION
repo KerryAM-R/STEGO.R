@@ -1,10 +1,10 @@
 Package: STEGO.R
 Title: Analysis of single cell RNA-seq with paired T cell receptor repertiore datasets
-Version: 1.9.9.20
+Version: 2.0.0.00
 Authors@R: 
     person("Kerry", "Mullan", , "Kerry.Mullan@uantwerpen.be", role = c("aut", "cre"),
            comment = c(ORCID = "0000-0003-4400-1198"))
-Description: This is a shiny R application designed to perform the dule analysis of single cell RNA-seq with scTCR-seq data. The program can input in 10x Genomics, BD Rhapsody data and array based. The process standardises the annotations of the T cell subsets using scGate. 
+Description: This is a 'shiny' R application designed to perform the dule analysis of single cell RNA-seq with scTCR-seq data. This program includes over 40 packages including 'ClusTCR2', 'ggplot2', 'harmony', 'Seurat' and 'scGate'. The program can input in 10x Genomics, BD Rhapsody data and array based. The process standardises the annotations of the T cell subsets using 'scGate'. The program includes both interface and command-line functions depending on the users skill level. For ease of using 'STEGO.R' in there is access to the project directory to help organise the files. 
 License: GPL (>= 3)
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
@@ -53,10 +53,12 @@ Imports:
     shinyWidgets,
     stringr,
     tibble,
-    chisq.posthoc.test,
-    stats4
+    chisq.posthoc.test
 biocViews: DropletUtils, SingleCellExperiment, SummarizedExperiment, ComplexHeatmap
 Suggests: 
     knitr,
-    rmarkdown
+    rmarkdown,
+    BiocManager, 
+    devtools,
+    usethis
 VignetteBuilder: knitr

@@ -8,7 +8,7 @@
 #' @importFrom cowplot plot_grid as_gtable align_plots
 #' @importFrom dplyr %>% select case_when slice_max
 #' @importFrom DT DTOutput renderDT
-#' @importFrom extrafont fonttable
+#' @import extrafont
 #' @importFrom foreach foreach
 #' @import fpc
 #' @import ggpattern
@@ -44,16 +44,23 @@
 #' @importFrom colourpicker colourInput updateColourInput colourWidget
 #' @import chisq.posthoc.test
 #' @import reticulate
+#' @importFrom utils installed.packages
 #' @return A shiny R application called STEGO.R
 #' @examples
 #' library(STEGO.R)
-#' runSTEGO()
+#' message("To run STEGO.R use the following code STEGO.R::runSTEGO()")
+#'
 #' @export
 
 runSTEGO <- function(){
+  # installed.packages.full <- as.data.frame(installed.packages())
+  # # font ------
+  # if(!"extrafont" %in% rownames(installed.packages.full)) {
+  #   message("Install the extrafont package and install the fonts")
+  #   stop()
+  # }
 
-  # font ------
-  fonts <- fonttable()
+  fonts <- extrafont::fonttable()
   font <- as.data.frame(unique(fonts$FamilyName))
   names(font) <- "Fonts"
 
@@ -315,7 +322,7 @@ runSTEGO <- function(){
           border: 2px solid;
           color: #6F00B0;
           background-color: #E9C2FF;
-          content: "✓";
+          content: "\u2714";
           font-size: smaller;
           vertical-align: middle;
           text-align: center;
@@ -6880,8 +6887,7 @@ runSTEGO <- function(){
       req(vals_ClusTCR2$output_dt2)
       Network_df <- vals_ClusTCR2$output_dt2
       set.seed(123)
-      source(system.file("Functions", "motifStack.functions.R",
-                         package = "ClusTCR2"))
+      source(system.file("Functions","motifStack.functions.R",package = "ClusTCR2"))
 
       motif_plot(Network_df, Clust_selected = input$selected_Cluster, Clust_column_name = "Clust_size_order")
     })
@@ -16421,7 +16427,7 @@ runSTEGO <- function(){
       # Network_df2 <-
       Network_df %>% distinct(CDR3_Vgene, .keep_all = TRUE) # make Unique
       Network_df <- Network_df %>% distinct(CDR3_Vgene, .keep_all = TRUE) # make Unique
-      Motif_from_cluster_file(Network_df, Clust_selected = input$Clusters_to_dis_PIE, selected_cluster_column = "Updated_order")
+      ClusTCR2::Motif_from_cluster_file(Network_df, Clust_selected = input$Clusters_to_dis_PIE, selected_cluster_column = "Updated_order")
       # ?Motif_from_cluster_file
     })
     output$Motif_ClusTCR2_cluster <- renderPlot({
