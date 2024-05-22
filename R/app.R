@@ -6,7 +6,7 @@
 #' @import ComplexHeatmap
 #' @import corrplot
 #' @importFrom cowplot plot_grid as_gtable align_plots
-#' @importFrom dplyr %>% select case_when slice_max
+#' @importFrom dplyr %>% select case_when slice_max distinct
 #' @importFrom DT DTOutput renderDT
 #' @import extrafont
 #' @importFrom foreach foreach
@@ -1658,21 +1658,45 @@ runSTEGO <- function(){
                     verbatimTextOutput("scGATE_verbatum_BDrhapsody_MM.FP.other")
                   ),
                 ),
+                ##### custom gates ------
                 tabPanel(
                   "Check custom scGate annotations",
-
-                  fluidRow(
-                    column(4, plotOutput("create_custom_1", height = "600px")),
-                    column(4, plotOutput("create_custom_2", height = "600px"), ),
-                    column(4, plotOutput("create_custom_3", height = "600px")),
-                    column(4, plotOutput("create_custom_4", height = "600px"), ),
-                    column(4, plotOutput("create_custom_5", height = "600px")),
-                    column(4, plotOutput("create_custom_6", height = "600px"), ),
-                    column(4, plotOutput("create_custom_7", height = "600px")),
-                    column(4, plotOutput("create_custom_8", height = "600px"), ),
-                    column(4, plotOutput("create_custom_9", height = "600px")),
-                  )
-                  # plotOutput("create_custom_1", height = "600px"),
+                  conditionalPanel(
+                    condition = "input.GeneSet1_scGate == true",
+                    column(6, plotOutput("create_custom_1", height = "600px"))
+                  ),
+                  conditionalPanel(
+                    condition = "input.GeneSet2_scGate == true",
+                    column(6, plotOutput("create_custom_2", height = "600px")),
+                  ),
+                  conditionalPanel(
+                    condition = "input.GeneSet3_scGate == true",
+                    column(6, plotOutput("create_custom_3", height = "600px")),
+                  ),
+                  conditionalPanel(
+                    condition = "input.GeneSet4_scGate == true",
+                    column(6, plotOutput("create_custom_4", height = "600px")),
+                  ),
+                  conditionalPanel(
+                    condition = "input.GeneSet5_scGate == true",
+                    column(6, plotOutput("create_custom_5", height = "600px")),
+                  ),
+                  conditionalPanel(
+                    condition = "input.GeneSet6_scGate == true",
+                    column(6, plotOutput("create_custom_6", height = "600px"), ),
+                  ),
+                  conditionalPanel(
+                    condition = "input.GeneSet7_scGate == true",
+                    column(6, plotOutput("create_custom_7", height = "600px")),
+                  ),
+                  conditionalPanel(
+                    condition = "input.GeneSet8_scGate == true",
+                    column(6, plotOutput("create_custom_8", height = "600px")),
+                  ),
+                  conditionalPanel(
+                    condition = "input.GeneSet9_scGate == true",
+                    column(6, plotOutput("create_custom_9", height = "600px"))
+                  ),
                 ),
                 # classification based on TCR_seq -----
                 # display metadata -----
@@ -9230,9 +9254,10 @@ runSTEGO <- function(){
 
         sc
       } else {
+        sc <- data.frame()
         sc
       }
-      sc
+
     })
 
     create_UMAP_custom_1 <- reactive({
@@ -9241,16 +9266,21 @@ runSTEGO <- function(){
       validate(
         need(
           nrow(sc) > 0,
-          "Run Clustering"
+          "GeneSet1 not run"
         )
       )
 
       DimPlot(sc, reduction = "umap", group.by = "geneSet1", pt.size = 1)
+
     })
+
+
     output$create_custom_1 <- renderPlot({
       sc <- scGate_anno_GeneSet1()
       req(sc)
-      create_UMAP_custom_1()
+      plot <- create_UMAP_custom_1()
+      req(plot)
+      plot
     })
     output$scGATE_verbatum_GeneSet1 <- renderPrint({
       FN <- tempfile()
@@ -9294,9 +9324,9 @@ runSTEGO <- function(){
 
         sc
       } else {
+        sc <- data.frame()
         sc
       }
-      sc
     })
 
     create_UMAP_custom_2 <- reactive({
@@ -9305,7 +9335,7 @@ runSTEGO <- function(){
       validate(
         need(
           nrow(sc) > 0,
-          "Run Clustering"
+          "GeneSet2 not run"
         )
       )
       DimPlot(sc, reduction = "umap", group.by = "geneSet2", pt.size = 1)
@@ -9313,7 +9343,9 @@ runSTEGO <- function(){
     output$create_custom_2 <- renderPlot({
       sc <- scGate_anno_GeneSet2()
       req(sc)
-      create_UMAP_custom_2()
+      plot <- create_UMAP_custom_2()
+      req(plot)
+      plot
     })
 
     output$scGATE_verbatum_GeneSet2 <- renderPrint({
@@ -9358,9 +9390,9 @@ runSTEGO <- function(){
 
         sc
       } else {
+        sc <- data.frame()
         sc
       }
-      sc
     })
 
     create_UMAP_custom_3 <- reactive({
@@ -9369,14 +9401,19 @@ runSTEGO <- function(){
       validate(
         need(
           nrow(sc) > 0,
-          "Run Clustering"
+          "Geneset3 not run"
         )
       )
 
       DimPlot(sc, reduction = "umap", group.by = "geneSet3", pt.size = 1)
     })
     output$create_custom_3 <- renderPlot({
-      create_UMAP_custom_3()
+      sc <- scGate_anno_GeneSet3()
+      req(sc)
+      plot <- create_UMAP_custom_3()
+      req(plot)
+      plot
+
     })
 
     output$scGATE_verbatum_GeneSet3 <- renderPrint({
@@ -9418,9 +9455,9 @@ runSTEGO <- function(){
 
         sc
       } else {
+        sc <- data.frame()
         sc
       }
-      sc
     })
 
     create_UMAP_custom_4 <- reactive({
@@ -9429,14 +9466,18 @@ runSTEGO <- function(){
       validate(
         need(
           nrow(sc) > 0,
-          "Run Clustering"
+          "GeneSet4 not run"
         )
       )
 
       DimPlot(sc, reduction = "umap", group.by = "geneSet4", pt.size = 1)
     })
     output$create_custom_4 <- renderPlot({
-      create_UMAP_custom_4()
+      sc <- scGate_anno_GeneSet4()
+      req(sc)
+      plot <- create_UMAP_custom_4()
+      req(plot)
+      plot
     })
 
     output$scGATE_verbatum_GeneSet4 <- renderPrint({
@@ -9480,9 +9521,9 @@ runSTEGO <- function(){
 
         sc
       } else {
+        sc <- data.frame()
         sc
       }
-      sc
     })
 
     create_UMAP_custom_5 <- reactive({
@@ -9491,14 +9532,18 @@ runSTEGO <- function(){
       validate(
         need(
           nrow(sc) > 0,
-          "Run Clustering"
+          "GeneSet5 not run"
         )
       )
 
       DimPlot(sc, reduction = "umap", group.by = "geneSet5", pt.size = 1)
     })
     output$create_custom_5 <- renderPlot({
-      create_UMAP_custom_5()
+      sc <- scGate_anno_GeneSet5()
+      req(sc)
+      plot <- create_UMAP_custom_5()
+      req(plot)
+      plot
     })
 
     output$scGATE_verbatum_GeneSet5 <- renderPrint({
@@ -9541,9 +9586,9 @@ runSTEGO <- function(){
 
         sc
       } else {
+        sc <- data.frame()
         sc
       }
-      sc
     })
 
     create_UMAP_custom_6 <- reactive({
@@ -9552,14 +9597,18 @@ runSTEGO <- function(){
       validate(
         need(
           nrow(sc) > 0,
-          "Run Clustering"
+          "GeneSet6 not run"
         )
       )
 
       DimPlot(sc, reduction = "umap", group.by = "geneSet6", pt.size = 1)
     })
     output$create_custom_6 <- renderPlot({
-      create_UMAP_custom_6()
+      sc <- scGate_anno_GeneSet6()
+      req(sc)
+      plot <- create_UMAP_custom_6()
+      req(plot)
+      plot
     })
 
     output$scGATE_verbatum_GeneSet6 <- renderPrint({
@@ -9597,9 +9646,9 @@ runSTEGO <- function(){
 
         sc
       } else {
+        sc <- data.frame()
         sc
       }
-      sc
     })
 
     create_UMAP_custom_7 <- reactive({
@@ -9608,14 +9657,18 @@ runSTEGO <- function(){
       validate(
         need(
           nrow(sc) > 0,
-          "Run Clustering"
+          "GeneSet7 not run"
         )
       )
 
       DimPlot(sc, reduction = "umap", group.by = "geneSet7", pt.size = 1)
     })
     output$create_custom_7 <- renderPlot({
-      create_UMAP_custom_7()
+      sc <- scGate_anno_GeneSet7()
+      req(sc)
+      plot <- create_UMAP_custom_7()
+      req(plot)
+      plot
     })
 
     output$scGATE_verbatum_GeneSet7 <- renderPrint({
@@ -9653,9 +9706,9 @@ runSTEGO <- function(){
 
         sc
       } else {
+        sc <- data.frame()
         sc
       }
-      sc
     })
 
     create_UMAP_custom_8 <- reactive({
@@ -9664,14 +9717,18 @@ runSTEGO <- function(){
       validate(
         need(
           nrow(sc) > 0,
-          "Run Clustering"
+          "GeneSet8 not run"
         )
       )
 
       DimPlot(sc, reduction = "umap", group.by = "geneSet8", pt.size = 1)
     })
     output$create_custom_8 <- renderPlot({
-      create_UMAP_custom_8()
+      sc <- scGate_anno_GeneSet8()
+      req(sc)
+      plot <- create_UMAP_custom_8()
+      req(plot)
+      plot
     })
     output$scGATE_verbatum_GeneSet8 <- renderPrint({
       FN <- tempfile()
@@ -9708,9 +9765,9 @@ runSTEGO <- function(){
 
         sc
       } else {
+        sc <- data.frame()
         sc
       }
-      sc
     })
 
     create_UMAP_custom_9 <- reactive({
@@ -9719,14 +9776,18 @@ runSTEGO <- function(){
       validate(
         need(
           nrow(sc) > 0,
-          "Run Clustering"
+          "GeneSet9 not run"
         )
       )
 
       DimPlot(sc, reduction = "umap", group.by = "geneSet9", pt.size = 1)
     })
     output$create_custom_9 <- renderPlot({
-      create_UMAP_custom_9()
+      sc <- scGate_anno_GeneSet9()
+      req(sc)
+      plot <- create_UMAP_custom_9()
+      req(plot)
+      plot
     })
 
     output$scGATE_verbatum_GeneSet9 <- renderPrint({
