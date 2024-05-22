@@ -15,5 +15,6 @@ STEGO application
 }
 \examples{
 library(STEGO.R)
-runSTEGO()
+message("To run STEGO.R use the following code STEGO.R::runSTEGO()")
+
 }

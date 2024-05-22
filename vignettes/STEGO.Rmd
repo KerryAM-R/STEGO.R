@@ -1,0 +1,90 @@
+---
+title: "STEGO"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{STEGO}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+Single cell TCR and Expression Grouped Ontologies (STEGO) was built for standardising the processing and analysis of single cell (sc) RNA-seq with T cell receptor (TCR) seq datasets. 
+
+Please refer to the online tutorial https://stegor.readthedocs.io/en/latest/ for more details. Follow the installation of R with the corresponding dependencies depending on the system. 
+
+Pre-installation dependencies.
+
+```{r, echo=TRUE}
+# see https://stegor-documents.readthedocs.io/en/latest/index.html for more details on the tutorial to follow through.
+# This is to make sure with installing from source is set to the g++ compiler
+Sys.setenv("CXX" = "g++")
+
+# installing STEGO.R
+if (!require("BiocManager", quietly = TRUE))
+  install.packages("BiocManager")
+
+if (!require("devtools", quietly = TRUE))
+  install.packages("devtools")
+
+if (!require("usethis", quietly = TRUE))
+  install.packages("usethis")
+
+```
+
+install STEGO.R with Devtools
+
+```{r, echo=TRUE}
+
+if (!require("STEGO.R"))
+  devtools::install_github("KerryAM-R/STEGO.R")
+
+```
+
+If asked to update the app either select 1 to updated all
+1
+
+If asked to install from source on the M1 Mac chip (Seurat)
+y
+
+If then prompted with all the bioconductor based packages to install from source on M1 or greater Mac chip
+y
+
+
+import all of the fonts to your system. Will only need to be done the first time.
+
+```{r, echo=TRUE}
+if (!requireNamespace("extrafont", quietly = TRUE)) {
+  install.packages("extrafont")
+}
+extrafont::font_import()
+```
+
+If you haven't downloaded the formatted project directory from the tutorial https://stegor.readthedocs.io/en/latest/ you can also download it using this command. 
+
+```{r, echo=TRUE}
+if (!requireNamespace("utils", quietly = TRUE)) {
+  install.packages("utils")
+}
+
+utils::download.file("https://raw.githubusercontent.com/KerryAM-R/STEGO.R/main/Directory_for_Project.zip",
+              destfile = "Directory_for_Project.zip")
+
+```
+
+
+This command will open up the Shiny window in your default browser. 
+
+```{r, echo=TRUE}
+library(STEGO.R)
+
+# STEGO.R::runSTEGO() 
+```
+
+There are several functions available in addition to the interface. These scripts are availabe in the folder_for_project. 
+
+Step 1. pre-processing
+
+Step 2b. ClusTCR2_large.R
+
+Step 3a-c. filtering_merging_harmony_annotating.R
+
+See the scripts for details. 

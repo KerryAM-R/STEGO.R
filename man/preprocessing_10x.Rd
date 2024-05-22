@@ -10,7 +10,8 @@ preprocessing_10x(
   downloadTCR_Explore = F,
   downloadSeurat = F,
   csv_contig_file = "csv",
-  main_directory = "0_RAW_files/"
+  main_directory = "0_RAW_files/",
+  shiny_server = T
 )
 }
 \arguments{
@@ -25,6 +26,8 @@ preprocessing_10x(
 \item{csv_contig_file}{T cell based stress models of Senescence}
 
 \item{main_directory}{This is the location of the raw data from 10x outputs}
+
+\item{shiny_server}{Used to determine if automated process is run from the server or from the command line.}
 }
 \description{
 This function performs the pre-processing equivalent to STEP 1. This requires the user to name their folders indiv_group. Please use the _ to separate the values, this particularly important for the TCR_Explore as it will separate out the indiv from the group column.

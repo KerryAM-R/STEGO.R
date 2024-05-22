@@ -41,6 +41,9 @@ automated_sc_filtering(
 
 \item{save_plots}{Save the plots}
 }
+\value{
+Seurat object per file.
+}
 \description{
 This function is to automate step 3a. We highly recommend that you check your base parameters in the interface and then apply them to all of the data. The default parameters are set for human 10x
 }

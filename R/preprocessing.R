@@ -15,10 +15,11 @@
 #' @param downloadTCR_Explore T cell based stress models of exhaustion
 #' @param csv_contig_file T cell based stress models of Senescence
 #' @param main_directory This is the location of the raw data from 10x outputs
+#' @param shiny_server Used to determine if automated process is run from the server or from the command line.
 #' @export
 
 preprocessing_10x <- function (downloadTCRex = F, downloadClusTCR = F, downloadTCR_Explore = F,
-                               downloadSeurat = F, csv_contig_file = "csv", main_directory = "0_RAW_files/")
+                               downloadSeurat = F, csv_contig_file = "csv", main_directory = "0_RAW_files/", shiny_server = T)
 {
   message("Loading packages")
 
@@ -31,8 +32,11 @@ preprocessing_10x <- function (downloadTCRex = F, downloadClusTCR = F, downloadT
   num <- length(main_folders)
 
   for (i in 1:num) {
-    incProgress(1/num, detail = paste("completed",i,"of",num))
-
+    if (shiny_server) {
+      incProgress(1/num, detail = paste("completed",i,"of",num))
+    } else {
+      message(paste("Starting",i,"of",num))
+    }
     sub_directory <- main_folders[i]
     files <- list.files(paste(main_directory, sub_directory,
                               sep = ""), full.names = TRUE)

@@ -1,25 +1,28 @@
-#' scGate_annotating
-#' @name scGate_annotating
-#' @description
-#' This function is to aid in annotating T cells expreiments with or without TCR-seq. There are six available T cell models including the T cell functions, generic annotations, immune_checkpoint, senescence, Th1_cytokines and cellular cycling (cell division) and a TCR-seq model.
+#' scGate Annotating Function
 #'
-#' @param TcellFunction T or F; set to T if you want to include the current T cell model
+#' @description
+#' This function aids in annotating T cell experiments with or without TCR-seq data. It includes six available T cell models: T cell functions, generic annotations, immune checkpoint, senescence, Th1 cytokines, cellular cycling (cell division), and a TCR-seq model.
+#'
+#' @param TcellFunction Logical; set to TRUE if you want to include the current T cell model.
 #' @param file Seurat object file. This requires the file to have the scaled data available for annotation purposes.
-#' @param Threshold_test Testing the scGate threshold for identifying the sub populations. I recommend using this function in the case of BD Rhapsody immune panel,
-#' @param signature_for_testing signature for testing purposes. I use CD8A and CD8B for the default setting.
-#' @param threshold Set the scGate threshold; default is 0.2 for full models and 0.55 for focused models. Please check with the test_to compare the CD8A expression vs the projected.
-#' @param immune_checkpoint T cell based stress models of exhaustion
-#' @param senescence T cell based stress models of Senescence
-#' @param Th1_cytokines T cell based stress models of IFNG and TNF
-#' @param cycling uses TOP2A and MKI67
-#' @param TCRseq Uses the meta data TCR-seq to call MAIT, iNKT, potential CD1 restricted, gd T cells and ab T cells
-#' @param reductionType Chose the time of dimensional reduction to use; default = harmony
-#' @param Version This can be the seurat version V4 or V5; if you converted from python from anndata to seurat, use the python version
-#' @param chunk_size This is the total number of cells to perform the annotation model on. This is to prevent the out of memory issue when annotating. The cells are randomly selected. The same random seed is selected to ensure that random selection is consistent if this has to be repeated. The default is 50,000 cells (we recommend a maximum of 100,000 per loop). However, fewer cells may be required if your RAM is <32 Gb, to ensure each loop is completed.
-#' @param output_dir Where to store the outputs of this process. If you run this more than once, it is best to change the name.
+#' @param Threshold_test Logical; testing the scGate threshold for identifying the sub-populations. Recommended to use with BD Rhapsody immune panel.
+#' @param signature_for_testing Character vector; signature for testing purposes. Default is c("CD8A", "CD8B").
+#' @param threshold Numeric; set the scGate threshold. Default is 0.2 for full models and 0.55 for focused models from BD Rhapsody.
+#' @param immune_checkpoint Logical; include T cell-based stress models of exhaustion.
+#' @param senescence Logical; include T cell-based stress models of senescence.
+#' @param Th1_cytokines Logical; include T cell-based stress models of IFNG and TNF.
+#' @param cycling Logical; include models using TOP2A and MKI67.
+#' @param TCRseq Logical; uses the metadata from TCR-seq to call MAIT, iNKT, potential CD1-restricted, gd T cells, and ab T cells.
+#' @param reductionType Character; type of dimensional reduction to use. Default is "harmony".
+#' @param Version Character; Seurat version. Either "V4", "V5", or "python". If converted from anndata to Seurat, use the python version.
+#' @param chunk_size Integer; total number of cells to perform the annotation model on. Default is 50,000 cells.
+#' @param output_dir Character; directory to store the outputs of this process. If running multiple times, it's best to change the name.
 #' @import Seurat
 #' @import scGate
 #' @export
+#'
+#' @return Seurat object with annotations
+#'
 
 scGate_annotating <- function (file = file,
                                Threshold_test = FALSE,
