@@ -3,6 +3,65 @@
 #' @description
 #' This function is to aid im merging multiple Seurat object, which will then need to undergo harmony merging after this step. We have included a loop that merges two Seurat objects at a time to ensure time efficiency  (exponentially gets smaller from the previous sequential merging process)
 #'
+#' @param directory location of the multiple clusTCR2 files from step 1. default is "1_ClusTCR"
+#' @param chain Either select AG or BD. The AG are in the same column so that the A will pair with B and G with a D.
+#' @param output_dir location of where the file will be saved. default is "2_ClusTCR2"
+#' @return A merged file for clustering step based in ClusTCR2
+#' @export
+
+merging_ClusTCR2 <- function (directory = "1_ClusTCR",chain = "AG", output_dir = "2_ClusTCR2") {
+  main_directory <- directory
+  main_folders <- list.files(paste(main_directory), full.names = T)
+  main_folders <- main_folders[grepl(chain,main_folders)]
+
+  chain2 <- paste0(chain,"_")
+
+  main_folders2 <- list.files(paste(main_directory), full.names = F)
+
+  samp_names2 <- main_folders2[grepl(chain2,
+                                     main_folders2)]
+  samp_names2 <- gsub("_clusTCR_10x.csv", "", samp_names2)
+
+  num <- length(samp_names2)
+
+  myfiles <- list()
+
+  for (i in 1:num) {
+    clust <- read.csv(main_folders[i])
+    head(clust)
+
+    myfiles[[i]] <- clust
+  }
+
+  df <- rbind(myfiles[[1]])
+  for (i in 2:length(myfiles)) {
+    df <- rbind(df, myfiles[[i]])
+  }
+
+  if (nrow(df[-c(grep("[*]", df$junction_aa)), ] > 0)) {
+    df <- df[-c(grep("[*]", df$junction_aa)), ]
+  }
+
+  df$CDR3_beta <- gsub("^$", "None", df$junction_aa)
+
+  if (nrow(df[-c(grep("None", df$CDR3_beta)), ] > 0)) {
+    df <- df[-c(grep("None", df$CDR3_beta)), ]
+  }
+
+  df <- df[!duplicated(df$junction_aa), ]
+  print(head(df))
+
+  name_file <- paste0(output_dir,"/",chain, "_Multi_ClusTCR2.csv", sep = "")
+  write.csv(df,name_file,row.names = F)
+  message("Saved", name_file)
+
+}
+
+#' Merging RDS Seurat objects
+#' @name merging_multi_SeuratRDS
+#' @description
+#' This function is to aid im merging multiple Seurat object, which will then need to undergo harmony merging after this step. We have included a loop that merges two Seurat objects at a time to ensure time efficiency  (exponentially gets smaller from the previous sequential merging process)
+#'
 #' @param set_directory set the path to the directory with the. Default = current working directory. The program will reset the directory to the original to not impact the function of STEGO.R project file. If you stop the script, you will need to manually reset the working directory with setwd("../"), to go back one directory.
 #' @param merge_RDS Set to TRUE once you have check the directory with the .rds file
 #' @param pattern_RDS uses the list.files function to identify the .rds objects for merging in the 2_scObj
