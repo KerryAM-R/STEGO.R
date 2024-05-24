@@ -664,6 +664,15 @@ preprocessing_10x <- function (downloadTCRex = F, downloadClusTCR = F, downloadT
 
   message(length(diff)," ",diff," have not been processed in step 1.")
 
+  raw_dir <- "0_Raw_files"
+  raw_all <- list.files(paste(raw_dir), full.names = F)
+
+  df <- as.data.frame(raw_all)
+  names(df) <- "ID"
+  write.csv(df,"4_Analysis/Update_labels_auto.csv",row.names = F)
+
+  message("Updated the Update_labels_auto.csv file in 4_Analysis folder")
+
 }
 
 #' Automated preprocessing

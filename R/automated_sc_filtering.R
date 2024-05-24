@@ -44,185 +44,240 @@ automated_sc_filtering <- function(folder = "1_SeuratQC",
   samp_names2 <- gsub("_count-matrix_10x.csv.gz","",samp_names2)
   num <- length(samp_names2)
   for (i in 1:num) {
-    message(paste("processing",i,"of",num))
+    # tic()
+    message(paste("processing", i, "of", num))
     project_name <- samp_names[i]
     project_name
     project_name2 <- samp_names2[i]
     print(project_name2)
-    sc_processed <- paste0(output_dir,project_name2,"_md_added",".rds")
-
-    if(file.exists(sc_processed)) {
-
-      message(sc_processed," already exists")
+    sc_processed <- paste0(output_dir, project_name2, "_md_added",
+                           ".rds")
+    if (file.exists(sc_processed)) {
+      message(sc_processed, " already exists")
       next
-
-    } else {
-      message("Started processing",project_name2)
+    }
+    else {
+      message("Started processing ", project_name2)
       if (dataset_type == "10x") {
         message("reading in matrix file")
-        file.exists(paste0(samp_names[i],"_count-matrix_10x.csv.gz"))
-        mat <- read.csv(paste0(samp_names[i],"_count-matrix_10x.csv.gz"))
-
+        file.exists(paste0(samp_names[i], "_count-matrix_10x.csv.gz"))
+        mat <- read.csv(paste0(samp_names[i], "_count-matrix_10x.csv.gz"))
         head(mat)[1:6]
-
         message("reading in meta data file")
-        md <- read.csv(paste0(samp_names[i],"_metadata_10x.csv"))
+        samp_names
 
-        md <-  md[!duplicated(md$Cell_Index),]
-        head(md)
+        md <- read.csv(paste0(samp_names[i], "_metadata_10x.csv"))
+        print(dim(md))
+        md <- md[!duplicated(md$Cell_Index), ]
+
+        print(dim(md))
+
+        md_gd_name <- paste0(samp_names[i], "-gdTCR_metadata_10x.csv")
+
+        if(file.exists(md_gd_name)) {
+          md_gd <- read.csv(md_gd_name)
+          md_gd <- md_gd[!duplicated(md_gd$Cell_Index), ]
+
+          md2 <- (rbind(md,md_gd))
+
+          md[duplicated(md2$Cell_Index), ]
+
+          md <- md2[!duplicated(md2$Cell_Index), ]
+
+          print(dim(md))
+
+        }
+
       } else if (dataset_type == "BD_rap") {
         message("reading in matrix file")
-        mat <- read.csv(paste0(samp_names[i],"_count-matrix_10x.csv.gz"), row.names = 1)
+        mat <- read.csv(paste0(samp_names[i], "_count-matrix_10x.csv.gz"),
+                        row.names = 1)
         message("reading in meta data file")
-        md <- read.csv(paste0(samp_names[i],"_metadata_10x.csv"))
-        # randomly removing duplication ----
-        md <-  md[!duplicated(md$Cell_Index),]
+        md <- read.csv(paste0(samp_names[i], "_metadata_10x.csv"))
+        md <- md[!duplicated(md$Cell_Index), ]
       } else {
         message("Please select 10x or BD_rap")
       }
 
-      # reading in the matrix data ---
       if (dataset_type == "10x" && species == "hs") {
         names(mat) <- gsub("[.]1", "-1", names(mat))
         rownames(mat) <- make.unique(mat$Gene_Name)
         mat2 <- mat[, !names(mat) %in% c("Gene_Name")]
+        sc <- suppressWarnings(CreateSeuratObject(counts = mat2,
+                                                  assay = "RNA", project = project_name2))
 
-        sc <- suppressWarnings(CreateSeuratObject(counts = mat2, assay = "RNA", project = project_name2))
-        sc <- PercentageFeatureSet(sc, pattern = "^MT-", col.name = "mtDNA")
-        sc <- PercentageFeatureSet(sc, pattern = "^RP[SL]", col.name = "rRNA")
+        sc
+        sc <- PercentageFeatureSet(sc, pattern = "^MT-",
+                                   col.name = "mtDNA")
+        sc <- PercentageFeatureSet(sc, pattern = "^RP[SL]",
+                                   col.name = "rRNA")
         head(sc@meta.data)
-
-      } else if (dataset_type == "10x" && species == "mm") {
+      }
+      else if (dataset_type == "10x" && species == "mm") {
         names(mat) <- gsub("[.]1", "-1", names(mat))
         rownames(mat) <- make.unique(mat$Gene_Name)
         mat2 <- mat[, !names(mat) %in% c("Gene_Name")]
-        sc <- CreateSeuratObject(counts = mat, assay = "RNA", project = project_name2)
+        sc <- CreateSeuratObject(counts = mat, assay = "RNA",
+                                 project = project_name2)
         rm(mat)
         rm(mat2)
-
-        sc <- suppressMessages(PercentageFeatureSet(sc, pattern = "^Mt", col.name = "mtDNA"))
-        sc <- suppressMessages(PercentageFeatureSet(sc, pattern = "Rp[sl]", col.name = "rRNA"))
-
-      } else if (dataset_type == "BD_rap" && species == "mm") {
+        sc <- suppressMessages(PercentageFeatureSet(sc,
+                                                    pattern = "^Mt", col.name = "mtDNA"))
+        sc <- suppressMessages(PercentageFeatureSet(sc,
+                                                    pattern = "Rp[sl]", col.name = "rRNA"))
+      }
+      else if (dataset_type == "BD_rap" && species ==
+               "mm") {
         names(mat) <- as.character(gsub("X", "", names(mat)))
-        sc <- CreateSeuratObject(counts = mat, assay = "RNA", project = project_name2)
-        sc <- PercentageFeatureSet(sc, pattern = "^Mt", col.name = "mtDNA")
-        sc <- PercentageFeatureSet(sc, pattern = "Rp[sl]", col.name = "rRNA")
-
-      } else if (dataset_type == "BD_rap" && species == "hs") {
+        sc <- CreateSeuratObject(counts = mat, assay = "RNA",
+                                 project = project_name2)
+        sc <- PercentageFeatureSet(sc, pattern = "^Mt",
+                                   col.name = "mtDNA")
+        sc <- PercentageFeatureSet(sc, pattern = "Rp[sl]",
+                                   col.name = "rRNA")
+      }
+      else if (dataset_type == "BD_rap" && species ==
+               "hs") {
         names(mat) <- as.character(gsub("X", "", names(mat)))
-
-        sc <- suppressMessages(CreateSeuratObject(counts = mat, assay = "RNA", project = project_name2))
+        sc <- suppressMessages(CreateSeuratObject(counts = mat,
+                                                  assay = "RNA", project = project_name2))
         rm(mat)
-        sc <- suppressMessages(PercentageFeatureSet(sc, pattern = "^MT-", col.name = "mtDNA"))
-        sc <- suppressMessages(PercentageFeatureSet(sc, pattern = "^RP[SL]", col.name = "rRNA"))
-
-      } else {
+        sc <- suppressMessages(PercentageFeatureSet(sc,
+                                                    pattern = "^MT-", col.name = "mtDNA"))
+        sc <- suppressMessages(PercentageFeatureSet(sc,
+                                                    pattern = "^RP[SL]", col.name = "rRNA"))
+      }
+      else {
         message("Please choose either 10x or BD_rap as well as define hs or mm")
       }
       print(sc)
       print(head(sc@meta.data))
-
-      if(save_plots) {
-        dir.create(paste0("Figures.Tables/QC_Figures/",project_name2))
+      if (save_plots) {
+        dir.create(paste0("Figures.Tables/QC_Figures/",
+                          project_name2))
         suppressWarnings({
           sc@meta.data$mtDNA[is.na(sc@meta.data$mtDNA)] <- 0
           sc@meta.data$rRNA[is.na(sc@meta.data$rRNA)] <- 0
-            plot <- suppressWarnings(suppressMessages(VlnPlot(sc, features = c("nFeature_RNA", "nCount_RNA", "mtDNA", "rRNA"), ncol = 2)))
-          file_name_before <- paste0("Figures.Tables/QC_Figures/",project_name2,"/",project_name2,"_1_before_filtering.png")
-          png(file_name_before, width = 1000, height = 1200, res = 144)
+          plot <- suppressWarnings(suppressMessages(VlnPlot(sc,
+                                                            features = c("nFeature_RNA", "nCount_RNA",
+                                                                         "mtDNA", "rRNA"), ncol = 2)))
+          file_name_before <- paste0("Figures.Tables/QC_Figures/",
+                                     project_name2, "/", project_name2, "_1_before_filtering.png")
+          png(file_name_before, width = 1000, height = 1200,
+              res = 144)
           plot(plot)
           dev.off()
         })
       }
-
-      sc <- suppressWarnings(suppressMessages(subset(sc, subset = nFeature_RNA >= features.min & nFeature_RNA <= features.max & mtDNA <= percent.mt & rRNA >= percent.rb)))
-
-      if(save_plots) {
+      sc <- suppressWarnings(suppressMessages(subset(sc,
+                                                     subset = nFeature_RNA >= features.min & nFeature_RNA <=
+                                                       features.max & mtDNA <= percent.mt & rRNA >=
+                                                       percent.rb)))
+      sc
+      if (save_plots) {
         suppressWarnings({
-          if(sum(sc@meta.data$mtDNA)==0 || sum(sc@meta.data$rRNA)==0) {
-            plot <- suppressWarnings(suppressMessages(VlnPlot(sc, features = c("nFeature_RNA", "nCount_RNA"), ncol = 2)))
-          } else {
-            plot <- suppressWarnings(suppressMessages(VlnPlot(sc, features = c("nFeature_RNA", "nCount_RNA", "mtDNA", "rRNA"), ncol = 2)))
+          if (sum(sc@meta.data$mtDNA) == 0 || sum(sc@meta.data$rRNA) ==
+              0) {
+            plot <- suppressWarnings(suppressMessages(VlnPlot(sc,
+                                                              features = c("nFeature_RNA", "nCount_RNA"),
+                                                              ncol = 2)))
           }
-          file_name_after <- paste0("Figures.Tables/QC_Figures/",project_name2,"/",project_name2,"_2_after_filtering.png")
-          png(file_name_after, width = 1000, height = 1200, res = 144)
+          else {
+            plot <- suppressWarnings(suppressMessages(VlnPlot(sc,
+                                                              features = c("nFeature_RNA", "nCount_RNA",
+                                                                           "mtDNA", "rRNA"), ncol = 2)))
+          }
+          file_name_after <- paste0("Figures.Tables/QC_Figures/",
+                                    project_name2, "/", project_name2, "_2_after_filtering.png")
+          png(file_name_after, width = 1000, height = 1200,
+              res = 144)
           plot(plot)
           dev.off()
         })
       }
       sc <- suppressMessages(NormalizeData(sc, verbose = F))
-
-      sc <- suppressMessages(FindVariableFeatures(sc, selection.method = "vst", verbose = F))
-
-      if(save_plots) {
+      sc <- suppressMessages(FindVariableFeatures(sc,
+                                                  selection.method = "vst", verbose = F))
+      if (save_plots) {
         suppressWarnings({
-          top10 <- head(VariableFeatures(sc, verbose = F), 10)
-          # plot variable features with and without labels
+          top10 <- head(VariableFeatures(sc, verbose = F),
+                        10)
           plot1 <- VariableFeaturePlot(sc)
-          plot2 <- LabelPoints(plot = plot1, points = top10, repel = TRUE)
-
-          file_name_top10 <- paste0("Figures.Tables/QC_Figures/",project_name2,"/",project_name2,"_3_Top_features.png")
-          png(file_name_top10, width = 1000, height = 1200, res = 144)
+          plot2 <- LabelPoints(plot = plot1, points = top10,
+                               repel = TRUE)
+          file_name_top10 <- paste0("Figures.Tables/QC_Figures/",
+                                    project_name2, "/", project_name2, "_3_Top_features.png")
+          png(file_name_top10, width = 1000, height = 1200,
+              res = 144)
           plot(plot2)
           dev.off()
         })
       }
-
       all.genes <- rownames(sc)
       message("Scaling")
-      sc <- suppressWarnings(suppressMessages(ScaleData(sc, features = all.genes, verbose = F)))
+      sc <- suppressWarnings(suppressMessages(ScaleData(sc,
+                                                        features = all.genes, verbose = F)))
       message("PCA")
-      sc <- suppressMessages(RunPCA(sc, features = VariableFeatures(object = sc),verbose = F))
+      sc <- suppressMessages(RunPCA(sc, features = VariableFeatures(object = sc),
+                                    verbose = F))
+
       message("Finding Neighbours")
-      sc <- suppressMessages(FindNeighbors(sc, dims = 1:dimension_sc, verbose = F))
+      sc <- suppressMessages(FindNeighbors(sc, dims = 1:dimension_sc,
+                                           verbose = F))
       message("Finding clusters")
-      sc <- suppressMessages(FindClusters(sc, resolution = resolution_sc, verbose = F))
+      sc <- suppressMessages(FindClusters(sc, resolution = resolution_sc,
+                                          verbose = F))
       message("make UMAP")
       sc <- RunUMAP(sc, dims = 1:dimension_sc, verbose = F)
-
-      if(save_plots) {
+      if (save_plots) {
         suppressWarnings({
           plot <- ElbowPlot(sc)
-
-          file_name_top10 <- paste0("Figures.Tables/QC_Figures/",project_name2,"/",project_name2,"_4_Elbow_plot.png")
-          png(file_name_top10, width = 1000, height = 1200, res = 144)
+          file_name_top10 <- paste0("Figures.Tables/QC_Figures/",
+                                    project_name2, "/", project_name2, "_4_Elbow_plot.png")
+          png(file_name_top10, width = 1000, height = 1200,
+              res = 144)
           plot(plot)
           dev.off()
         })
       }
-
-      if(save_plots) {
+      if (save_plots) {
         suppressWarnings({
           plot <- DimPlot(sc, reduction = "umap")
-          file_name_top10 <- paste0("Figures.Tables/QC_Figures/",project_name2,"/",project_name2,"_5_UMAP_plot.png")
-          png(file_name_top10, width = 1000, height = 1200, res = 144)
+          file_name_top10 <- paste0("Figures.Tables/QC_Figures/",
+                                    project_name2, "/", project_name2, "_5_UMAP_plot.png")
+          png(file_name_top10, width = 1000, height = 1200,
+              res = 144)
           plot(plot)
           dev.off()
         })
       }
-
       message("adding in meta data")
       sc@meta.data$Cell_Index <- rownames(sc@meta.data)
 
+
       sc@meta.data$order <- 1:length(sc@meta.data$Cell_Index)
       scMeta.data <- sc@meta.data
-      meta.data2 <- merge(scMeta.data, md, by = "Cell_Index", all.x = T)
+      head(md)
+      head(scMeta.data)
+
+      meta.data2 <- merge(scMeta.data, md, by = "Cell_Index")
+
       sc@meta.data <- meta.data2
       rownames(sc@meta.data) <- sc@meta.data$Cell_Index
-      sc@meta.data <- sc@meta.data[order((sc@meta.data$order)), ]
+      sc@meta.data <- sc@meta.data[order((sc@meta.data$order)),
+      ]
 
       if (limit_to_TCR_GEx) {
-        print(sc)
+        head(sc)
         sc <- subset(sc, subset = chain_AG == "TRA" | chain_AG == "TRG" | chain_AG == "TRD")
         print(sc)
       }
-
-      sc_processed <- paste0(output_dir,project_name2,"_md_added",".rds")
-
-      saveRDS(sc,sc_processed)
+      sc_processed <- paste0(output_dir, project_name2,
+                             "_md_added", ".rds")
+      saveRDS(sc, sc_processed)
       message("Saved ", sc_processed)
       rm(sc)
     }
+    # toc()
   }
 }
