@@ -21,8 +21,6 @@
 preprocessing_10x <- function (downloadTCRex = F, downloadClusTCR = F, downloadTCR_Explore = F,
                                downloadSeurat = F, csv_contig_file = "csv", main_directory = "0_RAW_files/", shiny_server = T)
 {
-  message("Loading packages")
-
   message("loaded packages complete")
   main_directory = "0_RAW_files/"
   main_directory <- main_directory
@@ -30,6 +28,7 @@ preprocessing_10x <- function (downloadTCRex = F, downloadClusTCR = F, downloadT
   print(main_folders)
 
   num <- length(main_folders)
+
 
   for (i in 1:num) {
     if (shiny_server) {
@@ -50,31 +49,69 @@ preprocessing_10x <- function (downloadTCRex = F, downloadClusTCR = F, downloadT
     missing_terms <- required_terms[!sapply(required_terms,
                                             function(term) any(grepl(term, files)))]
 
+
+
     if (length(missing_terms) > 0) {
-      message(sub_directory)
-      message("Error: The following terms were not found in the file names: ",
-              paste(missing_terms, collapse = ", "))
-      next
+
+      if (length(files)==2){
+        possible_mat <- files[!grepl("contig",files)]
+        print(possible_mat)
+        message("matrix file possibly already formatted")
+
+      } else {
+        message(sub_directory)
+        message("Error: The following terms were not found in the file names: ",
+                paste(missing_terms, collapse = ", "))
+        next
+      }
     }
+
     if (length(files[grepl("barcode", files)]) == 1 && length(files[grepl("contig",
                                                                           files)]) == 1) {
       message("Files are present for in ", sub_directory)
+    } else if (length(files)==2) {
+      message("possible already formatted mat file in ", sub_directory)
+
     } else {
       message("Reformat directory to have Indiv_group name for each file barcode, features, matrix, and contig")
       next
     }
 
     file_name_mat <- paste0("1_SeuratQC/", sub_directory,"_count-matrix_10x.csv.gz")
+    file_name_mat
 
     if(file.exists(file_name_mat)) {
       message(file_name_mat," already exists")
     } else {
-      if (downloadSeurat) {
+      if (downloadSeurat && length(files)>2) {
+        message("Uploading the barcode, features and matrix file")
         barcode <- read.table(files[grepl("barcode", files)])
         features <- read.table(files[grepl("feature", files)])
         if (length(features) > 0) {
           mat <- Matrix::readMM(files[grepl("matrix", files)])
         }
+      } else if (downloadSeurat && length(files)==2) {
+        possible_mat <- files[!grepl("contig",files)]
+        message("uploading ",possible_mat)
+
+        if(grepl(".csv.gz",possible_mat) && length(possible_mat) == 1) {
+          full_mat <- read.csv(possible_mat,row.names = 1)
+        } else if (grepl(".h5",possible_mat) && length(possible_mat) == 1) {
+          full_mat <- suppressMessages(Read10X_h5(possible_mat, use.names = TRUE, unique.features = TRUE))
+        }
+
+        colnames(full_mat) <- gsub("^.+?_", "", colnames(full_mat))
+
+        if(!grepl("-1", colnames(full_mat)[1]) ) {
+          colnames(full_mat) <- paste0(colnames(full_mat),"-1")
+        }
+
+        testexample <-  head(full_mat)[1:6]
+        print(testexample)
+
+      } else {
+        message("Check ", sub_directory, " for matrix and/or contig files are present")
+        next
       }
     }
 
@@ -90,13 +127,12 @@ preprocessing_10x <- function (downloadTCRex = F, downloadClusTCR = F, downloadT
         TCR <- read.csv(files[grepl("contig", files)])
       }
     }
-
+    head(TCR)
 
 
     ## download TCRex
     if (downloadTCRex) {
-      file_name_tcrex <- paste0("1_TCRex/", sub_directory,
-                                "_TCRex.tsv")
+      file_name_tcrex <- paste0("1_TCRex/", sub_directory,"_TCRex.tsv")
 
       if(file.exists(file_name_tcrex)) {
         message(file_name_tcrex," already exists")
@@ -138,7 +174,7 @@ preprocessing_10x <- function (downloadTCRex = F, downloadClusTCR = F, downloadT
         contigs2$TRBJ_gene <- gsub("[*]0.", "", contigs2$TRBJ_gene)
         contigs2$cloneCount <- 1
         calls_TCR_paired.fun3 <- plyr::ddply(contigs2, names(contigs2)[-c(4)],
-                                       numcolwise(sum))
+                                             numcolwise(sum))
 
         calls_TCR_paired.fun3 <- calls_TCR_paired.fun3[grepl("TRB",
                                                              calls_TCR_paired.fun3$TRBV_gene), ]
@@ -225,8 +261,15 @@ preprocessing_10x <- function (downloadTCRex = F, downloadClusTCR = F, downloadT
       if(file.exists(file_name_mat) && file.exists(file_name_md)) {
         message(file_name_mat," already exists")
       } else {
+
         contigs <- TCR
         names(contigs)[names(contigs) %in% "barcode"] <- "Cell_Index"
+
+        names(contigs)
+
+
+
+
         contigs_lim <- contigs[!names(contigs) %in% c("is_cell",
                                                       "contig_id", "high_confidence", "raw_consensus_id",
                                                       "exact_subclonotype_id", "umis", "reads", "length",
@@ -237,16 +280,34 @@ preprocessing_10x <- function (downloadTCRex = F, downloadClusTCR = F, downloadT
                                                       names(contigs[grep("count", names(contigs))]),
                                                       names(contigs[grep("sequence", names(contigs))]),
                                                       names(contigs[grep("fwr", names(contigs))]),
-                                                      names(contigs[grep("_nt", names(contigs))]),
                                                       "productive", "raw_clonotype_id")]
+
+        if (nrow(contigs_lim[-c(grep("[*]", contigs_lim$cdr3)),] > 0)) {
+          contigs_lim <- contigs_lim[-c(grep("[*]", contigs_lim$cdr3)),
+          ]
+        }
+
+        if (nrow(contigs_lim[-c(grep("None", contigs_lim$cdr3)),] > 0)) {
+          contigs_lim <- contigs_lim[-c(grep("None", contigs_lim$cdr3)),
+          ]
+        }
+
+        contigs_lim$v_gene <- gsub("TRAV14DV4","TRAV14/DV4",contigs_lim$v_gene)
+        contigs_lim$v_gene <- gsub("TRAV29DV5","TRAV29/DV5",contigs_lim$v_gene)
+        contigs_lim$v_gene <- gsub("TRAV23DV6","TRAV23/DV6",contigs_lim$v_gene)
+        contigs_lim$v_gene <- gsub("TRAV36DV7","TRAV36/DV7",contigs_lim$v_gene)
+        contigs_lim$v_gene <- gsub("TRAV38-2DV8","TRAV38-2/DV8",contigs_lim$v_gene)
+
+
+
+
         contigs_lim$chain <- ifelse(grepl("TRA", contigs_lim$v_gene),
                                     "TRA", ifelse(grepl("TRB", contigs_lim$v_gene),
                                                   "TRB", ifelse(grepl("TRG", contigs_lim$v_gene),
                                                                 "TRG", ifelse(grepl("TRD", contigs_lim$v_gene),
                                                                               "TRD", ""))))
-        contig_AG <- subset(contigs_lim, contigs_lim$chain ==
-                              "TRA" | contigs_lim$chain == "TRG")
-        head(contig_AG)
+        contig_AG <- subset(contigs_lim, contigs_lim$chain == "TRA" | contigs_lim$chain == "TRG")
+
         name.list <- names(contig_AG[c(names(contig_AG[grep("gene",
                                                             names(contig_AG))]), names(contig_AG[grep("cdr1",
                                                                                                       names(contig_AG))]), names(contig_AG[grep("cdr2",
@@ -254,6 +315,7 @@ preprocessing_10x <- function (downloadTCRex = F, downloadClusTCR = F, downloadT
                                                                                                                                                                                           names(contig_AG))]), "chain")])
         contig_AG <- contig_AG %>% select(all_of(name.list),
                                           everything())
+        contig_AG
         names(contig_AG)[1:summary(name.list)[1]] <- paste(names(contig_AG[names(contig_AG) %in%
                                                                              name.list]), "_AG", sep = "")
         head(contig_AG)
@@ -264,6 +326,8 @@ preprocessing_10x <- function (downloadTCRex = F, downloadClusTCR = F, downloadT
                                                                                                       names(contig_BD))]), names(contig_BD[grep("cdr2",
                                                                                                                                                 names(contig_BD))]), names(contig_BD[grep("cdr3",
                                                                                                                                                                                           names(contig_BD))]), "chain")])
+
+
         contig_BD <- contig_BD %>% select(all_of(name.list),
                                           everything())
         names(contig_BD)[1:summary(name.list)[1]] <- paste(names(contig_BD[names(contig_BD) %in%
@@ -277,9 +341,11 @@ preprocessing_10x <- function (downloadTCRex = F, downloadClusTCR = F, downloadT
                                         ifelse(contig_paired$chain_BD == "TRD" & contig_paired$chain_AG ==
                                                  "TRG", "gdTCR Paired", "unpaired"))
         contig_paired$pairing[is.na(contig_paired$pairing)] <- "unpaired"
-        table(contig_paired$pairing)
+        print(table(contig_paired$pairing))
+
         contig_paired <- contig_paired[!names(contig_paired) %in%
                                          c("d_gene_AG")]
+
         contig_paired_only <- contig_paired
         contig_paired_only <- subset(contig_paired_only,
                                      contig_paired_only$cdr3_BD != "None")
@@ -299,15 +365,22 @@ preprocessing_10x <- function (downloadTCRex = F, downloadClusTCR = F, downloadT
                                               ".", contig_paired_only$vj_gene_BD)
         contig_paired_only$vj_gene_BD <- gsub("NA.NA", "",
                                               contig_paired_only$vj_gene_BD)
+
         contig_paired_only$vdj_gene_BD <- paste(contig_paired_only$v_gene_BD,
                                                 contig_paired_only$d_gene_BD, contig_paired_only$j_gene_BD,
                                                 sep = ".")
-        contig_paired_only$vdj_gene_BD <- gsub(".NA.", ".",
-                                               contig_paired_only$vdj_gene_BD)
+
         contig_paired_only$vdj_gene_BD <- gsub("[.]NA[.]",
                                                ".", contig_paired_only$vdj_gene_BD)
-        contig_paired_only$vdj_gene_BD <- gsub("NA.NA",
+
+        contig_paired_only$vdj_gene_BD <- gsub("[.]None[.]",
+                                               ".", contig_paired_only$vdj_gene_BD)
+
+        contig_paired_only$vdj_gene_BD <- gsub("NA[.]NA",
                                                "", contig_paired_only$vdj_gene_BD)
+
+
+
         contig_paired_only$vj_gene_cdr3_AG <- paste(contig_paired_only$vj_gene_AG,
                                                     contig_paired_only$cdr3_AG, sep = "_")
         contig_paired_only$vj_gene_cdr3_AG <- gsub("_NA",
@@ -343,21 +416,42 @@ preprocessing_10x <- function (downloadTCRex = F, downloadClusTCR = F, downloadT
         dim(contig_paired_only)
         contig_paired_only_dup <- contig_paired_only[!duplicated(contig_paired_only$Cell_Index),
         ]
+        dim(contig_paired_only_dup)
+
         contig_paired_only$Sample_Name <- sub_directory
         contig_paired_only <- contig_paired_only %>% select(all_of(c("Cell_Index",
                                                                      "Sample_Name")), everything())
         head(contig_paired_only)
         # save meta data
         file_name_md <- paste0("1_SeuratQC/", sub_directory,"_metadata_10x.csv")
+
         write.csv(contig_paired_only, file_name_md, row.names = F)
-        mat <- as.data.frame(mat)
-        rownames(mat) <- make.unique(features$V2)
-        names(mat) <- barcode$V1
-        mat$Gene_Name <- rownames(mat)
-        # save matrix
-        mat <- mat %>% select(all_of("Gene_Name"), everything())
-        file_name_mat <- paste0("1_SeuratQC/", sub_directory, "_count-matrix_10x.csv.gz")
-        write_csv(mat, gzfile(file_name_mat))
+        message("Saved ", file_name_md)
+        length(files) >2
+
+        if (length(files) >2) {
+
+          mat <- as.data.frame(as.matrix(mat))
+          rownames(mat) <- make.unique(features$V2)
+          names(mat) <- barcode$V1
+          mat$Gene_Name <- rownames(mat)
+          # save matrix
+          mat <- mat %>% select(all_of("Gene_Name"), everything())
+          file_name_mat <- paste0("1_SeuratQC/", sub_directory, "_count-matrix_10x.csv.gz")
+          readr::write_csv(mat, gzfile(file_name_mat))
+        } else if (length(files) == 2) {
+
+          mat <- as.data.frame(full_mat)
+          mat$Gene_Name <- rownames(mat)
+          # save matrix
+          mat <- mat %>% select(all_of("Gene_Name"), everything())
+          file_name_mat <- paste0("1_SeuratQC/", sub_directory, "_count-matrix_10x.csv.gz")
+          file_name_mat
+
+          readr::write_csv(mat, gzfile(file_name_mat))
+          message("Save matrix: ",file_name_mat)
+        }
+
       }
     }
 
@@ -380,8 +474,25 @@ preprocessing_10x <- function (downloadTCRex = F, downloadClusTCR = F, downloadT
                                                       names(contigs[grep("count", names(contigs))]),
                                                       names(contigs[grep("sequence", names(contigs))]),
                                                       names(contigs[grep("fwr", names(contigs))]),
-                                                      names(contigs[grep("_nt", names(contigs))]),
                                                       "productive", "raw_clonotype_id")]
+
+        if (nrow(contigs_lim[-c(grep("[*]", contigs_lim$cdr3)),] > 0)) {
+          contigs_lim <- contigs_lim[-c(grep("[*]", contigs_lim$cdr3)),
+          ]
+        }
+
+        if (nrow(contigs_lim[-c(grep("None", contigs_lim$cdr3)),] > 0)) {
+          contigs_lim <- contigs_lim[-c(grep("None", contigs_lim$cdr3)),
+          ]
+        }
+
+        contigs_lim$v_gene <- gsub("TRAV14DV4","TRAV14/DV4",contigs_lim$v_gene)
+        contigs_lim$v_gene <- gsub("TRAV29DV5","TRAV29/DV5",contigs_lim$v_gene)
+        contigs_lim$v_gene <- gsub("TRAV23DV6","TRAV23/DV6",contigs_lim$v_gene)
+        contigs_lim$v_gene <- gsub("TRAV36DV7","TRAV36/DV7",contigs_lim$v_gene)
+        contigs_lim$v_gene <- gsub("TRAV38-2DV8","TRAV38-2/DV8",contigs_lim$v_gene)
+
+
         contigs_lim$chain <- ifelse(grepl("TRA", contigs_lim$v_gene),
                                     "TRA", ifelse(grepl("TRB", contigs_lim$v_gene),
                                                   "TRB", ifelse(grepl("TRG", contigs_lim$v_gene),
@@ -421,6 +532,7 @@ preprocessing_10x <- function (downloadTCRex = F, downloadClusTCR = F, downloadT
         contig_paired$pairing[is.na(contig_paired$pairing)] <- "unpaired"
         contig_paired <- contig_paired[!names(contig_paired) %in%
                                          c("d_gene_AG")]
+
         contig_paired_only <- contig_paired
         contig_paired_only <- subset(contig_paired_only,
                                      contig_paired_only$cdr3_BD != "None")
@@ -440,15 +552,22 @@ preprocessing_10x <- function (downloadTCRex = F, downloadClusTCR = F, downloadT
                                               ".", contig_paired_only$vj_gene_BD)
         contig_paired_only$vj_gene_BD <- gsub("NA.NA", "",
                                               contig_paired_only$vj_gene_BD)
+
         contig_paired_only$vdj_gene_BD <- paste(contig_paired_only$v_gene_BD,
                                                 contig_paired_only$d_gene_BD, contig_paired_only$j_gene_BD,
                                                 sep = ".")
-        contig_paired_only$vdj_gene_BD <- gsub(".NA.", ".",
-                                               contig_paired_only$vdj_gene_BD)
+
         contig_paired_only$vdj_gene_BD <- gsub("[.]NA[.]",
                                                ".", contig_paired_only$vdj_gene_BD)
-        contig_paired_only$vdj_gene_BD <- gsub("NA.NA",
+
+        contig_paired_only$vdj_gene_BD <- gsub("[.]None[.]",
+                                               ".", contig_paired_only$vdj_gene_BD)
+
+        contig_paired_only$vdj_gene_BD <- gsub("NA[.]NA",
                                                "", contig_paired_only$vdj_gene_BD)
+
+
+
         contig_paired_only$vj_gene_cdr3_AG <- paste(contig_paired_only$vj_gene_AG,
                                                     contig_paired_only$cdr3_AG, sep = "_")
         contig_paired_only$vj_gene_cdr3_AG <- gsub("_NA",
@@ -482,6 +601,7 @@ preprocessing_10x <- function (downloadTCRex = F, downloadClusTCR = F, downloadT
         contig_paired_only$vdj_gene_cdr3_AG_BD <- gsub(" & $",
                                                        "", contig_paired_only$vdj_gene_cdr3_AG_BD)
         dim(contig_paired_only)
+
         contig_paired_only <- contig_paired_only[!duplicated(contig_paired_only$Cell_Index),
         ]
 
