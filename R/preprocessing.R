@@ -29,7 +29,6 @@ preprocessing_10x <- function (downloadTCRex = F, downloadClusTCR = F, downloadT
 
   num <- length(main_folders)
 
-
   for (i in 1:num) {
     if (shiny_server) {
       incProgress(1/num, detail = paste("completed",i,"of",num))
@@ -52,6 +51,7 @@ preprocessing_10x <- function (downloadTCRex = F, downloadClusTCR = F, downloadT
 
 
     if (length(missing_terms) > 0) {
+      files
 
       if (length(files)==2){
         possible_mat <- files[!grepl("contig",files)]
@@ -65,6 +65,7 @@ preprocessing_10x <- function (downloadTCRex = F, downloadClusTCR = F, downloadT
         next
       }
     }
+
 
     if (length(files[grepl("barcode", files)]) == 1 && length(files[grepl("contig",
                                                                           files)]) == 1) {
@@ -90,15 +91,40 @@ preprocessing_10x <- function (downloadTCRex = F, downloadClusTCR = F, downloadT
         if (length(features) > 0) {
           mat <- Matrix::readMM(files[grepl("matrix", files)])
         }
+
       } else if (downloadSeurat && length(files)==2) {
         possible_mat <- files[!grepl("contig",files)]
         message("uploading ",possible_mat)
 
         if(grepl(".csv.gz",possible_mat) && length(possible_mat) == 1) {
           full_mat <- read.csv(possible_mat,row.names = 1)
+          # Calculate row sums
+          row_sums <- rowSums(full_mat)
+          full_mat <- full_mat[row_sums > 0, ]
+          col_sums <- colSums(full_mat)
+          full_mat <- full_mat[,col_sums > 0]
+          full_mat <- as.data.frame(as.matrix(full_mat))
+
         } else if (grepl(".h5",possible_mat) && length(possible_mat) == 1) {
-          full_mat <- suppressMessages(Read10X_h5(possible_mat, use.names = TRUE, unique.features = TRUE))
+
+          full_mat <- suppressMessages(Seurat::Read10X_h5(possible_mat, use.names = TRUE, unique.features = TRUE))
+
+          if(length(full_mat)==2) {
+            names(full_mat)
+            full_mat <- rbind(full_mat[[1]],full_mat[[2]])
+
+          }
+
+
+          head(full_mat)
+          # Calculate row sums
+          row_sums <- rowSums(full_mat)
+          full_mat <- full_mat[row_sums > 0, ]
+          col_sums <- colSums(full_mat)
+          full_mat <- full_mat[,col_sums > 0]
+          full_mat <-  suppressMessages(as.data.frame(as.matrix(full_mat)))
         }
+        full_mat[1:6,1:6]
 
         colnames(full_mat) <- gsub("^.+?_", "", colnames(full_mat))
 
@@ -127,8 +153,6 @@ preprocessing_10x <- function (downloadTCRex = F, downloadClusTCR = F, downloadT
         TCR <- read.csv(files[grepl("contig", files)])
       }
     }
-    head(TCR)
-
 
     ## download TCRex
     if (downloadTCRex) {
@@ -427,7 +451,7 @@ preprocessing_10x <- function (downloadTCRex = F, downloadClusTCR = F, downloadT
 
         write.csv(contig_paired_only, file_name_md, row.names = F)
         message("Saved ", file_name_md)
-        length(files) >2
+
 
         if (length(files) >2) {
 
@@ -626,6 +650,20 @@ preprocessing_10x <- function (downloadTCRex = F, downloadClusTCR = F, downloadT
     } else {
     }
   }
+
+  raw_dir <- "0_Raw_files"
+  raw_all <- list.files(paste(raw_dir), full.names = F)
+
+  main_directory <- "1_SeuratQC"
+  main_folders <- list.files(paste(main_directory), full.names = F)
+
+  samp_names <- main_folders[grepl("_count-matrix_10x.csv.gz",
+                                   main_folders)]
+  samp_names_test <- gsub("_count-matrix_10x.csv.gz","",samp_names)
+  diff <- setdiff(raw_all,samp_names_test)
+
+  message(length(diff)," ",diff," have not been processed in step 1.")
+
 }
 
 #' Automated preprocessing
