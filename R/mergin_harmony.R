@@ -153,8 +153,6 @@ merging_multi_SeuratRDS <- function(seurat_files = "3_SCobj/3a",
     # Initialize loop count
     loop_count <- 0
 
-
-
     # Loop to merge pairs of Seurat objects until only one is left
     while (length(list.sc) > 1) {
       loop_count <- loop_count + 1
@@ -179,22 +177,20 @@ merging_multi_SeuratRDS <- function(seurat_files = "3_SCobj/3a",
         }
       }
       print(temp_list)
-      temp_list
+      list.sc <- temp_list
     }
     # Calculate total number of files merged
-    total_merged <- length(temp) - 1
+    total_merged <- length(temp)
 
-    merged_object <- temp_list[[1]]
+    merged_object <- list.sc[[1]]
     merged_object@meta.data$Cell_Index_old <- merged_object@meta.data$Cell_Index
     merged_object@meta.data$Cell_Index <- rownames(merged_object@meta.data)
     sl <- object.size(merged_object)
     message(paste(total_merged, "files were merged into 1. The merged object is ", round(sl[1]/1000^3, 2), "Gb"))
 
     #reset the working directory to the project directory
-    setwd(x)
     return(merged_object)
   } else {
-    setwd(x)
     message("If these are the files you are looking for, set merge_RDS to TRUE")
     # return(NULL)
   }
