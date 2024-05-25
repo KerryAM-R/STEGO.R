@@ -74,14 +74,22 @@ merging_ClusTCR2 <- function (directory = "1_ClusTCR",chain = "AG", output_dir =
 #' @return A merged Seurat RDS object.
 #' @export
 
-merging_multi_SeuratRDS <- function(set_directory = "2_scObj/", merge_RDS = FALSE, pattern_RDS = ".rds$", species = "hs", reduce_size = TRUE, own_features = FALSE, own_features_df = own_features_df) {
+merging_multi_SeuratRDS <- function(seurat_files = "3_SCobj/3a"
+                                    merge_RDS = FALSE,
+                                    pattern_RDS = ".rds$",
+                                    species = "hs",
+                                    reduce_size = TRUE,
+                                    own_features = FALSE,
+                                    own_features_df = own_features_df
+                                    )  {
 
-  x <- getwd()
-  setwd(set_directory)
-  message(paste(getwd(), "is the current work directory"))
-  temp <- list.files(pattern = pattern_RDS)
-  message(paste(temp, ""))
+  main_directory <- seurat_files
+  main_folders <- list.files(paste(main_directory), full.names = T)
+
+  temp <- list.files(main_directory,pattern = pattern_RDS, full.names = T)
+  temp2 <- list.files(main_directory,pattern = pattern_RDS, full.names = F)
   len.temp <- length(temp)
+
   message(paste("There are", len.temp, "rds files in the directory for merging"))
 
   if (merge_RDS) {
@@ -89,7 +97,7 @@ merging_multi_SeuratRDS <- function(set_directory = "2_scObj/", merge_RDS = FALS
     features.var.needed <- read.csv(system.file("Kmean", "human.variable.features.csv", package = "STEGO.R"))
 
     for (i in 1:len.temp) {
-      model.name <- strsplit(temp[i], ".rds")[[1]]
+      model.name <- strsplit(temp2[i], "_md_added.rds")[[1]]
       message("Reading in file ", i, " of ", len.temp, ": ", model.name)
       list.sc[[model.name]] <- readRDS(temp[i])
       if (reduce_size) {
@@ -125,8 +133,15 @@ merging_multi_SeuratRDS <- function(set_directory = "2_scObj/", merge_RDS = FALS
       message("Stored object is ", round(sl[1]/1000^3, 1), " Gb")
     }
 
+    print(length(list.sc))
     sl <- object.size(list.sc)
     message("stored object is ", round(sl[1]/1000^3, 1), " Gb")
+
+    # remove potential graph issue.
+    for (i in 1:num) {
+      list.sc[[i]]@graphs <- list()
+      list.sc[[i]]@misc <- list()
+    }
 
     # Calculate the number of loops required
     num_objects <- length(list.sc)
@@ -138,6 +153,8 @@ merging_multi_SeuratRDS <- function(set_directory = "2_scObj/", merge_RDS = FALS
     # Initialize loop count
     loop_count <- 0
 
+
+
     # Loop to merge pairs of Seurat objects until only one is left
     while (length(list.sc) > 1) {
       loop_count <- loop_count + 1
@@ -145,8 +162,6 @@ merging_multi_SeuratRDS <- function(set_directory = "2_scObj/", merge_RDS = FALS
       temp_list <- list()
 
       for (i in seq(1, length(list.sc), by = 2)) {
-
-
         if (i < length(list.sc)) {
           # Merge two Seurat objects
           merged_names <- paste(names(list.sc)[i], names(list.sc)[i + 1], sep = " and ")
@@ -163,13 +178,13 @@ merging_multi_SeuratRDS <- function(set_directory = "2_scObj/", merge_RDS = FALS
           temp_list[[names(list.sc)[i]]] <- list.sc[[i]]
         }
       }
-
-      list.sc <- temp_list
+      print(temp_list)
+      temp_list
     }
     # Calculate total number of files merged
     total_merged <- length(temp) - 1
 
-    merged_object <- list.sc[[1]]
+    merged_object <- temp_list[[1]]
     merged_object@meta.data$Cell_Index_old <- merged_object@meta.data$Cell_Index
     merged_object@meta.data$Cell_Index <- rownames(merged_object@meta.data)
     sl <- object.size(merged_object)
