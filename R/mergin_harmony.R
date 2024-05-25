@@ -74,7 +74,7 @@ merging_ClusTCR2 <- function (directory = "1_ClusTCR",chain = "AG", output_dir =
 #' @return A merged Seurat RDS object.
 #' @export
 
-merging_multi_SeuratRDS <- function(seurat_files = "3_SCobj/3a"
+merging_multi_SeuratRDS <- function(seurat_files = "3_SCobj/3a",
                                     merge_RDS = FALSE,
                                     pattern_RDS = ".rds$",
                                     species = "hs",
