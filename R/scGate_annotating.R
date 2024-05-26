@@ -27,7 +27,7 @@
 scGate_annotating <- function (file = file,
                                Threshold_test = FALSE,
                                signature_for_testing = c("CD8A","CD8B"),
-                               threshold = 0.2,
+                               threshold = 0.25,
                                TcellFunction = FALSE,
                                immune_checkpoint = FALSE,
                                senescence = FALSE, cycling = FALSE, Th1_cytokines = FALSE, TCRseq = FALSE,
@@ -84,8 +84,6 @@ scGate_annotating <- function (file = file,
 
     DimPlot(sc) | FeaturePlot(sc, features = signature_for_testing)
   } else {
-
-
     # Store UMAP and scaling
     umap <- Embeddings(sc, reduction = "umap")
     harmony <- Embeddings(sc, reduction = "harmony")
@@ -189,9 +187,6 @@ scGate_annotating <- function (file = file,
 
       }
       sc_chunk@meta.data <- sc_chunk@meta.data[!grepl("scGate_multi", names(sc_chunk@meta.data))]
-
-
-
       # Store result in list
       merged_sc_list[[length(merged_sc_list) + 1]] <- sc_chunk
     }
@@ -236,31 +231,30 @@ scGate_annotating <- function (file = file,
     if (num_chunks == 1) {
       join_sc <- merged_sc
     } else {
-
       if (Version == "V4" |Version == "Python") {
         join_sc <- merged_sc
 
         join_sc@reductions$umap <- CreateDimReducObject(embeddings = umap_reordered, key = 'UMAP_', assay = 'RNA')
         join_sc@reductions$harmony <- CreateDimReducObject(embeddings = harmony_reordered, key = 'harmony_', assay = 'RNA')
-        join_sc@assays$RNA@scale.data  <- sc@assays$RNA@scale.data
-        join_sc@assays$RNA@var.features <- sc@assays$RNA@var.features
+        join_sc@assays$RNA@scale.data  <- file@assays$RNA@scale.data
+        join_sc@assays$RNA@var.features <- file@assays$RNA@var.features
 
       } else {
+        message("Joining layers")
         join_sc <- JoinLayers(merged_sc)
-
+        message("reordering and adding back in the umap & harmony data")
         barcode_order <- rownames(join_sc@meta.data)
         umap_reordered <- umap[match(barcode_order, rownames(umap)), ]
         harmony_reordered <- umap[match(barcode_order, rownames(harmony)),]
 
         join_sc@reductions$umap <- CreateDimReducObject(embeddings = umap_reordered, key = 'UMAP_', assay = 'RNA')
         join_sc@reductions$harmony <- CreateDimReducObject(embeddings = harmony_reordered, key = 'harmony_', assay = 'RNA')
-        join_sc@assays$RNA@layers$scale.data  <- sc@assays$RNA@layers$scale.data
-        join_sc@assays$RNA@layers$var.features <- sc@assays$RNA@layers$var.features
 
+        message("Adding in seurat_clusters to the Idents column")
+        join_sc@meta.data$seurat_clusters <- factor(join_sc@meta.data$seurat_clusters,levels = 0:100)
+        print(join_sc)
         Idents(join_sc) <- join_sc@meta.data$seurat_clusters
         # join_sc_list <- list(sc = join_sc, umap = umap, harmony = harmony)
-
-
       }
     }
     join_sc

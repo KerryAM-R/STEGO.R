@@ -2708,8 +2708,12 @@ runSTEGO <- function(){
                          tabPanel("Expanded",
                                   value = "Expanded",
                                   fluidRow(
-                                    column(9, selectInput("Graph_split_order_EXP","Order of expanded",choices = "", width = "900px", multiple = TRUE),),
-                                    column(3,  actionButton("caluclate_Exp","Calc Expansion Stats"),)
+                                    column(3, checkboxInput("positive_only_Ex","Restrict to positive?",value = T)),
+                                    column(3,  actionButton("caluclate_Exp","Calc Expansion Stats")),
+                                  ),
+                                  fluidRow(
+                                    column(12, selectInput("Graph_split_order_EXP","Order of expanded",choices = "", width = "1200px", multiple = TRUE),),
+
                                   ),
                                   tabsetPanel(
                                     id = "ExPan",
@@ -3194,6 +3198,9 @@ runSTEGO <- function(){
                                           h4("Filter marker of interest based on threshold"),
                                           fluidRow(
                                             column(3, selectInput("select_plot_vio.ridge", "Plot type", choices = c("Violin", "Ridge")))
+                                          ),
+                                          fluidRow(
+                                            column(3, checkboxInput("show_cutoff_line","Show cut-off line?", value = F))
                                           ),
                                           div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
                                           plotOutput("marker_selected_VioRidge_plot", height = "600px")
@@ -4387,70 +4394,7 @@ runSTEGO <- function(){
       IgHL <- merge(IGH, IGL, by = "cell_id")
       IgHK <- merge(IGH, IGK, by = "cell_id")
       IgHL_IgHK <- merge(IgHL, IgHK, by = "cell_id")
-      # TRAB_TRGD_2 <- TRAB_TRGD %>%
-      #   mutate(Clonality = case_when(
-      #     seq_identified_TRA > 0 & seq_identified_TRB > 0 & seq_identified_TRG > 0 & seq_identified_TRD > 0 ~ "AB GD", # all
-      #     # three chains called
-      #     seq_identified_TRA > 0 & seq_identified_TRB > 0 & seq_identified_TRG > 0 & seq_identified_TRD == 0 ~ "AB G",
-      #     seq_identified_TRA > 0 & seq_identified_TRB > 0 & seq_identified_TRG == 0 & seq_identified_TRD > 0 ~ "AB D",
-      #     seq_identified_TRA > 0 & seq_identified_TRB == 0 & seq_identified_TRG > 0 & seq_identified_TRD > 0 ~ "A GD",
-      #     seq_identified_TRA == 0 & seq_identified_TRB > 0 & seq_identified_TRG > 0 & seq_identified_TRD > 0 ~ "B GD",
-      #     # two chains called
-      #     seq_identified_TRA > 0 & seq_identified_TRB > 0 & seq_identified_TRG == 0 & seq_identified_TRD == 0 ~ "AB",
-      #     seq_identified_TRA == 0 & seq_identified_TRB == 0 & seq_identified_TRG > 0 & seq_identified_TRD > 0 ~ "GD",
-      #     seq_identified_TRA == 0 & seq_identified_TRB > 0 & seq_identified_TRG > 0 & seq_identified_TRD == 0 ~ "B G",
-      #     seq_identified_TRA == 0 & seq_identified_TRB > 0 & seq_identified_TRG == 0 & seq_identified_TRD > 0 ~ "B D",
-      #     seq_identified_TRA > 0 & seq_identified_TRB == 0 & seq_identified_TRG == 0 & seq_identified_TRD > 0 ~ "A D",
-      #     seq_identified_TRA > 0 & seq_identified_TRB == 0 & seq_identified_TRG > 0 & seq_identified_TRD == 0 ~ "A G",
-      #     # one chains called
-      #     seq_identified_TRA > 0 & seq_identified_TRB == 0 & seq_identified_TRG == 0 & seq_identified_TRD == 0 ~ "A",
-      #     seq_identified_TRA == 0 & seq_identified_TRB > 0 & seq_identified_TRG == 0 & seq_identified_TRD == 0 ~ "B",
-      #     seq_identified_TRA == 0 & seq_identified_TRB == 0 & seq_identified_TRG > 0 & seq_identified_TRD == 0 ~ "G",
-      #     seq_identified_TRA == 0 & seq_identified_TRB == 0 & seq_identified_TRG == 0 & seq_identified_TRD > 0 ~ "D",
-      #     TRUE ~ "Other"
-      #   ))
-      # TRAB_TRGD_paired <- TRAB_TRGD_2
-      # TRAB_TRGD_paired <- TRAB_TRGD_paired[, !grepl("chain_", names(TRAB_TRGD_paired))]
-      # TRAB_TRGD_paired$sum <- rowSums(TRAB_TRGD_paired[2:5])
-      # names(TRAB_TRGD_paired)
-      # head(TRAB_TRGD_paired)
-      # TRAB_TRGD_paired$pairing_type <- ifelse(TRAB_TRGD_paired$Clonality == "AB" & TRAB_TRGD_paired$sum == 2, "standard AB",
-      #                                         ifelse(TRAB_TRGD_paired$Clonality == "GD" & TRAB_TRGD_paired$sum == 2, "standard GD",
-      #                                                ifelse(TRAB_TRGD_paired$sum == 1, "Unpaired",
-      #                                                       "non-standard"
-      #                                                )
-      #                                         )
-      # )
-      #
-      # df <- merge(TCR_unfiltered_prod_junc_seq, TRAB_TRGD_paired, by = "cell_id")
-      # df_2 <- df
-      # Standard_AB <- subset(df_2, df_2$pairing_type == "standard AB")
-      # Standard_GD <- subset(df_2, df_2$pairing_type == "standard GD")
-      # non_standard <- subset(df_2, df_2$pairing_type == "non-standard")
-      # non_standard <- non_standard[order(non_standard$consensus_count, decreasing = T), ]
-      # non_standard$filter <- paste(non_standard$cell_id, non_standard$locus)
-      # non_standard2 <- non_standard[!duplicated(non_standard$filter), ]
-      # non_standard2 <- non_standard2[order(non_standard2$cell_id, decreasing = F), ]
-      # unique(non_standard2$Clonality)
-      # non_standard2$Standard_to_keep <- ifelse(non_standard2$Clonality == "AB G" & non_standard2$locus == "TRG", "remove_G",
-      #                                          ifelse(non_standard2$Clonality == "AB D" & non_standard2$locus == "TRD", "remove_D",
-      #                                                 ifelse(non_standard2$Clonality == "B GD" & non_standard2$locus == "TRB", "remove_B",
-      #                                                        ifelse(non_standard2$Clonality == "A GD" & non_standard2$locus == "TRA", "remove_A",
-      #                                                               ifelse(non_standard2$Clonality == "AB GD" & c(non_standard2$locus == "TRG" | non_standard2$locus == "TRD"), "remove_GD", "keep")
-      #                                                        )
-      #                                                 )
-      #                                          )
-      # )
-      #
-      # non_standard <- subset(non_standard2, non_standard2$Standard_to_keep == "keep")
-      # non_standard <- non_standard[, !names(non_standard) %in% c("filter", "Standard_to_keep")]
-      # dim(non_standard)
-      #
-      #
-      # Filtered_TCR_list <- rbind(Standard_AB, Standard_GD, non_standard)
-      # Filtered_TCR_list <- Filtered_TCR_list[order(Filtered_TCR_list$cell_id, decreasing = F), ]
-      # contigs <- Filtered_TCR_list
-      # contigs
+
     })
 
     tb_bd_meta.data_BCR <- function() {
@@ -5654,8 +5598,8 @@ runSTEGO <- function(){
       names(contigs) <- gsub("call", "gene", names(contigs))
 
       names(contigs) <- gsub("junction_aa", "cdr3", names(contigs))
-      contigs
-      contigs_lim <- contigs[!names(contigs) %in% c("is_cell", "contig_id", "high_confidence", "raw_consensus_id", "exact_subclonotype_id", "umis", "reads", "length", "cdr3_nt", "germline_alignment", "cdr3_nt_id", "cdr3_nt_alignment", "rev_comp", names(contigs[grep("_end", names(contigs))]), names(contigs[grep("cigar", names(contigs))]), names(contigs[grep("length", names(contigs))]), names(contigs[grep("count", names(contigs))]), names(contigs[grep("sequence", names(contigs))]), names(contigs[grep("fwr", names(contigs))]), names(contigs[grep("cdr1", names(contigs))]), names(contigs[grep("cdr2", names(contigs))]))]
+
+      contigs_lim <- contigs[!names(contigs) %in% c("is_cell", "contig_id", "high_confidence", "raw_consensus_id", "exact_subclonotype_id", "umis", "reads", "length", "germline_alignment", "cdr3_nt_id", "cdr3_nt_alignment", "rev_comp", names(contigs[grep("_end", names(contigs))]), names(contigs[grep("cigar", names(contigs))]), names(contigs[grep("length", names(contigs))]), names(contigs[grep("count", names(contigs))]), names(contigs[grep("sequence", names(contigs))]), names(contigs[grep("fwr", names(contigs))]), names(contigs[grep("cdr1", names(contigs))]), names(contigs[grep("cdr2", names(contigs))]))]
 
 
       contigs_lim$chain <- ifelse(grepl("TRA", contigs_lim$v_gene), "TRA",
@@ -5668,7 +5612,10 @@ runSTEGO <- function(){
                                   )
       )
 
-      contigs_lim
+
+
+
+      print(names(contigs_lim))
       names(contigs_lim) <- gsub("junction", "cdr3_nt", names(contigs_lim))
 
       contig_AG <- subset(contigs_lim, contigs_lim$chain == "TRA" | contigs_lim$chain == "TRG")
@@ -5757,6 +5704,7 @@ runSTEGO <- function(){
         select(all_of(c("Cell_Index", "Sample_Name")), everything())
       contig_paired_only
     })
+
     tb_10x_meta.data_TCR_CSV <- function() {
       contigs <- input.data.TCR.10x()
       validate(
@@ -5765,7 +5713,10 @@ runSTEGO <- function(){
           "Upload file"
         )
       )
-      contigs_lim <- contigs[!names(contigs) %in% c("is_cell", "contig_id", "high_confidence", "raw_consensus_id", "exact_subclonotype_id", "umis", "reads", "length", "cdr3_nt", names(contigs[grep("fwr", names(contigs))]), names(contigs[grep("cdr1", names(contigs))]), names(contigs[grep("cdr2", names(contigs))]))]
+
+      print(head(contigs))
+
+      contigs_lim <- contigs[!names(contigs) %in% c("is_cell", "contig_id", "high_confidence", "raw_consensus_id", "exact_subclonotype_id", "umis", "reads", "length", names(contigs[grep("fwr", names(contigs))]), names(contigs[grep("cdr1", names(contigs))]), names(contigs[grep("cdr2", names(contigs))]))]
       contigs_lim
       contig_AG <- subset(contigs_lim, contigs_lim$chain == "TRA" | contigs_lim$chain == "TRG")
       name.list <- names(contig_AG[c(
@@ -5870,7 +5821,7 @@ runSTEGO <- function(){
       )
       contigs <- contigs[order(contigs$umis, decreasing = T), ]
 
-      contigs_lim <- contigs[!names(contigs) %in% c("is_cell", "contig_id", "high_confidence", "raw_consensus_id", "exact_subclonotype_id", "reads", "length", "cdr3_nt", names(contigs[grep("fwr", names(contigs))]), names(contigs[grep("cdr1", names(contigs))]), names(contigs[grep("cdr2", names(contigs))]))]
+      contigs_lim <- contigs[!names(contigs) %in% c("is_cell", "contig_id", "high_confidence", "raw_consensus_id", "exact_subclonotype_id", "reads", "length", names(contigs[grep("fwr", names(contigs))]), names(contigs[grep("cdr1", names(contigs))]), names(contigs[grep("cdr2", names(contigs))]))]
       contigs_lim
       contig_LK <- subset(contigs_lim, contigs_lim$chain == "IGL" | contigs_lim$chain == "IGK")
       name.list <- names(contig_LK[c(
@@ -6113,7 +6064,7 @@ runSTEGO <- function(){
     )
 
 
-    ## TCR explore 10x -----
+    ## TCR_Explore 10x -----
     TCR_Explore_10x <- function() {
       if (input$BCR_TCR_10x == "TCR only") {
         if (input$csv_contig_file == "csv/csv.gz") {
@@ -10529,7 +10480,7 @@ runSTEGO <- function(){
         )
       )
 
-      sc@meta.data <- sc@meta.data[,!names(sc@meta.data) %in% c("cloneType","Clonotype_2","Clonotype_3","Clonotype_4","CTstrict","CTnt","cdr3_nt2","cdr3_nt1","CTaa")]
+      sc@meta.data <- sc@meta.data[,!names(sc@meta.data) %in% c("cloneType","Clonotype_2","Clonotype_3","Clonotype_4","CTstrict","CTnt","CTaa")]
       sc@meta.data
       sc
 
@@ -13744,7 +13695,13 @@ runSTEGO <- function(){
         )
       }
       df2[is.na(df2)] <- "-"
+
+      print(aov(get(input$string.data_Exp_top) ~ get(input$Split_group_by_), data = df2))
+
       at <- TukeyHSD(aov(get(input$string.data_Exp_top) ~ get(input$Split_group_by_), data = df2))
+
+      print(at)
+
       tab <- as.data.frame(at[1])
       names(tab) <- c("diff", "lwr", "upr", "p.adj")
       tab$stat <- ifelse(tab$p.adj < 0.0001, "****",
@@ -14711,7 +14668,14 @@ runSTEGO <- function(){
 
       req(input$selected_Indiv_Ex_1,input$selected_Indiv_Ex_2)
 
-      markers.fm.list <- FindMarkers(sc, ident.1 = input$selected_Indiv_Ex_1, ident.2 = c(input$selected_Indiv_Ex_2), min.pct = min.pct.expression, logfc.threshold = min.logfc, only.pos = TRUE)
+      if (input$positive_only_Ex) {
+        markers.fm.list <- FindMarkers(sc, ident.1 = input$selected_Indiv_Ex_1, ident.2 = c(input$selected_Indiv_Ex_2), min.pct = min.pct.expression, logfc.threshold = min.logfc, only.pos = TRUE)
+      } else {
+
+        markers.fm.list <- FindMarkers(sc, ident.1 = input$selected_Indiv_Ex_1, ident.2 = c(input$selected_Indiv_Ex_2), min.pct = min.pct.expression, logfc.threshold = min.logfc)
+      }
+
+
       markers.fm.list2 <- subset(markers.fm.list, markers.fm.list$p_val_adj < input$pval.ex.filter)
       Vals_expanded.stats <- as.data.frame(markers.fm.list2)
       rownames(Vals_expanded.stats) <- make.unique(rownames(Vals_expanded.stats))
@@ -18108,22 +18072,47 @@ runSTEGO <- function(){
       )
 
       umap.meta <- meta_data_for_features_scale()
+      umap.meta$ID <- umap.meta[,names(umap.meta) %in% input$Samp_col]
 
       if (input$select_plot_vio.ridge == "Violin") {
-        ggplot(umap.meta, aes(y = scale, x = Sample_Name)) +
-          geom_violin() +
+        plot <-  ggplot(umap.meta, aes(y = scale, x = ID)) +
           geom_jitter() +
+          geom_violin() +
           theme(
             legend.position = "none",
           ) +
-          theme_bw() +
-          geom_hline(yintercept = input$cutoff_marker_gt, color = "orange", size = 3)
+          theme_bw()  +
+          theme(
+            plot.title = element_blank(),
+            axis.title.y = element_text(colour = "black", family = input$font_type, size = input$title.text.sizer2),
+            axis.text.y = element_text(colour = "black", family = input$font_type, size = input$text_size),
+            axis.text.x = element_text(colour = "black", family = input$font_type, size = input$text_size, angle = 90),
+            axis.title.x = element_blank(),
+            legend.text = element_text(colour = "black", size = input$Legend_size, family = input$font_type),
+            legend.title = element_blank(),
+            legend.position = "none",
+          )
+
+
+        if(input$show_cutoff_line) {
+          plot + geom_hline(yintercept = input$cutoff_marker_gt, color = "orange", size = 3)
+        } else {
+          plot
+        }
+
         # geom_vline(xintercept=neg, linetype="dashed", color = "darkorange")
       } else {
-        ggplot(umap.meta, aes(x = scale, y = Sample_Name)) +
+        plot_ridge <- ggplot(umap.meta, aes(x = scale, y = ID)) +
           geom_density_ridges() +
           theme_ridges() +
           geom_vline(xintercept = input$cutoff_marker_gt, color = "orange", size = 3)
+
+        if(input$show_cutoff_line) {
+          plot_ridge + geom_hline(yintercept = input$cutoff_marker_gt, color = "orange", size = 3)
+        } else {
+          plot_ridge
+        }
+
       }
     })
 

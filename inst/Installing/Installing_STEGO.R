@@ -4,13 +4,14 @@ Sys.setenv("CXX" = "g++")
 if (!require("BiocManager", quietly = TRUE))
   install.packages("BiocManager")
 
-if (!require("devtools", quietly = TRUE))
-  install.packages("devtools")
+# if (!require("devtools", quietly = TRUE))
+#   install.packages("devtools")
 
 if (!require("usethis", quietly = TRUE))
   install.packages("usethis")
 
-devtools::install_github("KerryAM-R/STEGO.R", ref = "beta-version")
+# devtools::install_github("KerryAM-R/STEGO.R", ref = "beta-version")
+install.packages("https://github.com/KerryAM-R/STEGO.R/archive/master.tar.gz", repos = NULL, type = "source")
 
 y # for Seurat source
 y # biomanager packages for the M1 or greater chip
@@ -60,7 +61,7 @@ installed_packages <- rownames(installed.packages.full)
 base_packages <- rownames(installed.packages.full[installed.packages.full$Priority %in% "base",])
 base_packages
 
-installed_packages[installed_packages %in% c(base_packages,"fonts","extrafont")]
+installed_packages[installed_packages %in% c(base_packages,"fonts","extrafont","dplyr","plyr")]
 
 non_base_packages <- installed_packages[!installed_packages %in% c(base_packages,"startup")]
 # non_base_packages %in% "fonts"
