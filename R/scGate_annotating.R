@@ -131,20 +131,10 @@ scGate_annotating <- function (file = file,
         sc_chunk@meta.data$Tcellfunction <- sc_chunk@meta.data$scGate_multi
 
         tcell_function_table <- table(sc_chunk@meta.data$Tcellfunction)
-        # print(tcell_function_table)
         save_table(tcell_function_table, paste0(output_dir,"/", "Tcellfunction_table_chunk_", i, ".txt"))
 
 
       }
-      # if (generic) {
-      #   models_list <- custom_db_scGATE(system.file("scGATE", "human/generic", package = "STEGO.R"))
-      #   sc_chunk <- apply_scGate_to_chunk(sc_chunk, models_list, threshold_scGate, reductionType)
-      #   sc_chunk@meta.data$generic <- sc_chunk@meta.data$scGate_multi
-      #   # Print and save meta data
-      #   tcell_function_table <- table(sc_chunk@meta.data$generic)
-      #   # print(tcell_function_table)
-      #   save_table(tcell_function_table, paste0(output_dir,"/", "generic_table_chunk_", i, ".txt"))
-      # }
       if (immune_checkpoint) {
         models_list <- custom_db_scGATE(system.file("scGATE", "human/immune_checkpoint", package = "STEGO.R"))
         sc_chunk <- apply_scGate_to_chunk(sc_chunk, models_list, threshold_scGate, reductionType)
@@ -206,38 +196,43 @@ scGate_annotating <- function (file = file,
       merged_sc_list[[length(merged_sc_list) + 1]] <- sc_chunk
     }
 
-    # Loop to merge pairs of Seurat objects with arrays/matrices until only one is left
+    # saveRDS(merged_sc_list,"Annotation_chunks_obj.rds")
+    # saveRDS(umap,"umap.rds")
+    # saveRDS(harmony,"harmony.rds")
+    print(names(merged_sc_list))
+    merged_sc_list2 <- merged_sc_list
+    names(merged_sc_list2) <-  paste0(rep("List_obj_name",num_chunks),1:num_chunks)
 
     # Loop to merge pairs of Seurat objects until only one is left
-    while (length(merged_sc_list) > 1) {
+    # Run the loop until only one object remains in the list
+    while (length(merged_sc_list2) > 1) {
       temp_list <- list()
-
-      for (i in seq(1, length(merged_sc_list), by = 2)) {
-
-
-        if (i < length(merged_sc_list)) {
-          # Merge two Seurat objects
-          merged_names <- paste(names(merged_sc_list)[i], names(merged_sc_list)[i + 1], sep = " and ")
-          new_name <- paste0("Merged_", i)
+      counter <- 1  # Reset the counter at the beginning of each iteration
+      for (i in seq(1, length(merged_sc_list2), by = 2)) {
+        if (i < length(merged_sc_list2)) {
+          merged_names <- paste(names(merged_sc_list2)[i],
+                                names(merged_sc_list2)[i + 1], sep = " and ")
+          new_name <- paste0("Merged_", counter)  # Generate sequential name
           message("Merging ", merged_names, " to create ", new_name)
-          merged_object <- merge(x = merged_sc_list[[i]], y = merged_sc_list[[i + 1]], merge.data = TRUE)
-          # scalling <- suppressWarnings(merge(x = merged_sc_list[[i]]$scaling, y = merged_sc_list[[i + 1]]$scaling, merge.data = TRUE))
+          merged_object <- merge(x = merged_sc_list2[[i]],
+                                 y = merged_sc_list2[[i + 1]], merge.data = TRUE)
           temp_list[[new_name]] <- merged_object
-
-          # Calculate size of merged object
           merged_size <- object.size(merged_object)
-          message("Size of ", new_name, ": ", round(merged_size[1] / 1000^3, 1), " Gb")
+          message("Size of ", new_name, ": ", round(merged_size[1]/1000^3, 1), " Gb")
+          counter <- counter + 1  # Increment the counter
         } else {
-          # If there's an odd number of objects, keep the last one as is
-          temp_list[[names(merged_sc_list)[i]]] <- merged_sc_list[[i]]
+          # If there's an odd number of elements, keep the last one
+          temp_list[[names(merged_sc_list2)[i]]] <- merged_sc_list2[[i]]
         }
       }
-
-      merged_sc_list <- temp_list
+      # Replace the original list with the merged list
+      merged_sc_list2 <- temp_list
     }
 
     # Extract the merged Seurat object
-    merged_sc <- merged_sc_list[[1]]
+    merged_sc <- merged_sc_list2[[1]]
+
+    message("Adding back in the UMAP and Harmony data")
     if (num_chunks == 1) {
       join_sc <- merged_sc
     } else {
@@ -268,7 +263,7 @@ scGate_annotating <- function (file = file,
 
       }
     }
-
+    join_sc
     return(join_sc)
   }
 }
