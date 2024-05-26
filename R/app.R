@@ -2539,7 +2539,7 @@ runSTEGO <- function(){
                                       12,
                                       conditionalPanel(
                                         condition = "input.Panel_TCRUMAP=='top_clone'",
-                                        selectInput("Selected_clonotype", "Select clonotype:", choices = "", width = "1400px")
+                                        selectInput("Selected_clonotype", "Select clonotype:", choices = "", width = "1400px", multiple = T)
                                       ),
                                     ),
                                   ),
@@ -11071,6 +11071,7 @@ runSTEGO <- function(){
       df3.meta <- sc@meta.data
       df3.meta2 <- df3.meta[, names(df3.meta) %in% c(input$Samp_col, input$V_gene_sc)]
       df3.meta2$ID_Column <- df3.meta2[, names(df3.meta2) %in% input$Samp_col]
+
       df3.meta2$v_gene_selected <- df3.meta2[, names(df3.meta2) %in% input$V_gene_sc]
       # names(df3.meta2)[names(df3.meta2) %in% input$Samp_col] <- "ID_Column"
       # names(df3.meta2)[names(df3.meta2) %in% input$V_gene_sc] <- "v_gene_selected"
@@ -13772,8 +13773,9 @@ runSTEGO <- function(){
       df2$Selected_function <- factor(df2$Selected_function, levels = input$Graph_split_order)
 
       ggplot(df2, aes(y = get(input$string.data_Exp_top), x = Selected_function, fill = Selected_function)) +
-        geom_violin() +
+
         geom_jitter(height = 0, width = 0.1) +
+        geom_violin() +
         theme(legend.position = "none", ) +
         theme_bw() +
         theme(
@@ -13852,8 +13854,8 @@ runSTEGO <- function(){
       }
 
       ggplot(df2, aes(y = get(input$string.data_Exp_top), x = selected_top_clonotype, fill = selected_top_clonotype)) +
-        geom_violin() +
         geom_jitter(height = 0, width = 0.1) +
+        geom_violin() +
         theme(legend.position = "none", ) +
         theme_bw() +
         theme(
@@ -14902,8 +14904,8 @@ runSTEGO <- function(){
       md_gene <- expanded_with_gene()
 
       ggplot(md_gene, aes(y = V1, x = expansion.status, fill = expansion.status)) +
-        geom_violin() +
         geom_jitter(height = 0, width = 0.1) +
+        geom_violin() +
         theme(legend.position = "none", ) +
         theme_bw() +
         theme(
@@ -18076,8 +18078,8 @@ runSTEGO <- function(){
 
       if (input$select_plot_vio.ridge == "Violin") {
         plot <-  ggplot(umap.meta, aes(y = scale, x = ID)) +
-          geom_jitter() +
           geom_violin() +
+          geom_jitter() +
           theme(
             legend.position = "none",
           ) +
