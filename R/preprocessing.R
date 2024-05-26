@@ -114,9 +114,7 @@ preprocessing_10x <- function (downloadTCRex = F, downloadClusTCR = F, downloadT
             full_mat <- rbind(full_mat[[1]],full_mat[[2]])
 
           }
-
-
-          head(full_mat)
+          full_mat <- as.matrix(full_mat)
           # Calculate row sums
           row_sums <- rowSums(full_mat)
           full_mat <- full_mat[row_sums > 0, ]
