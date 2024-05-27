@@ -138,7 +138,7 @@ merging_multi_SeuratRDS <- function(seurat_files = "3_SCobj/3a",
     message("stored object is ", round(sl[1]/1000^3, 3), " Gb")
 
     # remove potential graph issue.
-    for (i in 1:num) {
+    for (i in 1:length(list.sc)) {
       list.sc[[i]]@graphs <- list()
       list.sc[[i]]@misc <- list()
     }
