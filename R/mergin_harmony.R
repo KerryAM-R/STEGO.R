@@ -130,12 +130,12 @@ merging_multi_SeuratRDS <- function(seurat_files = "3_SCobj/3a",
       list.sc[[i]]@meta.data$Cell_Index_old <- list.sc[[i]]@meta.data$Cell_Index
       print(list.sc[[i]])
       sl <- object.size(list.sc[[i]])
-      message("Stored object is ", round(sl[1]/1000^3, 1), " Gb")
+      message("Stored object is ", round(sl[1]/1000^3, 3), " Gb")
     }
 
     print(length(list.sc))
     sl <- object.size(list.sc)
-    message("stored object is ", round(sl[1]/1000^3, 1), " Gb")
+    message("stored object is ", round(sl[1]/1000^3, 3), " Gb")
 
     # remove potential graph issue.
     for (i in 1:num) {
