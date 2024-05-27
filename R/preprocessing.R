@@ -320,8 +320,9 @@ preprocessing_10x <- function (downloadTCRex = F, downloadClusTCR = F, downloadT
         contigs_lim$v_gene <- gsub("TRAV36DV7","TRAV36/DV7",contigs_lim$v_gene)
         contigs_lim$v_gene <- gsub("TRAV38-2DV8","TRAV38-2/DV8",contigs_lim$v_gene)
 
-
-
+        contigs_lim$v_gene <- gsub("[*]0.", "", contigs_lim$v_gene)
+        contigs_lim$j_gene <- gsub("[*]0.", "", contigs_lim$j_gene)
+        contigs_lim$d_gene <- gsub("[*]0.", "", contigs_lim$d_gene)
 
         contigs_lim$chain <- ifelse(grepl("TRA", contigs_lim$v_gene),
                                     "TRA", ifelse(grepl("TRB", contigs_lim$v_gene),
@@ -330,11 +331,14 @@ preprocessing_10x <- function (downloadTCRex = F, downloadClusTCR = F, downloadT
                                                                               "TRD", ""))))
         contig_AG <- subset(contigs_lim, contigs_lim$chain == "TRA" | contigs_lim$chain == "TRG")
 
-        name.list <- names(contig_AG[c(names(contig_AG[grep("gene",
-                                                            names(contig_AG))]), names(contig_AG[grep("cdr1",
-                                                                                                      names(contig_AG))]), names(contig_AG[grep("cdr2",
-                                                                                                                                                names(contig_AG))]), names(contig_AG[grep("cdr3",
-                                                                                                                                                                                          names(contig_AG))]), "chain")])
+        name.list <- names(contig_AG[
+            c(
+          names(contig_AG[grep("gene",names(contig_AG))]),
+          names(contig_AG[grep("cdr1",names(contig_AG))]),
+          names(contig_AG[grep("cdr2",names(contig_AG))]),
+          names(contig_AG[grep("cdr3",names(contig_AG))]), "chain")
+            ]
+          )
         contig_AG <- contig_AG %>% select(all_of(name.list),
                                           everything())
         contig_AG
@@ -514,6 +518,9 @@ preprocessing_10x <- function (downloadTCRex = F, downloadClusTCR = F, downloadT
         contigs_lim$v_gene <- gsub("TRAV36DV7","TRAV36/DV7",contigs_lim$v_gene)
         contigs_lim$v_gene <- gsub("TRAV38-2DV8","TRAV38-2/DV8",contigs_lim$v_gene)
 
+        contigs_lim$v_gene <- gsub("[*]0.", "", contigs_lim$v_gene)
+        contigs_lim$j_gene <- gsub("[*]0.", "", contigs_lim$j_gene)
+        contigs_lim$d_gene <- gsub("[*]0.", "", contigs_lim$d_gene)
 
         contigs_lim$chain <- ifelse(grepl("TRA", contigs_lim$v_gene),
                                     "TRA", ifelse(grepl("TRB", contigs_lim$v_gene),
