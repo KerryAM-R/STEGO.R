@@ -281,7 +281,7 @@ preprocessing_10x <- function (downloadTCRex = F, downloadClusTCR = F, downloadT
       file_name_md <- paste0("1_SeuratQC/", sub_directory,"_metadata_10x.csv")
 
       if(file.exists(file_name_mat) && file.exists(file_name_md)) {
-        message(file_name_mat," already exists")
+        message(file_name_mat," & ", file_name_md," already exists")
       } else {
 
         contigs <- TCR

@@ -1832,11 +1832,13 @@ runSTEGO <- function(){
               tabsetPanel(
                 tabPanel(
                   "Remove Samps",
+                  div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
                   h5("Before Samples are removed"),
                   actionButton("run_remove_samps", "Remove samples"),
                   verbatimTextOutput("Preliminary_samp_to_remove"),
                   # selectInput("DownVColumn", "Chose subset type:", choices = c("Meta_data", "Down_sampling")),
                   numericInput("downsamp_limit", "Down sampling limit", value = 1000),
+                  div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
                   selectInput("ID_Column_factor_SampToRemove", "Order of graph", choices = "", multiple = T, width = "1400px"),
                   h5("After Samples are removed"),
                   verbatimTextOutput("Filtered_samp_to_remove"),
@@ -3063,10 +3065,10 @@ runSTEGO <- function(){
                                     column(3, checkboxInput("Download_private_overlapping", "Download Private clone analysis", value = F)),
                                     column(3, checkboxInput("restrict_to_expanded", "Restrict to expanded", value = F))
                                   ),
-                                  add_busy_spinner(spin = "fading-circle", position = "top-right",  height = "200px", width = "200px", color = "purple"),
+                                  add_busy_spinner(spin = "fading-circle", position = "top-right",  height = "200px", width = "200px", color = "#6F00B0"),
                                   verbatimTextOutput("Simple_workflow_step1"),
                                   verbatimTextOutput("Number_of_clonotypes_to_"),
-                                  add_busy_spinner(spin = "fading-circle", position = "top-right",  height = "200px", width = "200px", color = "purple"),
+                                  add_busy_spinner(spin = "fading-circle", position = "top-right",  height = "200px", width = "200px", color = "#6F00B0"),
                                   div(DT::DTOutput("PriorClono_Tab")),
                                   uiOutput("Module_case_statements"),
                                   div(DT::DTOutput("private_clonotypes")),
@@ -3085,18 +3087,18 @@ runSTEGO <- function(){
                                     column(3, numericInput("Sample_count_clusterBD", "BD Sample count \u2265", value = 3, min = 1)),
                                     column(3, numericInput("Total_cloneCount_clusterBD", "BD Clone count \u2265", value = 3, min = 3)),
                                   ),
-                                  add_busy_spinner(spin = "fading-circle", position = "top-right",  height = "200px", width = "200px", color = "purple"),
+                                  add_busy_spinner(spin = "fading-circle", position = "top-right",  height = "200px", width = "200px", color = "#6F00B0"),
                                   verbatimTextOutput("number_clusters_to_analyse_AG"),
-                                  add_busy_spinner(spin = "fading-circle", position = "top-right",  height = "200px", width = "200px", color = "purple"),
+                                  add_busy_spinner(spin = "fading-circle", position = "top-right",  height = "200px", width = "200px", color = "#6F00B0"),
                                   verbatimTextOutput("number_clusters_to_analyse_BD"),
-                                  add_busy_spinner(spin = "fading-circle", position = "top-right",  height = "200px", width = "200px", color = "purple"),
+                                  add_busy_spinner(spin = "fading-circle", position = "top-right",  height = "200px", width = "200px", color = "#6F00B0"),
                                   uiOutput("Cluster_dowload_button_prior"),
                                   # div(DT::DTOutput("colors.top_dt")),
                          ),
                          # modules of priority Epitope ------
                          tabPanel("Epitope/Annotation",
                                   value = "PriorEpiTB",
-                                  add_busy_spinner(spin = "fading-circle", position = "top-right",  height = "200px", width = "200px", color = "purple"),
+                                  add_busy_spinner(spin = "fading-circle", position = "top-right",  height = "200px", width = "200px", color = "#6F00B0"),
                                   checkboxInput("epitope_uploaded", "Add in Epitope data", value = T),
                                   fluidRow(
                                     column(3, uiOutput("AddInEpiUI_1")),
@@ -10738,6 +10740,9 @@ runSTEGO <- function(){
           error_message_val_UMAP
         )
       )
+
+      print(sc)
+
       req(input$Samp_col2, input$datasource, input$species_analysis, input$V_gene_sc)
 
 
@@ -12411,6 +12416,8 @@ runSTEGO <- function(){
           error_message_val1
         )
       )
+
+
       top_BD_cluster <- sc@meta.data
       top_BD_cluster$Selected_function <- top_BD_cluster[, names(top_BD_cluster) %in% input$Colour_By_this_overview]
       top_BD_cluster$Selected_function <- ifelse(grepl("NA", top_BD_cluster$Selected_function), NA, top_BD_cluster$Selected_function)
@@ -12432,6 +12439,7 @@ runSTEGO <- function(){
       # names(top_BD_cluster)[names(top_BD_cluster) %in% input$Samp_col] <- "ID_Column"
 
       if (input$by_indiv_pie_epi == "yes") {
+        req(input$selected_Indiv)
         top_BD_cluster <- top_BD_cluster[top_BD_cluster$ID_Column %in% input$selected_Indiv, ]
       }
 
@@ -12629,6 +12637,7 @@ runSTEGO <- function(){
       df.col <- unlist(colors_pie())
 
       if (input$by_indiv_pie_epi == "yes") {
+        req(input$selected_Indiv)
         top_BD_cluster <- top_BD_cluster[top_BD_cluster$Selected_indiv %in% input$selected_Indiv, ]
       }
 
@@ -12658,6 +12667,7 @@ runSTEGO <- function(){
       # names(top_BD_cluster)[names(top_BD_cluster) %in% input$Samp_col] <- "ID_Column"
 
       if (input$by_indiv_pie_epi == "yes") {
+        req(input$selected_Indiv)
         top_BD_cluster <- top_BD_cluster[top_BD_cluster$ID_Column %in% input$selected_Indiv, ]
       }
 
@@ -12881,43 +12891,73 @@ runSTEGO <- function(){
     # Select top clonotype ----
     Top_clonotype_df2 <- reactive({
       sc <- UMAP_metadata_with_labs()
-      req(input$selected_Indiv, input$Samp_col, input$V_gene_sc)
+
       validate(
         need(
           nrow(sc) > 0,
           error_message_val1
         )
       )
+      req(input$selected_Indiv, input$Samp_col, input$V_gene_sc)
       dataframe_one <- sc@meta.data
-      dataframe_one$ID_Column <- dataframe_one[,names(dataframe_one) %in% input$Samp_col]
+      req(dataframe_one, input$Samp_col)
+      dataframe_one$ID_Column <- dataframe_one[, names(dataframe_one) %in% input$Samp_col]
       # names(dataframe_one)[names(dataframe_one) %in% input$Samp_col] <- "ID_Column"
 
-      if (input$by_indiv_pie_epi == "yes") {
-        df3.meta <- dataframe_one[dataframe_one$ID_Column %in% input$selected_Indiv, ]
-      } else {
-        df3.meta <- dataframe_one
+      # Validate if input$selected_Indiv contains any values not present in dataframe_one$ID_Column
+      invalid_values <- setdiff(input$selected_Indiv, dataframe_one$ID_Column)
+      if (length(invalid_values) > 0) {
+        validate(
+          need(
+            FALSE,
+            paste("Updating Selected Individual column.")
+          )
+        )
       }
 
-      # summarising the clonality
-      df3.meta$cluster_name <- df3.meta[, names(df3.meta) %in% input$V_gene_sc]
-      df3.meta$cloneCount <- 1
+      df3.meta <- reactive({
+        if (input$by_indiv_pie_epi == "yes") {
+          req(input$selected_Indiv)
+          df3 <- dataframe_one[dataframe_one$ID_Column %in% input$selected_Indiv, ]
+          return(df3)
+        } else {
+          return(dataframe_one)
+        }
+      })
 
-      BD <- df3.meta[, names(df3.meta) %in% c("cluster_name", "cloneCount")]
+      # Get the value of df3.meta
+      df3 <- df3.meta()
+
+      # summarising the clonality
+      df3$cluster_name <- df3[, names(df3) %in% input$V_gene_sc]
+      df3$cloneCount <- 1
+
+      BD <- df3[, names(df3) %in% c("cluster_name", "cloneCount")]
       BD
       BD_sum <- ddply(BD, names(BD)[-c(2)], numcolwise(sum))
       as.data.frame(BD_sum)
       BD_sum <- BD_sum[!BD_sum$cluster_name == "_", ]
       BD_sum <- BD_sum[!BD_sum$cluster_name %in% "NA", ]
       names(BD_sum)[2] <- "Total_count"
-      BD_sum$frequency <- BD_sum$Total_count / sum(BD_sum[, c("Total_count")], na.rm = T)
+      BD_sum$frequency <- BD_sum$Total_count / sum(BD_sum[, c("Total_count")], na.rm = TRUE)
 
       # BD_sum$frequency <- BD_sum$Total_count/sum(BD_sum$Total_count)
-      BD_sum <- BD_sum[order(BD_sum$Total_count, decreasing = T), ]
+      BD_sum <- BD_sum[order(BD_sum$Total_count, decreasing = TRUE), ]
 
       BD_sum
     })
 
+
     output$Top_clonotype_sum <- DT::renderDT(escape = FALSE, options = list(autoWidth = FALSE, lengthMenu = c(2, 5, 10, 20, 50, 100), pageLength = 10, scrollX = TRUE), {
+      sc <- UMAP_metadata_with_labs()
+
+      validate(
+        need(
+          nrow(sc) > 0,
+          error_message_val1
+        )
+      )
+
       Top_clonotype_df2()
     })
 
@@ -13653,7 +13693,8 @@ runSTEGO <- function(){
       top_BD_cluster <- top_BD_cluster[top_BD_cluster$Selected_function %in% input$Graph_split_order, ]
       top_BD_cluster$Selected_function <- as.character(top_BD_cluster[, names(top_BD_cluster) %in% input$Split_group_by_])
       top_BD_cluster$Selected_function <- factor(top_BD_cluster$Selected_function, levels = input$Graph_split_order)
-
+      # print(names(top_BD_cluster))
+      # print(names(gene_df))
       merge(top_BD_cluster, gene_df, by = "Cell_Index")
     })
 
@@ -13755,7 +13796,6 @@ runSTEGO <- function(){
 
       merge(top_BD_cluster, gene_df, by = "Cell_Index")
     })
-
 
     Violin_chart_alpha_gamma_plot <- reactive({
       df <- Ridge_chart_alpha_gamma_df()
@@ -14556,13 +14596,13 @@ runSTEGO <- function(){
 
       md <- as.data.frame(sc@meta.data)
 
-      print(md[, names(md) %in% input$Split_group_by_])
+      # print(md[, names(md) %in% input$Split_group_by_])
 
       md$ID_Column <- md[, names(md) %in% input$Split_group_by_]
-      print(dim(md))
-      print(names(md))
+      # print(dim(md))
+      # print(names(md))
       ex.md <- Expansion_check_tb()
-      print(dim(ex.md))
+      # print(dim(ex.md))
       ex.md2 <- ex.md[, names(ex.md) %in% c("Cell_Index", "expanded.singlets", "Selected_Status", "expansion.status")]
       md.ex <- merge(md, ex.md2, sort = F)
 
@@ -14624,7 +14664,7 @@ runSTEGO <- function(){
         )
       )
       req(df2)
-      print(unique(df2))
+      # print(unique(df2))
 
       df2 <- as.data.frame(df2)
       names(df2) <- "V1"
@@ -14867,7 +14907,7 @@ runSTEGO <- function(){
       gene <- as.data.frame(sc@assays$RNA$scale.data[rownames(sc@assays$RNA$scale.data)  %in% input$Ex_transcripts_of_interest,])
       names(gene) <- "V1"
       gene$Cell_Index <- rownames(gene)
-      print(input$Graph_split_order_EXP)
+      # print(input$Graph_split_order_EXP)
       md_gene <- merge(top_BD_cluster,gene,by = "Cell_Index")
       md_gene
     })
@@ -15487,6 +15527,7 @@ runSTEGO <- function(){
       top_BD_cluster$Selected_indiv <- top_BD_cluster[, names(top_BD_cluster) %in% input$Samp_col]
 
       if (input$by_indiv_pie_epi == "yes") {
+        req(input$selected_Indiv)
         top_BD_cluster <- top_BD_cluster[top_BD_cluster$Selected_indiv %in% input$selected_Indiv, ]
       }
 
@@ -16079,8 +16120,8 @@ runSTEGO <- function(){
       )
       req(sc)
       md <- sc@meta.data
-
-      req(clust, md)
+      print(names(md))
+      req(clust, md, input)
       if (input$datasource == "BD_Rhapsody_Paired" || input$datasource == "BD_Rhapsody_AIRR") {
         names(md)[names(md) %in% "v_gene_AG"] <- "Selected_V_AG"
         names(md)[names(md) %in% "junction_aa_AG"] <- "AminoAcid_AG"
@@ -16211,6 +16252,8 @@ runSTEGO <- function(){
 
     clusTCR_values <- reactiveValues(clusta = NULL)
 
+
+
     clusTCR2_df <- reactive({
       sc <- UMAP_metadata_with_labs()
       validate(
@@ -16237,8 +16280,24 @@ runSTEGO <- function(){
       }
     })
 
-    output$Tb_ClusTCR_selected <- DT::renderDT(escape = FALSE, options = list(autoWidth = FALSE, lengthMenu = c(2, 5, 10, 20, 50, 100), pageLength = 5, scrollX = TRUE), {
+    clusTCR2_df_2 <- reactive({
       cluster <- clusTCR2_df()
+      req(cluster)
+      cluster$ID_Column <- cluster[, names(cluster) %in% input$Samp_col]
+
+      if(input$by_indiv_pie_epi == "yes") {
+        req(input$selected_Indiv)
+        cluster <- subset(cluster,cluster$ID_Column == input$selected_Indiv)
+
+      }
+
+      cluster
+
+
+    })
+
+    output$Tb_ClusTCR_selected <- DT::renderDT(escape = FALSE, options = list(autoWidth = FALSE, lengthMenu = c(2, 5, 10, 20, 50, 100), pageLength = 5, scrollX = TRUE), {
+      cluster <- clusTCR2_df_2()
       validate(
         need(
           nrow(cluster) > 0,
@@ -16258,9 +16317,11 @@ runSTEGO <- function(){
       }
     )
 
+
+
     # cluster to display ------
     observe({
-      cluster <- clusTCR2_df()
+      cluster <- clusTCR2_df_2()
 
       validate(
         need(
@@ -16268,7 +16329,6 @@ runSTEGO <- function(){
           "upload clustering"
         )
       )
-      cluster$ID_Column <- cluster[, names(cluster) %in% input$Samp_col]
       req(input$Samp_col)
       # cluster <- cluster[cluster$Clust_size_order %in% input$lower_cluster:input$upper_cluster,]
       updateSelectInput(
@@ -16355,10 +16415,11 @@ runSTEGO <- function(){
           "Upload clusTCR table"
         )
       )
-      req(cluster, input$Colour_By_this)
+      req(cluster, input$Colour_By_this,input$Samp_col)
+
       cluster$ID_Column <- cluster[, names(cluster) %in% input$Samp_col]
       cluster <- cluster[order(cluster$ID_Column), ]
-      # cluster <- cluster[cluster$Updated_order %in% input$Clusters_to_dis_PIE,]
+
       cluster$colour <- cluster[, names(cluster) %in% input$Colour_By_this]
       cluster$colour <- gsub("_", " ", cluster$colour)
       cluster$colour <- factor(cluster$colour, levels = unique(cluster$colour))
@@ -16382,7 +16443,7 @@ runSTEGO <- function(){
           "Upload clusTCR table, which is needed for TCR -> UMAP section"
         )
       )
-      req(cluster, input$Clusters_to_dis_PIE, input$Colour_By_this)
+      req(cluster, input$Clusters_to_dis_PIE, input$Colour_By_this, input$Samp_col)
       cluster$ID_Column <- cluster[, names(cluster) %in% input$Samp_col]
       cluster <- cluster[order(cluster$ID_Column), ]
       # cluster <- cluster[cluster$Updated_order %in% input$Clusters_to_dis_PIE,]
@@ -16468,6 +16529,8 @@ runSTEGO <- function(){
           "Upload clusTCR table"
         )
       )
+      req(input$Clusters_to_dis_PIE, input$Samp_col)
+
       cluster$ID_Column <- cluster[, names(cluster) %in% input$Samp_col]
       Network_df <- cluster[order(cluster$Updated_order), ]
       # Network_df2 <-
@@ -16477,7 +16540,11 @@ runSTEGO <- function(){
       # ?Motif_from_cluster_file
     })
     output$Motif_ClusTCR2_cluster <- renderPlot({
-      motif_plot_sc()
+      req(input$Clusters_to_dis_PIE, input$Samp_col)
+
+      plot <- motif_plot_sc()
+      req(plot)
+      plot
     })
 
     # render which cases were contributing to the cluster
@@ -16489,6 +16556,9 @@ runSTEGO <- function(){
           "Upload clusTCR table, which is needed for TCR -> UMAP section"
         )
       )
+
+      req(input$Clusters_to_dis_PIE, input$Samp_col)
+
       cluster$ID_Column <- cluster[, names(cluster) %in% input$Samp_col]
 
       df <- cluster[cluster$Updated_order %in% input$Clusters_to_dis_PIE, ]
@@ -16539,6 +16609,8 @@ runSTEGO <- function(){
           "Upload clusTCR table, which is needed for TCR -> UMAP section"
         )
       )
+      req(input$Clusters_to_dis_PIE, input$Samp_col, input$Colour_By_this)
+
       cluster$ID_Column2 <- cluster[, names(cluster) %in% input$Split_group_by_]
       Network_df <- cluster[order(cluster$Updated_order), ]
       Network_df <- Network_df[Network_df$Updated_order %in% input$Clusters_to_dis_PIE, ]
@@ -16756,6 +16828,8 @@ runSTEGO <- function(){
 
       cluster <- clusTCR2_df()
 
+      req(cluster, input$Samp_col, input$Clusters_to_dis_PIE)
+
       cluster$ID_Column <- cluster[, names(cluster) %in% input$Samp_col]
       cluster <- cluster[order(cluster$Updated_order), ]
 
@@ -16851,6 +16925,8 @@ runSTEGO <- function(){
       md <- sc@meta.data
 
       cluster <- clusTCR2_df()
+
+      req(cluster, input$Samp_col, input$Clusters_to_dis_PIE)
 
       cluster$ID_Column <- cluster[, names(cluster) %in% input$Samp_col]
       cluster <- cluster[order(cluster$Updated_order), ]
@@ -16948,6 +17024,7 @@ runSTEGO <- function(){
       md <- sc@meta.data
 
       cluster <- clusTCR2_df()
+      req(cluster, input$Samp_col, input$Clusters_to_dis_PIE)
 
       cluster$ID_Column <- cluster[, names(cluster) %in% input$Samp_col]
       cluster <- cluster[order(cluster$Updated_order), ]
@@ -19150,6 +19227,8 @@ runSTEGO <- function(){
       dev.off()
 
       message("Downloading the count UMAP...")
+
+
       top.name.clonotypes.top_png <- paste("prioritization/ImmunoDom/Expansion_UMAP_count_", x, ".png", sep = "")
       png(top.name.clonotypes.top_png, width = input$width_png_TCR.UMAP, height = input$height_png_TCR.UMAP, res = input$resolution_PNG_TCR.UMAP)
       plot(UMAP.TCRclonalit2())
@@ -21017,24 +21096,25 @@ runSTEGO <- function(){
     # epitope prioritization ------
     observeEvent(input$EpitopePrior_Download_Bt, {
       x <- today()
-      message(paste("Downloading sumamry table of", input$Prior_AddInEpiUI_1, "vs", input$Prior_AddInEpiUI_2))
+      message(paste("Downloading summary table of", input$Prior_AddInEpiUI_1, "vs", input$Prior_AddInEpiUI_2))
+
       Exp_stats_cutoff_count.name <- paste("prioritization/EpitopePred/Epitope_summary_table_", input$Prior_AddInEpiUI_1, "vs", input$Prior_AddInEpiUI_2, "_", x, ".csv", sep = "")
       write.csv(Prior_Epitope_dt_process(), Exp_stats_cutoff_count.name, row.names = F)
 
       message(paste("Downloading heatmap", input$Prior_AddInEpiUI_1, " vs ", input$Prior_AddInEpiUI_2))
 
-      name.epitope <- paste("prioritization/EpitopePred/", input$Prior_AddInEpiUI_1, "_", input$Prior_AddInEpiUI_2, "_Heatmap_", x, ".png", sep = "")
+      name.epitope <- paste("prioritization/EpitopePred/",input$Prior_AddInEpiUI_1, "_", input$Prior_AddInEpiUI_2, "_Heatmap_", x, ".png", sep = "")
 
       Common_Epitope_code <- Common_Epitope_code()
       total_X <- length(unique(Common_Epitope_code$Selected_function))
       total_Y <- length(unique(Common_Epitope_code$Selected_group))
 
-      png(name.epitope, width = 20 * total_Y + 400, height = 20 * total_X + 400, res = 144)
+      png(name.epitope, width = 40 * total_Y + 400, height = 40 * total_X + 400, res = 144)
       plot(Prior_heatmap_epitope())
       dev.off()
 
       message(paste("Downloading UMAP", input$Prior_AddInEpiUI_1, " vs ", input$Prior_AddInEpiUI_2))
-      name.epitope.UMAP <- paste("prioritization/EpitopePred/", "Epitope_UMAP_coloredby.", input$Prior_AddInEpiUI_1, "_", x, ".png", sep = "")
+      name.epitope.UMAP <- paste("prioritization/EpitopePred/",input$Prior_AddInEpiUI_1,"/", "Epitope_UMAP_coloredby.", input$Prior_AddInEpiUI_1, "_", x, ".png", sep = "")
 
       len.colour <- length(unique(Common_Epitope_code$ID_Column))
       nCol <- round(sqrt(len.colour), 0)
@@ -21323,7 +21403,12 @@ runSTEGO <- function(){
             selected.epitope.name <- df2$Selected_group[i]
             Epi.selected.function.name <- df2$Selected_function[i]
 
-            top.name.clonotypes.top_csv <- paste("prioritization/EpitopePred/", i, "_", selected.epitope.name, "_", Epi.selected.function.name, "_Epitope_summary_table_", x, ".csv", sep = "")
+            dir_to_create <- paste("prioritization/EpitopePred/",Epi.selected.function.name,"/",sep = "")
+            if(!dir.exists(dir_to_create)) {
+              dir.create(dir_to_create)
+            }
+
+            top.name.clonotypes.top_csv <- paste(dir_to_create, i, "_", selected.epitope.name, "_", Epi.selected.function.name, "_Epitope_summary_table_", x, ".csv", sep = "")
 
             write.csv(Epi.selected, top.name.clonotypes.top_csv)
 
@@ -21370,7 +21455,9 @@ runSTEGO <- function(){
 
             message(paste(i, " Downloading the count UMAP"))
             x <- today()
-            top.name.clonotypes.top_png <- paste("prioritization/EpitopePred/", i, "_", selected.epitope.name, "_", Epi.selected.function.name, "_Epitope_UMAP_", x, ".png", sep = "")
+
+
+            top.name.clonotypes.top_png <-  paste(dir_to_create, i, "_", selected.epitope.name, "_", Epi.selected.function.name, "_Epitope_UMAP_", x, ".png", sep = "")
             png(top.name.clonotypes.top_png, width = input$width_png_TCR.UMAP, height = input$height_png_TCR.UMAP, res = input$resolution_PNG_TCR.UMAP)
             plot(df)
             dev.off()
@@ -21399,7 +21486,7 @@ runSTEGO <- function(){
 
             if (length(markers.fm.list2$p_val_adj) > 0) {
               message(paste(i, " Downloading stats table"))
-              Exp_stats_cutoff_count.name <- paste("prioritization/EpitopePred/", i, "_", selected.epitope.name, "_", Epi.selected.function.name, "_Epitope_statsTab_", x, ".csv", sep = "")
+              Exp_stats_cutoff_count.name <- paste(dir_to_create, i, "_", selected.epitope.name, "_", Epi.selected.function.name, "_Epitope_statsTab_", x, ".csv", sep = "")
               write.csv(markers.fm.list2, Exp_stats_cutoff_count.name, row.names = T)
 
               #   # stats dotplot ----
@@ -21427,7 +21514,7 @@ runSTEGO <- function(){
                 scale_x_discrete(labels = label_wrap(20)) +
                 scale_y_discrete(labels = label_wrap(20))
 
-              top.name.clonotypes.top_png <- paste("prioritization/EpitopePred/", i, "_", selected.epitope.name, "_", Epi.selected.function.name, "_Epitope_dot.plot_", x, ".png", sep = "")
+              top.name.clonotypes.top_png <- paste(dir_to_create, i, "_", selected.epitope.name, "_", Epi.selected.function.name, "_Epitope_dot.plot_", x, ".png", sep = "")
               png(top.name.clonotypes.top_png,
                   width = input$width_png_all_expression_dotplot_clust,
                   height = input$height_png_all_expression_dotplot_clust,
@@ -21510,8 +21597,7 @@ runSTEGO <- function(){
                   geneSet2$FDR <- p.adjust(geneSet2$p.val, method = "fdr")
                   geneSet2$Bonferroni <- p.adjust(geneSet2$p.val, method = "bonferroni")
                   message("Downloading the Summary table...")
-                  # top.name.clonotypes.top_png <- paste("prioritization/EpitopePred/",i,"_",selected.epitope.name,"_dot.plot_",x,".png",sep="")
-                  top.name.clonotypes <- paste("prioritization/EpitopePred/", i, "_", selected.epitope.name, "_", Epi.selected.function.name, "_Epitope_OverRep_", x, ".csv", sep = "")
+                  top.name.clonotypes <- paste(dir_to_create, i, "_", selected.epitope.name, "_", Epi.selected.function.name, "_Epitope_OverRep_", x, ".csv", sep = "")
                   write.csv(geneSet2, top.name.clonotypes, row.names = F)
                 }
               }
@@ -21572,13 +21658,15 @@ runSTEGO <- function(){
       len.colour <- length(unique(Common_Epitope_code$ID_Column))
       nCol <- round(sqrt(len.colour), 0)
 
-      png(name.epitope.UMAP, width = 400 * nCol + 400, height = 400 * nCol, res = 144)
+      png(name.epitope.UMAP, width = 600 * nCol + 600, height = 400 * nCol, res = 144)
       plot(Prior_UMAP_Epitope())
       dev.off()
 
       message(paste("Starting Stats download..."))
       Prior_Stats_Epitope()
     })
+
+
     ### test table -----
     output$colors.top_dt <- DT::renderDT(escape = FALSE, options = list(autoWidth = FALSE, lengthMenu = c(2, 5, 10, 20, 50, 100), pageLength = 10, scrollX = TRUE), {
       sc <- UMAP_metadata_with_labs()
