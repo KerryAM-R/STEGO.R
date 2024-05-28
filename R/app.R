@@ -56,11 +56,6 @@
 runSTEGO <- function(){
   # installed.packages.full <- as.data.frame(installed.packages())
   # # font ------
-  # if(!"extrafont" %in% rownames(installed.packages.full)) {
-  #   message("Install the extrafont package and install the fonts")
-  #   stop()
-  # }
-
   fonts <- extrafont::fonttable()
   font <- as.data.frame(unique(fonts$FamilyName))
   names(font) <- "Fonts"
@@ -2069,7 +2064,7 @@ runSTEGO <- function(){
             ),
             conditionalPanel(
               condition = "input.Panel_TCRUMAP=='ClusTCR2'",
-              selectInput("chain_TCR", "Chain to display", choices = c("TRA","TRG", "TRB","TRD", "IgH", "IgKL")),
+              selectInput("chain_TCR", "Chain to display", choices = c("TRA","TRG","TRB","TRD", "IgH", "IgKL")),
             ),
             conditionalPanel(
               condition = "input.PriorTBMods == 'PriorClustTB' || input.Panel_TCRUMAP == 'ClusTCR2'",
@@ -16603,7 +16598,8 @@ runSTEGO <- function(){
         cat(
           "This Motif is from:\n",
           noquote(unique(df$ID_Column)),
-          "\n the TCR is:\n",
+          "\n",
+          "The TCR is:\n",
           noquote(unique(df$Selected_V_AG)),
           noquote(unique(df$j_gene_AG))
         )
@@ -16611,7 +16607,8 @@ runSTEGO <- function(){
         cat(
           "This Motif is from:\n",
           noquote(unique(df$ID_Column)),
-          "\n the TCR is:\n",
+          "\n",
+          "The TCR is:\n",
           noquote(unique(df$Selected_V_BD)),
           noquote(unique(df$d_gene_BD)),
           noquote(unique(df$j_gene_BD))
@@ -17727,8 +17724,6 @@ runSTEGO <- function(){
       }
     })
 
-
-
     output$line_graph_all_output <- renderPlot({
       plot_list <- Line_graph_for_tracing()
       req(plot_list)
@@ -17741,8 +17736,6 @@ runSTEGO <- function(){
 
       grid.arrange(arrangeGrob(combined_plots, left = y.grob, bottom = x.grob))
     })
-
-
     # overlap table with UMAP and expression -----
     overlap_table <- reactive({
       sc <- data_sc_pro()
@@ -20772,7 +20765,7 @@ runSTEGO <- function(){
           write.csv(G_cluster, Exp_stats_cutoff_count.name, row.names = F)
         } else {
           message("No gamma clusters present")
-          next
+
         }
 
         message("Downloading G cluster analysis...")
@@ -20782,7 +20775,6 @@ runSTEGO <- function(){
 
       }
     }) # gamma chains
-
 
     observeEvent(input$ClusterDownload_automated, {
       x <- today()
