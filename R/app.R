@@ -238,6 +238,8 @@ runSTEGO <- function(){
     olga
   }
 
+
+
   ###################
 
   # UI page -----
@@ -2065,16 +2067,15 @@ runSTEGO <- function(){
                 )
               )
             ),
-
+            conditionalPanel(
+              condition = "input.Panel_TCRUMAP=='ClusTCR2'",
+              selectInput("chain_TCR", "Chain to display", choices = c("TRA","TRG", "TRB","TRD", "IgH", "IgKL")),
+            ),
             conditionalPanel(
               condition = "input.PriorTBMods == 'PriorClustTB' || input.Panel_TCRUMAP == 'ClusTCR2'",
               selectInput("Clusters_to_dis_PIE", "Clusters to display", choices = "", multiple = F)
             ),
-            conditionalPanel(
-              condition = "input.Panel_TCRUMAP=='ClusTCR2'",
-              selectInput("chain_TCR", "Chain to display", choices = c("TRAG", "TRBD", "IgH", "IgKL")),
-            ),
-            #
+
             # Expanded stat cut-offs -----
 
             conditionalPanel(
@@ -3079,9 +3080,10 @@ runSTEGO <- function(){
                          tabPanel("Cluster",
                                   value = "PriorClustTB",
                                   fluidRow(
-                                    column(3, uiOutput("Default_priority_cutoffAG")),
-                                    column(3, uiOutput("Default_priority_cutoffBD")),
-                                    # column(3,numericInput("CloneTotal_input","Select clones > ",value = 2, min = 2)),
+                                    column(3, uiOutput("Default_priority_cutoffA")),
+                                    column(3, uiOutput("Default_priority_cutoffB")),
+                                    column(3, uiOutput("Default_priority_cutoffG")),
+                                    column(3, uiOutput("Default_priority_cutoffD")),
                                   ),
                                   fluidRow(
                                     column(3, numericInput("Sample_count_cluster", "AG Sample count \u2265", value = 2, min = 1)),
@@ -3090,9 +3092,11 @@ runSTEGO <- function(){
                                     column(3, numericInput("Total_cloneCount_clusterBD", "BD Clone count \u2265", value = 3, min = 3)),
                                   ),
                                   add_busy_spinner(spin = "fading-circle", position = "top-right",  height = "200px", width = "200px", color = "#6F00B0"),
-                                  verbatimTextOutput("number_clusters_to_analyse_AG"),
+                                  verbatimTextOutput("number_clusters_to_analyse_A"),
+                                  verbatimTextOutput("number_clusters_to_analyse_G"),
                                   add_busy_spinner(spin = "fading-circle", position = "top-right",  height = "200px", width = "200px", color = "#6F00B0"),
-                                  verbatimTextOutput("number_clusters_to_analyse_BD"),
+                                  verbatimTextOutput("number_clusters_to_analyse_B"),
+                                  verbatimTextOutput("number_clusters_to_analyse_D"),
                                   add_busy_spinner(spin = "fading-circle", position = "top-right",  height = "200px", width = "200px", color = "#6F00B0"),
                                   uiOutput("Cluster_dowload_button_prior"),
                                   # div(DT::DTOutput("colors.top_dt")),
@@ -11259,7 +11263,6 @@ runSTEGO <- function(){
       df_col <- unique(df4[, names(df4) %in% input$Graph_type_bar])
 
       num <- as.data.frame(unique(df4[, names(df4) %in% input$Graph_type_bar]))
-      # num <- unique(top_BD_cluster$Selected_function)
 
       col.gg <- gg_fill_hue(dim(num)[1])
       palette_rainbow <- rainbow(dim(num)[1])
@@ -11313,7 +11316,6 @@ runSTEGO <- function(){
       )
 
       num <- as.data.frame(unique(top10$v_gene_selected))
-      # num <- unique(top_BD_cluster$Selected_function)
 
       col.gg <- gg_fill_hue(dim(num)[1])
       palette_rainbow <- rainbow(dim(num)[1])
@@ -16132,6 +16134,17 @@ runSTEGO <- function(){
         names(md)[names(md) %in% "cdr3_AG"] <- "AminoAcid_AG"
       }
 
+
+      if(input$chain_TCR == "TRA") {
+        md <- md[grepl("TRA",md$Selected_V_AG),]
+        print(unique(md$Selected_V_AG))
+      } else if (input$chain_TCR == "TRG") {
+        md <- md[grepl("TRG",md$Selected_V_AG),]
+        print(unique(md$Selected_V_AG))
+      } else {
+        md
+      }
+
       req(md$Selected_V_AG, md$AminoAcid_AG, input$Samp_col)
 
       md$CDR3_Vgene <- paste(md$AminoAcid_AG, md$Selected_V_AG, sep = "_")
@@ -16204,6 +16217,17 @@ runSTEGO <- function(){
         names(md)[names(md) %in% "cdr3_BD"] <- "AminoAcid_BD"
       }
 
+      if(input$chain_TCR == "TRB") {
+        md <- md[grepl("TRB",md$Selected_V_BD),]
+        print(unique(md$Selected_V_BD))
+      } else if (input$chain_TCR == "TRD") {
+        md <- md[grepl("TRD",md$Selected_V_BD),]
+        print(unique(md$Selected_V_BD))
+      } else {
+        md
+      }
+
+
       req(md$Selected_V_BD, md$AminoAcid_BD, input$Samp_col)
       md$CDR3_Vgene <- paste(md$AminoAcid_BD, md$Selected_V_BD, sep = "_")
       df <- merge(md, clust, by = "CDR3_Vgene")
@@ -16254,8 +16278,6 @@ runSTEGO <- function(){
 
     clusTCR_values <- reactiveValues(clusta = NULL)
 
-
-
     clusTCR2_df <- reactive({
       sc <- UMAP_metadata_with_labs()
       validate(
@@ -16266,12 +16288,12 @@ runSTEGO <- function(){
       )
       req(sc)
 
-      if (input$chain_TCR == "TRAG") {
+      if (input$chain_TCR == "TRA" | input$chain_TCR == "TRG" ) {
         req(AG_cluster())
         if (length(data_sc_clusTCR_AG()) > 0) {
           AG_cluster()
         }
-      } else if (input$chain_TCR == "TRBD") {
+      } else if (input$chain_TCR == "TRB" | input$chain_TCR == "TRD") {
         req(BD_cluster())
         if (length(data_sc_clusTCR_BD()) > 0) {
 
@@ -16577,12 +16599,25 @@ runSTEGO <- function(){
 
       df <- cluster[cluster$Updated_order %in% input$Clusters_to_dis_PIE, ]
 
-
-      if (input$chain_TCR == "TRAG") {
-        cat("This Motif if from: ", noquote(unique(df$ID_Column)), "; the TCR is:", noquote(unique(df$Selected_V_AG)), noquote(unique(df$j_gene_AG)))
-      } else if (input$chain_TCR == "TRBD") {
-        cat("This Motif if from:", noquote(unique(df$ID_Column)), "; the TCR is:", noquote(unique(df$Selected_V_BD)), noquote(unique(df$d_gene_BD)), noquote(unique(df$j_gene_BD)))
+      if (input$chain_TCR == "TRA" | input$chain_TCR == "TRG") {
+        cat(
+          "This Motif is from:\n",
+          noquote(unique(df$ID_Column)),
+          "\n the TCR is:\n",
+          noquote(unique(df$Selected_V_AG)),
+          noquote(unique(df$j_gene_AG))
+        )
+      } else if (input$chain_TCR == "TRB" | input$chain_TCR == "TRD") {
+        cat(
+          "This Motif is from:\n",
+          noquote(unique(df$ID_Column)),
+          "\n the TCR is:\n",
+          noquote(unique(df$Selected_V_BD)),
+          noquote(unique(df$d_gene_BD)),
+          noquote(unique(df$j_gene_BD))
+        )
       } else { # BCR repertoire
+        # Handle BCR repertoire case here if needed
       }
     })
     # download the motif plot -----
@@ -19168,7 +19203,7 @@ runSTEGO <- function(){
       }
     })
 
-    output$Default_priority_cutoffAG <- renderUI({
+    output$Default_priority_cutoffA <- renderUI({
       sc <- UMAP_metadata_with_labs()
       validate(
         need(
@@ -19179,22 +19214,48 @@ runSTEGO <- function(){
       md <- sc@meta.data
       x <- today()
       if (length(data_sc_clusTCR_AG()) > 0) {
-        df7 <- AG_cluster()
+        df7 <- A_cluster()
 
         df7 <- df7[order(df7$priority, decreasing = F), ]
 
         if (max(df7$Updated_order) > 10) {
           prior <- subset(df7, df7$Updated_order > 11)
-          numericInput("priority_cutoff", "Priority cut-off (AG)", value = min(prior$priority), step = 0.01, min = 0, max = 1)
+          numericInput("priority_cutoff", "Priority cut-off (A)", value = min(prior$priority), step = 0.01, min = 0, max = 1)
         } else {
           prior <- df7
-          numericInput("priority_cutoff", "Priority cut-off (AG)", value = 1, step = 0.01, min = 0, max = 1)
+          numericInput("priority_cutoff", "Priority cut-off (A)", value = 1, step = 0.01, min = 0, max = 1)
         }
       } else {
-        # numericInput("priority_cutoff","Priority cut-off (AG)",value = 1,step = 0.01, min = 0)
       }
     })
-    output$Default_priority_cutoffBD <- renderUI({
+
+    output$Default_priority_cutoffG <- renderUI({
+      sc <- UMAP_metadata_with_labs()
+      validate(
+        need(
+          nrow(sc) > 0,
+          "Upload File"
+        )
+      )
+      md <- sc@meta.data
+      x <- today()
+      if (length(data_sc_clusTCR_AG()) > 0) {
+        df7 <- G_cluster()
+
+        df7 <- df7[order(df7$priority, decreasing = F), ]
+
+        if (max(df7$Updated_order) > 10) {
+          prior <- subset(df7, df7$Updated_order > 11)
+          numericInput("priority_cutoff", "Priority cut-off (G)", value = min(prior$priority), step = 0.01, min = 0, max = 1)
+        } else {
+          prior <- df7
+          numericInput("priority_cutoff", "Priority cut-off (G)", value = 1, step = 0.01, min = 0, max = 1)
+        }
+      } else {
+      }
+    })
+
+    output$Default_priority_cutoffB <- renderUI({
       sc <- UMAP_metadata_with_labs()
       validate(
         need(
@@ -19210,15 +19271,39 @@ runSTEGO <- function(){
         df7 <- df7[order(df7$priority, decreasing = F), ]
         if (max(df7$Updated_order) > 10) {
           prior <- subset(df7, df7$Updated_order > 11)
-          numericInput("priority_cutoffBD", "Priority cut-off (BD)", value = min(prior$priority), step = 0.01, min = 0, max = 1)
+          numericInput("priority_cutoffBD", "Priority cut-off (B)", value = min(prior$priority), step = 0.01, min = 0, max = 1)
         } else {
           prior <- df7
-          numericInput("priority_cutoffBD", "Priority cut-off (BD)", value = 1, step = 0.01, min = 0, max = 1)
+          numericInput("priority_cutoffBD", "Priority cut-off (B)", value = 1, step = 0.01, min = 0, max = 1)
         }
       } else {
       }
     })
 
+    output$Default_priority_cutoffD <- renderUI({
+      sc <- UMAP_metadata_with_labs()
+      validate(
+        need(
+          nrow(sc) > 0,
+          "Upload File"
+        )
+      )
+      md <- sc@meta.data
+      x <- today()
+      if (length(data_sc_clusTCR_BD()) > 0) {
+        df7 <- BD_cluster()
+
+        df7 <- df7[order(df7$priority, decreasing = F), ]
+        if (max(df7$Updated_order) > 10) {
+          prior <- subset(df7, df7$Updated_order > 11)
+          numericInput("priority_cutoffBD", "Priority cut-off (D)", value = min(prior$priority), step = 0.01, min = 0, max = 1)
+        } else {
+          prior <- df7
+          numericInput("priority_cutoffBD", "Priority cut-off (D)", value = 1, step = 0.01, min = 0, max = 1)
+        }
+      } else {
+      }
+    })
     # one sample one indiv ImmunoDom -----
     observeEvent(input$ImmDom_download_buttonOneOne, {
       sc <- UMAP_metadata_with_labs()
@@ -20358,37 +20443,378 @@ runSTEGO <- function(){
     })
 
     # Clustering priority  -----
-    observeEvent(input$ClusterDownload_download_buttonOneOne, {
+
+
+    A_cluster <- reactive({
+      x <- today()
+      clust <- data_sc_clusTCR_AG()
+      sc <- UMAP_metadata_with_labs()
+      validate(
+        need(
+          nrow(sc) > 0 & nrow(clust) > 0,
+          "Upload File"
+        )
+      )
+      req(sc)
+      md <- sc@meta.data
+      print(names(md))
+      req(clust, md, input)
+      if (input$datasource == "BD_Rhapsody_Paired" || input$datasource == "BD_Rhapsody_AIRR") {
+        names(md)[names(md) %in% "v_gene_AG"] <- "Selected_V_AG"
+        names(md)[names(md) %in% "junction_aa_AG"] <- "AminoAcid_AG"
+      } else {
+        names(md)[names(md) %in% "v_gene_AG"] <- "Selected_V_AG"
+        names(md)[names(md) %in% "cdr3_AG"] <- "AminoAcid_AG"
+      }
+
+      md <- md[grepl("TRA",md$Selected_V_AG),]
+      print(unique(md$Selected_V_AG))
+
+      req(md$Selected_V_AG, md$AminoAcid_AG, input$Samp_col)
+
+      md$CDR3_Vgene <- paste(md$AminoAcid_AG, md$Selected_V_AG, sep = "_")
+      df <- merge(md, clust, by = "CDR3_Vgene")
+
+      # Total clone Count -----
+      df2 <- as.data.frame(df$Clust_size_order)
+      names(df2) <- "Clust_size_order"
+      df2$Total_cloneCount <- 1
+      df3 <- as.data.frame(ddply(df2, "Clust_size_order", numcolwise(sum)))
+      df3 <- subset(df3, df3$Total_cloneCount > 2)
+      df4 <- merge(df3, df, by = "Clust_size_order")
+      df4
+      # updated cluster count
+      clusterCount <- df4[, names(df4) %in% c("Clust_size_order", "CDR3_Vgene")]
+      clusterCount <- clusterCount[!duplicated(clusterCount), ]
+      clusterCount$ClusterCount <- 1
+      clusterCount2 <- as.data.frame(ddply(clusterCount, c("Clust_size_order"), numcolwise(sum)))
+      clusterCount2 <- subset(clusterCount2, clusterCount2$ClusterCount > 1)
+      df4_clusterCount2 <- merge(df4, clusterCount2, by = c("Clust_size_order"))
+      df4_clusterCount2
+      # Sample Count
+      SampCount <- df4_clusterCount2[, names(df4_clusterCount2) %in% c("Clust_size_order", input$Samp_col)]
+      SampCount <- SampCount[!duplicated(SampCount), ]
+      SampCount$Sample_count <- 1
+      df9 <- as.data.frame(ddply(SampCount, c("Clust_size_order"), numcolwise(sum)))
+      df10 <- merge(df9, df4_clusterCount2, by = "Clust_size_order")
+
+      # Calculating the priority
+      df10$priority <- 1 / (df10$Total_cloneCount * df10$ClusterCount * df10$Sample_count)
+      df10 <- df10[order(df10$priority, decreasing = F), ]
+      df10
+      df10$priority[is.na(df10$priority)] <- 0
+      df10 <- subset(df10, df10$priority > 0)
+      df10
+      # updated order
+      updatedOrder <- df10[, names(df10) %in% c("priority", "Clust_size_order")]
+      updatedOrder <- updatedOrder[!duplicated(updatedOrder), ]
+      updatedOrder <- updatedOrder[order(updatedOrder$priority, decreasing = F), ]
+      updatedOrder$Updated_order <- 1:dim(updatedOrder)[1]
+      updatedOrder
+
+      # final data frame
+      df7 <- merge(updatedOrder, df10, by = c("Clust_size_order", "priority"))
+      df7 <- df7[order(df7$priority, decreasing = F), ]
+
+
+      clusterAG <- df7 %>%
+        select(all_of(c(input$Samp_col, "Sample_count", "Total_cloneCount", "ClusterCount", "priority", "Updated_order")), everything())
+    })
+    G_cluster <- reactive({
+      x <- today()
+      clust <- data_sc_clusTCR_AG()
+      sc <- UMAP_metadata_with_labs()
+      validate(
+        need(
+          nrow(sc) > 0 & nrow(clust) > 0,
+          "Upload File"
+        )
+      )
+      req(sc)
+      md <- sc@meta.data
+      print(names(md))
+      req(clust, md, input)
+      if (input$datasource == "BD_Rhapsody_Paired" || input$datasource == "BD_Rhapsody_AIRR") {
+        names(md)[names(md) %in% "v_gene_AG"] <- "Selected_V_AG"
+        names(md)[names(md) %in% "junction_aa_AG"] <- "AminoAcid_AG"
+      } else {
+        names(md)[names(md) %in% "v_gene_AG"] <- "Selected_V_AG"
+        names(md)[names(md) %in% "cdr3_AG"] <- "AminoAcid_AG"
+      }
+
+      md <- md[grepl("TRG",md$Selected_V_AG),]
+      print(unique(md$Selected_V_AG))
+
+      req(md$Selected_V_AG, md$AminoAcid_AG, input$Samp_col)
+
+      md$CDR3_Vgene <- paste(md$AminoAcid_AG, md$Selected_V_AG, sep = "_")
+      df <- merge(md, clust, by = "CDR3_Vgene")
+
+      # Total clone Count -----
+      df2 <- as.data.frame(df$Clust_size_order)
+      names(df2) <- "Clust_size_order"
+      df2$Total_cloneCount <- 1
+      df3 <- as.data.frame(ddply(df2, "Clust_size_order", numcolwise(sum)))
+      df3 <- subset(df3, df3$Total_cloneCount > 2)
+      df4 <- merge(df3, df, by = "Clust_size_order")
+      df4
+      # updated cluster count
+      clusterCount <- df4[, names(df4) %in% c("Clust_size_order", "CDR3_Vgene")]
+      clusterCount <- clusterCount[!duplicated(clusterCount), ]
+      clusterCount$ClusterCount <- 1
+      clusterCount2 <- as.data.frame(ddply(clusterCount, c("Clust_size_order"), numcolwise(sum)))
+      clusterCount2 <- subset(clusterCount2, clusterCount2$ClusterCount > 1)
+      df4_clusterCount2 <- merge(df4, clusterCount2, by = c("Clust_size_order"))
+      df4_clusterCount2
+      # Sample Count
+      SampCount <- df4_clusterCount2[, names(df4_clusterCount2) %in% c("Clust_size_order", input$Samp_col)]
+      SampCount <- SampCount[!duplicated(SampCount), ]
+      SampCount$Sample_count <- 1
+      df9 <- as.data.frame(ddply(SampCount, c("Clust_size_order"), numcolwise(sum)))
+      df10 <- merge(df9, df4_clusterCount2, by = "Clust_size_order")
+
+      # Calculating the priority
+      df10$priority <- 1 / (df10$Total_cloneCount * df10$ClusterCount * df10$Sample_count)
+      df10 <- df10[order(df10$priority, decreasing = F), ]
+      df10
+      df10$priority[is.na(df10$priority)] <- 0
+      df10 <- subset(df10, df10$priority > 0)
+      df10
+      # updated order
+      updatedOrder <- df10[, names(df10) %in% c("priority", "Clust_size_order")]
+      updatedOrder <- updatedOrder[!duplicated(updatedOrder), ]
+      updatedOrder <- updatedOrder[order(updatedOrder$priority, decreasing = F), ]
+      updatedOrder$Updated_order <- 1:dim(updatedOrder)[1]
+      updatedOrder
+
+      # final data frame
+      df7 <- merge(updatedOrder, df10, by = c("Clust_size_order", "priority"))
+      df7 <- df7[order(df7$priority, decreasing = F), ]
+
+
+      clusterAG <- df7 %>%
+        select(all_of(c(input$Samp_col, "Sample_count", "Total_cloneCount", "ClusterCount", "priority", "Updated_order")), everything())
+    })
+
+    B_cluster <- reactive({
+      sc <- UMAP_metadata_with_labs()
+      clust <- data_sc_clusTCR_BD()
+
+      validate(
+        need(
+          nrow(sc) > 0 & nrow(clust) > 0,
+          "Upload File"
+        )
+      )
+      md <- sc@meta.data
+      x <- today()
+
+      if (input$datasource == "BD_Rhapsody_Paired" || input$datasource == "BD_Rhapsody_AIRR") {
+        names(md)[names(md) %in% "v_gene_BD"] <- "Selected_V_BD"
+        names(md)[names(md) %in% "junction_aa_BD"] <- "AminoAcid_BD"
+      } else {
+        names(md)[names(md) %in% "v_gene_BD"] <- "Selected_V_BD"
+        names(md)[names(md) %in% "cdr3_BD"] <- "AminoAcid_BD"
+      }
+
+      md <- md[grepl("TRB",md$Selected_V_BD),]
+      print(unique(md$Selected_V_BD))
+
+      req(md$Selected_V_BD, md$AminoAcid_BD, input$Samp_col)
+      md$CDR3_Vgene <- paste(md$AminoAcid_BD, md$Selected_V_BD, sep = "_")
+      df <- merge(md, clust, by = "CDR3_Vgene")
+
+      # Total clone Count -----
+      df2 <- as.data.frame(df$Clust_size_order)
+      names(df2) <- "Clust_size_order"
+      df2$Total_cloneCount <- 1
+      df3 <- as.data.frame(ddply(df2, "Clust_size_order", numcolwise(sum)))
+      df3 <- subset(df3, df3$Total_cloneCount > 2)
+      df4 <- merge(df3, df, by = "Clust_size_order")
+      df4
+      # updated cluster count
+      clusterCount <- df4[, names(df4) %in% c("Clust_size_order", "CDR3_Vgene")]
+      clusterCount <- clusterCount[!duplicated(clusterCount), ]
+      clusterCount$ClusterCount <- 1
+      clusterCount2 <- as.data.frame(ddply(clusterCount, c("Clust_size_order"), numcolwise(sum)))
+      clusterCount2 <- subset(clusterCount2, clusterCount2$ClusterCount > 1)
+      df4_clusterCount2 <- merge(df4, clusterCount2, by = c("Clust_size_order"))
+      df4_clusterCount2
+      # Sample Count
+      SampCount <- df4_clusterCount2[, names(df4_clusterCount2) %in% c("Clust_size_order", input$Samp_col)]
+      SampCount <- SampCount[!duplicated(SampCount), ]
+      SampCount$Sample_count <- 1
+      df9 <- as.data.frame(ddply(SampCount, c("Clust_size_order"), numcolwise(sum)))
+      df10 <- merge(df9, df4_clusterCount2, by = "Clust_size_order")
+
+      # Calculating the priority
+      df10$priority <- 1 / (df10$Total_cloneCount * df10$ClusterCount * df10$Sample_count)
+      df10 <- df10[order(df10$priority, decreasing = F), ]
+      df10$priority[is.na(df10$priority)] <- 0
+      df10 <- subset(df10, df10$priority > 0)
+      # updated order
+      updatedOrder <- df10[, names(df10) %in% c("priority", "Clust_size_order")]
+      updatedOrder <- updatedOrder[!duplicated(updatedOrder), ]
+      updatedOrder <- updatedOrder[order(updatedOrder$priority, decreasing = F), ]
+      updatedOrder$Updated_order <- 1:dim(updatedOrder)[1]
+      updatedOrder
+
+      # final data frame
+      df7 <- merge(updatedOrder, df10, by = c("Clust_size_order", "priority"))
+      df7 <- df7[order(df7$priority, decreasing = F), ]
+
+      clusterBD <- df7 %>%
+        select(all_of(c(input$Samp_col, "Sample_count", "Total_cloneCount", "ClusterCount", "priority", "Updated_order")), everything())
+      clusterBD
+    })
+    D_cluster <- reactive({
+      sc <- UMAP_metadata_with_labs()
+      clust <- data_sc_clusTCR_BD()
+
+      validate(
+        need(
+          nrow(sc) > 0 & nrow(clust) > 0,
+          "Upload File"
+        )
+      )
+      md <- sc@meta.data
+      x <- today()
+
+      if (input$datasource == "BD_Rhapsody_Paired" || input$datasource == "BD_Rhapsody_AIRR") {
+        names(md)[names(md) %in% "v_gene_BD"] <- "Selected_V_BD"
+        names(md)[names(md) %in% "junction_aa_BD"] <- "AminoAcid_BD"
+      } else {
+        names(md)[names(md) %in% "v_gene_BD"] <- "Selected_V_BD"
+        names(md)[names(md) %in% "cdr3_BD"] <- "AminoAcid_BD"
+      }
+
+      md <- md[grepl("TRD",md$Selected_V_BD),]
+      print(unique(md$Selected_V_BD))
+
+      req(md$Selected_V_BD, md$AminoAcid_BD, input$Samp_col)
+      md$CDR3_Vgene <- paste(md$AminoAcid_BD, md$Selected_V_BD, sep = "_")
+      df <- merge(md, clust, by = "CDR3_Vgene")
+
+      # Total clone Count -----
+      df2 <- as.data.frame(df$Clust_size_order)
+      names(df2) <- "Clust_size_order"
+      df2$Total_cloneCount <- 1
+      df3 <- as.data.frame(ddply(df2, "Clust_size_order", numcolwise(sum)))
+      df3 <- subset(df3, df3$Total_cloneCount > 2)
+      df4 <- merge(df3, df, by = "Clust_size_order")
+      df4
+      # updated cluster count
+      clusterCount <- df4[, names(df4) %in% c("Clust_size_order", "CDR3_Vgene")]
+      clusterCount <- clusterCount[!duplicated(clusterCount), ]
+      clusterCount$ClusterCount <- 1
+      clusterCount2 <- as.data.frame(ddply(clusterCount, c("Clust_size_order"), numcolwise(sum)))
+      clusterCount2 <- subset(clusterCount2, clusterCount2$ClusterCount > 1)
+      df4_clusterCount2 <- merge(df4, clusterCount2, by = c("Clust_size_order"))
+      df4_clusterCount2
+      # Sample Count
+      SampCount <- df4_clusterCount2[, names(df4_clusterCount2) %in% c("Clust_size_order", input$Samp_col)]
+      SampCount <- SampCount[!duplicated(SampCount), ]
+      SampCount$Sample_count <- 1
+      df9 <- as.data.frame(ddply(SampCount, c("Clust_size_order"), numcolwise(sum)))
+      df10 <- merge(df9, df4_clusterCount2, by = "Clust_size_order")
+
+      # Calculating the priority
+      df10$priority <- 1 / (df10$Total_cloneCount * df10$ClusterCount * df10$Sample_count)
+      df10 <- df10[order(df10$priority, decreasing = F), ]
+      df10$priority[is.na(df10$priority)] <- 0
+      df10 <- subset(df10, df10$priority > 0)
+      # updated order
+      updatedOrder <- df10[, names(df10) %in% c("priority", "Clust_size_order")]
+      updatedOrder <- updatedOrder[!duplicated(updatedOrder), ]
+      updatedOrder <- updatedOrder[order(updatedOrder$priority, decreasing = F), ]
+      updatedOrder$Updated_order <- 1:dim(updatedOrder)[1]
+      updatedOrder
+
+      # final data frame
+      df7 <- merge(updatedOrder, df10, by = c("Clust_size_order", "priority"))
+      df7 <- df7[order(df7$priority, decreasing = F), ]
+
+      clusterBD <- df7 %>%
+        select(all_of(c(input$Samp_col, "Sample_count", "Total_cloneCount", "ClusterCount", "priority", "Updated_order")), everything())
+      clusterBD
+    })
+
+    observeEvent(input$ClusterDownload_automated, {
       x <- today()
       if (length(AG_cluster()) > 0) {
-        message("Downloading AG cluster table...")
-        Exp_stats_cutoff_count.name <- paste("prioritization/Clustering/Cluster_summary_table_AG_", x, ".csv", sep = "")
-        AG_cluster <- AG_cluster()
+        message("Downloading A cluster table...")
+        Exp_stats_cutoff_count.name <- paste("prioritization/Clustering/Cluster_summary_table_A_", x, ".csv", sep = "")
+        if (dim(G_cluster())[2]>0) {
+          AG_cluster <- A_cluster()
+          print(dim(AG_cluster))
+          write.csv(AG_cluster, Exp_stats_cutoff_count.name, row.names = F)
+        } else {
+          message("No Alpha clusters present")
+        }
 
-        write.csv(AG_cluster, Exp_stats_cutoff_count.name, row.names = F)
-        message("Downloading AG cluster analysis...")
+        message("Downloading A cluster analysis...")
         req(input$priority_cutoff)
-        ggPlotUMAPClusterAG()
+        ggPlotUMAPClusterA()
       } else {
 
       }
-    })
-    observeEvent(input$ClusterDownload_download_buttonOneOne, {
+    }) # alpha chains
+
+    observeEvent(input$ClusterDownload_automated, {
+      x <- today()
+      if (length(AG_cluster()) > 0) {
+        message("Downloading G cluster table...")
+        Exp_stats_cutoff_count.name <- paste("prioritization/Clustering/Cluster_summary_table_G_", x, ".csv", sep = "")
+
+        if (dim(G_cluster())[2]>0) {
+          G_cluster <- G_cluster()
+          print(dim(G_cluster))
+          write.csv(G_cluster, Exp_stats_cutoff_count.name, row.names = F)
+        } else {
+          message("No gamma clusters present")
+          next
+        }
+
+        message("Downloading G cluster analysis...")
+        req(input$priority_cutoff)
+        ggPlotUMAPClusterG()
+      } else {
+
+      }
+    }) # gamma chains
+
+
+    observeEvent(input$ClusterDownload_automated, {
       x <- today()
 
       if (length(BD_cluster()) > 0) {
-        message("Downloading BD cluster table...")
-        Exp_stats_cutoff_count.name <- paste("prioritization/Clustering/Cluster_summary_table_BD_", x, ".csv", sep = "")
+        message("Downloading B cluster table...")
+        Exp_stats_cutoff_count.name <- paste("prioritization/Clustering/Cluster_summary_table_B_", x, ".csv", sep = "")
         BD_cluster <- BD_cluster()
 
         write.csv(BD_cluster, Exp_stats_cutoff_count.name, row.names = F)
-        message("Downloading BD cluster analysis...")
-        ggPlotUMAPClusterBD()
+        message("Downloading B cluster analysis...")
+        ggPlotUMAPClusterB()
       } else {
       }
     })
 
-    output$number_clusters_to_analyse_AG <- renderPrint({
+    observeEvent(input$ClusterDownload_automated, {
+      x <- today()
+
+      if (length(BD_cluster()) > 0) {
+        message("Downloading D cluster table...")
+        Exp_stats_cutoff_count.name <- paste("prioritization/Clustering/Cluster_summary_table_D_", x, ".csv", sep = "")
+        D_cluster <- D_cluster()
+
+        write.csv(D_cluster, Exp_stats_cutoff_count.name, row.names = F)
+        message("Downloading D cluster analysis...")
+        ggPlotUMAPClusterD()
+      } else {
+      }
+    })
+
+    output$number_clusters_to_analyse_A <- renderPrint({
       df1 <- AG_cluster()
       validate(
         need(
@@ -20400,15 +20826,33 @@ runSTEGO <- function(){
       df1 <- subset(df1, df1$Total_cloneCount >= input$Total_cloneCount_cluster)
       df1 <- subset(df1, df1$priority < input$priority_cutoff)
       len <- length(unique(df1$Updated_order))
-      df2 <- paste("The analysis will be limited to the top", len, "AG cluster(s)")
+      df2 <- paste("The analysis will be limited to the top", len, "A cluster(s)")
+      df3 <- paste("The cut-off used min clone clount:", min(df1$Total_cloneCount), "The cut-off used min sample clount:", min(df1$Sample_count))
+      df4 <- rbind(df2, df3)
+      rownames(df4) <- c(1, 2)
+      df4
+    })
+    output$number_clusters_to_analyse_G <- renderPrint({
+      df1 <- G_cluster()
+      validate(
+        need(
+          nrow(df1) > 0,
+          "Upload ClusTCR file"
+        )
+      )
+      df1 <- subset(df1, df1$Sample_count >= input$Sample_count_cluster)
+      df1 <- subset(df1, df1$Total_cloneCount >= input$Total_cloneCount_cluster)
+      df1 <- subset(df1, df1$priority < input$priority_cutoff)
+      len <- length(unique(df1$Updated_order))
+      df2 <- paste("The analysis will be limited to the top", len, "G cluster(s)")
       df3 <- paste("The cut-off used min clone clount:", min(df1$Total_cloneCount), "The cut-off used min sample clount:", min(df1$Sample_count))
       df4 <- rbind(df2, df3)
       rownames(df4) <- c(1, 2)
       df4
     })
 
-    output$number_clusters_to_analyse_BD <- renderPrint({
-      df1 <- BD_cluster()
+    output$number_clusters_to_analyse_B <- renderPrint({
+      df1 <- B_cluster()
       validate(
         need(
           nrow(df1) > 0,
@@ -20419,14 +20863,32 @@ runSTEGO <- function(){
       df1 <- subset(df1, df1$Total_cloneCount >= input$Total_cloneCount_clusterBD)
       df1 <- subset(df1, df1$priority < input$priority_cutoffBD)
       len <- length(unique(df1$Updated_order))
-      df2 <- paste("The analysis will be limited to the top", len, "BD cluster(s)")
+      df2 <- paste("The analysis will be limited to the top", len, "B cluster(s)")
+      df3 <- paste("The cut-off used min clone clount:", min(df1$Total_cloneCount), "The cut-off used min sample clount:", min(df1$Sample_count))
+      df4 <- rbind(df2, df3)
+      rownames(df4) <- c(1, 2)
+      df4
+    })
+    output$number_clusters_to_analyse_D <- renderPrint({
+      df1 <- D_cluster()
+      validate(
+        need(
+          nrow(df1) > 0,
+          "Upload ClusTCR file"
+        )
+      )
+      df1 <- subset(df1, df1$Sample_count >= input$Sample_count_clusterBD)
+      df1 <- subset(df1, df1$Total_cloneCount >= input$Total_cloneCount_clusterBD)
+      df1 <- subset(df1, df1$priority < input$priority_cutoffBD)
+      len <- length(unique(df1$Updated_order))
+      df2 <- paste("The analysis will be limited to the top", len, "D cluster(s)")
       df3 <- paste("The cut-off used min clone clount:", min(df1$Total_cloneCount), "The cut-off used min sample clount:", min(df1$Sample_count))
       df4 <- rbind(df2, df3)
       rownames(df4) <- c(1, 2)
       df4
     })
 
-    ggPlotUMAPClusterAG <- reactive({
+    ggPlotUMAPClusterA <- reactive({
       sc <- UMAP_metadata_with_labs()
       validate(
         need(
@@ -20435,7 +20897,7 @@ runSTEGO <- function(){
         )
       )
       md <- sc@meta.data
-      clusterAG2 <- AG_cluster()
+      clusterAG2 <- A_cluster()
       validate(
         need(
           nrow(clusterAG2) > 0,
@@ -20449,9 +20911,9 @@ runSTEGO <- function(){
 
       len.order <- (unique(clusterAG$Updated_order))
       # clusterAG <- subset(cluster,cluster$priority<input$priority_cutoff)
-      withProgress(message = "Performing AG cluster analysis", value = 0, {
+      withProgress(message = "Performing A cluster analysis", value = 0, {
         for (i in len.order) {
-          incProgress(1 / length(len.order), detail = paste("AG cluster", i, "of", max(len.order)))
+          incProgress(1 / length(len.order), detail = paste("A cluster", i, "of", max(len.order)))
 
           ## ggplot UMAP -----
           cluster <- clusterAG
@@ -20462,7 +20924,7 @@ runSTEGO <- function(){
           Vgene <- as.data.frame(strsplit(cluster$CDR3_Vgene, "_"))[2, 1]
           Vgene <- gsub("/", "", Vgene)
           sample_size <- unique(cluster$Sample_count)
-          dirName <- paste0("prioritization/Clustering/AG/", i, "_", Vgene, "_", sample_size, "/")
+          dirName <- paste0("prioritization/Clustering/A/", i, "_", Vgene, "_", sample_size, "/")
           # dirName <- paste0("prioritization/Clustering/AG/")
 
           if (file.exists(dirName)) {
@@ -20514,7 +20976,7 @@ runSTEGO <- function(){
 
             message(paste(i, " Downloading the count UMAP"))
             x <- today()
-            top.name.clonotypes.top_png <- paste(dirName, i, "_", Vgene, "_AG_cluster_UMAP_", x, ".png", sep = "")
+            top.name.clonotypes.top_png <- paste(dirName, i, "_", Vgene, "_A_cluster_UMAP_", x, ".png", sep = "")
             png(top.name.clonotypes.top_png, width = input$width_png_TCR.UMAP, height = input$height_png_TCR.UMAP, res = input$resolution_PNG_TCR.UMAP)
             plot(figure)
             dev.off()
@@ -20568,7 +21030,7 @@ runSTEGO <- function(){
 
             message(paste(i, " Downloading the count UMAP"))
             x <- today()
-            top.name.clonotypes.top_png <- paste(dirName, i, "_", Vgene, "_AG_cluster_UMAP_", x, ".png", sep = "")
+            top.name.clonotypes.top_png <- paste(dirName, i, "_", Vgene, "_A_cluster_UMAP_", x, ".png", sep = "")
             png(top.name.clonotypes.top_png, width = input$width_png_TCR.UMAP, height = input$height_png_TCR.UMAP, res = input$resolution_PNG_TCR.UMAP)
             plot(figure)
             dev.off()
@@ -20579,7 +21041,7 @@ runSTEGO <- function(){
             motifplot <- ClusTCR2::Motif_from_cluster_file(Network_df, Clust_selected = i, selected_cluster_column = "Updated_order")
 
             message(paste(i, " Downloading motif plot"))
-            top.name.clonotypes.top_png <- paste(dirName, i, "_", Vgene, "_AG_motif_", x, ".png", sep = "")
+            top.name.clonotypes.top_png <- paste(dirName, i, "_", Vgene, "_A_motif_", x, ".png", sep = "")
             png(top.name.clonotypes.top_png,
                 width = input$width_png_Motif_ClusTCR2_cluster,
                 height = input$height_png_Motif_ClusTCR2_cluster,
@@ -20615,11 +21077,11 @@ runSTEGO <- function(){
             markers.fm.list <- FindMarkers(sc, ident.1 = name.check.clust, min.pct = min.pct.expression, logfc.threshold = min.logfc, only.pos = TRUE)
             markers.fm.list2 <- subset(markers.fm.list, markers.fm.list$p_val_adj < input$pval.ex.filter)
 
-            message(paste(length(markers.fm.list2$p_val_adj), "total markers for AG cluster", i))
+            message(paste(length(markers.fm.list2$p_val_adj), "total markers for A cluster", i))
 
             if (length(markers.fm.list2$p_val_adj) > 0) {
               message(paste(i, " Downloading stats table"))
-              Exp_stats_cutoff_count.name <- paste(dirName, i, "_", Vgene, "_AG_cluster_statsTab_", x, ".csv", sep = "")
+              Exp_stats_cutoff_count.name <- paste(dirName, i, "_", Vgene, "_A_cluster_statsTab_", x, ".csv", sep = "")
 
               write.csv(markers.fm.list2, Exp_stats_cutoff_count.name, row.names = T)
 
@@ -20649,7 +21111,7 @@ runSTEGO <- function(){
                 scale_x_discrete(labels = label_wrap(20)) +
                 scale_y_discrete(labels = label_wrap(20))
 
-              top.name.clonotypes.top_png <- paste(dirName, i, "_", Vgene, "_AG_dot.plot_", x, ".png", sep = "")
+              top.name.clonotypes.top_png <- paste(dirName, i, "_", Vgene, "_A_dot.plot_", x, ".png", sep = "")
               png(top.name.clonotypes.top_png,
                   width = input$width_png_all_expression_dotplot_clust,
                   height = input$height_png_all_expression_dotplot_clust,
@@ -20737,7 +21199,7 @@ runSTEGO <- function(){
                 geneSet2$FDR <- p.adjust(geneSet2$p.val, method = "fdr")
                 geneSet2$Bonferroni <- p.adjust(geneSet2$p.val, method = "bonferroni")
                 message("Downloading the Summary table...")
-                top.name.clonotypes <- paste(dirName, i, "_", Vgene, "_AG_OverRep_", x, ".csv", sep = "")
+                top.name.clonotypes <- paste(dirName, i, "_", Vgene, "_A_OverRep_", x, ".csv", sep = "")
                 write.csv(geneSet2, top.name.clonotypes, row.names = F)
               }
             }
@@ -20745,7 +21207,7 @@ runSTEGO <- function(){
         }
       })
     })
-    ggPlotUMAPClusterBD <- reactive({
+    ggPlotUMAPClusterG <- reactive({
       sc <- UMAP_metadata_with_labs()
       validate(
         need(
@@ -20754,7 +21216,321 @@ runSTEGO <- function(){
         )
       )
       md <- sc@meta.data
-      clusterBD2 <- BD_cluster()
+      clusterAG2 <- G_cluster()
+      validate(
+        need(
+          nrow(clusterAG2) > 0,
+          "Upload clusTCR AG table"
+        )
+      )
+      req(clusterAG2, input$Clusters_to_dis_PIE, input$Colour_By_this, input$priority_cutoff)
+      clusterAG <- subset(clusterAG2, clusterAG2$priority < input$priority_cutoff)
+      clusterAG <- subset(clusterAG, clusterAG$Sample_count >= input$Sample_count_cluster)
+      clusterAG <- subset(clusterAG, clusterAG$Total_cloneCount >= input$Total_cloneCount_cluster)
+
+      len.order <- (unique(clusterAG$Updated_order))
+      # clusterAG <- subset(cluster,cluster$priority<input$priority_cutoff)
+      withProgress(message = "Performing G cluster analysis", value = 0, {
+        for (i in len.order) {
+          incProgress(1 / length(len.order), detail = paste("G cluster", i, "of", max(len.order)))
+
+          ## ggplot UMAP -----
+          cluster <- clusterAG
+          cluster$ID_Column <- cluster[, names(cluster) %in% input$Samp_col]
+          # names(cluster)[names(cluster) %in% _cluster] <- "ID_Column"
+
+          cluster <- cluster[cluster$Updated_order %in% i, ]
+          Vgene <- as.data.frame(strsplit(cluster$CDR3_Vgene, "_"))[2, 1]
+          Vgene <- gsub("/", "", Vgene)
+          sample_size <- unique(cluster$Sample_count)
+          dirName <- paste0("prioritization/Clustering/G/", i, "_", Vgene, "_", sample_size, "/")
+          # dirName <- paste0("prioritization/Clustering/AG/")
+
+          if (file.exists(dirName)) {
+            cluster$colour <- cluster[, names(cluster) %in% input$Colour_By_this]
+            cluster$colour <- gsub("_", " ", cluster$colour)
+            cluster$colour <- factor(cluster$colour, levels = unique(cluster$colour))
+            cluster$colour <- gsub("NA", NA, cluster$colour)
+
+            len.colour <- length(unique(cluster$colour))
+            col.df <- as.data.frame(unique(cluster$colour))
+
+            num <- (length(unlist(col.df)))
+
+            if (input$colourtype == "default") {
+              colorblind_vector <- c(gg_fill_hue(num))
+            } else if (input$colourtype == "hcl.colors") {
+              colorblind_vector <- c(hcl.colors(num, palette = "viridis"))
+            } else if (input$colourtype == "topo.colors") {
+              colorblind_vector <- c(topo.colors(num))
+            } else if (input$colourtype == "heat.colors") {
+              colorblind_vector <- c(heat.colors(num))
+            } else if (input$colourtype == "terrain.colors") {
+              colorblind_vector <- c(terrain.colors(num))
+            } else if (input$colourtype == "rainbow") {
+              colorblind_vector <- c(rainbow(num))
+            } else if (input$colourtype == "random") {
+              colorblind_vector <- distinctColorPalette(num)
+            } else {
+
+            }
+
+
+            col.df$col <- colorblind_vector
+
+            figure <- ggplot(data = cluster, aes(x = UMAP_1, UMAP_2, colour = colour)) +
+              geom_point(size = input$size.dot.umap) +
+              scale_color_manual(labels = ~ stringr::str_wrap(.x, width = 20), values = col.df$col, na.value = input$NA_col_analysis) +
+              theme_bw() +
+              theme(
+                legend.text = element_text(colour = "black", size = input$Legend_size, family = input$font_type),
+                legend.title = element_blank(),
+                legend.position = input$legend_position,
+                # strip.text = element_text(size = input$Strip_text_size, family = input$font_type),
+                axis.title.y = element_text(colour = "black", family = input$font_type, size = input$title.text.sizer2),
+                axis.text.y = element_text(colour = "black", family = input$font_type, size = input$text_size),
+                axis.text.x = element_text(colour = "black", family = input$font_type, size = input$text_size, angle = 0),
+                axis.title.x = element_text(colour = "black", family = input$font_type, size = input$title.text.sizer2),
+              )
+
+            message(paste(i, " Downloading the count UMAP"))
+            x <- today()
+            top.name.clonotypes.top_png <- paste(dirName, i, "_", Vgene, "_A_cluster_UMAP_", x, ".png", sep = "")
+            png(top.name.clonotypes.top_png, width = input$width_png_TCR.UMAP, height = input$height_png_TCR.UMAP, res = input$resolution_PNG_TCR.UMAP)
+            plot(figure)
+            dev.off()
+          } else {
+            dir.create(dirName)
+            cluster$colour <- cluster[, names(cluster) %in% input$Colour_By_this]
+            cluster$colour <- gsub("_", " ", cluster$colour)
+            cluster$colour <- factor(cluster$colour, levels = unique(cluster$colour))
+            cluster$colour <- gsub("NA", NA, cluster$colour)
+
+            len.colour <- length(unique(cluster$colour))
+            col.df <- as.data.frame(unique(cluster$colour))
+
+            num <- (length(unlist(col.df)))
+
+            if (input$colourtype == "default") {
+              colorblind_vector <- c(gg_fill_hue(num))
+            } else if (input$colourtype == "hcl.colors") {
+              colorblind_vector <- c(hcl.colors(num, palette = "viridis"))
+            } else if (input$colourtype == "topo.colors") {
+              colorblind_vector <- c(topo.colors(num))
+            } else if (input$colourtype == "heat.colors") {
+              colorblind_vector <- c(heat.colors(num))
+            } else if (input$colourtype == "terrain.colors") {
+              colorblind_vector <- c(terrain.colors(num))
+            } else if (input$colourtype == "rainbow") {
+              colorblind_vector <- c(rainbow(num))
+            } else if (input$colourtype == "random") {
+              colorblind_vector <- distinctColorPalette(num)
+            } else {
+
+            }
+
+
+            col.df$col <- colorblind_vector
+
+            figure <- ggplot(data = cluster, aes(x = UMAP_1, UMAP_2, colour = colour)) +
+              geom_point(size = input$size.dot.umap) +
+              scale_color_manual(labels = ~ stringr::str_wrap(.x, width = 20), values = col.df$col, na.value = input$NA_col_analysis) +
+              theme_bw() +
+              theme(
+                legend.text = element_text(colour = "black", size = input$Legend_size, family = input$font_type),
+                legend.title = element_blank(),
+                legend.position = input$legend_position,
+                # strip.text = element_text(size = input$Strip_text_size, family = input$font_type),
+                axis.title.y = element_text(colour = "black", family = input$font_type, size = input$title.text.sizer2),
+                axis.text.y = element_text(colour = "black", family = input$font_type, size = input$text_size),
+                axis.text.x = element_text(colour = "black", family = input$font_type, size = input$text_size, angle = 0),
+                axis.title.x = element_text(colour = "black", family = input$font_type, size = input$title.text.sizer2),
+              )
+
+            message(paste(i, " Downloading the count UMAP"))
+            x <- today()
+            top.name.clonotypes.top_png <- paste(dirName, i, "_", Vgene, "_G_cluster_UMAP_", x, ".png", sep = "")
+            png(top.name.clonotypes.top_png, width = input$width_png_TCR.UMAP, height = input$height_png_TCR.UMAP, res = input$resolution_PNG_TCR.UMAP)
+            plot(figure)
+            dev.off()
+            ## Motif plot -----
+
+            Network_df <- cluster[order(cluster$Updated_order), ]
+            Network_df <- Network_df %>% distinct(CDR3_Vgene, .keep_all = TRUE) # make Unique
+            motifplot <- ClusTCR2::Motif_from_cluster_file(Network_df, Clust_selected = i, selected_cluster_column = "Updated_order")
+
+            message(paste(i, " Downloading motif plot"))
+            top.name.clonotypes.top_png <- paste(dirName, i, "_", Vgene, "_G_motif_", x, ".png", sep = "")
+            png(top.name.clonotypes.top_png,
+                width = input$width_png_Motif_ClusTCR2_cluster,
+                height = input$height_png_Motif_ClusTCR2_cluster,
+                res = input$resolution_PNG_Motif_ClusTCR2_cluster
+            )
+            plot(motifplot)
+            dev.off()
+
+            # Stats table ------
+            cluster <- clusterAG
+
+            names(cluster)[names(cluster) %in% input$Samp_col] <- "ID_Column"
+            cluster <- cluster[order(cluster$Updated_order), ]
+
+            rownames(cluster) <- cluster$Cell_Index
+
+            checking <- cluster[, names(cluster) %in% c("Updated_order", "Cell_Index")]
+            md.checking <- merge(md, checking, by = "Cell_Index", all.x = T)
+            md.checking <- md.checking[order(md.checking$order), ]
+            rownames(md.checking) <- md.checking$Cell_Index
+
+            md.checking$Clust_selected <- ifelse(md.checking$Updated_order == i, i, "NS")
+            md.checking$Clust_selected[is.na(md.checking$Clust_selected)] <- "NS"
+            md.checking <- md.checking[order(md.checking$order), ]
+
+            sc@meta.data <- md.checking
+            Idents(object = sc) <- sc@meta.data$Clust_selected
+
+            name.check.clust <- i
+            min.pct.expression <- input$min_point_ # standard setting: 0.25
+            min.logfc <- input$LogFC_ # 0.25 is standard
+
+            markers.fm.list <- FindMarkers(sc, ident.1 = name.check.clust, min.pct = min.pct.expression, logfc.threshold = min.logfc, only.pos = TRUE)
+            markers.fm.list2 <- subset(markers.fm.list, markers.fm.list$p_val_adj < input$pval.ex.filter)
+
+            message(paste(length(markers.fm.list2$p_val_adj), "total markers for G cluster", i))
+
+            if (length(markers.fm.list2$p_val_adj) > 0) {
+              message(paste(i, " Downloading stats table"))
+              Exp_stats_cutoff_count.name <- paste(dirName, i, "_", Vgene, "_G_cluster_statsTab_", x, ".csv", sep = "")
+
+              write.csv(markers.fm.list2, Exp_stats_cutoff_count.name, row.names = T)
+
+              # stats dotplot ----
+
+              if (length(rownames(markers.fm.list2)) < 40) {
+                list.names <- rownames(markers.fm.list2)
+              } else {
+                list.names <- rownames(markers.fm.list2)
+                list.names <- list.names[1:40]
+              }
+
+              size_legend <- input$Legend_size - 2
+
+              dotplotClust <- DotPlot(sc, features = list.names) +
+                RotatedAxis() +
+                theme(
+                  axis.title.y = element_blank(),
+                  axis.text.y = element_text(colour = "black", family = input$font_type, size = input$text_size),
+                  axis.text.x = element_text(colour = "black", family = input$font_type, size = input$text_size, angle = 90),
+                  axis.title.x = element_blank(),
+                  legend.title = element_text(colour = "black", size = input$Legend_size, family = input$font_type),
+                  legend.text = element_text(colour = "black", size = size_legend, family = input$font_type),
+                  legend.position = input$legend_position,
+                ) +
+                scale_colour_gradient2(low = input$low.dotplot.clust, mid = input$middle.dotplot.clust, high = input$high.dotplot.clust) +
+                scale_x_discrete(labels = label_wrap(20)) +
+                scale_y_discrete(labels = label_wrap(20))
+
+              top.name.clonotypes.top_png <- paste(dirName, i, "_", Vgene, "_G_dot.plot_", x, ".png", sep = "")
+              png(top.name.clonotypes.top_png,
+                  width = input$width_png_all_expression_dotplot_clust,
+                  height = input$height_png_all_expression_dotplot_clust,
+                  res = input$resolution_PNG_all_expression_dotplot_clust
+              )
+              plot(dotplotClust)
+              dev.off()
+
+              # stats OverRep analysis ----
+              geneSet <- read.csv(system.file("OverRep", "GeneSets.csv", package = "STEGO.R"), header = T)
+
+              background.genes.name <- as.data.frame(rownames(sc@assays$RNA$scale.data))
+              names(background.genes.name) <- "V1"
+              background.genes <- length(rownames(sc@assays$RNA$scale.data))
+
+              #
+              geneSet$background.genes <- background.genes
+
+              DEx.genes <- as.data.frame(rownames(markers.fm.list2))
+              names(DEx.genes) <- "V1"
+              total.sig <- length(DEx.genes$V1)
+              geneSet$total.sig <- length(DEx.genes$V1)
+              # geneSet
+              geneSet$background.geneset <- NA
+              geneSet$background.geneset.name <- NA
+              geneSet$in.geneset <- NA
+              geneSet$in.geneset.name <- NA
+
+              if (input$datasource == "BD_Rhapsody_Paired" || input$datasource == "BD_Rhapsody_AIRR") { # selectInput("datasource", "Data source",choices=c("10x_Genomics","BD_Rhapsody_Paired","BD_Rhapsody_AIRR")),
+                geneSet$GeneSet <- gsub("-", ".", geneSet$GeneSet)
+              }
+
+              if (input$species_analysis == "mm") { # selectInput("datasource", "Data source",choices=c("10x_Genomics","BD_Rhapsody_Paired","BD_Rhapsody_AIRR")),
+
+                geneSet$GeneSet <- str_to_title(geneSet$GeneSet)
+              }
+              message(paste(i, "Starting OverRep analysis of Epitope "))
+              for (j in 1:dim(geneSet)[1]) {
+                # listed GeneSet
+
+                Gene.set.testing <- as.data.frame(strsplit(geneSet$GeneSet, ";")[j])
+                names(Gene.set.testing) <- "V1"
+                Gene.set.testing2 <- as.data.frame(unique(Gene.set.testing$V1))
+                names(Gene.set.testing2) <- "V1"
+                background.overlap <- merge(Gene.set.testing2, background.genes.name, by = "V1")
+                geneSet$background.geneset[j] <- length(background.overlap$V1)
+                geneSet$background.geneset.name[j] <- as.character(paste(unlist(background.overlap[1]), collapse = ";"))
+                # in sig gene list
+                overlap <- merge(background.overlap, DEx.genes, by = "V1")
+
+                geneSet$in.geneset[j] <- length(overlap$V1)
+                geneSet$in.geneset.name[j] <- as.character(paste(unlist(overlap[1]), collapse = ";"))
+              }
+              geneSet2 <- subset(geneSet, geneSet$in.geneset > 0)
+              message(paste(i, "has", length(geneSet2$in.geneset), "GeneSets in Cluster"))
+
+              if (length(geneSet2$in.geneset) > 0) {
+                for (j in 1:dim(geneSet2)[1]) {
+                  tota.gene.set <- geneSet2$background.geneset[j] # genes that are identified in background
+                  in.geneset <- geneSet2$in.geneset[j] # DEx in geneset
+                  not.in.total <- background.genes - tota.gene.set
+                  not.in.geneset.sig <- total.sig - in.geneset
+                  d <- data.frame(gene.in.interest = c(in.geneset, not.in.geneset.sig), gene.not.interest = c(tota.gene.set, not.in.total))
+                  row.names(d) <- c("In_category", "not_in_category")
+
+                  if (in.geneset > 0) {
+                    geneSet2$p.val[j] <- unlist(fisher.test(d, alternative = "greater")$p.value)[1]
+                    geneSet2$lowerCI[j] <- unlist(fisher.test(d, alternative = "greater")$conf.int)[1]
+                    geneSet2$upperCI[j] <- unlist(fisher.test(d)$conf.int)[2]
+                    geneSet2$OR[j] <- round(unlist(fisher.test(d, alternative = "greater")$estimate)[1], 3)
+                  } else {
+                    geneSet2$p.value[j] <- "-"
+                    geneSet2$lowerCI[j] <- "-"
+                    geneSet2$upperCI[j] <- "-"
+                    geneSet2$OR[j] <- "-"
+                  }
+                }
+                geneSet2 <- geneSet2[order(geneSet2$p.val, decreasing = F), ]
+                geneSet2$FDR <- p.adjust(geneSet2$p.val, method = "fdr")
+                geneSet2$Bonferroni <- p.adjust(geneSet2$p.val, method = "bonferroni")
+                message("Downloading the Summary table...")
+                top.name.clonotypes <- paste(dirName, i, "_", Vgene, "_G_OverRep_", x, ".csv", sep = "")
+                write.csv(geneSet2, top.name.clonotypes, row.names = F)
+              }
+            }
+          }
+        }
+      })
+    })
+
+    ggPlotUMAPClusterB <- reactive({
+      sc <- UMAP_metadata_with_labs()
+      validate(
+        need(
+          nrow(sc) > 0,
+          "Upload Files"
+        )
+      )
+      md <- sc@meta.data
+      clusterBD2 <- B_cluster()
       validate(
         need(
           nrow(clusterBD2) > 0,
@@ -20768,17 +21544,17 @@ runSTEGO <- function(){
 
       len.order <- (unique(clusterBD$Updated_order))
 
-      withProgress(message = "Performing BD cluster analysis", value = 0, {
+      withProgress(message = "Performing B cluster analysis", value = 0, {
         for (i in len.order) {
           # incProgress(1/len.order, detail = paste("BD cluster", i,"of",len.order))
-          incProgress(1 / length(len.order), detail = paste("BD cluster", i, "of", max(len.order)))
+          incProgress(1 / length(len.order), detail = paste("B cluster", i, "of", max(len.order)))
           cluster <- clusterBD
           cluster$ID_Column <- cluster[, names(cluster) %in% input$Samp_col]
           cluster <- cluster[cluster$Updated_order %in% i, ]
 
           Vgene <- as.data.frame(strsplit(cluster$CDR3_Vgene, "_"))[2, 1]
           sample_size <- unique(cluster$Sample_count)
-          dirName <- paste0("prioritization/Clustering/BD/", i, "_", Vgene, "_", sample_size, "/")
+          dirName <- paste0("prioritization/Clustering/B/", i, "_", Vgene, "_", sample_size, "/")
           if (file.exists(dirName)) {
             ## ggplot UMAP -----
             cluster$colour <- cluster[, names(cluster) %in% input$Colour_By_this]
@@ -20829,7 +21605,7 @@ runSTEGO <- function(){
 
             message(paste(i, " Downloading the count UMAP"))
             x <- today()
-            top.name.clonotypes.top_png <- paste(dirName, i, "_", Vgene, "_BD_cluster_UMAP_", x, ".png", sep = "")
+            top.name.clonotypes.top_png <- paste(dirName, i, "_", Vgene, "_B_cluster_UMAP_", x, ".png", sep = "")
             png(top.name.clonotypes.top_png, width = input$width_png_TCR.UMAP, height = input$height_png_TCR.UMAP, res = input$resolution_PNG_TCR.UMAP)
             plot(figure)
             dev.off()
@@ -20839,7 +21615,7 @@ runSTEGO <- function(){
             motifplot <- ClusTCR2::Motif_from_cluster_file(Network_df, Clust_selected = i, selected_cluster_column = "Updated_order")
 
             message(paste(i, " Downloading motif plot"))
-            top.name.clonotypes.top_png <- paste(dirName, i, "_", Vgene, "_BD_motif_", x, ".png", sep = "")
+            top.name.clonotypes.top_png <- paste(dirName, i, "_", Vgene, "_B_motif_", x, ".png", sep = "")
             png(top.name.clonotypes.top_png,
                 width = input$width_png_Motif_ClusTCR2_cluster,
                 height = input$height_png_Motif_ClusTCR2_cluster,
@@ -20900,7 +21676,7 @@ runSTEGO <- function(){
 
             message(paste(i, " Downloading the count UMAP"))
             x <- today()
-            top.name.clonotypes.top_png <- paste(dirName, i, "_", Vgene, "_BD_cluster_UMAP_", x, ".png", sep = "")
+            top.name.clonotypes.top_png <- paste(dirName, i, "_", Vgene, "_B_cluster_UMAP_", x, ".png", sep = "")
             png(top.name.clonotypes.top_png, width = input$width_png_TCR.UMAP, height = input$height_png_TCR.UMAP, res = input$resolution_PNG_TCR.UMAP)
             plot(figure)
             dev.off()
@@ -20910,7 +21686,7 @@ runSTEGO <- function(){
             motifplot <- ClusTCR2::Motif_from_cluster_file(Network_df, Clust_selected = i, selected_cluster_column = "Updated_order")
 
             message(paste(i, " Downloading motif plot"))
-            top.name.clonotypes.top_png <- paste(dirName, i, "_", Vgene, "_BD_motif_", x, ".png", sep = "")
+            top.name.clonotypes.top_png <- paste(dirName, i, "_", Vgene, "_B_motif_", x, ".png", sep = "")
             png(top.name.clonotypes.top_png,
                 width = input$width_png_Motif_ClusTCR2_cluster,
                 height = input$height_png_Motif_ClusTCR2_cluster,
@@ -20946,11 +21722,11 @@ runSTEGO <- function(){
             markers.fm.list <- FindMarkers(sc, ident.1 = name.check.clust, min.pct = min.pct.expression, logfc.threshold = min.logfc, only.pos = TRUE)
             markers.fm.list2 <- subset(markers.fm.list, markers.fm.list$p_val_adj < input$pval.ex.filter)
 
-            message(paste(i, "BD cluster has", length(markers.fm.list2$p_val_adj), "total markers"))
+            message(paste(i, "B cluster has", length(markers.fm.list2$p_val_adj), "total markers"))
 
             if (length(markers.fm.list2$p_val_adj) > 0) {
               message(paste(i, " Downloading stats table"))
-              Exp_stats_cutoff_count.name <- paste(dirName, i, "_", Vgene, "_BD_cluster_statsTab_", x, ".csv", sep = "")
+              Exp_stats_cutoff_count.name <- paste(dirName, i, "_", Vgene, "_B_cluster_statsTab_", x, ".csv", sep = "")
               write.csv(markers.fm.list2, Exp_stats_cutoff_count.name, row.names = T)
 
               # stats dotplot ----
@@ -20979,7 +21755,7 @@ runSTEGO <- function(){
                 scale_x_discrete(labels = label_wrap(20)) +
                 scale_y_discrete(labels = label_wrap(20))
 
-              top.name.clonotypes.top_png <- paste(dirName, i, "_", Vgene, "_BD_dot.plot_", x, ".png", sep = "")
+              top.name.clonotypes.top_png <- paste(dirName, i, "_", Vgene, "_B_dot.plot_", x, ".png", sep = "")
               png(top.name.clonotypes.top_png,
                   width = input$width_png_all_expression_dotplot_clust,
                   height = input$height_png_all_expression_dotplot_clust,
@@ -21063,7 +21839,7 @@ runSTEGO <- function(){
                   geneSet2$FDR <- p.adjust(geneSet2$p.val, method = "fdr")
                   geneSet2$Bonferroni <- p.adjust(geneSet2$p.val, method = "bonferroni")
                   message("Downloading over-rep table...")
-                  top.name.clonotypes <- paste(dirName, i, "_", Vgene, "_BD_OverRep_", x, ".csv", sep = "")
+                  top.name.clonotypes <- paste(dirName, i, "_", Vgene, "_B_OverRep_", x, ".csv", sep = "")
                   write.csv(geneSet2, top.name.clonotypes, row.names = F)
                 }
               }
@@ -21072,6 +21848,334 @@ runSTEGO <- function(){
         }
       })
     })
+    ggPlotUMAPClusterD <- reactive({
+      sc <- UMAP_metadata_with_labs()
+      validate(
+        need(
+          nrow(sc) > 0,
+          "Upload Files"
+        )
+      )
+      md <- sc@meta.data
+      clusterBD2 <- D_cluster()
+      validate(
+        need(
+          nrow(clusterBD2) > 0,
+          "Upload clusTCR BD table"
+        )
+      )
+      req(clusterBD2, input$Clusters_to_dis_PIE, input$Colour_By_this, input$priority_cutoffBD)
+      clusterBD <- subset(clusterBD2, clusterBD2$priority < input$priority_cutoffBD)
+      clusterBD <- subset(clusterBD, clusterBD$Sample_count >= input$Sample_count_clusterBD)
+      clusterBD <- subset(clusterBD, clusterBD$Total_cloneCount >= input$Total_cloneCount_clusterBD)
+
+      len.order <- (unique(clusterBD$Updated_order))
+
+      withProgress(message = "Performing D cluster analysis", value = 0, {
+        for (i in len.order) {
+
+          incProgress(1 / length(len.order), detail = paste("D cluster", i, "of", max(len.order)))
+          cluster <- clusterBD
+          cluster$ID_Column <- cluster[, names(cluster) %in% input$Samp_col]
+          cluster <- cluster[cluster$Updated_order %in% i, ]
+
+          Vgene <- as.data.frame(strsplit(cluster$CDR3_Vgene, "_"))[2, 1]
+          sample_size <- unique(cluster$Sample_count)
+          dirName <- paste0("prioritization/Clustering/D/", i, "_", Vgene, "_", sample_size, "/")
+          if (file.exists(dirName)) {
+            ## ggplot UMAP -----
+            cluster$colour <- cluster[, names(cluster) %in% input$Colour_By_this]
+            cluster$colour <- gsub("_", " ", cluster$colour)
+            cluster$colour <- factor(cluster$colour, levels = unique(cluster$colour))
+            cluster$colour <- gsub("NA", NA, cluster$colour)
+
+            len.colour <- length(unique(cluster$colour))
+            col.df <- as.data.frame(unique(cluster$colour))
+
+            num <- (length(unlist(col.df)))
+
+            if (input$colourtype == "default") {
+              colorblind_vector <- c(gg_fill_hue(num))
+            } else if (input$colourtype == "hcl.colors") {
+              colorblind_vector <- c(hcl.colors(num, palette = "viridis"))
+            } else if (input$colourtype == "topo.colors") {
+              colorblind_vector <- c(topo.colors(num))
+            } else if (input$colourtype == "heat.colors") {
+              colorblind_vector <- c(heat.colors(num))
+            } else if (input$colourtype == "terrain.colors") {
+              colorblind_vector <- c(terrain.colors(num))
+            } else if (input$colourtype == "rainbow") {
+              colorblind_vector <- c(rainbow(num))
+            } else if (input$colourtype == "random") {
+              colorblind_vector <- distinctColorPalette(num)
+            } else {
+
+            }
+
+
+            col.df$col <- colorblind_vector
+
+            figure <- ggplot(data = cluster, aes(x = UMAP_1, UMAP_2, colour = colour)) +
+              geom_point(size = input$size.dot.umap) +
+              scale_color_manual(labels = ~ stringr::str_wrap(.x, width = 20), values = col.df$col, na.value = input$NA_col_analysis) +
+              theme_bw() +
+              theme(
+                legend.text = element_text(colour = "black", size = input$Legend_size, family = input$font_type),
+                legend.title = element_blank(),
+                legend.position = input$legend_position,
+                # strip.text = element_text(size = input$Strip_text_size, family = input$font_type),
+                axis.title.y = element_text(colour = "black", family = input$font_type, size = input$title.text.sizer2),
+                axis.text.y = element_text(colour = "black", family = input$font_type, size = input$text_size),
+                axis.text.x = element_text(colour = "black", family = input$font_type, size = input$text_size, angle = 0),
+                axis.title.x = element_text(colour = "black", family = input$font_type, size = input$title.text.sizer2),
+              )
+
+            message(paste(i, " Downloading the count UMAP"))
+            x <- today()
+            top.name.clonotypes.top_png <- paste(dirName, i, "_", Vgene, "_D_cluster_UMAP_", x, ".png", sep = "")
+            png(top.name.clonotypes.top_png, width = input$width_png_TCR.UMAP, height = input$height_png_TCR.UMAP, res = input$resolution_PNG_TCR.UMAP)
+            plot(figure)
+            dev.off()
+            ## Motif plot -----
+            Network_df <- cluster[order(cluster$Updated_order), ]
+            Network_df <- Network_df %>% distinct(CDR3_Vgene, .keep_all = TRUE) # make Unique
+            motifplot <- ClusTCR2::Motif_from_cluster_file(Network_df, Clust_selected = i, selected_cluster_column = "Updated_order")
+
+            message(paste(i, " Downloading motif plot"))
+            top.name.clonotypes.top_png <- paste(dirName, i, "_", Vgene, "_D_motif_", x, ".png", sep = "")
+            png(top.name.clonotypes.top_png,
+                width = input$width_png_Motif_ClusTCR2_cluster,
+                height = input$height_png_Motif_ClusTCR2_cluster,
+                res = input$resolution_PNG_Motif_ClusTCR2_cluster
+            )
+            plot(motifplot)
+            dev.off()
+          } else {
+            # if(file.exists(dirName)) break;
+            dir.create(dirName)
+
+            ## ggplot UMAP -----
+            cluster$colour <- cluster[, names(cluster) %in% input$Colour_By_this]
+            cluster$colour <- gsub("_", " ", cluster$colour)
+            cluster$colour <- factor(cluster$colour, levels = unique(cluster$colour))
+            cluster$colour <- gsub("NA", NA, cluster$colour)
+
+            len.colour <- length(unique(cluster$colour))
+            col.df <- as.data.frame(unique(cluster$colour))
+
+            num <- (length(unlist(col.df)))
+
+            if (input$colourtype == "default") {
+              colorblind_vector <- c(gg_fill_hue(num))
+            } else if (input$colourtype == "hcl.colors") {
+              colorblind_vector <- c(hcl.colors(num, palette = "viridis"))
+            } else if (input$colourtype == "topo.colors") {
+              colorblind_vector <- c(topo.colors(num))
+            } else if (input$colourtype == "heat.colors") {
+              colorblind_vector <- c(heat.colors(num))
+            } else if (input$colourtype == "terrain.colors") {
+              colorblind_vector <- c(terrain.colors(num))
+            } else if (input$colourtype == "rainbow") {
+              colorblind_vector <- c(rainbow(num))
+            } else if (input$colourtype == "random") {
+              colorblind_vector <- distinctColorPalette(num)
+            } else {
+
+            }
+
+
+            col.df$col <- colorblind_vector
+
+            figure <- ggplot(data = cluster, aes(x = UMAP_1, UMAP_2, colour = colour)) +
+              geom_point(size = input$size.dot.umap) +
+              scale_color_manual(labels = ~ stringr::str_wrap(.x, width = 20), values = col.df$col, na.value = input$NA_col_analysis) +
+              theme_bw() +
+              theme(
+                legend.text = element_text(colour = "black", size = input$Legend_size, family = input$font_type),
+                legend.title = element_blank(),
+                legend.position = input$legend_position,
+                # strip.text = element_text(size = input$Strip_text_size, family = input$font_type),
+                axis.title.y = element_text(colour = "black", family = input$font_type, size = input$title.text.sizer2),
+                axis.text.y = element_text(colour = "black", family = input$font_type, size = input$text_size),
+                axis.text.x = element_text(colour = "black", family = input$font_type, size = input$text_size, angle = 0),
+                axis.title.x = element_text(colour = "black", family = input$font_type, size = input$title.text.sizer2),
+              )
+
+            message(paste(i, " Downloading the count UMAP"))
+            x <- today()
+            top.name.clonotypes.top_png <- paste(dirName, i, "_", Vgene, "_D_cluster_UMAP_", x, ".png", sep = "")
+            png(top.name.clonotypes.top_png, width = input$width_png_TCR.UMAP, height = input$height_png_TCR.UMAP, res = input$resolution_PNG_TCR.UMAP)
+            plot(figure)
+            dev.off()
+            ## Motif plot -----
+            Network_df <- cluster[order(cluster$Updated_order), ]
+            Network_df <- Network_df %>% distinct(CDR3_Vgene, .keep_all = TRUE) # make Unique
+            motifplot <- ClusTCR2::Motif_from_cluster_file(Network_df, Clust_selected = i, selected_cluster_column = "Updated_order")
+
+            message(paste(i, " Downloading motif plot"))
+            top.name.clonotypes.top_png <- paste(dirName, i, "_", Vgene, "_D_motif_", x, ".png", sep = "")
+            png(top.name.clonotypes.top_png,
+                width = input$width_png_Motif_ClusTCR2_cluster,
+                height = input$height_png_Motif_ClusTCR2_cluster,
+                res = input$resolution_PNG_Motif_ClusTCR2_cluster
+            )
+            plot(motifplot)
+            dev.off()
+
+            # Stats table ------
+            cluster <- clusterBD
+
+            names(cluster)[names(cluster) %in% input$Samp_col] <- "ID_Column"
+            cluster <- cluster[order(cluster$Updated_order), ]
+
+            rownames(cluster) <- cluster$Cell_Index
+
+            checking <- cluster[, names(cluster) %in% c("Updated_order", "Cell_Index")]
+            md.checking <- merge(md, checking, by = "Cell_Index", all.x = T)
+            md.checking <- md.checking[order(md.checking$order), ]
+            rownames(md.checking) <- md.checking$Cell_Index
+
+            md.checking$Clust_selected <- ifelse(md.checking$Updated_order == i, i, "NS")
+            md.checking$Clust_selected[is.na(md.checking$Clust_selected)] <- "NS"
+            md.checking <- md.checking[order(md.checking$order), ]
+
+            sc@meta.data <- md.checking
+            Idents(object = sc) <- sc@meta.data$Clust_selected
+
+            name.check.clust <- i
+            min.pct.expression <- input$min_point_ # standard setting: 0.25
+            min.logfc <- input$LogFC_ # 0.25 is standard
+
+            markers.fm.list <- FindMarkers(sc, ident.1 = name.check.clust, min.pct = min.pct.expression, logfc.threshold = min.logfc, only.pos = TRUE)
+            markers.fm.list2 <- subset(markers.fm.list, markers.fm.list$p_val_adj < input$pval.ex.filter)
+
+            message(paste(i, "D cluster has", length(markers.fm.list2$p_val_adj), "total markers"))
+
+            if (length(markers.fm.list2$p_val_adj) > 0) {
+              message(paste(i, " Downloading stats table"))
+              Exp_stats_cutoff_count.name <- paste(dirName, i, "_", Vgene, "_D_cluster_statsTab_", x, ".csv", sep = "")
+              write.csv(markers.fm.list2, Exp_stats_cutoff_count.name, row.names = T)
+
+              # stats dotplot ----
+
+              if (length(rownames(markers.fm.list2)) < 40) {
+                list.names <- rownames(markers.fm.list2)
+              } else {
+                list.names <- rownames(markers.fm.list2)
+                list.names <- list.names[1:40]
+              }
+
+              size_legend <- input$Legend_size - 2
+
+              dotplotClust <- DotPlot(sc, features = list.names) +
+                RotatedAxis() +
+                theme(
+                  axis.title.y = element_blank(),
+                  axis.text.y = element_text(colour = "black", family = input$font_type, size = input$text_size),
+                  axis.text.x = element_text(colour = "black", family = input$font_type, size = input$text_size, angle = 90),
+                  axis.title.x = element_blank(),
+                  legend.title = element_text(colour = "black", size = input$Legend_size, family = input$font_type),
+                  legend.text = element_text(colour = "black", size = size_legend, family = input$font_type),
+                  legend.position = input$legend_position,
+                ) +
+                scale_colour_gradient2(low = input$low.dotplot.clust, mid = input$middle.dotplot.clust, high = input$high.dotplot.clust) +
+                scale_x_discrete(labels = label_wrap(20)) +
+                scale_y_discrete(labels = label_wrap(20))
+
+              top.name.clonotypes.top_png <- paste(dirName, i, "_", Vgene, "_D_dot.plot_", x, ".png", sep = "")
+              png(top.name.clonotypes.top_png,
+                  width = input$width_png_all_expression_dotplot_clust,
+                  height = input$height_png_all_expression_dotplot_clust,
+                  res = input$resolution_PNG_all_expression_dotplot_clust
+              )
+              plot(dotplotClust)
+              dev.off()
+
+              # stats OverRep analysis ----
+
+              if (dim(markers.fm.list2)[1] > 0) {
+                geneSet <- read.csv(system.file("OverRep", "GeneSets.csv", package = "STEGO.R"), header = T)
+
+                background.genes.name <- as.data.frame(rownames(sc@assays$RNA$scale.data))
+                names(background.genes.name) <- "V1"
+                background.genes <- length(rownames(sc@assays$RNA$scale.data))
+
+                #
+                geneSet$background.genes <- background.genes
+
+                DEx.genes <- as.data.frame(rownames(markers.fm.list2))
+                names(DEx.genes) <- "V1"
+                total.sig <- length(DEx.genes$V1)
+                geneSet$total.sig <- length(DEx.genes$V1)
+                # geneSet
+                geneSet$background.geneset <- NA
+                geneSet$background.geneset.name <- NA
+                geneSet$in.geneset <- NA
+                geneSet$in.geneset.name <- NA
+
+                if (input$datasource == "BD_Rhapsody_Paired" || input$datasource == "BD_Rhapsody_AIRR") { # selectInput("datasource", "Data source",choices=c("10x_Genomics","BD_Rhapsody_Paired","BD_Rhapsody_AIRR")),
+                  geneSet$GeneSet <- gsub("-", ".", geneSet$GeneSet)
+                }
+
+                if (input$species_analysis == "mm") { # selectInput("datasource", "Data source",choices=c("10x_Genomics","BD_Rhapsody_Paired","BD_Rhapsody_AIRR")),
+
+                  geneSet$GeneSet <- str_to_title(geneSet$GeneSet)
+                }
+                message(paste("Starting OverRep analysis of cluster ", i))
+                for (j in 1:dim(geneSet)[1]) {
+                  # listed GeneSet
+
+                  Gene.set.testing <- as.data.frame(strsplit(geneSet$GeneSet, ";")[j])
+                  names(Gene.set.testing) <- "V1"
+                  Gene.set.testing2 <- as.data.frame(unique(Gene.set.testing$V1))
+                  names(Gene.set.testing2) <- "V1"
+                  background.overlap <- merge(Gene.set.testing2, background.genes.name, by = "V1")
+                  geneSet$background.geneset[j] <- length(background.overlap$V1)
+                  geneSet$background.geneset.name[j] <- as.character(paste(unlist(background.overlap[1]), collapse = ";"))
+                  # in sig gene list
+                  overlap <- merge(background.overlap, DEx.genes, by = "V1")
+
+                  geneSet$in.geneset[j] <- length(overlap$V1)
+                  geneSet$in.geneset.name[j] <- as.character(paste(unlist(overlap[1]), collapse = ";"))
+                }
+
+                geneSet2 <- subset(geneSet, geneSet$in.geneset > 0)
+                message(paste(i, "has", length(geneSet2$in.geneset), "GeneSets in Epitope"))
+                if (length(geneSet2$in.geneset) > 0) {
+                  for (j in 1:dim(geneSet2)[1]) {
+                    tota.gene.set <- geneSet2$background.geneset[j] # genes that are identified in background
+                    in.geneset <- geneSet2$in.geneset[j] # DEx in geneset
+                    not.in.total <- background.genes - tota.gene.set
+                    not.in.geneset.sig <- total.sig - in.geneset
+                    d <- data.frame(gene.in.interest = c(in.geneset, not.in.geneset.sig), gene.not.interest = c(tota.gene.set, not.in.total))
+                    row.names(d) <- c("In_category", "not_in_category")
+
+                    if (in.geneset > 0) {
+                      geneSet2$p.val[j] <- unlist(fisher.test(d, alternative = "greater")$p.value)[1]
+                      geneSet2$lowerCI[j] <- unlist(fisher.test(d, alternative = "greater")$conf.int)[1]
+                      geneSet2$upperCI[j] <- unlist(fisher.test(d)$conf.int)[2]
+                      geneSet2$OR[j] <- round(unlist(fisher.test(d, alternative = "greater")$estimate)[1], 3)
+                    } else {
+                      geneSet2$p.value[j] <- "-"
+                      geneSet2$lowerCI[j] <- "-"
+                      geneSet2$upperCI[j] <- "-"
+                      geneSet2$OR[j] <- "-"
+                    }
+                  }
+                  geneSet2 <- geneSet2[order(geneSet2$p.val, decreasing = F), ]
+                  geneSet2$FDR <- p.adjust(geneSet2$p.val, method = "fdr")
+                  geneSet2$Bonferroni <- p.adjust(geneSet2$p.val, method = "bonferroni")
+                  message("Downloading over-rep table...")
+                  top.name.clonotypes <- paste(dirName, i, "_", Vgene, "_D_OverRep_", x, ".csv", sep = "")
+                  write.csv(geneSet2, top.name.clonotypes, row.names = F)
+                }
+              }
+            }
+          }
+        }
+      })
+    })
+
     output$Cluster_dowload_button_prior <- renderUI({
       sc <- UMAP_metadata_with_labs()
       validate(
@@ -21088,7 +22192,7 @@ runSTEGO <- function(){
 
       fluidRow(
         # column(12,selectInput("AnalysisType","Preset parameters for", = c("ImmunoDom"))),
-        column(12, actionButton("ClusterDownload_download_buttonOneOne", "Download cluster analysis", style = "color: white; background-color:#4682b4"))
+        column(12, actionButton("ClusterDownload_automated", "Download cluster analysis", style = "color: white; background-color:#4682b4"))
       )
     })
 
