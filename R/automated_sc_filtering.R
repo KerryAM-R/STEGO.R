@@ -24,7 +24,8 @@ automated_sc_filtering <- function(folder = "1_SeuratQC",
                                    dataset_type = "10x",
                                    species = "hs",
                                    features.min = 200,
-                                   features.max = 6000, percent.mt = 20,
+                                   features.max = 2500,
+                                   percent.mt = 20,
                                    percent.rb = 5,
                                    dimension_sc = 15,
                                    resolution_sc= 1,
@@ -260,7 +261,7 @@ automated_sc_filtering <- function(folder = "1_SeuratQC",
       head(md)
       head(scMeta.data)
 
-      meta.data2 <- merge(scMeta.data, md, by = "Cell_Index")
+      meta.data2 <- merge(scMeta.data, md, by = "Cell_Index",all.x = T)
 
       sc@meta.data <- meta.data2
       rownames(sc@meta.data) <- sc@meta.data$Cell_Index

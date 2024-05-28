@@ -8,7 +8,7 @@ scGate_annotating(
   file = file,
   Threshold_test = FALSE,
   signature_for_testing = c("CD8A", "CD8B"),
-  threshold = 0.2,
+  threshold = 0.25,
   TcellFunction = FALSE,
   immune_checkpoint = FALSE,
   senescence = FALSE,

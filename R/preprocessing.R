@@ -281,7 +281,7 @@ preprocessing_10x <- function (downloadTCRex = F, downloadClusTCR = F, downloadT
       file_name_md <- paste0("1_SeuratQC/", sub_directory,"_metadata_10x.csv")
 
       if(file.exists(file_name_mat) && file.exists(file_name_md)) {
-        message(file_name_mat," already exists")
+        message(file_name_mat," & ", file_name_md," already exists")
       } else {
 
         contigs <- TCR
@@ -347,25 +347,21 @@ preprocessing_10x <- function (downloadTCRex = F, downloadClusTCR = F, downloadT
         head(contig_AG)
         contig_BD <- subset(contigs_lim, contigs_lim$chain ==
                               "TRB" | contigs_lim$chain == "TRD")
-        name.list <- names(contig_BD[c(names(contig_BD[grep("gene",
-                                                            names(contig_BD))]), names(contig_BD[grep("cdr1",
-                                                                                                      names(contig_BD))]), names(contig_BD[grep("cdr2",
-                                                                                                                                                names(contig_BD))]), names(contig_BD[grep("cdr3",
-                                                                                                                                                                                          names(contig_BD))]), "chain")])
+        name.list <- names(contig_BD[c(names(contig_BD[grep("gene",names(contig_BD))]),
+                                       names(contig_BD[grep("cdr1",names(contig_BD))]),
+                                       names(contig_BD[grep("cdr2",names(contig_BD))]),
+                                       names(contig_BD[grep("cdr3",names(contig_BD))]), "chain")])
 
 
         contig_BD <- contig_BD %>% select(all_of(name.list),
                                           everything())
-        names(contig_BD)[1:summary(name.list)[1]] <- paste(names(contig_BD[names(contig_BD) %in%
-                                                                             name.list]), "_BD", sep = "")
-        contig_paired <- merge(contig_AG, contig_BD, by = c("Cell_Index"),
-                               all = T)
-        head(contig_paired)
+        names(contig_BD)[1:summary(name.list)[1]] <- paste(names(contig_BD[names(contig_BD) %in% name.list]), "_BD", sep = "")
+        contig_paired <- merge(contig_AG, contig_BD, by = c("Cell_Index"), all = T)
+
         contig_paired$chain_BD == "TRB"
-        contig_paired$pairing <- ifelse(contig_paired$chain_BD ==
-                                          "TRB" & contig_paired$chain_AG == "TRA", "abTCR Paired",
-                                        ifelse(contig_paired$chain_BD == "TRD" & contig_paired$chain_AG ==
-                                                 "TRG", "gdTCR Paired", "unpaired"))
+        contig_paired$pairing <- ifelse(contig_paired$chain_BD == "TRB" & contig_paired$chain_AG == "TRA", "abTCR Paired",
+                                        ifelse(contig_paired$chain_BD == "TRD" & contig_paired$chain_AG == "TRG", "gdTCR Paired", "unpaired"))
+
         contig_paired$pairing[is.na(contig_paired$pairing)] <- "unpaired"
         print(table(contig_paired$pairing))
 
@@ -373,80 +369,59 @@ preprocessing_10x <- function (downloadTCRex = F, downloadClusTCR = F, downloadT
                                          c("d_gene_AG")]
 
         contig_paired_only <- contig_paired
-        contig_paired_only <- subset(contig_paired_only,
-                                     contig_paired_only$cdr3_BD != "None")
-        contig_paired_only <- subset(contig_paired_only,
-                                     contig_paired_only$cdr3_AG != "None")
-        contig_paired_only$d_gene_BD <- gsub("^$", "NA",
-                                             contig_paired_only$d_gene_BD)
-        contig_paired_only$vj_gene_AG <- paste(contig_paired_only$v_gene_AG,
-                                               contig_paired_only$j_gene_AG, sep = ".")
-        contig_paired_only$vj_gene_AG <- gsub("NA.NA", "",
-                                              contig_paired_only$vj_gene_AG)
-        contig_paired_only$vj_gene_BD <- paste(contig_paired_only$v_gene_BD,
-                                               contig_paired_only$j_gene_BD, sep = ".")
-        contig_paired_only$vj_gene_BD <- gsub(".NA.", ".",
-                                              contig_paired_only$vj_gene_BD)
-        contig_paired_only$vj_gene_BD <- gsub(".None.",
-                                              ".", contig_paired_only$vj_gene_BD)
-        contig_paired_only$vj_gene_BD <- gsub("NA.NA", "",
-                                              contig_paired_only$vj_gene_BD)
 
-        contig_paired_only$vdj_gene_BD <- paste(contig_paired_only$v_gene_BD,
-                                                contig_paired_only$d_gene_BD, contig_paired_only$j_gene_BD,
-                                                sep = ".")
+        contig_paired_only <- subset(contig_paired_only,contig_paired_only$cdr3_BD != "None")
+        contig_paired_only <- subset(contig_paired_only,contig_paired_only$cdr3_AG != "None")
 
-        contig_paired_only$vdj_gene_BD <- gsub("[.]NA[.]",
-                                               ".", contig_paired_only$vdj_gene_BD)
+        contig_paired_only$d_gene_BD <- gsub("^$", "NA", contig_paired_only$d_gene_BD)
+        contig_paired_only$vj_gene_AG <- paste(contig_paired_only$v_gene_AG,contig_paired_only$j_gene_AG, sep = ".")
+        contig_paired_only$vj_gene_AG <- gsub("NA.NA", "",contig_paired_only$vj_gene_AG)
+        contig_paired_only$vj_gene_BD <- paste(contig_paired_only$v_gene_BD,contig_paired_only$j_gene_BD, sep = ".")
+        contig_paired_only$vj_gene_BD <- gsub(".NA.", ".",contig_paired_only$vj_gene_BD)
+        contig_paired_only$vj_gene_BD <- gsub(".None.",".", contig_paired_only$vj_gene_BD)
+        contig_paired_only$vj_gene_BD <- gsub("NA.NA", "",contig_paired_only$vj_gene_BD)
 
-        contig_paired_only$vdj_gene_BD <- gsub("[.]None[.]",
-                                               ".", contig_paired_only$vdj_gene_BD)
+        contig_paired_only$vdj_gene_BD <- paste(contig_paired_only$v_gene_BD, contig_paired_only$d_gene_BD, contig_paired_only$j_gene_BD,sep = ".")
 
-        contig_paired_only$vdj_gene_BD <- gsub("NA[.]NA",
-                                               "", contig_paired_only$vdj_gene_BD)
+        contig_paired_only$vdj_gene_BD <- gsub("[.]NA[.]",".", contig_paired_only$vdj_gene_BD)
 
+        contig_paired_only$vdj_gene_BD <- gsub("[.]None[.]",".", contig_paired_only$vdj_gene_BD)
 
+        contig_paired_only$vdj_gene_BD <- gsub("NA[.]NA","", contig_paired_only$vdj_gene_BD)
 
-        contig_paired_only$vj_gene_cdr3_AG <- paste(contig_paired_only$vj_gene_AG,
-                                                    contig_paired_only$cdr3_AG, sep = "_")
-        contig_paired_only$vj_gene_cdr3_AG <- gsub("_NA",
-                                                   "", contig_paired_only$vj_gene_cdr3_AG)
-        contig_paired_only$vj_gene_cdr3_BD <- paste(contig_paired_only$vj_gene_BD,
-                                                    contig_paired_only$cdr3_BD, sep = "_")
-        contig_paired_only$vj_gene_cdr3_BD <- gsub("_NA",
-                                                   "", contig_paired_only$vj_gene_cdr3_BD)
+        contig_paired_only$vj_gene_cdr3_AG <- paste(contig_paired_only$vj_gene_AG,contig_paired_only$cdr3_AG, sep = "_")
+        contig_paired_only$vj_gene_cdr3_AG <- gsub("_NA","", contig_paired_only$vj_gene_cdr3_AG)
+        contig_paired_only$vj_gene_cdr3_AG <- gsub("_None","", contig_paired_only$vj_gene_cdr3_AG)
+
+        contig_paired_only$vj_gene_cdr3_BD <- paste(contig_paired_only$vj_gene_BD, contig_paired_only$cdr3_BD, sep = "_")
+        contig_paired_only$vj_gene_cdr3_BD <- gsub("_NA","", contig_paired_only$vj_gene_cdr3_BD)
+
+        contig_paired_only$vj_gene_cdr3_BD <- gsub("_None","", contig_paired_only$vj_gene_cdr3_BD)
+
         contig_paired_only$vdj_gene_cdr3_BD <- paste(contig_paired_only$vdj_gene_BD,
                                                      contig_paired_only$cdr3_BD, sep = "_")
-        contig_paired_only$vdj_gene_cdr3_BD <- gsub("_NA",
-                                                    "", contig_paired_only$vdj_gene_cdr3_BD)
-        contig_paired_only$vj_gene_AG_BD <- paste(contig_paired_only$vj_gene_AG,
-                                                  contig_paired_only$vj_gene_BD, sep = " & ")
-        contig_paired_only$vdj_gene_AG_BD <- paste(contig_paired_only$vj_gene_AG,
-                                                   contig_paired_only$vdj_gene_BD, sep = " & ")
-        contig_paired_only$vdj_gene_AG_BD <- gsub("^ & ",
-                                                  "", contig_paired_only$vdj_gene_AG_BD)
-        contig_paired_only$vdj_gene_AG_BD <- gsub(" & $",
-                                                  "", contig_paired_only$vdj_gene_AG_BD)
-        contig_paired_only$vj_gene_cdr3_AG_BD <- paste(contig_paired_only$vj_gene_cdr3_AG,
-                                                       contig_paired_only$vj_gene_cdr3_BD, sep = " & ")
-        contig_paired_only$vj_gene_cdr3_AG_BD <- gsub("^ & ",
-                                                      "", contig_paired_only$vj_gene_cdr3_AG_BD)
-        contig_paired_only$vj_gene_cdr3_AG_BD <- gsub(" & $",
-                                                      "", contig_paired_only$vj_gene_cdr3_AG_BD)
-        contig_paired_only$vdj_gene_cdr3_AG_BD <- paste(contig_paired_only$vj_gene_cdr3_AG,
-                                                        contig_paired_only$vdj_gene_cdr3_BD, sep = " & ")
-        contig_paired_only$vdj_gene_cdr3_AG_BD <- gsub("^ & ",
-                                                       "", contig_paired_only$vdj_gene_cdr3_AG_BD)
-        contig_paired_only$vdj_gene_cdr3_AG_BD <- gsub(" & $",
-                                                       "", contig_paired_only$vdj_gene_cdr3_AG_BD)
+
+        contig_paired_only$vdj_gene_cdr3_BD <- gsub("_NA", "", contig_paired_only$vdj_gene_cdr3_BD)
+        contig_paired_only$vdj_gene_cdr3_BD <- gsub("_None", "", contig_paired_only$vdj_gene_cdr3_BD)
+
+        contig_paired_only$vj_gene_AG_BD <- paste(contig_paired_only$vj_gene_AG,contig_paired_only$vj_gene_BD, sep = " & ")
+        contig_paired_only$vdj_gene_AG_BD <- paste(contig_paired_only$vj_gene_AG,contig_paired_only$vdj_gene_BD, sep = " & ")
+        contig_paired_only$vdj_gene_AG_BD <- gsub("^ & ","", contig_paired_only$vdj_gene_AG_BD)
+        contig_paired_only$vdj_gene_AG_BD <- gsub(" & $","", contig_paired_only$vdj_gene_AG_BD)
+        contig_paired_only$vj_gene_cdr3_AG_BD <- paste(contig_paired_only$vj_gene_cdr3_AG,contig_paired_only$vj_gene_cdr3_BD, sep = " & ")
+        contig_paired_only$vj_gene_cdr3_AG_BD <- gsub("^ & ","", contig_paired_only$vj_gene_cdr3_AG_BD)
+        contig_paired_only$vj_gene_cdr3_AG_BD <- gsub(" & $","", contig_paired_only$vj_gene_cdr3_AG_BD)
+        contig_paired_only$vdj_gene_cdr3_AG_BD <- paste(contig_paired_only$vj_gene_cdr3_AG,contig_paired_only$vdj_gene_cdr3_BD, sep = " & ")
+        contig_paired_only$vdj_gene_cdr3_AG_BD <- gsub("^ & ", "", contig_paired_only$vdj_gene_cdr3_AG_BD)
+        contig_paired_only$vdj_gene_cdr3_AG_BD <- gsub(" & $","", contig_paired_only$vdj_gene_cdr3_AG_BD)
+
         dim(contig_paired_only)
-        contig_paired_only_dup <- contig_paired_only[!duplicated(contig_paired_only$Cell_Index),
-        ]
+        contig_paired_only_dup <- contig_paired_only[!duplicated(contig_paired_only$Cell_Index),]
+
         dim(contig_paired_only_dup)
 
         contig_paired_only$Sample_Name <- sub_directory
-        contig_paired_only <- contig_paired_only %>% select(all_of(c("Cell_Index",
-                                                                     "Sample_Name")), everything())
+        contig_paired_only <- contig_paired_only %>% select(all_of(c("Cell_Index","Sample_Name")), everything())
         head(contig_paired_only)
         # save meta data
         file_name_md <- paste0("1_SeuratQC/", sub_directory,"_metadata_10x.csv")
@@ -563,80 +538,56 @@ preprocessing_10x <- function (downloadTCRex = F, downloadClusTCR = F, downloadT
                                          c("d_gene_AG")]
 
         contig_paired_only <- contig_paired
-        contig_paired_only <- subset(contig_paired_only,
-                                     contig_paired_only$cdr3_BD != "None")
-        contig_paired_only <- subset(contig_paired_only,
-                                     contig_paired_only$cdr3_AG != "None")
-        contig_paired_only$d_gene_BD <- gsub("^$", "NA",
-                                             contig_paired_only$d_gene_BD)
-        contig_paired_only$vj_gene_AG <- paste(contig_paired_only$v_gene_AG,
-                                               contig_paired_only$j_gene_AG, sep = ".")
-        contig_paired_only$vj_gene_AG <- gsub("NA.NA", "",
-                                              contig_paired_only$vj_gene_AG)
-        contig_paired_only$vj_gene_BD <- paste(contig_paired_only$v_gene_BD,
-                                               contig_paired_only$j_gene_BD, sep = ".")
-        contig_paired_only$vj_gene_BD <- gsub(".NA.", ".",
-                                              contig_paired_only$vj_gene_BD)
-        contig_paired_only$vj_gene_BD <- gsub(".None.",
-                                              ".", contig_paired_only$vj_gene_BD)
-        contig_paired_only$vj_gene_BD <- gsub("NA.NA", "",
-                                              contig_paired_only$vj_gene_BD)
+        contig_paired_only <- subset(contig_paired_only,contig_paired_only$cdr3_BD != "None")
+        contig_paired_only <- subset(contig_paired_only,contig_paired_only$cdr3_AG != "None")
 
-        contig_paired_only$vdj_gene_BD <- paste(contig_paired_only$v_gene_BD,
-                                                contig_paired_only$d_gene_BD, contig_paired_only$j_gene_BD,
-                                                sep = ".")
+        contig_paired_only$d_gene_BD <- gsub("^$", "NA", contig_paired_only$d_gene_BD)
+        contig_paired_only$vj_gene_AG <- paste(contig_paired_only$v_gene_AG,contig_paired_only$j_gene_AG, sep = ".")
+        contig_paired_only$vj_gene_AG <- gsub("NA.NA", "",contig_paired_only$vj_gene_AG)
+        contig_paired_only$vj_gene_BD <- paste(contig_paired_only$v_gene_BD,contig_paired_only$j_gene_BD, sep = ".")
+        contig_paired_only$vj_gene_BD <- gsub(".NA.", ".",contig_paired_only$vj_gene_BD)
+        contig_paired_only$vj_gene_BD <- gsub(".None.",".", contig_paired_only$vj_gene_BD)
+        contig_paired_only$vj_gene_BD <- gsub("NA.NA", "",contig_paired_only$vj_gene_BD)
 
-        contig_paired_only$vdj_gene_BD <- gsub("[.]NA[.]",
-                                               ".", contig_paired_only$vdj_gene_BD)
+        contig_paired_only$vdj_gene_BD <- paste(contig_paired_only$v_gene_BD, contig_paired_only$d_gene_BD, contig_paired_only$j_gene_BD,sep = ".")
 
-        contig_paired_only$vdj_gene_BD <- gsub("[.]None[.]",
-                                               ".", contig_paired_only$vdj_gene_BD)
+        contig_paired_only$vdj_gene_BD <- gsub("[.]NA[.]",".", contig_paired_only$vdj_gene_BD)
 
-        contig_paired_only$vdj_gene_BD <- gsub("NA[.]NA",
-                                               "", contig_paired_only$vdj_gene_BD)
+        contig_paired_only$vdj_gene_BD <- gsub("[.]None[.]",".", contig_paired_only$vdj_gene_BD)
 
+        contig_paired_only$vdj_gene_BD <- gsub("NA[.]NA","", contig_paired_only$vdj_gene_BD)
 
+        contig_paired_only$vj_gene_cdr3_AG <- paste(contig_paired_only$vj_gene_AG,contig_paired_only$cdr3_AG, sep = "_")
+        contig_paired_only$vj_gene_cdr3_AG <- gsub("_NA","", contig_paired_only$vj_gene_cdr3_AG)
+        contig_paired_only$vj_gene_cdr3_AG <- gsub("_None","", contig_paired_only$vj_gene_cdr3_AG)
 
-        contig_paired_only$vj_gene_cdr3_AG <- paste(contig_paired_only$vj_gene_AG,
-                                                    contig_paired_only$cdr3_AG, sep = "_")
-        contig_paired_only$vj_gene_cdr3_AG <- gsub("_NA",
-                                                   "", contig_paired_only$vj_gene_cdr3_AG)
-        contig_paired_only$vj_gene_cdr3_BD <- paste(contig_paired_only$vj_gene_BD,
-                                                    contig_paired_only$cdr3_BD, sep = "_")
-        contig_paired_only$vj_gene_cdr3_BD <- gsub("_NA",
-                                                   "", contig_paired_only$vj_gene_cdr3_BD)
+        contig_paired_only$vj_gene_cdr3_BD <- paste(contig_paired_only$vj_gene_BD, contig_paired_only$cdr3_BD, sep = "_")
+        contig_paired_only$vj_gene_cdr3_BD <- gsub("_NA","", contig_paired_only$vj_gene_cdr3_BD)
+
+        contig_paired_only$vj_gene_cdr3_BD <- gsub("_None","", contig_paired_only$vj_gene_cdr3_BD)
+
         contig_paired_only$vdj_gene_cdr3_BD <- paste(contig_paired_only$vdj_gene_BD,
                                                      contig_paired_only$cdr3_BD, sep = "_")
-        contig_paired_only$vdj_gene_cdr3_BD <- gsub("_NA",
-                                                    "", contig_paired_only$vdj_gene_cdr3_BD)
-        contig_paired_only$vj_gene_AG_BD <- paste(contig_paired_only$vj_gene_AG,
-                                                  contig_paired_only$vj_gene_BD, sep = " & ")
-        contig_paired_only$vdj_gene_AG_BD <- paste(contig_paired_only$vj_gene_AG,
-                                                   contig_paired_only$vdj_gene_BD, sep = " & ")
-        contig_paired_only$vdj_gene_AG_BD <- gsub("^ & ",
-                                                  "", contig_paired_only$vdj_gene_AG_BD)
-        contig_paired_only$vdj_gene_AG_BD <- gsub(" & $",
-                                                  "", contig_paired_only$vdj_gene_AG_BD)
-        contig_paired_only$vj_gene_cdr3_AG_BD <- paste(contig_paired_only$vj_gene_cdr3_AG,
-                                                       contig_paired_only$vj_gene_cdr3_BD, sep = " & ")
-        contig_paired_only$vj_gene_cdr3_AG_BD <- gsub("^ & ",
-                                                      "", contig_paired_only$vj_gene_cdr3_AG_BD)
-        contig_paired_only$vj_gene_cdr3_AG_BD <- gsub(" & $",
-                                                      "", contig_paired_only$vj_gene_cdr3_AG_BD)
-        contig_paired_only$vdj_gene_cdr3_AG_BD <- paste(contig_paired_only$vj_gene_cdr3_AG,
-                                                        contig_paired_only$vdj_gene_cdr3_BD, sep = " & ")
-        contig_paired_only$vdj_gene_cdr3_AG_BD <- gsub("^ & ",
-                                                       "", contig_paired_only$vdj_gene_cdr3_AG_BD)
-        contig_paired_only$vdj_gene_cdr3_AG_BD <- gsub(" & $",
-                                                       "", contig_paired_only$vdj_gene_cdr3_AG_BD)
-        dim(contig_paired_only)
 
-        contig_paired_only <- contig_paired_only[!duplicated(contig_paired_only$Cell_Index),
-        ]
+        contig_paired_only$vdj_gene_cdr3_BD <- gsub("_NA", "", contig_paired_only$vdj_gene_cdr3_BD)
+        contig_paired_only$vdj_gene_cdr3_BD <- gsub("_None", "", contig_paired_only$vdj_gene_cdr3_BD)
+
+        contig_paired_only$vj_gene_AG_BD <- paste(contig_paired_only$vj_gene_AG,contig_paired_only$vj_gene_BD, sep = " & ")
+        contig_paired_only$vdj_gene_AG_BD <- paste(contig_paired_only$vj_gene_AG,contig_paired_only$vdj_gene_BD, sep = " & ")
+        contig_paired_only$vdj_gene_AG_BD <- gsub("^ & ","", contig_paired_only$vdj_gene_AG_BD)
+        contig_paired_only$vdj_gene_AG_BD <- gsub(" & $","", contig_paired_only$vdj_gene_AG_BD)
+        contig_paired_only$vj_gene_cdr3_AG_BD <- paste(contig_paired_only$vj_gene_cdr3_AG,contig_paired_only$vj_gene_cdr3_BD, sep = " & ")
+        contig_paired_only$vj_gene_cdr3_AG_BD <- gsub("^ & ","", contig_paired_only$vj_gene_cdr3_AG_BD)
+        contig_paired_only$vj_gene_cdr3_AG_BD <- gsub(" & $","", contig_paired_only$vj_gene_cdr3_AG_BD)
+        contig_paired_only$vdj_gene_cdr3_AG_BD <- paste(contig_paired_only$vj_gene_cdr3_AG,contig_paired_only$vdj_gene_cdr3_BD, sep = " & ")
+        contig_paired_only$vdj_gene_cdr3_AG_BD <- gsub("^ & ", "", contig_paired_only$vdj_gene_cdr3_AG_BD)
+        contig_paired_only$vdj_gene_cdr3_AG_BD <- gsub(" & $","", contig_paired_only$vdj_gene_cdr3_AG_BD)
+
+        contig_paired_only <- contig_paired_only[!duplicated(contig_paired_only$Cell_Index),]
 
         contig_paired_only$indiv.group <- sub_directory
-        contig_paired_only <- contig_paired_only %>% select(all_of(c("Cell_Index",
-                                                                     "indiv.group")), everything())
+        contig_paired_only <- contig_paired_only %>% select(all_of(c("Cell_Index","indiv.group")), everything())
+
         head(contig_paired_only)
         contig_paired_only$cloneCount <- 1
         contig_paired_only$group <- strsplit(sub_directory,

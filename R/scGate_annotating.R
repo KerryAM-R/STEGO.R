@@ -211,6 +211,12 @@ scGate_annotating <- function (file = file,
           message("Merging ", merged_names, " to create ", new_name)
           merged_object <- merge(x = merged_sc_list2[[i]],
                                  y = merged_sc_list2[[i + 1]], merge.data = TRUE)
+
+          if(Version == "V5") {
+            message("Joining layers of ",new_name)
+            merged_object <- JoinLayers(merged_object,  assay = "RNA")
+          }
+
           temp_list[[new_name]] <- merged_object
           merged_size <- object.size(merged_object)
           message("Size of ", new_name, ": ", round(merged_size[1]/1000^3, 1), " Gb")

@@ -9,7 +9,7 @@ automated_sc_filtering(
   dataset_type = "10x",
   species = "hs",
   features.min = 200,
-  features.max = 6000,
+  features.max = 2500,
   percent.mt = 20,
   percent.rb = 5,
   dimension_sc = 15,

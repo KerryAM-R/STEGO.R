@@ -1,5 +1,5 @@
-#' Merging RDS Seurat objects
-#' @name merging_multi_SeuratRDS
+#' Merging the ClusTCR2 files
+#' @name merging_ClusTCR2
 #' @description
 #' This function is to aid im merging multiple Seurat object, which will then need to undergo harmony merging after this step. We have included a loop that merges two Seurat objects at a time to ensure time efficiency  (exponentially gets smaller from the previous sequential merging process)
 #'
@@ -69,6 +69,7 @@ merging_ClusTCR2 <- function (directory = "1_ClusTCR",chain = "AG", output_dir =
 #' @param reduce_size Reduce the size of the matrix to the most variable TCR based on the 12 dataset.
 #' @param own_features If you want to reduce the file size to your own features change to TRUE
 #' @param own_features_df Add in a data frame of the list of your features of one column only.
+#' @param Seurat_Version Current version of Seurat V5 requires joining layers in the merging process.
 #' @import Seurat
 #' @importFrom purrr reduce
 #' @return A merged Seurat RDS object.
@@ -80,6 +81,7 @@ merging_multi_SeuratRDS <- function(seurat_files = "3_SCobj/3a",
                                     species = "hs",
                                     reduce_size = TRUE,
                                     own_features = FALSE,
+                                    Seurat_Version = "V5",
                                     own_features_df = own_features_df
                                     )  {
 
@@ -138,7 +140,7 @@ merging_multi_SeuratRDS <- function(seurat_files = "3_SCobj/3a",
     message("stored object is ", round(sl[1]/1000^3, 3), " Gb")
 
     # remove potential graph issue.
-    for (i in 1:num) {
+    for (i in 1:length(list.sc)) {
       list.sc[[i]]@graphs <- list()
       list.sc[[i]]@misc <- list()
     }
@@ -166,8 +168,13 @@ merging_multi_SeuratRDS <- function(seurat_files = "3_SCobj/3a",
           new_name <- paste0("Merged_", i)
           message("Merging ", merged_names, " to create ", new_name)
           merged_object <- suppressWarnings(merge(x = list.sc[[i]], y = list.sc[[i + 1]], merge.data = TRUE))
-          temp_list[[new_name]] <- merged_object
 
+          if(Seurat_Version == "V5") {
+            message("Joining layers of ",new_name)
+            merged_object <- JoinLayers(merged_object,  assay = "RNA")
+          }
+
+          temp_list[[new_name]] <- merged_object
           # Calculate size of merged object
           merged_size <- object.size(merged_object)
           message("Size of ", new_name, ": ", round(merged_size[1] / 1000^3, 1), " Gb")

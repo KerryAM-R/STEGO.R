@@ -2,34 +2,20 @@
 % Please edit documentation in R/mergin_harmony.R
 \name{merging_multi_SeuratRDS}
 \alias{merging_multi_SeuratRDS}
-\alias{merging_ClusTCR2}
 \title{Merging RDS Seurat objects}
 \usage{
-merging_ClusTCR2(
-  directory = "1_ClusTCR",
-  chain = "AG",
-  output_dir = "2_ClusTCR2"
-)
-
 merging_multi_SeuratRDS(
-  set_directory = "2_scObj/",
+  seurat_files = "3_SCobj/3a",
   merge_RDS = FALSE,
   pattern_RDS = ".rds$",
   species = "hs",
   reduce_size = TRUE,
   own_features = FALSE,
+  Seurat_Version = "V5",
   own_features_df = own_features_df
 )
 }
 \arguments{
-\item{directory}{location of the multiple clusTCR2 files from step 1. default is "1_ClusTCR"}
-
-\item{chain}{Either select AG or BD. The AG are in the same column so that the A will pair with B and G with a D.}
-
-\item{output_dir}{location of where the file will be saved. default is "2_ClusTCR2"}
-
-\item{set_directory}{set the path to the directory with the. Default = current working directory. The program will reset the directory to the original to not impact the function of STEGO.R project file. If you stop the script, you will need to manually reset the working directory with setwd("../"), to go back one directory.}
-
 \item{merge_RDS}{Set to TRUE once you have check the directory with the .rds file}
 
 \item{pattern_RDS}{uses the list.files function to identify the .rds objects for merging in the 2_scObj}
@@ -40,15 +26,15 @@ merging_multi_SeuratRDS(
 
 \item{own_features}{If you want to reduce the file size to your own features change to TRUE}
 
+\item{Seurat_Version}{Current version of Seurat V5 requires joining layers in the merging process.}
+
 \item{own_features_df}{Add in a data frame of the list of your features of one column only.}
+
+\item{set_directory}{set the path to the directory with the. Default = current working directory. The program will reset the directory to the original to not impact the function of STEGO.R project file. If you stop the script, you will need to manually reset the working directory with setwd("../"), to go back one directory.}
 }
 \value{
-A merged file for clustering step based in ClusTCR2
-
 A merged Seurat RDS object.
 }
 \description{
-This function is to aid im merging multiple Seurat object, which will then need to undergo harmony merging after this step. We have included a loop that merges two Seurat objects at a time to ensure time efficiency  (exponentially gets smaller from the previous sequential merging process)
-
 This function is to aid im merging multiple Seurat object, which will then need to undergo harmony merging after this step. We have included a loop that merges two Seurat objects at a time to ensure time efficiency  (exponentially gets smaller from the previous sequential merging process)
 }
