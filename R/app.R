@@ -1999,8 +1999,10 @@ runSTEGO <- function(){
                 column(6, numericInput("wrap_row", h5("Number of plot rows"), value = 2)),
                 conditionalPanel(
                   condition = "input.Panel_TCRUMAP != 'TCR_and_GEX_tb'",
-                  column(6, selectInput("Split_group_by_", "Split graph by:", choices = ""))
-
+                  conditionalPanel(
+                    condition = "input.Split_by_group == 'yes'",
+                    column(6, selectInput("Split_group_by_", "Split graph by:", choices = ""))
+                  ),
                 ),
 
               ),
@@ -16436,6 +16438,9 @@ runSTEGO <- function(){
 
 
     UMAP_ClusTCR2 <- reactive({
+
+
+      #
       cluster <- clusTCR2_df()
       validate(
         need(
@@ -16446,6 +16451,13 @@ runSTEGO <- function(){
       req(cluster, input$Clusters_to_dis_PIE, input$Colour_By_this, input$Samp_col)
       cluster$ID_Column <- cluster[, names(cluster) %in% input$Samp_col]
       cluster <- cluster[order(cluster$ID_Column), ]
+      cluster$split_by <- cluster[, names(cluster) %in% input$Split_group_by_]
+
+      if (input$Split_by_group == "yes") {
+        cluster$split_by <- factor(cluster$split_by, levels = input$Graph_split_order)
+        req(input$Graph_split_order)
+        cluster <- cluster[cluster$split_by %in% input$Graph_split_order,]
+      }
       # cluster <- cluster[cluster$Updated_order %in% input$Clusters_to_dis_PIE,]
       cluster$colour <- cluster[, names(cluster) %in% input$Colour_By_this]
       cluster$colour <- gsub("_", " ", cluster$colour)
@@ -16483,7 +16495,9 @@ runSTEGO <- function(){
       if (input$Split_by_group == "no") {
         figure
       } else {
-        figure + facet_wrap(~ID_Column, nrow = input$wrap_row)
+        figure +
+          facet_wrap(~split_by, nrow = input$wrap_row) +
+          coord_cartesian(expand = FALSE)  # Ensure facets are created even if no data points
       }
     })
 
