@@ -2068,7 +2068,7 @@ runSTEGO <- function(){
             ),
             conditionalPanel(
               condition = "input.PriorTBMods == 'PriorClustTB' || input.Panel_TCRUMAP == 'ClusTCR2'",
-              selectInput("Clusters_to_dis_PIE", "Clusters to display", choices = "", multiple = F)
+              selectizeInput("Clusters_to_dis_PIE", "Clusters to display", choices = "", multiple = F)
             ),
 
             # Expanded stat cut-offs -----
@@ -2154,6 +2154,10 @@ runSTEGO <- function(){
                          column(12, div(DT::DTOutput("Tb_tcrex_test",height = "200px")))
                        ),
               ),
+
+              ############
+              # main panel of 4. Analysis
+              ############
 
               # UMAP -> TCR -----
               tabPanel("Overview",
@@ -2500,17 +2504,17 @@ runSTEGO <- function(){
               tabPanel("TCR -> GEX",
                        value = "TCR_and_GEX_tb",
                        fluidRow(
-                         column(
-                           12,
-                           # conditionalPanel(condition="input.Panel_TCRUMAP=='top_clone' || input.Panel_TCRUMAP=='Epitope'",
-                           selectInput("Graph_split_order", "Order of split by:", choices = "", multiple = T, width = "1400px")
+
+                         conditionalPanel(
+                           condition = "input.Split_by_group == 'yes'",
+                           column(
+                             12,
+                             selectInput("Graph_split_order", "Order of split by:", choices = "", multiple = T, width = "1400px")
+                           ),
                          ),
-
-
                          column(3,colourInput("min_FC_col", "Zero colour", value = "white")),
                          column(3,colourInput("med_FC_col", "from one colour", value = "#E9C2FF")),
                          column(3,colourInput("max_FC_col", "Max colour", value = "#6F00B0")),
-                         # ),
                        ),
                        # Classification to include ------
                        tabsetPanel(
@@ -2889,6 +2893,26 @@ runSTEGO <- function(){
                                                column(2, style = "margin-top: 25px;", downloadButton("downloadPlotPNG_all_expression_dotplot_clust", "Download PNG"))
                                              ),
                                     ),
+
+                                    tabPanel("Violin",
+                                             div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
+                                             selectInput("Clust_transcripts_of_interest","Significant genes",choices = ""),
+                                             div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
+
+                                             plotOutput("Violin_clust_sig", height = "600px"),
+
+                                             fluidRow(
+                                               column(1, numericInput("width_Violin_clust_sig", "Width of PDF", value = 10)),
+                                               column(1, numericInput("height_Violin_clust_sig", "Height of PDF", value = 8)),
+                                               column(2, style = "margin-top: 25px;", downloadButton("downloadPlot_Violin_clust_sig", "Download PDF")),
+                                               column(2, numericInput("width_png_Violin_clust_sig", "Width of PNG", value = 1200)),
+                                               column(2, numericInput("height_png_Violin_clust_sig", "Height of PNG", value = 1000)),
+                                               column(2, numericInput("resolution_PNG_Violin_clust_sig", "Resolution of PNG", value = 144)),
+                                               column(2, style = "margin-top: 25px;", downloadButton("downloadPlotPNG_Violin_clust_sig", "Download PNG"))
+                                             ),
+
+                                    ),
+
                                     tabPanel("Over-representation",
                                              value = "ClusPan_OvRep",
                                              fluidRow(
@@ -3206,7 +3230,21 @@ runSTEGO <- function(){
                                             column(3, checkboxInput("show_cutoff_line","Show cut-off line?", value = F))
                                           ),
                                           div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
-                                          plotOutput("marker_selected_VioRidge_plot", height = "600px")
+                                          plotOutput("marker_selected_VioRidge_plot", height = "600px"),
+
+                                          fluidRow(
+                                            column(3, numericInput("width_marker_selected_VioRidge_plot", "Width of PDF", value = 10)),
+                                            column(3, numericInput("height_marker_selected_VioRidge_plot", "Height of PDF", value = 8)),
+                                            column(3),
+                                            column(3, style = "margin-top: 25px;", downloadButton("downloadPlot_marker_selected_VioRidge_plot", "Download PDF"))
+                                          ),
+                                          fluidRow(
+                                            column(3, numericInput("width_png_marker_selected_VioRidge_plot", "Width of PNG", value = 1200)),
+                                            column(3, numericInput("height_png_marker_selected_VioRidge_plot", "Height of PNG", value = 1000)),
+                                            column(3, numericInput("resolution_marker_selected_VioRidge_plot", "Resolution of PNG", value = 144)),
+                                            column(3, style = "margin-top: 25px;", downloadButton("downloadPlotPNG_marker_selected_VioRidge_plot", "Download PNG"))
+                                          ),
+
                                  ),
                                  # tabPanel("UMAP"),
                                  tabPanel("TCR/BCR mapped",
@@ -12522,6 +12560,7 @@ runSTEGO <- function(){
         )
       )
       meta.data <- sc@meta.data
+
       updateSelectInput(
         session,
         "Split_group_by_",
@@ -16350,7 +16389,7 @@ runSTEGO <- function(){
       )
       req(input$Samp_col)
       # cluster <- cluster[cluster$Clust_size_order %in% input$lower_cluster:input$upper_cluster,]
-      updateSelectInput(
+      updateSelectizeInput(
         session,
         "Clusters_to_dis_PIE",
         choices = unique(cluster$Updated_order),
@@ -16915,6 +16954,26 @@ runSTEGO <- function(){
       compare.stat_Cluster()
     })
 
+    observe({
+      sc <- UMAP_metadata_with_labs()
+      validate(
+        need(
+          nrow(sc) > 0,
+          "Upload Files"
+        )
+      )
+      req(sc)
+      df <- compare.stat_Cluster()
+      df.row <- as.data.frame(rownames(df))
+      names(df.row) <- "genes"
+      updateSelectInput(
+        session,
+        "Clust_transcripts_of_interest",
+        choices = df.row$genes,
+        selected = df.row$genes[1]
+      )
+    })
+
     output$downloaddf_FindMarker_Cluster <- downloadHandler(
       filename = function() {
         x <- today()
@@ -17053,6 +17112,134 @@ runSTEGO <- function(){
       }, contentType = "application/png" # MIME type of the image
     )
 
+    # violin plot for the clustering --------
+    clustering_md <- reactive({
+      sc <- UMAP_metadata_with_labs()
+      validate(
+        need(
+          nrow(sc) > 0,
+          "Upload File"
+        )
+      )
+
+      # req(input$V_call_clust_sc,input$junction_clust_sc)
+      md <- sc@meta.data
+
+      cluster <- clusTCR2_df()
+
+      req(cluster, input$Samp_col, input$Clusters_to_dis_PIE)
+
+      cluster$ID_Column <- cluster[, names(cluster) %in% input$Samp_col]
+      cluster <- cluster[order(cluster$Updated_order), ]
+
+      rownames(cluster) <- cluster$Cell_Index
+
+      checking <- cluster[, names(cluster) %in% c("Updated_order", "Cell_Index")]
+      md.checking <- merge(md, checking, by = "Cell_Index", all.x = T)
+      md.checking <- md.checking[order(md.checking$order), ]
+      rownames(md.checking) <- md.checking$Cell_Index
+
+      md.checking$Clust_selected <- ifelse(md.checking$Updated_order == input$Clusters_to_dis_PIE, input$Clusters_to_dis_PIE, "NS")
+      md.checking$Clust_selected[is.na(md.checking$Clust_selected)] <- "NS"
+      md.checking <- md.checking[order(md.checking$order), ]
+      md.checking
+
+      sc@meta.data <- md.checking
+      Idents(object = sc) <- sc@meta.data$Clust_selected
+      sc
+    })
+    clustering_with_gene <- reactive({
+      sc2 <- data_sc_pro()
+      validate(
+        need(
+          nrow(sc2) > 0,
+          error_message_val1
+        )
+      )
+      req(input$wrap_row)
+      sc <- clustering_md()
+      md <- sc@meta.data
+      req(sc,input$Clust_transcripts_of_interest)
+
+      gene <- as.data.frame(sc@assays$RNA$scale.data[rownames(sc@assays$RNA$scale.data)  %in% input$Clust_transcripts_of_interest,])
+      names(gene) <- "V1"
+      gene$Cell_Index <- rownames(gene)
+      # print(input$Graph_split_order_EXP)
+      md_gene <- merge(md,gene,by = "Cell_Index")
+      print(head(md_gene))
+      md_gene
+    })
+
+
+
+    Violin_plot_clusTCR2 <- reactive({
+      sc <- data_sc_pro()
+
+      validate(
+        need(
+          nrow(sc) > 0,
+          error_message_val_sc
+        )
+      )
+
+      md_gene <- clustering_with_gene()
+      # md_gene$split_ID <- md_gene[,names(md_gene) %in% input$Split_group_by_]
+
+      ggplot(md_gene, aes(y = V1, x = Clust_selected, fill = Clust_selected)) +
+        geom_jitter(height = 0, width = 0.1) +
+        geom_violin(alpha = 0.75) +
+        theme(legend.position = "none", ) +
+        theme_bw() +
+        theme(
+          axis.title.y = element_blank(),
+          axis.text.y = element_text(colour = "black", family = input$font_type, size = input$text_size),
+          axis.title.x = element_blank(),
+          axis.text.x = element_text(colour = "black", family = input$font_type, size = input$text_size, angle = 90),
+          title = element_blank(),
+          legend.text = element_text(colour = "black", size = input$Legend_size, family = input$font_type),
+          legend.title = element_blank(),
+          legend.position = input$legend_position,
+        )
+
+    })
+
+    output$Violin_clust_sig <- renderPlot({
+      sc <- data_sc_pro()
+
+      validate(
+        need(
+          nrow(sc) > 0,
+          error_message_val_sc
+        )
+      )
+      Violin_plot_clusTCR2()
+
+    })
+    output$downloadPlot_Violin_clust_sig <- downloadHandler(
+      filename = function() {
+        paste(input$Samp_col,"_",input$Clust_transcripts_of_interest, "_", input$Clusters_to_dis_PIE, "_cluster_violin.pdf", sep = "")
+      },
+      content = function(file) {
+        pdf(file, width = input$width_Violin_clust_sig,
+            height = input$height_Violin_clust_sig,
+            onefile = FALSE) # open the pdf device
+        plot(Violin_plot_clusTCR2())
+        dev.off()
+      }, contentType = "application/pdf"
+    )
+
+    output$downloadPlotPNG_Violin_clust_sig <- downloadHandler(
+      filename = function() {
+        paste(input$Samp_col,"_",input$Clust_transcripts_of_interest, "_", input$Clusters_to_dis_PIE, "_cluster_violin.png", sep = "")
+      },
+      content = function(file) {
+        png(file, width = input$width_png_Violin_clust_sig,
+            height = input$height_png_Violin_clust_sig,
+            res = input$resolution_PNG_Violin_clust_sig)
+        plot(Violin_plot_clusTCR2())
+        dev.off()
+      }, contentType = "application/png" # MIME type of the image
+    )
 
 
 
@@ -17368,9 +17555,6 @@ runSTEGO <- function(){
 
       # Get the group names from the column names
       group_names <- unique(gsub(input$separator_input,"", colnames(original_data)))
-
-
-
       group_names <- group_names[!(group_names %in% c("background", "TotalSamps", "CloneTotal"))]
       print(group_names)
       group_names
@@ -18091,7 +18275,7 @@ runSTEGO <- function(){
           "Upload File"
         )
       )
-
+      req(input$Var_to_col_marker)
       md <- sc@meta.data
       md <- merge(md, selected_scale(), by = "Cell_Index")
       md$scale <- as.numeric(md[, names(md) %in% input$Var_to_col_marker])
@@ -18101,6 +18285,9 @@ runSTEGO <- function(){
 
       md <- subset(md, md$UMAP_2 > input$Filter_lower_UMAP2_marker)
       md <- subset(md, md$UMAP_2 < input$Filter_lower_UMAP2_marker2)
+
+      md$ID_Column <- md[,names(md) %in% input$Samp_col]
+
       subset(md, md$v_gene_AG != "NA")
     })
 
@@ -18122,7 +18309,7 @@ runSTEGO <- function(){
       umap.meta$scale <- as.numeric(umap.meta$scale)
       umap.meta_pos$scale <- as.numeric(umap.meta_pos$scale)
 
-      ggplot(umap.meta, aes(x = UMAP_1, y = UMAP_2, color = scale)) +
+      plot <-  ggplot(umap.meta, aes(x = UMAP_1, y = UMAP_2, color = scale)) +
         geom_point(size = 1) +
         geom_point(data = umap.meta_pos, aes(x = UMAP_1, y = UMAP_2, color = scale), size = 1) +
         # scale_color_continuous(type = "viridis",na.value="grey75") +
@@ -18132,6 +18319,7 @@ runSTEGO <- function(){
         ) +
         scale_color_distiller(direction = 1, palette = input$col_marker_scale, na.value = "grey85", limits = c(min(0), max(input$max_scale))) +
         theme(
+          strip.text = element_text(size = input$Strip_text_size, family = input$font_type),
           plot.title = element_text(colour = "black", family = input$font_type, size = 24, face = "bold", vjust = .5),
           axis.title.y = element_text(colour = "black", family = input$font_type, size = input$title.text.sizer2),
           axis.text.y = element_text(colour = "black", family = input$font_type, size = input$text_size),
@@ -18140,8 +18328,15 @@ runSTEGO <- function(){
           legend.text = element_text(colour = "black", size = input$Legend_size, family = input$font_type),
           legend.title = element_blank(),
           legend.position = input$legend_position,
-        ) +
-        labs(title = input$Var_to_col_marker)
+        )
+      if (input$Split_by_group == "no") {
+        plot +
+          labs(title = input$Var_to_col_marker)
+      } else {
+        plot + facet_wrap(~ID_Column, nrow = input$wrap_row) +
+          labs(title = input$Var_to_col_marker)
+      }
+
     })
 
     output$marker_selected_UMAP_plot <- renderPlot({
@@ -18152,6 +18347,9 @@ runSTEGO <- function(){
           "Upload File"
         )
       )
+
+      req(input$Var_to_col_marker)
+
       marker_selected_UMAP()
     })
 
@@ -18195,10 +18393,12 @@ runSTEGO <- function(){
       umap.meta <- meta_data_for_features_scale()
       umap.meta$ID <- umap.meta[,names(umap.meta) %in% input$Samp_col]
 
+      req(input$Samp_col,input$Var_to_col_marker)
+
       if (input$select_plot_vio.ridge == "Violin") {
         plot <-  ggplot(umap.meta, aes(y = scale, x = ID)) +
-          geom_violin() +
           geom_jitter() +
+          geom_violin() +
           theme(
             legend.position = "none",
           ) +
@@ -18246,9 +18446,42 @@ runSTEGO <- function(){
           "Upload File"
         )
       )
+      req()
       marker_selected_Violine.ridge()
     })
 
+    output$downloadPlot_marker_selected_VioRidge_plot <- downloadHandler(
+      filename = function() {
+        x <- today()
+        paste(input$Var_to_col_marker, "_marker_selected_violin.pdf", sep = "")
+      },
+      content = function(file) {
+        pdf(file,
+            width = input$width_marker_selected_VioRidge_plot,
+            height = input$height_marker_selected_VioRidge_plot,
+            onefile = FALSE) # open the pdf device
+
+        plot(marker_selected_Violine.ridge())
+        dev.off()
+      }, contentType = "application/pdf"
+    )
+
+    output$downloadPlotPNG_marker_selected_VioRidge_plot <- downloadHandler(
+      filename = function() {
+        paste(input$Var_to_col_marker, "_marker_selected_violin.png", sep = "")
+      },
+      content = function(file) {
+        png(file,
+            width = input$width_png_marker_selected_VioRidge_plot,
+            height = input$height_png_marker_selected_VioRidge_plot,
+            res = input$resolution_marker_selected_VioRidge_plot)
+        plot(marker_selected_Violine.ridge())
+        dev.off()
+      }, contentType = "application/png"
+    )
+
+
+    ######
 
     filtered_positive_marker_TCRsum <- reactive({
       # umap.meta <- meta_data_for_features_scale()
@@ -18319,8 +18552,6 @@ runSTEGO <- function(){
       by_ab <- names(a)[1]
       ab <- merge(b, a, by = by_ab, all = T)
 
-
-
       ab[is.na(ab)] <- 0
 
       ab$expand_pos <- ifelse(ab$expand_pos != 0, ab$expand_pos, "Abs")
@@ -18371,7 +18602,7 @@ runSTEGO <- function(){
           "Upload File"
         )
       )
-
+      req(input$Var_to_col_marker)
       md <- sc@meta.data
       md <- merge(md, selected_scale(), by = "Cell_Index", all.x = T, sort = F)
       rownames(md) <- md$Cell_Index
@@ -18397,6 +18628,7 @@ runSTEGO <- function(){
           "Upload File"
         )
       )
+      req(input$Var_to_col_marker)
 
       md <- sc@meta.data
       md <- merge(md, selected_scale(), by = "Cell_Index", all.x = T, sort = F)
@@ -18641,6 +18873,8 @@ runSTEGO <- function(){
         )
       )
 
+      req(input$Var_to_col_marker2,input$Var_to_col_marker3)
+
       md <- sc@meta.data
       md <- merge(md, selected_scale(), by = "Cell_Index", all.x = T, sort = F)
       rownames(md) <- md$Cell_Index
@@ -18692,6 +18926,8 @@ runSTEGO <- function(){
           "Upload File"
         )
       )
+
+      req(sc2)
 
       umap.meta <- sc2@meta.data
       umap.meta_pos <- subset(umap.meta, umap.meta$markerX != "-Inf")
