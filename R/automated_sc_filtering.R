@@ -170,10 +170,21 @@ automated_sc_filtering <- function(folder = "1_SeuratQC",
           dev.off()
         })
       }
-      sc <- suppressWarnings(suppressMessages(subset(sc,
-                                                     subset = nFeature_RNA >= features.min & nFeature_RNA <=
-                                                       features.max & mtDNA <= percent.mt & rRNA >=
-                                                       percent.rb)))
+
+      if(sum(sc@meta.data$mtDNA) == 0 & sum(sc@meta.data$rRNA) == 0) {
+        sc <- suppressWarnings(suppressMessages(subset(sc,
+                                                       subset = nFeature_RNA >= features.min & nFeature_RNA <=
+                                                         features.max)))
+        message("no mtDNA or rRNA detected")
+
+      } else {
+        sc <- suppressWarnings(suppressMessages(subset(sc,
+                                                       subset = nFeature_RNA >= features.min & nFeature_RNA <=
+                                                         features.max & mtDNA <= percent.mt & rRNA >=
+                                                         percent.rb)))
+      }
+
+
       sc
       if (save_plots) {
         suppressWarnings({

@@ -2512,6 +2512,7 @@ runSTEGO <- function(){
                              selectInput("Graph_split_order", "Order of split by:", choices = "", multiple = T, width = "1400px")
                            ),
                          ),
+
                          column(3,colourInput("min_FC_col", "Zero colour", value = "white")),
                          column(3,colourInput("med_FC_col", "from one colour", value = "#E9C2FF")),
                          column(3,colourInput("max_FC_col", "Max colour", value = "#6F00B0")),
@@ -2802,6 +2803,11 @@ runSTEGO <- function(){
                          # ClusTCR2 Analysis -----
                          tabPanel("ClusTCR2",
                                   value = "ClusTCR2",
+                                  fluidRow(
+                                    column(3, checkboxInput("positive_only_clust","Restrict to positive?",value = T)),
+                                    column(3,  actionButton("caluclate_clust","Calc Clustering Stats")),
+                                  ),
+
                                   tabsetPanel(
                                     tabPanel(
                                       "Table.Clust",
@@ -16339,6 +16345,15 @@ runSTEGO <- function(){
     })
 
     clusTCR2_df_2 <- reactive({
+      sc <- UMAP_metadata_with_labs()
+      validate(
+        need(
+          nrow(sc) > 0,
+          "Upload File"
+        )
+      )
+      req(sc)
+
       cluster <- clusTCR2_df()
       req(cluster)
       cluster$ID_Column <- cluster[, names(cluster) %in% input$Samp_col]
@@ -16553,7 +16568,7 @@ runSTEGO <- function(){
       } else {
         figure +
           facet_wrap(~split_by, nrow = input$wrap_row) +
-          coord_cartesian(expand = FALSE)  # Ensure facets are created even if no data points
+          coord_cartesian(expand = T)  # Ensure facets are created even if no data points
       }
     })
 
@@ -16564,7 +16579,7 @@ runSTEGO <- function(){
     output$downloadPlot_UMAP_ClusTCR2_plot <- downloadHandler(
       filename = function() {
         x <- today()
-        paste("_UMAP_ClusTCR2_", x, ".pdf", sep = "")
+        paste(input$Clusters_to_dis_PIE,"_",input$Split_group_by_,"_UMAP_ClusTCR.pdf", sep = "")
       },
       content = function(file) {
         pdf(file, width = input$width_UMAP_ClusTCR2_plot, height = input$height_UMAP_ClusTCR2_plot, onefile = FALSE) # open the pdf device
@@ -16576,7 +16591,7 @@ runSTEGO <- function(){
     output$downloadPlotPNG_UMAP_ClusTCR2_plot <- downloadHandler(
       filename = function() {
         x <- today()
-        paste("_UMAP_ClusTCR2_", x, ".png", sep = "")
+        paste(input$Clusters_to_dis_PIE,"_",input$Split_group_by_,"_UMAP_ClusTCR.png", sep = "")
       },
       content = function(file) {
         png(file,
@@ -16899,7 +16914,9 @@ runSTEGO <- function(){
 
     # Cluster stats   -----
 
-    compare.stat_Cluster <- reactive({
+    Vals_clust.stats_fn <- reactiveValues(output_clust1=NULL)
+
+    observeEvent(input$caluclate_clust, {
       sc <- UMAP_metadata_with_labs()
       validate(
         need(
@@ -16908,7 +16925,7 @@ runSTEGO <- function(){
         )
       )
 
-      # req(input$V_call_clust_sc,input$junction_clust_sc)
+      req(sc)
       md <- sc@meta.data
 
       cluster <- clusTCR2_df()
@@ -16936,9 +16953,33 @@ runSTEGO <- function(){
       min.pct.expression <- input$min_point_ # standard setting: 0.25
       min.logfc <- input$LogFC_ # 0.25 is standard
 
-      markers.fm.list <- FindMarkers(sc, ident.1 = name.check.clust, min.pct = min.pct.expression, logfc.threshold = min.logfc, only.pos = TRUE)
+      if (input$positive_only_clust) {
+        markers.fm.list <- FindMarkers(sc, ident.1 = name.check.clust, min.pct = min.pct.expression, logfc.threshold = min.logfc, only.pos = TRUE)
+      } else {
+
+        markers.fm.list <- FindMarkers(sc, ident.1 = name.check.clust, min.pct = min.pct.expression, logfc.threshold = min.logfc)
+      }
+
       markers.fm.list2 <- subset(markers.fm.list, markers.fm.list$p_val_adj < input$pval.ex.filter)
       as.data.frame(markers.fm.list2)
+      Vals_clust.stats_fn$output_clust1 <- markers.fm.list2
+
+    })
+
+
+    compare.stat_Cluster <- reactive({
+      sc <- UMAP_metadata_with_labs()
+      validate(
+        need(
+          nrow(sc) > 0,
+          "Upload File"
+        )
+      )
+
+      df <- Vals_clust.stats_fn$output_clust1
+      req(df)
+      df
+
     })
 
     output$compare.stat_Cluster_DT <- DT::renderDT(escape = FALSE, options = list(autoWidth = FALSE, lengthMenu = c(2, 5, 10, 20, 50, 100), pageLength = 10, scrollX = TRUE), {
