@@ -10,8 +10,7 @@ if (!require("BiocManager", quietly = TRUE))
 if (!require("usethis", quietly = TRUE))
   install.packages("usethis")
 
-# devtools::install_github("KerryAM-R/STEGO.R", ref = "beta-version")
-install.packages("https://github.com/KerryAM-R/STEGO.R/archive/master.tar.gz", repos = NULL, type = "source")
+devtools::install_github("KerryAM-R/STEGO.R")
 
 y # for Seurat source
 y # biomanager packages for the M1 or greater chip
