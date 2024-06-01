@@ -82,6 +82,7 @@ merging_multi_SeuratRDS <- function(seurat_files = "3_SCobj/3a",
                                     reduce_size = TRUE,
                                     own_features = FALSE,
                                     Seurat_Version = "V5",
+                                    max_features = 10000,
                                     own_features_df = own_features_df
                                     )  {
 
@@ -105,12 +106,20 @@ merging_multi_SeuratRDS <- function(seurat_files = "3_SCobj/3a",
       if (reduce_size) {
       message("Reducing file size ", model.name)
 
-
       if (species == "hs") {
-        features.var.needed <- read.csv(system.file("Kmean", "human.variable.features.csv", package = "STEGO.R"))
+        list.sc[[model.name]] <- FindVariableFeatures(list.sc[[model.name]], selection.method = "vst", nfeatures = max_features)
+        var.feat <- VariableFeatures(list.sc[[model.name]])
+        names(var.feat) <- "V1"
+
+        anno.features <- read.csv(system.file("Kmean", "Kmeans.requires.annotation.csv", package = "STEGO.R"))
+        names(anno.features) <- "V1"
+        anno.features2 <- merge(var.feat,anno.features,by = "V1",all.x = T)
+
         if (own_features) {
-          features.var.needed <- as.data.frame(own_features_df)
-          names(features.var.needed) <- "V1"
+          ownfeatures <- as.data.frame(own_features_df)
+          names(ownfeatures) <- "V1"
+
+          features.var.needed <- merge(anno.features2,ownfeatures, by = "V1", all.x = T)
         }
 
       } else {
@@ -122,10 +131,12 @@ merging_multi_SeuratRDS <- function(seurat_files = "3_SCobj/3a",
           features.var.needed$V1 <- tools::toTitleCase(features.var.needed$V1)
         }
       }
-
-
+      message("removing previous scaled data")
+      list.sc[[i]][["RNA"]]$scale.data <- NULL
+      message("selecting the variable features")
       list.sc[[i]] <- subset(list.sc[[i]], features = features.var.needed$V1)
       }
+
       message("Adding project name")
       list.sc[[i]]@project.name <- model.name
       message("Updating cell Index ID")
@@ -143,6 +154,8 @@ merging_multi_SeuratRDS <- function(seurat_files = "3_SCobj/3a",
     for (i in 1:length(list.sc)) {
       list.sc[[i]]@graphs <- list()
       list.sc[[i]]@misc <- list()
+
+
     }
 
     # Calculate the number of loops required

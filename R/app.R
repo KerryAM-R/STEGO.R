@@ -2121,13 +2121,13 @@ runSTEGO <- function(){
               ),
               h4("Plot parameters (all)"),
               fluidRow(
-                column(6, numericInput("text_size", "Axis number size", value = 16)),
+                column(6, numericInput("text_size", "Axis number size", value = 30)),
                 column(6, numericInput("title.text.sizer2", "Axis text size", value = 30)),
-                column(6, numericInput("Legend_size", "Legend text size", value = 12)),
+                column(6, numericInput("Legend_size", "Legend text size", value = 20)),
                 column(6, selectInput("legend_position", "Legend location", choices = c("top", "bottom", "left", "right", "none"), selected = "right")),
               ),
               fluidRow(
-                column(6, numericInput("Strip_text_size", "Strip text size (e.g., grey bars)", value = 16)),
+                column(6, numericInput("Strip_text_size", "Strip text size (e.g., grey bars)", value = 20)),
                 column(6, numericInput("anno_text_size", "Annotation text size", value = 6)),
               ),
               selectInput("font_type", label = "Type of font", choices = font, selected = "Times New Roman"),
@@ -2512,6 +2512,7 @@ runSTEGO <- function(){
                              selectInput("Graph_split_order", "Order of split by:", choices = "", multiple = T, width = "1400px")
                            ),
                          ),
+
                          column(3,colourInput("min_FC_col", "Zero colour", value = "white")),
                          column(3,colourInput("med_FC_col", "from one colour", value = "#E9C2FF")),
                          column(3,colourInput("max_FC_col", "Max colour", value = "#6F00B0")),
@@ -2676,7 +2677,7 @@ runSTEGO <- function(){
                                         column(2, colourInput("middle.dotplot", "Middle color:", "white")),
                                         column(2, colourInput("high.dotplot", "High color:", "darkred")),
                                         column(2, checkboxInput("restict_no_points", "Restrict Label", value = F)),
-                                        column(2, numericInput("pval.ex.top_genes", "Top genes to display", value = 40)),
+                                        column(2, numericInput("pval.ex.top_genes", "Top genes to display", value = 30)),
                                       ),
                                       div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
                                       plotOutput("all_expression_dotplot_top", height = "400px"),
@@ -2685,8 +2686,8 @@ runSTEGO <- function(){
                                         column(1, numericInput("width_all_expression_dotplot_top", "Width of PDF", value = 20)),
                                         column(1, numericInput("height_all_expression_dotplot_top", "Height of PDF", value = 4)),
                                         column(2, style = "margin-top: 25px;", downloadButton("downloadPlot_all_expression_dotplot_top", "Download PDF")),
-                                        column(2, numericInput("width_png_all_expression_dotplot_top", "Width of PNG", value = 2400)),
-                                        column(2, numericInput("height_png_all_expression_dotplot_top", "Height of PNG", value = 700)),
+                                        column(2, numericInput("width_png_all_expression_dotplot_top", "Width of PNG", value = 2200)),
+                                        column(2, numericInput("height_png_all_expression_dotplot_top", "Height of PNG", value = 800)),
                                         column(2, numericInput("resolution_PNG_all_expression_dotplot_top", "Resolution of PNG", value = 144)),
                                         column(2, style = "margin-top: 25px;", downloadButton("downloadPlotPNG_all_expression_dotplot_top", "Download PNG"))
                                       ),
@@ -2802,6 +2803,11 @@ runSTEGO <- function(){
                          # ClusTCR2 Analysis -----
                          tabPanel("ClusTCR2",
                                   value = "ClusTCR2",
+                                  fluidRow(
+                                    column(3, checkboxInput("positive_only_clust","Restrict to positive?",value = T)),
+                                    column(3,  actionButton("caluclate_clust","Calc Clustering Stats")),
+                                  ),
+
                                   tabsetPanel(
                                     tabPanel(
                                       "Table.Clust",
@@ -7564,12 +7570,17 @@ runSTEGO <- function(){
         message("Reducing file size for file ", File_order)
 
         if(input$reduce_file_size) {
-
-
           if (input$sample.type.source_merging == "hs") {
 
 
             if (length(data_user_genes())>0 & input$include_additional_genes) {
+              list.sc[[File_order]] <- FindVariableFeatures(list.sc[[File_order]], selection.method = "vst", nfeatures = 10000)
+              feature_list <- as.data.frame(VariableFeatures(list.sc[[File_order]]))
+
+              names(feature_list) <- "V1"
+              print(head(feature_list))
+
+
               features.var.needed <- read.csv(system.file("Kmean", "human.variable.features.csv", package = "STEGO.R"))
 
 
@@ -7618,8 +7629,6 @@ runSTEGO <- function(){
       df <- getData()
       print(df)
 
-
-
     })
 
     getData_same <- reactive({
@@ -7637,17 +7646,20 @@ runSTEGO <- function(){
         File_order <- paste0("File_",1)
         message(File_order, " extracting overlapping features with all datasets")
         print(list.sc[[File_order]])
-        feature_list <- as.data.frame(rownames(list.sc[[File_order]]@assays$RNA@features))
+        list.sc[[File_order]] <- FindVariableFeatures(list.sc[[File_order]], selection.method = "vst", nfeatures = 10000)
+        feature_list <- as.data.frame(VariableFeatures(list.sc[[File_order]]))
+
         names(feature_list) <- "V1"
         print(head(feature_list))
+
         #
         for (j in 2:length(list.sc)) {
           message("creating list of",j)
           File_order <- paste0("File_",j)
-          feature_list2 <- as.data.frame(rownames(list.sc[[File_order]]@assays$RNA@features))
+          feature_list2 <- as.data.frame(VariableFeatures(list.sc[[j]]))
           names(feature_list2) <- "V1"
           message("merging",j)
-          feature_list <- merge(feature_list,feature_list2)
+          feature_list <- merge(feature_list,feature_list2, by = "V1",all = T)
         }
 
         for (i in 1:length(list.sc)) {
@@ -10850,6 +10862,7 @@ runSTEGO <- function(){
       if (length(input$Samp_col) > 0) {
         # message(paste("the ID column selected is: ",input$Samp_col))
         umap.meta$ID_Column <- umap.meta[,names(umap.meta) %in% input$Samp_col]
+
         # names(umap.meta)[names(umap.meta) %in% input$Samp_col] <- "ID_Column"
       }
 
@@ -10859,7 +10872,7 @@ runSTEGO <- function(){
       }
       umap.meta
       req(TCR_Expanded())
-      sc_merged <- merge(umap.meta, TCR_Expanded(), by = c("v_gene_selected", "ID_Column"), all.x = T)
+      sc_merged <- merge(umap.meta, TCR_Expanded(), by = c("v_gene_selected", "ID_Column",input$Samp_col,input$V_gene_sc), all.x = T)
       sc_merged
 
       if (nrow(sc_merged) > 0) {
@@ -11189,7 +11202,7 @@ runSTEGO <- function(){
       umap.meta
 
 
-      sc <- merge(umap.meta, TCR_Expanded(), by = c("v_gene_selected", "ID_Column"), all.x = T)
+      sc <- merge(umap.meta, TCR_Expanded(), by = c("v_gene_selected", "ID_Column",input$Samp_col,input$V_gene_sc), all.x = T)
 
       ggplot(sc, aes(x = UMAP_1, UMAP_2, colour = seurat_clusters)) +
         geom_point() +
@@ -16339,6 +16352,15 @@ runSTEGO <- function(){
     })
 
     clusTCR2_df_2 <- reactive({
+      sc <- UMAP_metadata_with_labs()
+      validate(
+        need(
+          nrow(sc) > 0,
+          "Upload File"
+        )
+      )
+      req(sc)
+
       cluster <- clusTCR2_df()
       req(cluster)
       cluster$ID_Column <- cluster[, names(cluster) %in% input$Samp_col]
@@ -16553,7 +16575,7 @@ runSTEGO <- function(){
       } else {
         figure +
           facet_wrap(~split_by, nrow = input$wrap_row) +
-          coord_cartesian(expand = FALSE)  # Ensure facets are created even if no data points
+          coord_cartesian(expand = T)  # Ensure facets are created even if no data points
       }
     })
 
@@ -16564,7 +16586,7 @@ runSTEGO <- function(){
     output$downloadPlot_UMAP_ClusTCR2_plot <- downloadHandler(
       filename = function() {
         x <- today()
-        paste("_UMAP_ClusTCR2_", x, ".pdf", sep = "")
+        paste(input$Clusters_to_dis_PIE,"_",input$Split_group_by_,"_UMAP_ClusTCR.pdf", sep = "")
       },
       content = function(file) {
         pdf(file, width = input$width_UMAP_ClusTCR2_plot, height = input$height_UMAP_ClusTCR2_plot, onefile = FALSE) # open the pdf device
@@ -16576,7 +16598,7 @@ runSTEGO <- function(){
     output$downloadPlotPNG_UMAP_ClusTCR2_plot <- downloadHandler(
       filename = function() {
         x <- today()
-        paste("_UMAP_ClusTCR2_", x, ".png", sep = "")
+        paste(input$Clusters_to_dis_PIE,"_",input$Split_group_by_,"_UMAP_ClusTCR.png", sep = "")
       },
       content = function(file) {
         png(file,
@@ -16899,7 +16921,9 @@ runSTEGO <- function(){
 
     # Cluster stats   -----
 
-    compare.stat_Cluster <- reactive({
+    Vals_clust.stats_fn <- reactiveValues(output_clust1=NULL)
+
+    observeEvent(input$caluclate_clust, {
       sc <- UMAP_metadata_with_labs()
       validate(
         need(
@@ -16908,7 +16932,7 @@ runSTEGO <- function(){
         )
       )
 
-      # req(input$V_call_clust_sc,input$junction_clust_sc)
+      req(sc)
       md <- sc@meta.data
 
       cluster <- clusTCR2_df()
@@ -16936,9 +16960,33 @@ runSTEGO <- function(){
       min.pct.expression <- input$min_point_ # standard setting: 0.25
       min.logfc <- input$LogFC_ # 0.25 is standard
 
-      markers.fm.list <- FindMarkers(sc, ident.1 = name.check.clust, min.pct = min.pct.expression, logfc.threshold = min.logfc, only.pos = TRUE)
+      if (input$positive_only_clust) {
+        markers.fm.list <- FindMarkers(sc, ident.1 = name.check.clust, min.pct = min.pct.expression, logfc.threshold = min.logfc, only.pos = TRUE)
+      } else {
+
+        markers.fm.list <- FindMarkers(sc, ident.1 = name.check.clust, min.pct = min.pct.expression, logfc.threshold = min.logfc)
+      }
+
       markers.fm.list2 <- subset(markers.fm.list, markers.fm.list$p_val_adj < input$pval.ex.filter)
       as.data.frame(markers.fm.list2)
+      Vals_clust.stats_fn$output_clust1 <- markers.fm.list2
+
+    })
+
+
+    compare.stat_Cluster <- reactive({
+      sc <- UMAP_metadata_with_labs()
+      validate(
+        need(
+          nrow(sc) > 0,
+          "Upload File"
+        )
+      )
+
+      df <- Vals_clust.stats_fn$output_clust1
+      req(df)
+      df
+
     })
 
     output$compare.stat_Cluster_DT <- DT::renderDT(escape = FALSE, options = list(autoWidth = FALSE, lengthMenu = c(2, 5, 10, 20, 50, 100), pageLength = 10, scrollX = TRUE), {
