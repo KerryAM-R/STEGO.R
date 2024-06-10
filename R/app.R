@@ -1113,11 +1113,22 @@ runSTEGO <- function(){
                          id = "side-panel",
                          style = "overflow-y:scroll; max-height: 800px; position:relative;", width = 3,
                          div(class = "name-BD",textInput("project_name", h4("Sample/Project Name",class = "name-header2"), value = "")),
-                         # selectInput("dataset_sc", "Choose a dataset:", choices = c("test_data_sc", "own_data_sc")),
-                         # upload the file
                          fileInput("file_SC", "Load count matrix (csv for BDrhap, csv.gz or .h5 for 10x)"),
-                         fileInput("file_SC_meta", "Upload file meta.data file (.csv.gz or .csv)", ),
+                         fluidRow(
+                           column(4,checkboxInput("abTCR_available","abTCR?",value = T)),
+                           column(4,checkboxInput("gdTCR_available","gdTCR?",value = F)),
+                           column(4,checkboxInput("BCR_available","BCR?",value = F)),
+                         ),
 
+                         conditionalPanel(
+                           condition = ("input.abTCR_available == true"),
+                           fileInput("file_SC_meta", "Upload abTCR meta.data (.csv.gz or .csv)", )),
+                         conditionalPanel(
+                           condition = ("input.gdTCR_available == true"),
+                           fileInput("file_SC_meta2", "Upload gdTCR meta.data (.csv.gz or .csv)", )),
+                         conditionalPanel(
+                           condition = ("input.BCR_available == true"),
+                           fileInput("file_SC_meta3", "Upload BCR meta.data (.csv.gz or .csv)", )),
                          # selectInput("species","Species",choices = c("human","mouse","other")),
                          selectInput("df_seruatobj_type", "Data type", choices = c("10x_Genomics (raw)", "10x_Genomics (.h5)","BD Rhapsody (Human Immune panel)","BD Rhapsody (Full panel)", "BD Rhapsody (Mouse)", "Array")),
                          selectInput("stored_in_expression", "Does the .h5 object has multiple part?", choices = c("no", "yes")),
@@ -7467,6 +7478,22 @@ runSTEGO <- function(){
       data_sc_meta(dataframe)
     })
 
+
+    observeEvent(input$file_SC_meta2, {
+      inFile_sc_meta2 <- input$file_SC_meta2
+      req(inFile_sc_meta2)
+      dataframe2 <- read.csv(inFile_sc_meta2$datapath)
+      data_sc_meta(dataframe2)
+    })
+
+
+    observeEvent(input$file_SC_meta3, {
+      inFile_sc_meta3 <- input$file_SC_meta3
+      req(inFile_sc_meta3)
+      dataframe3 <- read.csv(inFile_sc_meta3$datapath)
+      data_sc_meta(dataframe3)
+    })
+
     # Use the reactive value to display data in the table
     output$DEx_view.meta.dt <- DT::renderDT({
       sc <- data_sc_meta()
@@ -10567,6 +10594,8 @@ runSTEGO <- function(){
         df <-  as.data.frame(t(df))
         print(head(df))
 
+        print(table(grepl("TRAV",df$V1)))
+
       }
 
       names(df) <- c("v_gene_AG","j_gene_AG","c_gene_AG")
@@ -10590,7 +10619,7 @@ runSTEGO <- function(){
         # df <- as.data.frame(strsplit(df_[,1], "[.]"))
         df2 <- as.data.frame(t(df2))
         print(head(df2))
-
+        print(table(grepl("TRBV",df$V1)))
       }
 
       names(df2) <- c("v_gene_BD","d_gene_BD","j_gene_BD","c_gene_BD")
