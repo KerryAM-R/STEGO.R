@@ -3122,10 +3122,14 @@ runSTEGO <- function(){
                                     column(3, uiOutput("Default_priority_cutoffD")),
                                   ),
                                   fluidRow(
-                                    column(3, numericInput("Sample_count_cluster", "AG Sample count \u2265", value = 2, min = 1)),
-                                    column(3, numericInput("Total_cloneCount_cluster", "AG Clone count \u2265", value = 3, min = 3)),
-                                    column(3, numericInput("Sample_count_clusterBD", "BD Sample count \u2265", value = 3, min = 1)),
-                                    column(3, numericInput("Total_cloneCount_clusterBD", "BD Clone count \u2265", value = 3, min = 3)),
+                                    column(3, numericInput("Sample_count_cluster", "A Sample count \u2265", value = 2, min = 1)),
+                                    column(3, numericInput("Total_cloneCount_cluster", "A Clone count \u2265", value = 3, min = 3)),
+                                    column(3, numericInput("Sample_count_cluster_G", "G Sample count \u2265", value = 2, min = 1)),
+                                    column(3, numericInput("Total_cloneCount_cluster_G", "G Clone count \u2265", value = 3, min = 3)),
+                                    column(3, numericInput("Sample_count_clusterB", "B Sample count \u2265", value = 3, min = 1)),
+                                    column(3, numericInput("Total_cloneCount_clusterB", "BD Clone count \u2265", value = 3, min = 3)),
+                                    column(3, numericInput("Sample_count_clusterD", "D Sample count \u2265", value = 3, min = 1)),
+                                    column(3, numericInput("Total_cloneCount_clusterD", "D Clone count \u2265", value = 3, min = 3)),
                                   ),
                                   add_busy_spinner(spin = "fading-circle", position = "top-right",  height = "200px", width = "200px", color = "#6F00B0"),
                                   verbatimTextOutput("number_clusters_to_analyse_A"),
@@ -19577,10 +19581,10 @@ runSTEGO <- function(){
         df7 <- df7[order(df7$priority, decreasing = F), ]
         if (max(df7$Updated_order) > 10) {
           prior <- subset(df7, df7$Updated_order > 11)
-          numericInput("priority_cutoffBD", "Priority cut-off (B)", value = min(prior$priority), step = 0.01, min = 0, max = 1)
+          numericInput("priority_cutoffB", "Priority cut-off (B)", value = min(prior$priority), step = 0.01, min = 0, max = 1)
         } else {
           prior <- df7
-          numericInput("priority_cutoffBD", "Priority cut-off (B)", value = 1, step = 0.01, min = 0, max = 1)
+          numericInput("priority_cutoffB", "Priority cut-off (B)", value = 1, step = 0.01, min = 0, max = 1)
         }
       } else {
       }
@@ -19602,10 +19606,10 @@ runSTEGO <- function(){
         df7 <- df7[order(df7$priority, decreasing = F), ]
         if (max(df7$Updated_order) > 10) {
           prior <- subset(df7, df7$Updated_order > 11)
-          numericInput("priority_cutoffBD", "Priority cut-off (D)", value = min(prior$priority), step = 0.01, min = 0, max = 1)
+          numericInput("priority_cutoffD", "Priority cut-off (D)", value = min(prior$priority), step = 0.01, min = 0, max = 1)
         } else {
           prior <- df7
-          numericInput("priority_cutoffBD", "Priority cut-off (D)", value = 1, step = 0.01, min = 0, max = 1)
+          numericInput("priority_cutoffD", "Priority cut-off (D)", value = 1, step = 0.01, min = 0, max = 1)
         }
       } else {
       }
@@ -20901,7 +20905,6 @@ runSTEGO <- function(){
       clusterAG <- df7 %>%
         select(all_of(c(input$Samp_col, "Sample_count", "Total_cloneCount", "ClusterCount", "priority", "Updated_order")), everything())
     })
-
     B_cluster <- reactive({
       sc <- UMAP_metadata_with_labs()
       clust <- data_sc_clusTCR_BD()
@@ -21047,7 +21050,8 @@ runSTEGO <- function(){
 
     observeEvent(input$ClusterDownload_automated, {
       x <- today()
-      if (length(AG_cluster()) > 0) {
+      print(A_cluster())
+      if (length(A_cluster()) > 0) {
         message("Downloading A cluster table...")
         Exp_stats_cutoff_count.name <- paste("prioritization/Clustering/Cluster_summary_table_A_", x, ".csv", sep = "")
         if (dim(G_cluster())[2]>0) {
@@ -21068,7 +21072,7 @@ runSTEGO <- function(){
 
     observeEvent(input$ClusterDownload_automated, {
       x <- today()
-      if (length(AG_cluster()) > 0) {
+      if (length(G_cluster()) > 0) {
         message("Downloading G cluster table...")
         Exp_stats_cutoff_count.name <- paste("prioritization/Clustering/Cluster_summary_table_G_", x, ".csv", sep = "")
 
@@ -21092,12 +21096,12 @@ runSTEGO <- function(){
     observeEvent(input$ClusterDownload_automated, {
       x <- today()
 
-      if (length(BD_cluster()) > 0) {
+      if (length(B_cluster()) > 0) {
         message("Downloading B cluster table...")
         Exp_stats_cutoff_count.name <- paste("prioritization/Clustering/Cluster_summary_table_B_", x, ".csv", sep = "")
-        BD_cluster <- BD_cluster()
+        B_cluster <- B_cluster()
 
-        write.csv(BD_cluster, Exp_stats_cutoff_count.name, row.names = F)
+        write.csv(B_cluster, Exp_stats_cutoff_count.name, row.names = F)
         message("Downloading B cluster analysis...")
         ggPlotUMAPClusterB()
       } else {
@@ -21107,7 +21111,7 @@ runSTEGO <- function(){
     observeEvent(input$ClusterDownload_automated, {
       x <- today()
 
-      if (length(BD_cluster()) > 0) {
+      if (length(D_cluster()) > 0) {
         message("Downloading D cluster table...")
         Exp_stats_cutoff_count.name <- paste("prioritization/Clustering/Cluster_summary_table_D_", x, ".csv", sep = "")
         D_cluster <- D_cluster()
@@ -21120,7 +21124,7 @@ runSTEGO <- function(){
     })
 
     output$number_clusters_to_analyse_A <- renderPrint({
-      df1 <- AG_cluster()
+      df1 <- A_cluster()
       validate(
         need(
           nrow(df1) > 0,
@@ -21145,8 +21149,8 @@ runSTEGO <- function(){
           "Upload ClusTCR file"
         )
       )
-      df1 <- subset(df1, df1$Sample_count >= input$Sample_count_cluster)
-      df1 <- subset(df1, df1$Total_cloneCount >= input$Total_cloneCount_cluster)
+      df1 <- subset(df1, df1$Sample_count >= input$Sample_count_cluster_G)
+      df1 <- subset(df1, df1$Total_cloneCount >= input$Total_cloneCount_cluster_G)
       df1 <- subset(df1, df1$priority < input$priority_cutoff)
       len <- length(unique(df1$Updated_order))
       df2 <- paste("The analysis will be limited to the top", len, "G cluster(s)")
@@ -21155,7 +21159,6 @@ runSTEGO <- function(){
       rownames(df4) <- c(1, 2)
       df4
     })
-
     output$number_clusters_to_analyse_B <- renderPrint({
       df1 <- B_cluster()
       validate(
@@ -21164,9 +21167,9 @@ runSTEGO <- function(){
           "Upload ClusTCR file"
         )
       )
-      df1 <- subset(df1, df1$Sample_count >= input$Sample_count_clusterBD)
-      df1 <- subset(df1, df1$Total_cloneCount >= input$Total_cloneCount_clusterBD)
-      df1 <- subset(df1, df1$priority < input$priority_cutoffBD)
+      df1 <- subset(df1, df1$Sample_count >= input$Sample_count_clusterB)
+      df1 <- subset(df1, df1$Total_cloneCount >= input$Total_cloneCount_clusterB)
+      df1 <- subset(df1, df1$priority < input$priority_cutoffB)
       len <- length(unique(df1$Updated_order))
       df2 <- paste("The analysis will be limited to the top", len, "B cluster(s)")
       df3 <- paste("The cut-off used min clone clount:", min(df1$Total_cloneCount), "The cut-off used min sample clount:", min(df1$Sample_count))
@@ -21182,9 +21185,9 @@ runSTEGO <- function(){
           "Upload ClusTCR file"
         )
       )
-      df1 <- subset(df1, df1$Sample_count >= input$Sample_count_clusterBD)
-      df1 <- subset(df1, df1$Total_cloneCount >= input$Total_cloneCount_clusterBD)
-      df1 <- subset(df1, df1$priority < input$priority_cutoffBD)
+      df1 <- subset(df1, df1$Sample_count >= input$Sample_count_clusterD)
+      df1 <- subset(df1, df1$Total_cloneCount >= input$Total_cloneCount_clusterD)
+      df1 <- subset(df1, df1$priority < input$priority_cutoffD)
       len <- length(unique(df1$Updated_order))
       df2 <- paste("The analysis will be limited to the top", len, "D cluster(s)")
       df3 <- paste("The cut-off used min clone clount:", min(df1$Total_cloneCount), "The cut-off used min sample clount:", min(df1$Sample_count))
@@ -21534,7 +21537,7 @@ runSTEGO <- function(){
       clusterAG <- subset(clusterAG, clusterAG$Total_cloneCount >= input$Total_cloneCount_cluster)
 
       len.order <- (unique(clusterAG$Updated_order))
-      # clusterAG <- subset(cluster,cluster$priority<input$priority_cutoff)
+
       withProgress(message = "Performing G cluster analysis", value = 0, {
         for (i in len.order) {
           incProgress(1 / length(len.order), detail = paste("G cluster", i, "of", max(len.order)))
@@ -21842,10 +21845,10 @@ runSTEGO <- function(){
           "Upload clusTCR BD table"
         )
       )
-      req(clusterBD2, input$Clusters_to_dis_PIE, input$Colour_By_this, input$priority_cutoffBD)
-      clusterBD <- subset(clusterBD2, clusterBD2$priority < input$priority_cutoffBD)
-      clusterBD <- subset(clusterBD, clusterBD$Sample_count >= input$Sample_count_clusterBD)
-      clusterBD <- subset(clusterBD, clusterBD$Total_cloneCount >= input$Total_cloneCount_clusterBD)
+      req(clusterBD2, input$Clusters_to_dis_PIE, input$Colour_By_this, input$priority_cutoffB)
+      clusterBD <- subset(clusterBD2, clusterBD2$priority < input$priority_cutoffB)
+      clusterBD <- subset(clusterBD, clusterBD$Sample_count >= input$Sample_count_clusterB)
+      clusterBD <- subset(clusterBD, clusterBD$Total_cloneCount >= input$Total_cloneCount_clusterB)
 
       len.order <- (unique(clusterBD$Updated_order))
 
@@ -22169,10 +22172,10 @@ runSTEGO <- function(){
           "Upload clusTCR BD table"
         )
       )
-      req(clusterBD2, input$Clusters_to_dis_PIE, input$Colour_By_this, input$priority_cutoffBD)
-      clusterBD <- subset(clusterBD2, clusterBD2$priority < input$priority_cutoffBD)
-      clusterBD <- subset(clusterBD, clusterBD$Sample_count >= input$Sample_count_clusterBD)
-      clusterBD <- subset(clusterBD, clusterBD$Total_cloneCount >= input$Total_cloneCount_clusterBD)
+      req(clusterBD2, input$Clusters_to_dis_PIE, input$Colour_By_this, input$priority_cutoffD)
+      clusterBD <- subset(clusterBD2, clusterBD2$priority < input$priority_cutoffD)
+      clusterBD <- subset(clusterBD, clusterBD$Sample_count >= input$Sample_count_clusterD)
+      clusterBD <- subset(clusterBD, clusterBD$Total_cloneCount >= input$Total_cloneCount_clusterD)
 
       len.order <- (unique(clusterBD$Updated_order))
 
