@@ -12,6 +12,7 @@ merging_multi_SeuratRDS(
   reduce_size = TRUE,
   own_features = FALSE,
   Seurat_Version = "V5",
+  max_features = 10000,
   own_features_df = own_features_df
 )
 }
