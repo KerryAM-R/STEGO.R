@@ -31,6 +31,7 @@
 #' @import Rcpp
 #' @importFrom reshape2 acast
 #' @importFrom readr write_csv
+#' @importFrom tidyr pivot_longer
 #' @import scales
 #' @import scGate
 #' @import Seurat
@@ -239,7 +240,7 @@ runSTEGO <- function(){
 
   # UI page -----
   ui <- fluidPage(
-    # add hint explination -----
+    # add hint explanation -----
     tags$head(
       tags$style(HTML(
         "
@@ -797,48 +798,54 @@ runSTEGO <- function(){
                 tabPanel(
                   "clusTCR2",
                   tags$head(tags$style("#tb_clusTCR  {white-space: nowrap;  }")),
+                  selectInput("chain_clusTCR2_bd", "Select to download", choices = c("AG", "BD", "IgH", "IgLK")),
+                  downloadButton("downloaddf_clusTCR", "Download table"),
+
                   div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
                   div(DT::DTOutput("tb_clusTCR", height = "200px")),
-                  selectInput("chain_clusTCR2_bd", "Select to download", choices = c("AG", "BD", "IgH", "IgLK")),
-                  downloadButton("downloaddf_clusTCR", "Download table")
+
                 ),
                 tabPanel(
                   "TCRex",
+                  downloadButton("downloaddf_TCRex_BDrap", "Download table"),
                   div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
                   div(DT::DTOutput("tb_TCRex_BDrap_df", height = "200px")),
-                  downloadButton("downloaddf_TCRex_BDrap", "Download table")
+
                 ),
                 tabPanel(
                   "For Seurat",
                   tags$head(tags$style("#tb_count_matrix  {white-space: nowrap;  }")),
+                  fluidRow(
+                    column(3, downloadButton("downloadtb_count_matrix", "Download count table")),
+                    column(3, downloadButton("downloadtb_metadata_sc", "Download meta.data table")),
+                  ),
                   div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
                   div(DT::DTOutput("tb_count_matrix", height = "200px")),
                   div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
                   div(DT::DTOutput("tb_metadata_sc", height = "200px")),
-                  fluidRow(
-                    column(3, downloadButton("downloadtb_count_matrix", "Download count table")),
-                    column(3),
-                    column(3, downloadButton("downloadtb_metadata_sc", "Download meta.data table")),
-                  ),
+
                 ),
                 tabPanel(
                   "TCR_Explore",
                   tags$head(tags$style("#tb_TCR_Explore  {white-space: nowrap;  }")),
+                  downloadButton("downloadtb_TCR_Explore", "Download table"),
                   div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
                   div(DT::DTOutput("tb_TCR_Explore", height = "200px")),
-                  downloadButton("downloadtb_TCR_Explore", "Download table")
+
                 ),
                 tabPanel(
                   "Multi-TCR",
+                  downloadButton("downloadtb_multiTCR", "Download Multi-TCR table"),
                   div(DT::DTOutput("tb_multiTCR", height = "200px")),
-                  downloadButton("downloadtb_multiTCR", "Download Multi-TCR table")
+
                 ),
                 tabPanel(
                   "Create Sample Tags file",
+                  downloadButton("downloadtb_sample_tags", "Download Tags"),
                   tags$head(tags$style("#tb_sample_tags_created  {white-space: nowrap;  }")),
                   div(class = "name-BD",textInput("sample_tags_name", "Name of sample", value = "BD EA splenocyte")),
                   div(DT::DTOutput("tb_sample_tags_created", height = "200px")),
-                  downloadButton("downloadtb_sample_tags", "Download Tags")
+
                 ),
               )
             )
@@ -1998,19 +2005,19 @@ runSTEGO <- function(){
             ),
 
             selectInput("V_gene_sc", "V gene with/without CDR3", choices = ""),
+            selectInput("Samp_col", "Selected Individual", choices = ""),
 
             conditionalPanel(
               condition = "input.check_up_files != 'up'",
               fluidRow(
-                column(6,  selectInput("Samp_col", "Selected Individual", choices = "")),
                 column(6, selectInput("Split_by_group", "Display by Selected Individual", choices = c("no", "yes"))),
                 column(6, numericInput("wrap_row", h5("Number of plot rows"), value = 2)),
                 conditionalPanel(
                   condition = "input.Panel_TCRUMAP != 'TCR_and_GEX_tb'",
-                  conditionalPanel(
-                    condition = "input.Split_by_group == 'yes'",
-                    column(6, selectInput("Split_group_by_", "Split graph by:", choices = ""))
-                  ),
+                  # conditionalPanel(
+                  #   condition = "input.Split_by_group == 'yes'",
+                  column(6, selectInput("Split_group_by_", "Split graph by:", choices = ""))
+                  # ),
                 ),
 
               ),
@@ -2131,6 +2138,7 @@ runSTEGO <- function(){
                 ),
               ),
               h4("Plot parameters (all)"),
+              checkboxInput("jitter","Display with jitter in violin plot?", value = T),
               fluidRow(
                 column(6, numericInput("text_size", "Axis number size", value = 30)),
                 column(6, numericInput("title.text.sizer2", "Axis text size", value = 30)),
@@ -2516,12 +2524,12 @@ runSTEGO <- function(){
                        value = "TCR_and_GEX_tb",
                        fluidRow(
 
-                         conditionalPanel(
-                           condition = "input.Split_by_group == 'yes'",
-                           column(
-                             12,
-                             selectInput("Graph_split_order", "Order of split by:", choices = "", multiple = T, width = "1400px")
-                           ),
+                         # conditionalPanel(
+                         #   condition = "input.Split_by_group == 'yes' | input.",
+                         column(
+                           12,
+                           selectInput("Graph_split_order", "Order of split by:", choices = "", multiple = T, width = "1400px")
+                           # ),
                          ),
 
                          column(3,colourInput("min_FC_col", "Zero colour", value = "white")),
@@ -2649,8 +2657,7 @@ runSTEGO <- function(){
                                       fluidRow(
                                         column(3, checkboxInput("restric_ex", "Restrict to above a threshold?", value = F)),
                                         column(3, numericInput("Gre_ex", "Expression above:", value = 0)),
-                                        column(3, selectInput("plot_type_ridgvi", "Plot type", choices = c("Ridge (selected clonotype)", "Ridge (compare)", "Violin (selected clonotype)", "Violin (compare)"))),
-                                      ),
+                                        column(3, selectInput("plot_type_ridgvi", "Plot type", choices = c("Ridge (selected clonotype)", "Ridge (stats)", "Violin (selected clonotype)", "Violin (stats)"),selected = "Violin (selected clonotype)"))),
                                       fluidRow(
                                         column(3,numericInput("ylow","y-axis (min)","")),
                                         column(3,numericInput("yhigh","y-axis (max)","")),
@@ -2658,13 +2665,21 @@ runSTEGO <- function(){
                                       ),
 
                                       div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
+
+
+
                                       fluidRow(
-                                        column(6, div(DT::DTOutput("Ridge_chart_alpha_gamma_stat"))),
+                                        conditionalPanel(
+                                          condition = "input.plot_type_ridgvi=='Ridge (selected clonotype)' | input.plot_type_ridgvi=='Violin (selected clonotype)'",
+                                          column(6, div(DT::DTOutput("Ridge_chart_alpha_gamma_stat") ),
+                                                 downloadButton("downloaddf_clusTCR_GEx", "Download stats")
+                                          )
+                                        ),
                                         column(6, plotOutput("Ridge_chart_alpha_gamma_plot_out", height = "600px"))
                                       ),
-                                      fluidRow(
-                                        column(6, downloadButton("downloaddf_clusTCR_GEx", "Download stats"))
-                                      ),
+                                      # fluidRow(
+                                      #   column(6, )
+                                      # ),
                                       fluidRow(
                                         column(1, numericInput("width_Ridge_chart_alpha_gamma_plot_out", "Width of PDF", value = 10)),
                                         column(1, numericInput("height_Ridge_chart_alpha_gamma_plot_out", "Height of PDF", value = 8)),
@@ -3497,27 +3512,36 @@ runSTEGO <- function(){
 
                    sidebarLayout(
                      sidebarPanel(width = 3,
+                                  conditionalPanel(
 
-                                  fileInput("file1_rds_OLGA",
-                                            "Choose .rds files from merging",
-                                            multiple = FALSE,
-                                            accept = c("rds", ".rds")
-                                  ),
-                                  selectInput("chain_type_olga","Chain type: ",choices = c("TRB","TRA")),
-                                  downloadButton("downloaddf_pgen_dt", "Download Table (.csv)")
+                                    condition = "input.OLGA_analysis != 'summary_histograms_olga'",
+
+                                    fileInput("file1_rds_OLGA",
+                                              "Choose .rds files from merging",
+                                              multiple = FALSE,
+                                              accept = c("rds", ".rds")
+                                    ),
+                                    selectInput("chain_type_olga","Chain type: ",choices = c("TRB","TRA")),
+                                    selectInput("species_olga","Species: ",choices = c("human","mouse")),
+                                    downloadButton("downloaddf_pgen_dt", "Download Table (.csv)"))
+
                      ),
 
                      mainPanel(
                        width = 9,
                        tabsetPanel(
                          id = "OLGA_analysis",
-                         tabPanel("Loaded Table",
+                         tabPanel("Loaded Table", value = "olga_table_uploaded",
                                   add_busy_spinner(spin = "fading-circle", position = "top-right",  height = "200px", width = "200px", color = "#6F00B0"),
                                   div(DT::DTOutput("Pgen_Selected")),
                          ),
-                         tabPanel("Pgen",
+                         tabPanel("Pgen", value = 'pgen_output_olga',
                                   add_busy_spinner(spin = "fading-circle", position = "top-right",  height = "200px", width = "200px", color = "#6F00B0"),
                                   div(DT::DTOutput("Pgen_BD")),
+                         ),
+                         tabPanel("Histogram", value = "summary_histograms_olga",
+
+
                          )
                        )
                      )
@@ -3556,8 +3580,7 @@ runSTEGO <- function(){
 
   ########
   # server ------
-  server <- function(input, output, session) {
-    # tool tips in server ----
+  server <- function(input, output, session) {  # tool tips in server ----
 
 
 
@@ -3614,7 +3637,7 @@ runSTEGO <- function(){
 
     output$scGate_cutoffs <- renderUI({
       if (input$Data_types == "10x_HS" || input$Data_types == "BD_HS.Full.Panel" || input$Data_types == "10x_MM" || input$Data_types == "BD_MM_Full.Panel") {
-        numericInput("threshold_scGate", "scGate threshold", value = 0.2)
+        numericInput("threshold_scGate", "scGate threshold", value = 0.25)
       } else {
         numericInput("threshold_scGate", "scGate threshold", value = 0.55)
       }
@@ -4017,7 +4040,8 @@ runSTEGO <- function(){
       TCR_unfiltered <- contigs
       TCR_unfiltered$seq_issue <- ifelse(grepl("[*]", TCR_unfiltered$sequence_alignment_aa), "stop-codon", "productive")
       TCR_unfiltered_prod <- subset(TCR_unfiltered, TCR_unfiltered$seq_issue == "productive")
-      print(names(TCR_unfiltered_prod))
+      # print(names(TCR_unfiltered_prod))
+
       if(length(TCR_unfiltered_prod$cdr3_length)>0) {
       } else {
         message("adding junction length")
@@ -4423,7 +4447,8 @@ runSTEGO <- function(){
       TCR_unfiltered <- contigs
       TCR_unfiltered$seq_issue <- ifelse(grepl("[*]", TCR_unfiltered$sequence_alignment_aa), "stop-codon", "productive")
       TCR_unfiltered_prod <- subset(TCR_unfiltered, TCR_unfiltered$seq_issue == "productive")
-      print(names(TCR_unfiltered_prod))
+      # print(names(TCR_unfiltered_prod))
+
       if(length(TCR_unfiltered_prod$cdr3_length)>0) {
       } else {
         message("adding junction length")
@@ -4576,13 +4601,11 @@ runSTEGO <- function(){
       }
       print("merged IgH and IgLK")
 
-
-
       contig_paired_only <- contig_paired
       contig_paired_only[is.na(contig_paired_only)] <- "None"
       contig_paired_only[contig_paired_only == ""] <- "None"
       contig_paired_only$d_gene_IgH[contig_paired_only$d_gene_IgH == "None"] <- "_"
-      print(names(contig_paired_only))
+      # print(names(contig_paired_only))
       if (input$filtering_TCR == T) {
         contig_paired_only <- subset(contig_paired_only, contig_paired_only$junction_IgH != "None")
         contig_paired_only <- subset(contig_paired_only, contig_paired_only$junction_IgLK != "None")
@@ -4599,15 +4622,15 @@ runSTEGO <- function(){
       contig_paired_only$vj_gene_IgH <- gsub(".NA.", ".", contig_paired_only$vj_gene_IgH)
       contig_paired_only$vj_gene_IgH <- gsub("[.]None[.]", ".", contig_paired_only$vj_gene_IgH)
       contig_paired_only$vj_gene_IgH <- gsub("None.None", "", contig_paired_only$vj_gene_IgH)
-      print(names(contig_paired_only))
+      # print(names(contig_paired_only))
       contig_paired_only$vj_gene_cdr3_IgH <- paste(contig_paired_only$vj_gene_IgH, contig_paired_only$junction_aa_IgH, sep = "_")
       contig_paired_only$vj_gene_cdr3_IgH <- gsub("_None", "", contig_paired_only$vj_gene_cdr3_IgH)
-      print(names(contig_paired_only))
+      # print(names(contig_paired_only))
       contig_paired_only$vdj_gene_IgH <- paste(contig_paired_only$v_gene_IgH,contig_paired_only$d_gene_IgH, contig_paired_only$j_gene_IgH, sep = ".")
       contig_paired_only$vdj_gene_IgH <- gsub(".NA.", ".", contig_paired_only$vdj_gene_IgH)
       contig_paired_only$vdj_gene_IgH <- gsub("[.]None[.]", ".", contig_paired_only$vdj_gene_IgH)
       contig_paired_only$vdj_gene_IgH <- gsub("None.None", "", contig_paired_only$vdj_gene_IgH)
-      print(names(contig_paired_only))
+      # print(names(contig_paired_only))
       contig_paired_only$vdj_gene_cdr3_IgH <- paste(contig_paired_only$vdj_gene_IgH, contig_paired_only$junction_aa_IgH, sep = "_")
       contig_paired_only$vdj_gene_cdr3_IgH <- gsub("_None", "", contig_paired_only$vdj_gene_cdr3_IgH)
 
@@ -5677,7 +5700,7 @@ runSTEGO <- function(){
 
 
 
-      print(names(contigs_lim))
+      # print(names(contigs_lim))
       names(contigs_lim) <- gsub("junction", "cdr3_nt", names(contigs_lim))
 
       contig_AG <- subset(contigs_lim, contigs_lim$chain == "TRA" | contigs_lim$chain == "TRG")
@@ -7049,19 +7072,6 @@ runSTEGO <- function(){
     })
 
     # Use the reactive value to display data in the table
-    output$DEx_header_name_check.dt <- DT::renderDT({
-      sc <- data_sc()
-
-      validate(
-        need(
-          !is.null(sc),
-          "Upload data"
-        )
-      )
-
-      sc
-    })
-
     observeEvent(input$clearDataBtn, {
       # Clear the reactive value to remove the data
       data_sc(NULL)
@@ -7122,7 +7132,7 @@ runSTEGO <- function(){
       head(df.test2)[1:6]
     })
 
-    ## reading in 10x and BD data ----
+    # ## reading in 10x and BD data ----
     df_seruatobj <- reactive({
       suppressWarnings({
         df.test <- data_sc()
@@ -7609,12 +7619,8 @@ runSTEGO <- function(){
               feature_list <- as.data.frame(VariableFeatures(list.sc[[File_order]]))
 
               names(feature_list) <- "V1"
-              print(head(feature_list))
-
-
+              # print(head(feature_list))
               features.var.needed <- read.csv(system.file("Kmean", "human.variable.features.csv", package = "STEGO.R"))
-
-
               user_required_genes <- data_user_genes()
               names(user_required_genes) <- "V1"
 
@@ -7681,8 +7687,6 @@ runSTEGO <- function(){
         feature_list <- as.data.frame(VariableFeatures(list.sc[[File_order]]))
 
         names(feature_list) <- "V1"
-        print(head(feature_list))
-
         #
         for (j in 2:length(list.sc)) {
           message("creating list of",j)
@@ -8120,7 +8124,7 @@ runSTEGO <- function(){
         )
       )
 
-      print(unique(sc@meta.data[,names(sc@meta.data) %in% input$meta_data_for_harmony]))
+      # print(unique(sc@meta.data[,names(sc@meta.data) %in% input$meta_data_for_harmony]))
 
       sc@meta.data$group_by_var <- sc@meta.data[,names(sc@meta.data) %in% input$meta_data_for_harmony]
       sc@meta.data$group_by_var[is.na(sc@meta.data$group_by_var)] <- "unknown"
@@ -10594,11 +10598,7 @@ runSTEGO <- function(){
 
         list_df <- sc@meta.data[,names(sc@meta.data) %in% input$TCR_alpha_gamma_cdr3_reformatting]
         df <- t(as.data.frame(strsplit(list_df, "[.]")))
-        # df <- as.data.frame(strsplit(df_[,1], "[.]"))
         df <-  as.data.frame(t(df))
-        print(head(df))
-
-        print(table(grepl("TRAV",df$V1)))
 
       }
 
@@ -10827,7 +10827,13 @@ runSTEGO <- function(){
 
       print(sc)
 
-      req(input$Samp_col2, input$datasource, input$species_analysis, input$V_gene_sc)
+      if (input$add_additional_lables == "yes") {
+        req(input$Samp_col2, input$datasource, input$species_analysis, input$V_gene_sc)
+      } else {
+
+        req(input$datasource, input$species_analysis, input$V_gene_sc)
+      }
+
 
 
       sc@meta.data$Cell_Index_old <- sc@meta.data$Cell_Index
@@ -10995,7 +11001,7 @@ runSTEGO <- function(){
         session,
         "V_gene_sc",
         choices = names(df3.meta),
-        selected = "vdj_gene_cdr3_AG_BD"
+        selected = "vj_gene_cdr3_AG_BD"
       )
     })
     observe({
@@ -13649,13 +13655,20 @@ runSTEGO <- function(){
         )
       )
 
-      df <- sc@meta.data
-      df
+      df <- as.data.frame(sc@meta.data)
+
+      df <- df %>%
+        select(c(input$Samp_col, input$V_gene_sc), everything())
+      print(head(df))
+      message("checking for two")
       unique.df <- (df[, names(df) %in% c(input$Samp_col, input$V_gene_sc)])
       names(unique.df) <- c("group", "chain")
 
       unique.df <- subset(unique.df, unique.df$chain != "NA")
       unique.df <- subset(unique.df, unique.df$group != "NA")
+
+
+
       unique.df$cloneCount <- 1
       unique.df
       df_unique_sum <- ddply(unique.df, names(unique.df)[-c(3)], numcolwise(sum))
@@ -13664,7 +13677,7 @@ runSTEGO <- function(){
       sc@meta.data$Vgene <- sc@meta.data[, names(sc@meta.data) %in% input$V_gene_sc]
 
       name.clone <- input$Selected_clonotype
-      sc@meta.data$Gene_select <- ifelse(sc@meta.data$Vgene %in% name.clone, name.clone, "unselected")
+      sc@meta.data$Gene_select <- ifelse(sc@meta.data$Vgene %in% name.clone, name.clone, "BG")
       sc@meta.data
       unique(sc@meta.data$Gene_select)
       Idents(object = sc) <- sc@meta.data$Gene_select
@@ -13779,11 +13792,17 @@ runSTEGO <- function(){
       top_BD_cluster$Selected_function <- factor(top_BD_cluster$Selected_function, levels = input$Graph_split_order)
       # print(names(top_BD_cluster))
       # print(names(gene_df))
-      merge(top_BD_cluster, gene_df, by = "Cell_Index")
+
+      df <-   merge(top_BD_cluster, gene_df, by = "Cell_Index")
+      print(head(df))
+      df
     })
 
     Ridge_chart_alpha_gamma_plot <- reactive({
       df <- Ridge_chart_alpha_gamma_df()
+
+
+
       df$expressed <- ifelse(df[, names(df) %in% input$string.data_Exp_top] > input$Gre_ex, "expressed", "Not expressed")
 
       if (input$restric_ex == T) {
@@ -13822,22 +13841,33 @@ runSTEGO <- function(){
       }
       df2[is.na(df2)] <- "-"
 
-      print(aov(get(input$string.data_Exp_top) ~ get(input$Split_group_by_), data = df2))
+      if(length(unique(df$Selected_function))>1) {
+        message("multiple groups")
+        print(head(df))
 
-      at <- TukeyHSD(aov(get(input$string.data_Exp_top) ~ get(input$Split_group_by_), data = df2))
+        print(aov(get(input$string.data_Exp_top) ~ get(input$Split_group_by_), data = df2))
 
-      print(at)
+        at <- TukeyHSD(aov(get(input$string.data_Exp_top) ~ get(input$Split_group_by_), data = df2))
 
-      tab <- as.data.frame(at[1])
-      names(tab) <- c("diff", "lwr", "upr", "p.adj")
-      tab$stat <- ifelse(tab$p.adj < 0.0001, "****",
-                         ifelse(tab$p.adj < 0.001, "***",
-                                ifelse(tab$p.adj < 0.01, "**",
-                                       ifelse(tab$p.adj < 0.05, "*", "NS")
-                                )
-                         )
-      )
-      tab
+        print(at)
+
+        tab <- as.data.frame(at[1])
+        names(tab) <- c("diff", "lwr", "upr", "p.adj")
+        tab$stat <- ifelse(tab$p.adj < 0.0001, "****",
+                           ifelse(tab$p.adj < 0.001, "***",
+                                  ifelse(tab$p.adj < 0.01, "**",
+                                         ifelse(tab$p.adj < 0.05, "*", "NS")
+                                  )
+                           )
+        )
+        tab
+      } else {
+        tab <- as.data.frame("Only one group present")
+        names(tab) <- ""
+        tab
+      }
+
+
     })
 
     output$Ridge_chart_alpha_gamma_stat <- DT::renderDT(escape = FALSE, options = list(autoWidth = FALSE, lengthMenu = c(2, 5, 10, 20, 50, 100), pageLength = 10, scrollX = TRUE), {
@@ -13885,35 +13915,57 @@ runSTEGO <- function(){
       df <- Ridge_chart_alpha_gamma_df()
       # df <- df[df$Selected_group %in% input$Graph_split_order,]
       # top_BD_cluster$Selected_group <- factor(top_BD_cluster$Selected_group,levels = input$Graph_split_order)
-      df$expressed <- ifelse(df[, names(df) %in% input$string.data_Exp_top] > input$Gre_ex, "expressed", "Not expressed")
 
       if (input$restric_ex == T) {
+        df$expressed <- ifelse(df[, names(df) %in% input$string.data_Exp_top] > input$Gre_ex, "expressed", "Not expressed")
+        print(head(df$expressed))
         df2 <- subset(df, df$expressed == "expressed")
       } else {
-        (
-          df2 <- df
-        )
+        df2 <- df
+
       }
+
       df2$Selected_function <- factor(df2$Selected_function, levels = input$Graph_split_order)
 
-      ggplot(df2, aes(y = get(input$string.data_Exp_top), x = Selected_function, fill = Selected_function)) +
+      if (input$jitter) {
+        ggplot(df2, aes(y = get(input$string.data_Exp_top), x = Selected_function, fill = Selected_function)) +
 
-        geom_jitter(height = 0, width = 0.1) +
-        geom_violin() +
-        theme(legend.position = "none", ) +
-        theme_bw() +
-        theme(
-          axis.title.y = element_blank(),
-          axis.text.y = element_text(colour = "black", family = input$font_type, size = input$text_size),
-          axis.text.x = element_text(colour = "black", family = input$font_type, size = input$text_size, angle = 90),
-          axis.title.x = element_blank(),
-          legend.text = element_text(colour = "black", size = input$Legend_size, family = input$font_type),
-          legend.title = element_text(colour = "black", size = 20, family = input$font_type),
-          legend.position = "none",
-          title = element_text(colour = "black", family = input$font_type, size = input$Strip_text_size),
-        ) +
-        ggtitle(input$string.data_Exp_top) +
-        scale_y_continuous(limits = c(input$ylow, input$yhigh))
+          geom_jitter(height = 0, width = 0.1) +
+          geom_violin(alpha = 0.25) +
+          theme(legend.position = "none", ) +
+          theme_bw() +
+          theme(
+            axis.title.y = element_blank(),
+            axis.text.y = element_text(colour = "black", family = input$font_type, size = input$text_size),
+            axis.text.x = element_text(colour = "black", family = input$font_type, size = input$text_size, angle = 90),
+            axis.title.x = element_blank(),
+            legend.text = element_text(colour = "black", size = input$Legend_size, family = input$font_type),
+            legend.title = element_text(colour = "black", size = 20, family = input$font_type),
+            legend.position = "none",
+            title = element_text(colour = "black", family = input$font_type, size = input$Strip_text_size),
+          ) +
+          ggtitle(input$string.data_Exp_top) +
+          scale_y_continuous(limits = c(input$ylow, input$yhigh))
+      } else {
+        ggplot(df2, aes(y = get(input$string.data_Exp_top), x = Selected_function, fill = Selected_function)) +
+          geom_violin() +
+          theme(legend.position = "none", ) +
+          theme_bw() +
+          theme(
+            axis.title.y = element_blank(),
+            axis.text.y = element_text(colour = "black", family = input$font_type, size = input$text_size),
+            axis.text.x = element_text(colour = "black", family = input$font_type, size = input$text_size, angle = 90),
+            axis.title.x = element_blank(),
+            legend.text = element_text(colour = "black", size = input$Legend_size, family = input$font_type),
+            legend.title = element_text(colour = "black", size = 20, family = input$font_type),
+            legend.position = "none",
+            title = element_text(colour = "black", family = input$font_type, size = input$Strip_text_size),
+          ) +
+          ggtitle(input$string.data_Exp_top) +
+          scale_y_continuous(limits = c(input$ylow, input$yhigh))
+      }
+
+
     })
 
     # vs non-selected clonotypes -----
@@ -13935,7 +13987,8 @@ runSTEGO <- function(){
       gene_df <- MainTcell[, names(MainTcell) %in% c("Cell_Index", input$string.data_Exp_top)]
       df3.meta <- sc@meta.data
       df3.meta$cluster_name <- df3.meta[, names(df3.meta) %in% input$V_gene_sc]
-      df3.meta$selected_top_clonotype <- ifelse(df3.meta$cluster_name == input$Selected_clonotype, input$Selected_clonotype, "other")
+      df3.meta$selected_top_clonotype <- ifelse(df3.meta$cluster_name == input$Selected_clonotype, "SC", "BG")
+      df3.meta$selected_top_clonotype[is.na(df3.meta$selected_top_clonotype)] <- "BG"
       top_BD_clonotype2 <- merge(df3.meta, gene_df, by = "Cell_Index")
       top_BD_clonotype2
     })
@@ -13977,30 +14030,49 @@ runSTEGO <- function(){
         )
       }
 
-      ggplot(df2, aes(y = get(input$string.data_Exp_top), x = selected_top_clonotype, fill = selected_top_clonotype)) +
-        geom_jitter(height = 0, width = 0.1) +
-        geom_violin() +
-        theme(legend.position = "none", ) +
-        theme_bw() +
-        theme(
-          axis.title.y = element_blank(),
-          axis.text.y = element_text(colour = "black", family = input$font_type, size = input$text_size),
-          axis.text.x = element_blank(),
-          axis.title.x = element_blank(),
-          title = element_text(colour = "black", family = input$font_type, size = input$Strip_text_size),
-          legend.text = element_text(colour = "black", size = input$Legend_size, family = input$font_type),
-          legend.title = element_blank(),
-          legend.position = input$legend_position,
-        ) +
-        scale_y_continuous(limits = c(input$ylow, input$yhigh))
+
+
+      if (input$jitter) {
+        ggplot(df2, aes(y = get(input$string.data_Exp_top), x = selected_top_clonotype, fill = selected_top_clonotype)) +
+          geom_jitter(height = 0, width = 0.1) +
+          geom_violin(alpha = 0.25) +
+          theme_bw() +
+          theme(
+            axis.title.y = element_blank(),
+            axis.text.y = element_text(colour = "black", family = input$font_type, size = input$text_size),
+            axis.text.x = element_text(colour = "black", family = input$font_type, size = input$text_size),
+            axis.title.x = element_blank(),
+            title = element_text(colour = "black", family = input$font_type, size = input$Strip_text_size),
+            legend.text = element_text(colour = "black", size = input$Legend_size, family = input$font_type),
+            legend.title = element_blank(),
+            legend.position = "none",
+          ) +
+          scale_y_continuous(limits = c(input$ylow, input$yhigh))
+      } else {
+        ggplot(df2, aes(y = get(input$string.data_Exp_top), x = selected_top_clonotype, fill = selected_top_clonotype)) +
+          geom_violin() +
+          theme_bw() +
+          theme(
+            axis.title.y = element_blank(),
+            axis.text.y = element_text(colour = "black", family = input$font_type, size = input$text_size),
+            axis.text.x = element_text(colour = "black", family = input$font_type, size = input$text_size),
+            axis.title.x = element_blank(),
+            title = element_text(colour = "black", family = input$font_type, size = input$Strip_text_size),
+            legend.text = element_text(colour = "black", size = input$Legend_size, family = input$font_type),
+            legend.title = element_blank(),
+            legend.position = input$legend_position,
+          ) +
+          scale_y_continuous(limits = c(input$ylow, input$yhigh))
+      }
+
 
     })
     output$Ridge_chart_alpha_gamma_plot_out <- renderPlot({
       if (input$plot_type_ridgvi == "Ridge (selected clonotype)") {
         Ridge_chart_alpha_gamma_plot()
-      } else if (input$plot_type_ridgvi == "Ridge (compare)") {
+      } else if (input$plot_type_ridgvi == "Ridge (stats)") {
         Ridge_chart_alpha_gamma_plot_comp()
-      } else if (input$plot_type_ridgvi == "Violin (compare)") {
+      } else if (input$plot_type_ridgvi == "Violin (stats)") {
         Violin_chart_alpha_gamma_plot_comp()
       } else {
         Violin_chart_alpha_gamma_plot()
@@ -14016,9 +14088,9 @@ runSTEGO <- function(){
         pdf(file, width = input$width_Ridge_chart_alpha_gamma_plot_out, height = input$height_Ridge_chart_alpha_gamma_plot_out, onefile = FALSE) # open the pdf device
         if (input$plot_type_ridgvi == "Ridge (selected clonotype)") {
           df <- Ridge_chart_alpha_gamma_plot()
-        } else if (input$plot_type_ridgvi == "Ridge (compare)") {
+        } else if (input$plot_type_ridgvi == "Ridge (stats)") {
           df <- Ridge_chart_alpha_gamma_plot_comp()
-        } else if (input$plot_type_ridgvi == "Violin (compare)") {
+        } else if (input$plot_type_ridgvi == "Violin (stats)") {
           df <- Violin_chart_alpha_gamma_plot_comp()
         } else {
           df <- Violin_chart_alpha_gamma_plot()
@@ -14042,9 +14114,9 @@ runSTEGO <- function(){
         )
         if (input$plot_type_ridgvi == "Ridge (selected clonotype)") {
           df <- Ridge_chart_alpha_gamma_plot()
-        } else if (input$plot_type_ridgvi == "Ridge (compare)") {
+        } else if (input$plot_type_ridgvi == "Ridge (stats)") {
           df <- Ridge_chart_alpha_gamma_plot_comp()
-        } else if (input$plot_type_ridgvi == "Violin (compare)") {
+        } else if (input$plot_type_ridgvi == "Violin (stats)") {
           df <- Violin_chart_alpha_gamma_plot_comp()
         } else {
           df <- Violin_chart_alpha_gamma_plot()
@@ -14081,7 +14153,7 @@ runSTEGO <- function(){
 
       name.clone <- input$Selected_clonotype
 
-      sc@meta.data$Gene_select <- ifelse(sc@meta.data$Vgene %in% name.clone, input$name_clonotype_selected, "unselected")
+      sc@meta.data$Gene_select <- ifelse(sc@meta.data$Vgene %in% name.clone, input$name_clonotype_selected, "BG")
       unique(sc@meta.data$Gene_select)
       Idents(object = sc) <- sc@meta.data$Gene_select
       if (input$restict_no_points == F) {
@@ -15026,22 +15098,40 @@ runSTEGO <- function(){
 
 
       md_gene <- expanded_with_gene()
+      if (input$jitter) {
+        ggplot(md_gene, aes(y = V1, x = expansion.status, fill = expansion.status)) +
+          geom_jitter(height = 0, width = 0.1) +
+          geom_violin() +
+          theme(legend.position = "none", ) +
+          theme_bw() +
+          theme(
+            axis.title.y = element_blank(),
+            axis.text.y = element_text(colour = "black", family = input$font_type, size = input$text_size),
+            axis.title.x = element_blank(),
+            axis.text.x = element_text(colour = "black", family = input$font_type, size = input$text_size, angle = 90),
+            title = element_blank(),
+            legend.text = element_text(colour = "black", size = input$Legend_size, family = input$font_type),
+            legend.title = element_blank(),
+            legend.position = input$legend_position,
+          )
+      } else {
+        ggplot(md_gene, aes(y = V1, x = expansion.status, fill = expansion.status)) +
+          geom_violin() +
+          theme(legend.position = "none", ) +
+          theme_bw() +
+          theme(
+            axis.title.y = element_blank(),
+            axis.text.y = element_text(colour = "black", family = input$font_type, size = input$text_size),
+            axis.title.x = element_blank(),
+            axis.text.x = element_text(colour = "black", family = input$font_type, size = input$text_size, angle = 90),
+            title = element_blank(),
+            legend.text = element_text(colour = "black", size = input$Legend_size, family = input$font_type),
+            legend.title = element_blank(),
+            legend.position = input$legend_position,
+          )
+      }
 
-      ggplot(md_gene, aes(y = V1, x = expansion.status, fill = expansion.status)) +
-        geom_jitter(height = 0, width = 0.1) +
-        geom_violin() +
-        theme(legend.position = "none", ) +
-        theme_bw() +
-        theme(
-          axis.title.y = element_blank(),
-          axis.text.y = element_text(colour = "black", family = input$font_type, size = input$text_size),
-          axis.title.x = element_blank(),
-          axis.text.x = element_text(colour = "black", family = input$font_type, size = input$text_size, angle = 90),
-          title = element_blank(),
-          legend.text = element_text(colour = "black", size = input$Legend_size, family = input$font_type),
-          legend.title = element_blank(),
-          legend.position = input$legend_position,
-        )
+
 
     })
 
@@ -17265,22 +17355,39 @@ runSTEGO <- function(){
 
       md_gene <- clustering_with_gene()
       # md_gene$split_ID <- md_gene[,names(md_gene) %in% input$Split_group_by_]
+      if (input$jitter) {
+        ggplot(md_gene, aes(y = V1, x = Clust_selected, fill = Clust_selected)) +
+          geom_jitter(height = 0, width = 0.1) +
+          geom_violin(alpha = 0.75) +
+          theme(legend.position = "none", ) +
+          theme_bw() +
+          theme(
+            axis.title.y = element_blank(),
+            axis.text.y = element_text(colour = "black", family = input$font_type, size = input$text_size),
+            axis.title.x = element_blank(),
+            axis.text.x = element_text(colour = "black", family = input$font_type, size = input$text_size, angle = 90),
+            title = element_blank(),
+            legend.text = element_text(colour = "black", size = input$Legend_size, family = input$font_type),
+            legend.title = element_blank(),
+            legend.position = input$legend_position,
+          )
+      } else {
+        ggplot(md_gene, aes(y = V1, x = Clust_selected, fill = Clust_selected)) +
+          geom_violin(alpha = 0.75) +
+          theme(legend.position = "none", ) +
+          theme_bw() +
+          theme(
+            axis.title.y = element_blank(),
+            axis.text.y = element_text(colour = "black", family = input$font_type, size = input$text_size),
+            axis.title.x = element_blank(),
+            axis.text.x = element_text(colour = "black", family = input$font_type, size = input$text_size, angle = 90),
+            title = element_blank(),
+            legend.text = element_text(colour = "black", size = input$Legend_size, family = input$font_type),
+            legend.title = element_blank(),
+            legend.position = input$legend_position,
+          )
+      }
 
-      ggplot(md_gene, aes(y = V1, x = Clust_selected, fill = Clust_selected)) +
-        geom_jitter(height = 0, width = 0.1) +
-        geom_violin(alpha = 0.75) +
-        theme(legend.position = "none", ) +
-        theme_bw() +
-        theme(
-          axis.title.y = element_blank(),
-          axis.text.y = element_text(colour = "black", family = input$font_type, size = input$text_size),
-          axis.title.x = element_blank(),
-          axis.text.x = element_text(colour = "black", family = input$font_type, size = input$text_size, angle = 90),
-          title = element_blank(),
-          legend.text = element_text(colour = "black", size = input$Legend_size, family = input$font_type),
-          legend.title = element_blank(),
-          legend.position = input$legend_position,
-        )
 
     })
 
@@ -18477,23 +18584,45 @@ runSTEGO <- function(){
       req(input$Samp_col,input$Var_to_col_marker)
 
       if (input$select_plot_vio.ridge == "Violin") {
-        plot <-  ggplot(umap.meta, aes(y = scale, x = ID)) +
-          geom_jitter() +
-          geom_violin() +
-          theme(
-            legend.position = "none",
-          ) +
-          theme_bw()  +
-          theme(
-            plot.title = element_blank(),
-            axis.title.y = element_text(colour = "black", family = input$font_type, size = input$title.text.sizer2),
-            axis.text.y = element_text(colour = "black", family = input$font_type, size = input$text_size),
-            axis.text.x = element_text(colour = "black", family = input$font_type, size = input$text_size, angle = 90),
-            axis.title.x = element_blank(),
-            legend.text = element_text(colour = "black", size = input$Legend_size, family = input$font_type),
-            legend.title = element_blank(),
-            legend.position = "none",
-          )
+
+        if (input$jitter) {
+          plot <-  ggplot(umap.meta, aes(y = scale, x = ID)) +
+            geom_jitter() +
+            geom_violin() +
+            theme(
+              legend.position = "none",
+            ) +
+            theme_bw()  +
+            theme(
+              plot.title = element_blank(),
+              axis.title.y = element_text(colour = "black", family = input$font_type, size = input$title.text.sizer2),
+              axis.text.y = element_text(colour = "black", family = input$font_type, size = input$text_size),
+              axis.text.x = element_text(colour = "black", family = input$font_type, size = input$text_size, angle = 90),
+              axis.title.x = element_blank(),
+              legend.text = element_text(colour = "black", size = input$Legend_size, family = input$font_type),
+              legend.title = element_blank(),
+              legend.position = "none",
+            )
+        } else {
+          plot <-  ggplot(umap.meta, aes(y = scale, x = ID)) +
+            geom_violin() +
+            theme(
+              legend.position = "none",
+            ) +
+            theme_bw()  +
+            theme(
+              plot.title = element_blank(),
+              axis.title.y = element_text(colour = "black", family = input$font_type, size = input$title.text.sizer2),
+              axis.text.y = element_text(colour = "black", family = input$font_type, size = input$text_size),
+              axis.text.x = element_text(colour = "black", family = input$font_type, size = input$text_size, angle = 90),
+              axis.title.x = element_blank(),
+              legend.text = element_text(colour = "black", size = input$Legend_size, family = input$font_type),
+              legend.title = element_blank(),
+              legend.position = "none",
+            )
+        }
+
+
 
 
         if(input$show_cutoff_line) {
@@ -23286,14 +23415,24 @@ runSTEGO <- function(){
       colnames(pgen_dat) = c("cdr3_aa","pgen")
 
       for (i in 1:length(df)) {
-
-        if(input$chain_type_olga == "TRB") {
-          dfoutput <- foreach(dfrow=iter(df[i], by='row'), .combine=rbind) %do%
-            olgafunction_BD(dfrow)
+        if(input$species_olga == "human") {
+          if(input$chain_type_olga == "TRB") {
+            dfoutput <- foreach(dfrow=iter(df[i], by='row'), .combine=rbind) %do%
+              olgafunction_BD(dfrow)
+          } else {
+            dfoutput <- foreach(dfrow=iter(df[i], by='row'), .combine=rbind) %do%
+              olgafunction_AG(dfrow)
+          }
         } else {
-          dfoutput <- foreach(dfrow=iter(df[i], by='row'), .combine=rbind) %do%
-            olgafunction_AG(dfrow)
+          if(input$chain_type_olga == "TRB") {
+            dfoutput <- foreach(dfrow=iter(df[i], by='row'), .combine=rbind) %do%
+              olgafunction_BD_mouse(dfrow)
+          } else {
+            dfoutput <- foreach(dfrow=iter(df[i], by='row'), .combine=rbind) %do%
+              olgafunction_AG_mouse(dfrow)
+          }
         }
+
         text <- dfoutput[2]
         split_substring <- str_split(text, " ")[[1]]
 
