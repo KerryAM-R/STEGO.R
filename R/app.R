@@ -237,7 +237,6 @@ runSTEGO <- function(){
 
 
   ###################
-
   # UI page -----
   ui <- fluidPage(
     # add hint explanation -----
@@ -948,10 +947,17 @@ runSTEGO <- function(){
             sidebarPanel(
               id = "tPanel4", style = "overflow-y:scroll; max-height: 800px; position:relative;", width = 3,
               # selectInput("dataset2", "Choose a dataset:", choices = c("test_data_clusTCR2","own_data_clusTCR2")),
-              fileInput("file2_TCRexMerge", "Select files to merge",
-                        multiple = TRUE,
+              # fluidRow(
+              column(12, div(class = "select-input-container",
+                             fileInput("file2_TCRexMerge", "Select files to merge",
+                                       multiple = TRUE,
+                             ),
+                             div(class = "hint-icon",
+                                 icon("circle-question", lib = "font-awesome")),
+                             div(class = "hint-text", "Upload the files in the 1_TCRex folder for Beta-chain epitope prediction"),
+              )
               ),
-              downloadButton("downloaddf_TCRexFiltered", "Download table"),
+              downloadButton("downloaddf_TCRexFiltered", "Download TCRex merged table"),
             ),
             mainPanel(
               width = 9,
@@ -983,8 +989,26 @@ runSTEGO <- function(){
                           accept = c("text/csv", "text/comma-separated-values,text/plain", ".csv")
                 )
               ),
+
               conditionalPanel(
-                condition = "input.clusTCR2_tabs != 'merge'",
+                condition = "input.clusTCR2_tabs == 'extract_clustcr'",
+                fileInput("file1_extract_clusTCR2",
+                          "Upload .rds file",
+                          multiple = F,
+                          accept = c(".rds", "rds")
+                ),
+                selectInput("junction_aa_extracting","Junction (aa)",choices = ""),
+                selectInput("v_gene_extracting","V gene",choices = ""),
+                div(downloadButton("downloaddf_RDS_extracted_clustcr2_file", "Download extracted clusTCR2 table"),style = "padding-top: 25px;"),
+
+
+                # selectInput("sample_name_extracting","smple_name",choices = ""),
+
+              ),
+
+              ######
+              conditionalPanel(
+                condition = "input.clusTCR2_tabs == 'clustering_clustcr'",
 
                 conditionalPanel(
                   condition = "input.clusTCR2_tabs2 == 'processing1'",
@@ -1030,7 +1054,18 @@ runSTEGO <- function(){
                          div(DT::DTOutput("DEx_multiple_ClusTCR2")),
 
                 ),
-                tabPanel("Clustering",
+                ######
+                tabPanel("Extract data (.rds)", value = "extract_clustcr" ,
+
+                         div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
+
+                         div(DT::DTOutput("RDS_extracted_clustcr2_file")),
+
+
+
+                ),
+                #####
+                tabPanel("Clustering", value = "clustering_clustcr",
                          tabsetPanel(id = "clusTCR2_tabs2",
                                      tabPanel("Inputs",
                                               value = "processing1",
@@ -6756,6 +6791,134 @@ runSTEGO <- function(){
         write.csv(df, file, row.names = F)
       }
     )
+
+    ##### extract clustering data from processed .rds obj ------
+    input.data_ClusTCR2_extracting <- reactive({
+      inFile2_extract_clusTCR2 <- input$file1_extract_clusTCR2
+      if (is.null(inFile2_extract_clusTCR2)) {
+        return(NULL)
+      } else {
+        dataframe <- readRDS(
+          inFile2_extract_clusTCR2$datapath
+        )
+      }
+    })
+
+    observe({
+      sc <- input.data_ClusTCR2_extracting()
+      req(sc)
+      md <- sc@meta.data
+      if (input$Clust_lab_tab_output == "AG") {
+        updateSelectInput(
+          session,
+          "junction_aa_extracting",
+          choices = names(md),
+          selected = "junction_aa_AG"
+        )
+      } else if  (input$Clust_lab_tab_output == "BD")  {
+        updateSelectInput(
+          session,
+          "junction_aa_extracting",
+          choices = names(md),
+          selected = "junction_aa_BD"
+        )
+      } else {
+        updateSelectInput(
+          session,
+          "junction_aa_extracting",
+          choices = names(md),
+          selected = ""
+        )
+      }
+
+
+    }) # junction sequence
+
+
+    observe({
+      sc <- input.data_ClusTCR2_extracting()
+      req(sc)
+      md <- sc@meta.data
+
+
+
+      if (input$Clust_lab_tab_output == "AG") {
+        updateSelectInput(
+          session,
+          "v_gene_extracting",
+          choices = names(md),
+          selected = "v_gene_AG"
+        )
+      } else if  (input$Clust_lab_tab_output == "BD")  {
+        updateSelectInput(
+          session,
+          "v_gene_extracting",
+          choices = names(md),
+          selected = "v_gene_BD"
+        )
+      } else {
+        updateSelectInput(
+          session,
+          "v_gene_extracting",
+          choices = names(md),
+          selected = ""
+        )
+      }
+
+    }) # junction sequence
+
+    extracted_and_filtered_clustcr2 <- reactive({
+      inFile2_ClusTCR2 <- input.data_ClusTCR2_extracting()
+
+      validate(
+        need(
+          nrow(inFile2_ClusTCR2) > 0,
+          "Upload .rds object"
+        )
+      )
+
+      sc <- input.data_ClusTCR2_extracting()
+      print(sc)
+      md <- as.data.frame(sc@meta.data)
+      md <- md %>%
+        select(c(input$junction_aa_extracting,input$v_gene_extracting), everything())
+
+      df <- md[,names(md) %in% c(input$junction_aa_extracting,input$v_gene_extracting)]
+      names(df) <- c("junction_aa","v_call")
+
+      if (nrow(df[-c(grep("[*]", df$junction_aa)), ] > 0)) {
+        df <- df[-c(grep("[*]", df$junction_aa)), ]
+      }
+
+      df$CDR3_beta <- gsub("^$", "None", df$junction_aa)
+
+      if (nrow(df[-c(grep("None", df$CDR3_beta)), ] > 0)) {
+        df <- df[-c(grep("None", df$CDR3_beta)), ]
+      }
+
+      print(head(df))
+
+      df[!duplicated(df$junction_aa), ]
+    })
+
+    output$RDS_extracted_clustcr2_file <- DT::renderDT(escape = FALSE, filter = list(position = "top", clear = FALSE), options = list(autoWidth = FALSE, lengthMenu = c(2, 5, 10, 20, 50, 100), pageLength = 5, scrollX = TRUE), {
+      df <- extracted_and_filtered_clustcr2()
+
+      df
+    })
+
+    output$downloaddf_RDS_extracted_clustcr2_file <- downloadHandler(
+      filename = function() {
+        x <- today()
+        paste(input$Clust_lab_tab_output, "_rds_extracted_clustcr2_", x, ".csv", sep = "")
+      },
+      content = function(file) {
+        df <- extracted_and_filtered_clustcr2()
+        write.csv(df, file, row.names = F)
+      }
+    )
+
+
 
     ## clustering images ------
 
