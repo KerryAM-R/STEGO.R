@@ -237,6 +237,7 @@ runSTEGO <- function(){
 
 
   ###################
+
   # UI page -----
   ui <- fluidPage(
     # add hint explanation -----
@@ -2175,14 +2176,17 @@ runSTEGO <- function(){
               h4("Plot parameters (all)"),
               checkboxInput("jitter","Display with jitter in violin plot?", value = T),
               fluidRow(
-                column(6, numericInput("text_size", "Axis number size", value = 30)),
-                column(6, numericInput("title.text.sizer2", "Axis text size", value = 30)),
-                column(6, numericInput("Legend_size", "Legend text size", value = 20)),
-                column(6, selectInput("legend_position", "Legend location", choices = c("top", "bottom", "left", "right", "none"), selected = "right")),
-              ),
+                column(6, numericInput("text_size", "Axis number size", value = 20)),
+                column(6, numericInput("title.text.sizer2", "Axis text size", value = 20))),
               fluidRow(
                 column(6, numericInput("Strip_text_size", "Strip text size (e.g., grey bars)", value = 20)),
                 column(6, numericInput("anno_text_size", "Annotation text size", value = 6)),
+              ),
+              h4("Legend parameters (all)"),
+              fluidRow(
+                column(6, numericInput("Legend_size", "Legend text size", value = 12)),
+                column(6, numericInput("legend_columns", "Number of columns", value = 3)),
+                column(6, selectInput("legend_position", "Legend location", choices = c("top", "bottom", "left", "right", "none"), selected = "right")),
               ),
               selectInput("font_type", label = "Type of font", choices = font, selected = "Times New Roman"),
             ),
@@ -2350,13 +2354,14 @@ runSTEGO <- function(){
 
                                           column(2,selectInput("separator_input", "Select Separators:",
                                                                choices = c("_" = "_.*", "-" = "-.*", "." = "\\..*", "|" = "\\|.*", "#" = "#*", "^" = "\\^*", "&" = "&.*"),
+                                                               selected = "-",
                                                                multiple = F),),
                                           column(2,selectInput("comparison_operator", "Choose comparison operator:",
                                                                choices = c("Equal to" = "==", "Greater than or equal to" = ">="),
                                                                selected = c("Greater than or equal to" = ">=")),),
                                           column(2,numericInput("cutoff_upset", "Enter cutoff value:", value = 2),)
                                         ),
-                                        column(2,numericInput("max_number_lines_to","Maximum to display",value = 20)),
+                                        column(2,numericInput("max_number_lines_to","Maximum to display",value = 10)),
                                         column(2,numericInput("Total_count_Cutoff","Min count threshold",value = 1)),
 
 
@@ -2377,10 +2382,10 @@ runSTEGO <- function(){
                                                  fluidRow(
                                                    conditionalPanel(
                                                      condition = "input.is_a_time_series",
-                                                     column(2,sliderInput("number_of_conditions","Number of conditions",value = 2, min = 2 , max = 3)),
+                                                     # column(2,sliderInput("number_of_conditions","Number of conditions",value = 2, min = 2 , max = 3)),
                                                      column(2,selectInput("separator_input2", "Select Separators:",
                                                                           choices = c("_" = "_", "-" = "-", "." = "\\.", "|" = "\\|", "#" = "#", "^" = "\\^", "&" = "&"),
-                                                                          selected = "_",
+                                                                          selected = "-",
                                                                           multiple = T)),
                                                      column(2,selectInput("display_all_samps_line","Display all?",choices = c("no","yes"))),
                                                      column(3,
@@ -2404,13 +2409,11 @@ runSTEGO <- function(){
 
                                                  ),
 
-
-
                                                  fluidRow(
                                                    column(1, numericInput("width_line_graph_output", "Width of PDF", value = 10)),
                                                    column(1, numericInput("height_line_graph_output", "Height of PDF", value = 8)),
                                                    column(2, style = "margin-top: 25px;", downloadButton("downloadPlot_line_graph_output", "Download PDF")),
-                                                   column(2, numericInput("width_png_line_graph_output", "Width of PNG", value = 1200)),
+                                                   column(2, numericInput("width_png_line_graph_output", "Width of PNG", value = 2400)),
                                                    column(2, numericInput("height_png_line_graph_output", "Height of PNG", value = 1000)),
                                                    column(2, numericInput("resolution_PNG_line_graph_output", "Resolution of PNG", value = 144)),
                                                    column(2, style = "margin-top: 25px;", downloadButton("downloadPlotPNG_line_graph_output", "Download PNG"))
@@ -10876,51 +10879,7 @@ runSTEGO <- function(){
     )
 
     # Analysis -----
-    observe({
-      sc <- data_sc_pro()
-      validate(
-        need(
-          nrow(sc) > 0,
-          error_message_val1
-        )
-      )
 
-      meta.data <- sc@meta.data
-
-
-      if ("junction_aa_BD" %in% names(sc@meta.data)) {
-        updateSelectInput(
-          session,
-          "datasource",
-          choices = c("10x_Genomics", "BD_Rhapsody_Paired", "BD_Rhapsody_AIRR"),
-          selected = "BD_Rhapsody_AIRR"
-        )
-      } else if ("cdr3_BD" %in% names(sc@meta.data)) {
-        sc@meta.data$orientation <- (ifelse(grepl("^C", sc@meta.data$cdr3_BD) & grepl("F$", sc@meta.data$cdr3_BD), "C___F", NA))
-        if ("C___F" %in% sc@meta.data$orientation) {
-          updateSelectInput(
-            session,
-            "datasource",
-            choices = c("10x_Genomics", "BD_Rhapsody_Paired", "BD_Rhapsody_AIRR"),
-            selected = "10x_Genomics"
-          )
-        } else {
-          updateSelectInput(
-            session,
-            "datasource",
-            choices = c("10x_Genomics", "BD_Rhapsody_Paired", "BD_Rhapsody_AIRR"),
-            selected = "BD_Rhapsody_Paired"
-          )
-        }
-      } else {
-        updateSelectInput(
-          session,
-          "datasource",
-          choices = c("10x_Genomics", "BD_Rhapsody_Paired", "BD_Rhapsody_AIRR"),
-          selected = ""
-        )
-      }
-    })
     ## uploading seruat obj ----
     data_sc_pro <- reactive({
       inFile_sc_pro <- input$file_SC_pro
@@ -10978,6 +10937,156 @@ runSTEGO <- function(){
         dataframe <- read.csv(inFile_Labels_to_add$datapath)
       }
     })
+    # Find source of data ------
+    observe({
+      sc <- data_sc_pro()
+      validate(
+        need(
+          nrow(sc) > 0,
+          error_message_val1
+        )
+      )
+
+      meta.data <- sc@meta.data
+
+
+      if ("junction_aa_BD" %in% names(sc@meta.data)) {
+        updateSelectInput(
+          session,
+          "datasource",
+          choices = c("10x_Genomics", "BD_Rhapsody_Paired", "BD_Rhapsody_AIRR"),
+          selected = "BD_Rhapsody_AIRR"
+        )
+      } else if ("cdr3_BD" %in% names(sc@meta.data)) {
+        sc@meta.data$orientation <- (ifelse(grepl("^C", sc@meta.data$cdr3_BD) & grepl("F$", sc@meta.data$cdr3_BD), "C___F", NA))
+        if ("C___F" %in% sc@meta.data$orientation) {
+          updateSelectInput(
+            session,
+            "datasource",
+            choices = c("10x_Genomics", "BD_Rhapsody_Paired", "BD_Rhapsody_AIRR"),
+            selected = "10x_Genomics"
+          )
+        } else {
+          updateSelectInput(
+            session,
+            "datasource",
+            choices = c("10x_Genomics", "BD_Rhapsody_Paired", "BD_Rhapsody_AIRR"),
+            selected = "BD_Rhapsody_Paired"
+          )
+        }
+      } else {
+        updateSelectInput(
+          session,
+          "datasource",
+          choices = c("10x_Genomics", "BD_Rhapsody_Paired", "BD_Rhapsody_AIRR"),
+          selected = ""
+        )
+      }
+    })
+    # original vj gene combination -------
+    observe({
+      sc <- data_sc_pro()
+      validate(
+        need(
+          nrow(sc) > 0,
+          error_message_val_UMAP
+        )
+      )
+      req(sc)
+      df3.meta <- sc@meta.data
+      updateSelectInput(
+        session,
+        "V_gene_sc",
+        choices = names(df3.meta),
+        selected = "vj_gene_cdr3_AG_BD"
+      )
+    })
+
+    # needs to be the before other labels are added in.
+    observe({
+      sc <- data_sc_pro()
+      validate(
+        need(
+          nrow(sc) > 0,
+          error_message_val_UMAP
+        )
+      )
+      req(sc)
+      df3.meta <- sc@meta.data
+      updateSelectInput(
+        session,
+        "Samp_col2",
+        choices = names(df3.meta),
+        selected = "Sample_Name"
+      )
+    })
+    # detecting the species based on rown names and presence of proper case -----
+    observe({
+      sc <- data_sc_pro()
+      validate(
+        need(
+          nrow(sc) > 0,
+          "Run Variable"
+        )
+      )
+      gene.names <- rownames(sc@assays$RNA$counts)
+
+      gene.names_hs <- gene.names[str_detect(gene.names, "^[A-Z][A-Z/0-9][A-Z/0-9]") &
+                                    !str_detect(gene.names, "^X[0-9][0-9][0-9]") &
+                                    !str_detect(gene.names, "^A[0-9][0-9][0-9]") & !str_detect(gene.names, "^AC[0-9][0-9][0-9]") &
+                                    !str_detect(gene.names, "^B[0-9][0-9][0-9]") & !str_detect(gene.names, "^BC[0-9][0-9][0-9]") &
+                                    !str_detect(gene.names, "^C[0-9][0-9][0-9]") & !str_detect(gene.names, "^BC[0-9][0-9][0-9]") &
+                                    !str_detect(gene.names, "^D[0-9][0-9][0-9]") & !str_detect(gene.names, "^E[0-9][0-9][0-9]") &
+                                    !str_detect(gene.names, "^F[0-9][0-9][0-9]") & !str_detect(gene.names, "^G[0-9][0-9][0-9]") &
+                                    !str_detect(gene.names, "^H[0-9][0-9][0-9]") & !str_detect(gene.names, "^I[0-9][0-9][0-9]")]
+
+      gene.names_mm <- gene.names[str_detect(gene.names, "^[A-Z][a-z/0-9][a-z/0-9]") &
+                                    !str_detect(gene.names, "^X[0-9][0-9][0-9]") &
+                                    !str_detect(gene.names, "^A[0-9][0-9][0-9]") & !str_detect(gene.names, "^AC[0-9][0-9][0-9]") &
+                                    !str_detect(gene.names, "^B[0-9][0-9][0-9]") & !str_detect(gene.names, "^BC[0-9][0-9][0-9]") &
+                                    !str_detect(gene.names, "^C[0-9][0-9][0-9]") & !str_detect(gene.names, "^BC[0-9][0-9][0-9]") &
+                                    !str_detect(gene.names, "^D[0-9][0-9][0-9]") & !str_detect(gene.names, "^E[0-9][0-9][0-9]") &
+                                    !str_detect(gene.names, "^F[0-9][0-9][0-9]") & !str_detect(gene.names, "^G[0-9][0-9][0-9]") &
+                                    !str_detect(gene.names, "^H[0-9][0-9][0-9]") & !str_detect(gene.names, "^I[0-9][0-9][0-9]")]
+
+      if (length(gene.names_hs) > 0) {
+        len_hs <- length(gene.names_hs)
+      } else {
+        len_hs <- 1
+      }
+
+      if (length(gene.names_mm) > 0) {
+        len_mm <- length(gene.names_mm)
+      } else {
+        len_mm <- 1
+      }
+
+      ratio_hs.mm <- len_hs / len_mm
+
+      if (ratio_hs.mm > 1) {
+        updateSelectInput(
+          session,
+          "species_analysis",
+          choices = c("hs", "mm"),
+          selected = "hs"
+        )
+      } else if (ratio_hs.mm < 1) {
+        updateSelectInput(
+          session,
+          "species_analysis",
+          choices = c("hs", "mm"),
+          selected = "mm"
+        )
+      } else {
+        updateSelectInput(
+          session,
+          "species_analysis",
+          choices = c("hs", "mm"),
+          selected = "hs"
+        )
+      }
+    })
+
     ## add additional sample labels to file. -----
     UMAP_metadata_with_labs <- reactive({
       sc <- data_sc_pro()
@@ -11026,6 +11135,26 @@ runSTEGO <- function(){
       umap.meta <- umap.meta[order(umap.meta$order), ]
       sc@meta.data <- umap.meta
       sc
+    })
+
+
+    observe({
+      sc <- UMAP_metadata_with_labs()
+      validate(
+        need(
+          nrow(sc) > 0,
+          error_message_val_UMAP
+        )
+      )
+      req(sc)
+
+      df3.meta <- sc@meta.data
+      updateSelectInput(
+        session,
+        "Samp_col",
+        choices = names(df3.meta),
+        selected = "Sample_Name"
+      )
     })
 
     output$Sample_names_merging_sc <- DT::renderDT(escape = FALSE, options = list(autoWidth = FALSE, lengthMenu = c(2, 5, 10, 20, 50, 100), pageLength = 2, scrollX = TRUE), {
@@ -11132,58 +11261,9 @@ runSTEGO <- function(){
     })
 
     ### observe  Samp_col V_gene_sc Samp_col2----
-    observe({
-      sc <- UMAP_metadata_with_labs()
-      validate(
-        need(
-          nrow(sc) > 0,
-          error_message_val_UMAP
-        )
-      )
-      req(sc)
 
-      df3.meta <- sc@meta.data
-      updateSelectInput(
-        session,
-        "Samp_col",
-        choices = names(df3.meta),
-        selected = "Sample_Name"
-      )
-    })
-    observe({
-      sc <- data_sc_pro()
-      validate(
-        need(
-          nrow(sc) > 0,
-          error_message_val_UMAP
-        )
-      )
-      req(sc)
-      df3.meta <- sc@meta.data
-      updateSelectInput(
-        session,
-        "V_gene_sc",
-        choices = names(df3.meta),
-        selected = "vj_gene_cdr3_AG_BD"
-      )
-    })
-    observe({
-      sc <- data_sc_pro()
-      validate(
-        need(
-          nrow(sc) > 0,
-          error_message_val_UMAP
-        )
-      )
-      req(sc)
-      df3.meta <- sc@meta.data
-      updateSelectInput(
-        session,
-        "Samp_col2",
-        choices = names(df3.meta),
-        selected = "Sample_Name"
-      )
-    })
+
+
 
     output$Tb_TCR_clonotypes.Umap <- DT::renderDT(escape = FALSE, options = list(autoWidth = FALSE, lengthMenu = c(2, 5, 10, 20, 50, 100), pageLength = 5, scrollX = TRUE), {
       calls <- select_group_metadata()
@@ -13823,14 +13903,12 @@ runSTEGO <- function(){
       df <- df %>%
         select(c(input$Samp_col, input$V_gene_sc), everything())
       print(head(df))
-      message("checking for two")
+      # message("checking for two")
       unique.df <- (df[, names(df) %in% c(input$Samp_col, input$V_gene_sc)])
       names(unique.df) <- c("group", "chain")
 
       unique.df <- subset(unique.df, unique.df$chain != "NA")
       unique.df <- subset(unique.df, unique.df$group != "NA")
-
-
 
       unique.df$cloneCount <- 1
       unique.df
@@ -13858,7 +13936,7 @@ runSTEGO <- function(){
       # as.data.frame(markers.fm.list2)
     })
     output$Ridge_chart_alpha_gamma_stat_comp <- DT::renderDT(escape = FALSE, options = list(autoWidth = FALSE, lengthMenu = c(2, 5, 10, 20, 50, 100), pageLength = 10, scrollX = TRUE), {
-      sc <- data_sc_pro()
+      sc <- UMAP_metadata_with_labs()
 
       validate(
         need(
@@ -13883,7 +13961,7 @@ runSTEGO <- function(){
     observeEvent(input$run_string.data_Exp_top, {
       # df <- compare.stat()
 
-      sc <- data_sc_pro()
+      sc <- UMAP_metadata_with_labs()
 
       validate(
         need(
@@ -13891,11 +13969,6 @@ runSTEGO <- function(){
           "Upload file for annotation"
         )
       )
-
-      # if(grepl(5, sc@version)) {
-      #
-      #
-      # }
 
       df <- as.data.frame(rownames(sc@assays$RNA$scale.data))
       names(df) <- "V1"
@@ -13911,7 +13984,7 @@ runSTEGO <- function(){
 
 
     output$test.table_ridge <- DT::renderDT(escape = FALSE, options = list(autoWidth = FALSE, lengthMenu = c(2, 5, 10, 20, 50, 100), pageLength = 10, scrollX = TRUE), {
-      sc <- data_sc_pro()
+      sc <- UMAP_metadata_with_labs()
 
       validate(
         need(
@@ -14291,7 +14364,7 @@ runSTEGO <- function(){
 
     ### top dot plot -----
     all_expression_plot_top <- reactive({
-      sc <- data_sc_pro()
+      sc <- UMAP_metadata_with_labs()
       validate(
         need(
           nrow(sc) > 0,
@@ -14317,7 +14390,7 @@ runSTEGO <- function(){
       name.clone <- input$Selected_clonotype
 
       sc@meta.data$Gene_select <- ifelse(sc@meta.data$Vgene %in% name.clone, input$name_clonotype_selected, "BG")
-      unique(sc@meta.data$Gene_select)
+      print(unique(sc@meta.data$Gene_select))
       Idents(object = sc) <- sc@meta.data$Gene_select
       if (input$restict_no_points == F) {
         list.names <- rownames(compare.stat())
@@ -14378,76 +14451,10 @@ runSTEGO <- function(){
     )
 
     # Over representation analysis for top clonotypes -----
-    observe({
-      sc <- data_sc_pro()
-      validate(
-        need(
-          nrow(sc) > 0,
-          "Run Variable"
-        )
-      )
-      gene.names <- rownames(sc@assays$RNA$counts)
-
-      gene.names_hs <- gene.names[str_detect(gene.names, "^[A-Z][A-Z/0-9][A-Z/0-9]") &
-                                    !str_detect(gene.names, "^X[0-9][0-9][0-9]") &
-                                    !str_detect(gene.names, "^A[0-9][0-9][0-9]") & !str_detect(gene.names, "^AC[0-9][0-9][0-9]") &
-                                    !str_detect(gene.names, "^B[0-9][0-9][0-9]") & !str_detect(gene.names, "^BC[0-9][0-9][0-9]") &
-                                    !str_detect(gene.names, "^C[0-9][0-9][0-9]") & !str_detect(gene.names, "^BC[0-9][0-9][0-9]") &
-                                    !str_detect(gene.names, "^D[0-9][0-9][0-9]") & !str_detect(gene.names, "^E[0-9][0-9][0-9]") &
-                                    !str_detect(gene.names, "^F[0-9][0-9][0-9]") & !str_detect(gene.names, "^G[0-9][0-9][0-9]") &
-                                    !str_detect(gene.names, "^H[0-9][0-9][0-9]") & !str_detect(gene.names, "^I[0-9][0-9][0-9]")]
-
-      gene.names_mm <- gene.names[str_detect(gene.names, "^[A-Z][a-z/0-9][a-z/0-9]") &
-                                    !str_detect(gene.names, "^X[0-9][0-9][0-9]") &
-                                    !str_detect(gene.names, "^A[0-9][0-9][0-9]") & !str_detect(gene.names, "^AC[0-9][0-9][0-9]") &
-                                    !str_detect(gene.names, "^B[0-9][0-9][0-9]") & !str_detect(gene.names, "^BC[0-9][0-9][0-9]") &
-                                    !str_detect(gene.names, "^C[0-9][0-9][0-9]") & !str_detect(gene.names, "^BC[0-9][0-9][0-9]") &
-                                    !str_detect(gene.names, "^D[0-9][0-9][0-9]") & !str_detect(gene.names, "^E[0-9][0-9][0-9]") &
-                                    !str_detect(gene.names, "^F[0-9][0-9][0-9]") & !str_detect(gene.names, "^G[0-9][0-9][0-9]") &
-                                    !str_detect(gene.names, "^H[0-9][0-9][0-9]") & !str_detect(gene.names, "^I[0-9][0-9][0-9]")]
-
-      if (length(gene.names_hs) > 0) {
-        len_hs <- length(gene.names_hs)
-      } else {
-        len_hs <- 1
-      }
-
-      if (length(gene.names_mm) > 0) {
-        len_mm <- length(gene.names_mm)
-      } else {
-        len_mm <- 1
-      }
-
-      ratio_hs.mm <- len_hs / len_mm
-
-      if (ratio_hs.mm > 1) {
-        updateSelectInput(
-          session,
-          "species_analysis",
-          choices = c("hs", "mm"),
-          selected = "hs"
-        )
-      } else if (ratio_hs.mm < 1) {
-        updateSelectInput(
-          session,
-          "species_analysis",
-          choices = c("hs", "mm"),
-          selected = "mm"
-        )
-      } else {
-        updateSelectInput(
-          session,
-          "species_analysis",
-          choices = c("hs", "mm"),
-          selected = "hs"
-        )
-      }
-    })
-
 
 
     Over_rep_Top_clones_old <- reactive({
-      sc <- data_sc_pro()
+      sc <- UMAP_metadata_with_labs()
 
       validate(
         need(
@@ -14656,7 +14663,7 @@ runSTEGO <- function(){
     # # ### add in colouring specific to Expanded
     # #
     output$classification_to_add2 <- renderUI({
-      sc <- data_sc_pro()
+      sc <- UMAP_metadata_with_labs()
       validate(
         need(
           nrow(sc) > 0,
@@ -14676,7 +14683,7 @@ runSTEGO <- function(){
     #
     # ## Expansion UMAP plot -----
     cols_UMAP_Expanded <- reactive({
-      sc <- data_sc_pro()
+      sc <- UMAP_metadata_with_labs()
       validate(
         need(
           nrow(sc) > 0,
@@ -14759,7 +14766,7 @@ runSTEGO <- function(){
       cols_UMAP_Expanded()
     })
     colors_Expanded <- reactive({
-      sc <- data_sc_pro()
+      sc <- UMAP_metadata_with_labs()
 
       validate(
         need(
@@ -14789,7 +14796,7 @@ runSTEGO <- function(){
       })
     })
     UMAP_Expanded_plot <- reactive({
-      sc <- data_sc_pro()
+      sc <- UMAP_metadata_with_labs()
       validate(
         need(
           nrow(sc) > 0,
@@ -15006,7 +15013,7 @@ runSTEGO <- function(){
 
     observeEvent(input$caluclate_Exp, {
 
-      sc <- data_sc_pro()
+      sc <- UMAP_metadata_with_labs()
 
       validate(
         need(
@@ -15055,7 +15062,7 @@ runSTEGO <- function(){
 
 
     output$compare.stat_Ex <- DT::renderDT(escape = FALSE, options = list(autoWidth = FALSE, lengthMenu = c(2, 5, 10, 20, 50, 100), pageLength = 10, scrollX = TRUE), {
-      sc <- data_sc_pro()
+      sc <- UMAP_metadata_with_labs()
 
       validate(
         need(
@@ -15212,7 +15219,7 @@ runSTEGO <- function(){
     # extracting table for 1 gene ------
 
     expanded_with_gene <- reactive({
-      sc <- data_sc_pro()
+      sc <- UMAP_metadata_with_labs()
       validate(
         need(
           nrow(sc) > 0,
@@ -15250,7 +15257,7 @@ runSTEGO <- function(){
     # Violin plot for expanded -------
 
     Violin_plot_Exp <- reactive({
-      sc <- data_sc_pro()
+      sc <- UMAP_metadata_with_labs()
 
       validate(
         need(
@@ -15299,7 +15306,7 @@ runSTEGO <- function(){
     })
 
     output$Violin_expanded_sig <- renderPlot({
-      sc <- data_sc_pro()
+      sc <- UMAP_metadata_with_labs()
 
       validate(
         need(
@@ -15314,7 +15321,7 @@ runSTEGO <- function(){
     # Over representation analysis for Expanded  -----
 
     Over_rep_Exp_old <- reactive({
-      sc <- data_sc_pro()
+      sc <- UMAP_metadata_with_labs()
 
       validate(
         need(
@@ -16061,7 +16068,7 @@ runSTEGO <- function(){
     })
 
     output$compare.stat_Epi_DT <- DT::renderDT(escape = FALSE, options = list(autoWidth = FALSE, lengthMenu = c(2, 5, 10, 20, 50, 100), pageLength = 10, scrollX = TRUE), {
-      sc <- data_sc_pro()
+      sc <- UMAP_metadata_with_labs()
       validate(
         need(
           nrow(sc) > 0,
@@ -17483,7 +17490,7 @@ runSTEGO <- function(){
       sc
     })
     clustering_with_gene <- reactive({
-      sc2 <- data_sc_pro()
+      sc2 <- UMAP_metadata_with_labs()
       validate(
         need(
           nrow(sc2) > 0,
@@ -17507,7 +17514,7 @@ runSTEGO <- function(){
 
 
     Violin_plot_clusTCR2 <- reactive({
-      sc <- data_sc_pro()
+      sc <- UMAP_metadata_with_labs()
 
       validate(
         need(
@@ -17555,7 +17562,7 @@ runSTEGO <- function(){
     })
 
     output$Violin_clust_sig <- renderPlot({
-      sc <- data_sc_pro()
+      sc <- UMAP_metadata_with_labs()
 
       validate(
         need(
@@ -18106,66 +18113,68 @@ runSTEGO <- function(){
 
           # Create the plot
 
-          if(input$number_of_conditions == 2) {
+          # if(input$number_of_conditions == 2) {
 
-            req(length(data_long$V2>0))
+          req(length(data_long$V2>0))
 
-            p <- ggplot(data_long, aes(x = V2, y = Count, color = VDJ, shape = VDJ)) +
-              geom_point(size = 7) +  # Increased point size
-              geom_line(aes(group = paste(VDJ, V1)), linewidth = 1.25) +
-              scale_color_viridis_d(option = "C", begin = 0.2, end = 0.8) +
-              scale_shape_manual(values = unique_vdj$shape) +  # Use default shapes
-              labs(x = "", y = "", title = "", color = year, shape = year) +
-              theme_minimal() +
-              theme(legend.title = element_text(face = "bold", size = 16, family = input$font_type),
-                    legend.text = element_text(size = input$Legend_size, family = input$font_type),
-                    axis.text = element_text(size = 16, family = input$font_type),
-                    axis.title = element_blank(),
-                    plot.title = element_blank()
-              ) +
-              guides(color = guide_legend(
-                title.theme = element_text(margin = margin(b = 0)),  # Increase margin between title and items
-                label.theme = element_text(margin = margin(t = 15)),
-                override.aes = list(size = 7)# Increase margin between items
-              )) +
-              ylim(0, max_count)  # Set y-axis limits
+          p <- ggplot(data_long, aes(x = V2, y = Count, color = VDJ, shape = VDJ)) +
+            geom_point(size = 7) +  # Increased point size
+            geom_line(aes(group = paste(VDJ, V1)), linewidth = 1.25) +
+            scale_color_viridis_d(option = "C", begin = 0.2, end = 0.8) +
+            scale_shape_manual(values = unique_vdj$shape) +  # Use default shapes
+            labs(x = "", y = "", title = "", color = year, shape = year) +
+            theme_minimal() +
+            theme(legend.title = element_text(face = "bold", size = 16, family = input$font_type),
+                  legend.text = element_text(size = input$Legend_size, family = input$font_type),
+                  axis.text = element_text(size = 16, family = input$font_type),
+                  axis.title = element_blank(),
+                  plot.title = element_blank()
+            ) +
+            guides(color = guide_legend(
+              title.theme = element_text(margin = margin(b = 0)),  # Increase margin between title and items
+              label.theme = element_text(margin = margin(t = 15)),
+              override.aes = list(size = 7)# Increase margin between items
+            )) +
+            guides(color=guide_legend(ncol=input$legend_columns)) +
+            ylim(0, max_count)  # Set y-axis limits
 
-            # Store the plot in the list
-            plot_list[[year]] <- p
+          # Store the plot in the list
+          plot_list[[year]] <- p
 
-          } else if (input$number_of_conditions == 3) {
-
-            req(length(data_long$V2>0), length(data_long$V3>0))
-
-            p <- ggplot(data_long, aes(x = V2, y = Count, color = VDJ, shape = V3)) +
-              geom_point(size = 7) +  # Increased point size
-              geom_line(aes(group = paste(VDJ, V1)), linewidth = 1.25) +
-              scale_color_viridis_d(option = "C", begin = 0.2, end = 0.8) +
-              scale_shape_manual(values = unique_vdj$shape) +  # Use default shapes
-              labs(x = "", y = "", title = "", color = year, shape = input$shape_legend_name) +
-              theme_minimal() +
-              theme(legend.title = element_text(colour = "black", size = input$Legend_size, family = input$font_type),
-                    legend.text = element_text(size = input$Legend_size, family = input$font_type),
-                    axis.text.y = element_text(colour = "black", family = input$font_type, size = input$text_size),
-                    axis.text.x = element_text(colour = "black", family = input$font_type, size = input$text_size, angle = 0),
-                    axis.title = element_blank(),
-                    plot.title = element_blank()
-              ) +
-              guides(colour = guide_legend(order = 1,
-                                           title.theme = element_text(margin = margin(b = 0)),  # Increase margin between title and items
-                                           label.theme = element_text(margin = margin(t = 15)),
-
-              ),
-              shape = guide_legend(order = 1,
-                                   title.theme = element_text(margin = margin(b = 0)),  # Increase margin between title and items
-                                   label.theme = element_text(margin = margin(t = 15)),
-              )) +
-              ylim(0, max_count)  # Set y-axis limits
-
-            # Store the plot in the list
-            plot_list[[year]] <- p
-          }
         }
+        # else if (input$number_of_conditions == 3) {
+        #
+        #     req(length(data_long$V2>0), length(data_long$V3>0))
+        #
+        #     p <- ggplot(data_long, aes(x = V2, y = Count, color = VDJ, shape = V3)) +
+        #       geom_point(size = 7) +  # Increased point size
+        #       geom_line(aes(group = paste(VDJ, V1)), linewidth = 1.25) +
+        #       scale_color_viridis_d(option = "C", begin = 0.2, end = 0.8) +
+        #       scale_shape_manual(values = unique_vdj$shape) +  # Use default shapes
+        #       labs(x = "", y = "", title = "", color = year, shape = input$shape_legend_name) +
+        #       theme_minimal() +
+        #       theme(legend.title = element_text(colour = "black", size = input$Legend_size, family = input$font_type),
+        #             legend.text = element_text(size = input$Legend_size, family = input$font_type),
+        #             axis.text.y = element_text(colour = "black", family = input$font_type, size = input$text_size),
+        #             axis.text.x = element_text(colour = "black", family = input$font_type, size = input$text_size, angle = 0),
+        #             axis.title = element_blank(),
+        #             plot.title = element_blank()
+        #       ) +
+        #       guides(colour = guide_legend(order = 1,
+        #                                    title.theme = element_text(margin = margin(b = 0)),  # Increase margin between title and items
+        #                                    label.theme = element_text(margin = margin(t = 15)),
+        #
+        #       ),
+        #       shape = guide_legend(order = 1,
+        #                            title.theme = element_text(margin = margin(b = 0)),  # Increase margin between title and items
+        #                            label.theme = element_text(margin = margin(t = 15)),
+        #       )) +
+        #       ylim(0, max_count)  # Set y-axis limits
+        #
+        #     # Store the plot in the list
+        #     plot_list[[year]] <- p
+        #   }
+        # }
       } else {
         top_5_transposed <- as.data.frame(t(top_5_data_list), stringsAsFactors = FALSE)
         print(top_5_transposed)
@@ -18234,6 +18243,7 @@ runSTEGO <- function(){
             label.theme = element_text(margin = margin(t = 15)),
             override.aes = list(size = 7)# Increase margin between items
           )) +
+          guides(color=guide_legend(ncol=input$legend_columns)) +
           ylim(0, max_count)  # Set y-axis limits
         # }
 
@@ -18254,26 +18264,75 @@ runSTEGO <- function(){
       } else {
         print(plot_list)
 
-        # p <- plot_list[[1]]
         plot_list
       }
     })
 
-    output$line_graph_all_output <- renderPlot({
+    plot2_line <- reactive({
+      # plot_list <- Line_graph_for_tracing()
+      # req(plot_list)
+      # combined_plots <- plot_grid(plotlist = plot_list, nrow = input$wrap_row)
+      # y.grob <- textGrob("TCR counts",
+      #                    gp=gpar(fontface = "bold", col="black", family = input$font_type, fontsize=30), rot=90)
+      #
+      # x.grob <- textGrob("Time",
+      #                    gp=gpar(fontface = "bold", col="black", family = input$font_type, fontsize=30))
+      #
+      # grid.arrange(arrangeGrob(combined_plots, left = y.grob, bottom = x.grob))
+
       plot_list <- Line_graph_for_tracing()
       req(plot_list)
-      combined_plots <- plot_grid(plotlist = plot_list, nrow = input$wrap_row)
-      y.grob <- textGrob("TCR counts",
-                         gp=gpar(fontface = "bold", col="black", family = input$font_type, fontsize=30), rot=90)
 
-      x.grob <- textGrob("Time",
-                         gp=gpar(fontface = "bold", col="black", family = input$font_type, fontsize=30))
 
-      grid.arrange(arrangeGrob(combined_plots, left = y.grob, bottom = x.grob))
+      if(input$is_a_time_series) {
+        print(names(plot_list))
+        plot_list[[input$Group_for_line_graph]]
+
+      } else {
+        print(plot_list)
+
+        plot_list
+      }
+
     })
+
+    # output$line_graph_all_output <- renderPlot({
+    #   plot2_line()
+    # })
+
+
+    # Downloading the bar plot -------
+    output$downloadPlot_line_graph_output <- downloadHandler(
+      filename = function() {
+        paste("line_graph.pdf", sep = "")
+      },
+      content = function(file) {
+        pdf(file, width = input$width_line_graph_output, height = input$height_line_graph_output, onefile = FALSE) # open the pdf device
+        plot(plot2_line())
+
+        dev.off()
+      }, contentType = "application/pdf"
+    )
+
+    output$downloadPlotPNG_line_graph_output <- downloadHandler(
+      filename = function() {
+        paste("line_graph.png", sep = "")
+      },
+      content = function(file) {
+        png(file,
+            width = input$width_png_line_graph_output,
+            height = input$height_png_line_graph_output,
+            res = input$resolution_PNG_line_graph_output
+        )
+        plot(plot2_line())
+
+        dev.off()
+      }, contentType = "application/png" # MIME type of the image
+    )
+
     # overlap table with UMAP and expression -----
     overlap_table <- reactive({
-      sc <- data_sc_pro()
+      sc <- UMAP_metadata_with_labs()
       validate(
         need(
           nrow(sc) > 0,
@@ -18291,11 +18350,6 @@ runSTEGO <- function(){
       umap.meta$ID_Column <- umap.meta[,names(umap.meta) %in% input$Samp_col]
       umap.meta$Selected_function <- umap.meta[,names(umap.meta) %in% input$Colour_By_this]
       umap.meta$Selected_group <- umap.meta[,names(umap.meta) %in% input$Split_group_by_]
-
-      # names(umap.meta)[names(umap.meta) %in% input$Samp_col] <- "ID_Column"
-      # names(umap.meta)[names(umap.meta) %in% input$Colour_By_this] <- "Selected_function"
-      # names(umap.meta)[names(umap.meta) %in% input$Split_group_by_] <- "Selected_group"
-      # sc <- merge(umap.meta,TCR_Expanded(),by=c("v_gene_selected","ID_Column"),all.x=T)
 
       Upset_plot_overlap <- Upset_plot_overlap()
       Upset_plot_overlap_top <- subset(Upset_plot_overlap, Upset_plot_overlap$sum > 1)
@@ -18333,6 +18387,9 @@ runSTEGO <- function(){
     output$UMAP_overlap_classification <- renderPlot({
       create_UMAP_overlap()
     })
+
+
+
 
 
     # Umap Overlap plot -------
@@ -18377,7 +18434,7 @@ runSTEGO <- function(){
     # Over representation analysis for Cluster  -----
 
     Over_rep_Overlap <- reactive({
-      sc <- data_sc_pro()
+      sc <- UMAP_metadata_with_labs()
 
       validate(
         need(
@@ -18498,7 +18555,7 @@ runSTEGO <- function(){
     ### single marker feature plot -----
 
     MainTcell_counts <- reactive({
-      sc <- data_sc_pro()
+      sc <- UMAP_metadata_with_labs()
       validate(
         need(
           nrow(sc) > 0,
@@ -18516,7 +18573,7 @@ runSTEGO <- function(){
     })
 
     MainTcell_counts_names <- reactive({
-      sc <- data_sc_pro()
+      sc <- UMAP_metadata_with_labs()
       validate(
         need(
           nrow(sc) > 0,
@@ -18589,7 +18646,7 @@ runSTEGO <- function(){
     # subset based on UMAP location, subset bashed on norm value for the marker of interest threshold as well. -----
 
     MainTcell_scale <- reactive({
-      sc <- data_sc_pro()
+      sc <- UMAP_metadata_with_labs()
       validate(
         need(
           nrow(sc) > 0,
@@ -19040,7 +19097,7 @@ runSTEGO <- function(){
     })
 
     output$Compare.stat_marker <- DT::renderDT(escape = FALSE, options = list(autoWidth = FALSE, lengthMenu = c(2, 5, 10, 20, 50, 100), pageLength = 10, scrollX = TRUE), {
-      sc <- data_sc_pro()
+      sc <- UMAP_metadata_with_labs()
 
       validate(
         need(
