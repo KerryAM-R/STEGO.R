@@ -2131,9 +2131,10 @@ runSTEGO <- function(){
               condition = "input.PriorTBMods == 'PriorRepertoireTB' || input.check_up_files == 'TCR_and_GEX_tb' ",
               fluidRow(
                 h4("Cut-offs for Find Marker"),
-                column(4, numericInput("min_point_", "Min point cut off", value = 0.25)),
-                column(4, numericInput("LogFC_", "Min LogFC cut off", value = 0.25)),
-                column(4, numericInput("pval.ex.filter", "adj.p-val cut-off", value = 0.1)),
+                column(6, numericInput("min_point_", "Min point cut off", value = 0.25)),
+                column(6, numericInput("LogFC_", "Min LogFC cut off", value = 0.25)),
+                column(6, numericInput("pval.ex.filter", "adj.p-val cut-off", value = 0.1)),
+                column(6,checkboxInput("logFC_pval_findmarker",h5("Positive only?"),value = T),style = "padding-top: 25px;"),
               )
             ),
             conditionalPanel(
@@ -2777,7 +2778,7 @@ runSTEGO <- function(){
                          tabPanel("Expanded",
                                   value = "Expanded",
                                   fluidRow(
-                                    column(3, checkboxInput("positive_only_Ex","Restrict to positive?",value = T)),
+                                    # column(3, checkboxInput("positive_only_Ex","Restrict to positive?",value = T)),
                                     column(3,  actionButton("caluclate_Exp","Calc Expansion Stats")),
                                   ),
                                   fluidRow(
@@ -2868,7 +2869,7 @@ runSTEGO <- function(){
                          tabPanel("ClusTCR2",
                                   value = "ClusTCR2",
                                   fluidRow(
-                                    column(3, checkboxInput("positive_only_clust","Restrict to positive?",value = T)),
+                                    # column(3, checkboxInput("positive_only_clust","Restrict to positive?",value = T)),
                                     column(3,  actionButton("caluclate_clust","Calc Clustering Stats")),
                                   ),
 
@@ -13930,8 +13931,13 @@ runSTEGO <- function(){
       cluster.names <- unique(Idents(sc))[order(unique(Idents(sc)))]
       as.data.frame(cluster.names)
       # # print(paste0("calculating markers for cluster ",name.clone,". Total: ",length(cluster.names)," clusters"))
-      markers.fm.list <- FindMarkers(sc, ident.1 = name.clone, min.pct = min.pct.expression, logfc.threshold = min.logfc, only.pos = TRUE)
-      markers.fm.list
+      if(input$logFC_pval_findmarker) {
+        markers.fm.list <- FindMarkers(sc, ident.1 = name.clone, min.pct = min.pct.expression, logfc.threshold = min.logfc, only.pos = TRUE)
+        markers.fm.list
+      } else {
+
+      }
+
       # markers.fm.list2 <- subset(markers.fm.list,markers.fm.list$p_val_adj < input$pval.ex.filter)
       # as.data.frame(markers.fm.list2)
     })
@@ -15036,7 +15042,7 @@ runSTEGO <- function(){
 
       req(input$selected_Indiv_Ex_1,input$selected_Indiv_Ex_2)
 
-      if (input$positive_only_Ex) {
+      if (input$logFC_pval_findmarker) {
         markers.fm.list <- FindMarkers(sc, ident.1 = input$selected_Indiv_Ex_1, ident.2 = c(input$selected_Indiv_Ex_2), min.pct = min.pct.expression, logfc.threshold = min.logfc, only.pos = TRUE)
       } else {
 
@@ -16061,10 +16067,17 @@ runSTEGO <- function(){
       min.logfc <- input$LogFC_ # 0.25 is standard
 
       cluster.names <- unique(Idents(sc))[order(unique(Idents(sc)))]
+      if (input$logFC_pval_findmarker) {
+        markers.fm.list <- FindMarkers(sc, ident.1 = name.check.epi, min.pct = min.pct.expression, logfc.threshold = min.logfc, only.pos = TRUE)
+        markers.fm.list2 <- subset(markers.fm.list, markers.fm.list$p_val_adj < input$pval.ex.filter)
+        as.data.frame(markers.fm.list2)
+      } else {
+        markers.fm.list <- FindMarkers(sc, ident.1 = name.check.epi, min.pct = min.pct.expression, logfc.threshold = min.logfc)
+        markers.fm.list2 <- subset(markers.fm.list, markers.fm.list$p_val_adj < input$pval.ex.filter)
+        as.data.frame(markers.fm.list2)
+      }
 
-      markers.fm.list <- FindMarkers(sc, ident.1 = name.check.epi, min.pct = min.pct.expression, logfc.threshold = min.logfc, only.pos = TRUE)
-      markers.fm.list2 <- subset(markers.fm.list, markers.fm.list$p_val_adj < input$pval.ex.filter)
-      as.data.frame(markers.fm.list2)
+
     })
 
     output$compare.stat_Epi_DT <- DT::renderDT(escape = FALSE, options = list(autoWidth = FALSE, lengthMenu = c(2, 5, 10, 20, 50, 100), pageLength = 10, scrollX = TRUE), {
@@ -17253,7 +17266,7 @@ runSTEGO <- function(){
       min.pct.expression <- input$min_point_ # standard setting: 0.25
       min.logfc <- input$LogFC_ # 0.25 is standard
 
-      if (input$positive_only_clust) {
+      if (input$logFC_pval_findmarker) {
         markers.fm.list <- FindMarkers(sc, ident.1 = name.check.clust, min.pct = min.pct.expression, logfc.threshold = min.logfc, only.pos = TRUE)
       } else {
 
@@ -19091,9 +19104,14 @@ runSTEGO <- function(){
       Idents(object = sc) <- sc@meta.data$pos_neg
       min.pct.expression <- input$min_point_ # standard setting: 0.25
       min.logfc <- input$LogFC_ # 0.25 is standard
+      if (input$logFC_pval_findmarker) {
+        markers.fm.list <- FindMarkers(sc, ident.1 = "pos", min.pct = min.pct.expression, logfc.threshold = min.logfc, only.pos = TRUE)
+        as.data.frame(markers.fm.list)
+      } else {
+        markers.fm.list <- FindMarkers(sc, ident.1 = "pos", min.pct = min.pct.expression, logfc.threshold = min.logfc)
+        as.data.frame(markers.fm.list)
+      }
 
-      markers.fm.list <- FindMarkers(sc, ident.1 = "pos", min.pct = min.pct.expression, logfc.threshold = min.logfc, only.pos = TRUE)
-      as.data.frame(markers.fm.list)
     })
 
     output$Compare.stat_marker <- DT::renderDT(escape = FALSE, options = list(autoWidth = FALSE, lengthMenu = c(2, 5, 10, 20, 50, 100), pageLength = 10, scrollX = TRUE), {
@@ -19671,8 +19689,11 @@ runSTEGO <- function(){
       Idents(object = sc) <- sc@meta.data$Quad
       min.pct.expression <- input$min_point_ # standard setting: 0.25
       min.logfc <- input$LogFC_ # 0.25 is standard
-
-      markers.fm.list <- FindMarkers(sc, ident.1 = input$quad_dualmarker, min.pct = min.pct.expression, logfc.threshold = min.logfc, only.pos = TRUE)
+      if(input$logFC_pval_findmarker) {
+        markers.fm.list <- FindMarkers(sc, ident.1 = input$quad_dualmarker, min.pct = min.pct.expression, logfc.threshold = min.logfc, only.pos = TRUE)
+      } else {
+        markers.fm.list <- FindMarkers(sc, ident.1 = input$quad_dualmarker, min.pct = min.pct.expression, logfc.threshold = min.logfc)
+      }
       as.data.frame(markers.fm.list)
     })
 
@@ -20146,7 +20167,7 @@ runSTEGO <- function(){
           # p.val.cutoff <-  input$pval_top #(1/10^3) is standard, use (1/10^0) to ignore
 
           cluster.names <- unique(Idents(sc))[order(unique(Idents(sc)))]
-          # print(paste0("calculating markers for cluster ",name.clone,". Total: ",length(cluster.names)," clusters"))
+
           markers.fm.list <- FindMarkers(sc, ident.1 = name.clone, min.pct = min.pct.expression, logfc.threshold = min.logfc, only.pos = TRUE)
           markers.fm.list2 <- subset(markers.fm.list, markers.fm.list$p_val_adj < input$pval.ex.filter)
 
