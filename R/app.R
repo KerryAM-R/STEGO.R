@@ -2134,6 +2134,7 @@ runSTEGO <- function(){
                 column(6, numericInput("min_point_", "Min point cut off", value = 0.25)),
                 column(6, numericInput("LogFC_", "Min LogFC cut off", value = 0.25)),
                 column(6, numericInput("pval.ex.filter", "adj.p-val cut-off", value = 0.1)),
+                column(6, numericInput("sequence_breaks_dotplot","Bins for pt.exp",value = 10)),
                 column(6,checkboxInput("logFC_pval_findmarker",h5("Positive only?"),value = T),style = "padding-top: 25px;"),
               )
             ),
@@ -2186,7 +2187,7 @@ runSTEGO <- function(){
               h4("Legend parameters (all)"),
               fluidRow(
                 column(6, numericInput("Legend_size", "Legend text size", value = 12)),
-                column(6, numericInput("legend_columns", "Number of columns", value = 3)),
+                column(6, numericInput("legend_columns", "Number of columns", value = 2)),
                 column(6, selectInput("legend_position", "Legend location", choices = c("top", "bottom", "left", "right", "none"), selected = "right")),
               ),
               selectInput("font_type", label = "Type of font", choices = font, selected = "Times New Roman"),
@@ -2738,9 +2739,9 @@ runSTEGO <- function(){
                                     tabPanel(
                                       "Dotplot",
                                       fluidRow(
-                                        column(2, colourInput("low.dotplot", "Lower color:", "darkblue")),
+                                        column(2, colourInput("low.dotplot", "Lower color:", "#00BFFF")),
                                         column(2, colourInput("middle.dotplot", "Middle color:", "white")),
-                                        column(2, colourInput("high.dotplot", "High color:", "darkred")),
+                                        column(2, colourInput("high.dotplot", "High color:", "#00008B")),
                                         column(2, checkboxInput("restict_no_points", "Restrict Label", value = F)),
                                         column(2, numericInput("pval.ex.top_genes", "Top genes to display", value = 30)),
                                       ),
@@ -2824,9 +2825,9 @@ runSTEGO <- function(){
                                     tabPanel("Dotplot",
                                              value = "ExPan_dot",
                                              fluidRow(
-                                               column(2, colourInput("low.dotplot.ex", "Lower color:", "darkblue")),
+                                               column(2, colourInput("low.dotplot.ex", "Lower color:", "#00BFFF")),
                                                column(2, colourInput("middle.dotplot.ex", "Middle color:", "white")),
-                                               column(2, colourInput("high.dotplot.ex", "High color:", "darkred")),
+                                               column(2, colourInput("high.dotplot.ex", "High color:", "#00008B")),
                                              ),
                                              div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
                                              plotOutput("relative_expression_dotplot_ex", height = "600px"),
@@ -2946,9 +2947,9 @@ runSTEGO <- function(){
                                     tabPanel("Dotplot",
                                              value = "ClusPan_dot",
                                              fluidRow(
-                                               column(2, colourInput("low.dotplot.clust", "Lower color:", "darkblue")),
+                                               column(2, colourInput("low.dotplot.clust", "Lower color:", "#00BFFF")),
                                                column(2, colourInput("middle.dotplot.clust", "Middle color:", "white")),
-                                               column(2, colourInput("high.dotplot.clust", "High color:", "darkred")),
+                                               column(2, colourInput("high.dotplot.clust", "High color:", "#00008B")),
                                                column(2, checkboxInput("restrict.dotpot.clust", "Restrict to top list", value = F)),
                                                column(2, numericInput("restrict.dotpot.num.clust", "Total genes to display:", value = 10))
                                              ),
@@ -3094,9 +3095,9 @@ runSTEGO <- function(){
                                     tabPanel("Dotplot",
                                              value = "EpiPan_dot",
                                              fluidRow(
-                                               column(2, colourInput("low.dotplot.epi", "Lower color:", "darkblue")),
+                                               column(2, colourInput("low.dotplot.epi", "Lower color:", "#00BFFF")),
                                                column(2, colourInput("middle.dotplot.epi", "Middle color:", "white")),
-                                               column(2, colourInput("high.dotplot.epi", "High color:", "darkred")),
+                                               column(2, colourInput("high.dotplot.epi", "High color:", "#00008B")),
                                                column(2, checkboxInput("restrict.dotpot.epi", "Restrict to top list", value = F)),
                                                column(2, numericInput("restrict.dotpot.num.epi", "Total genes to display:", value = 10))
                                              ),
@@ -13935,7 +13936,8 @@ runSTEGO <- function(){
         markers.fm.list <- FindMarkers(sc, ident.1 = name.clone, min.pct = min.pct.expression, logfc.threshold = min.logfc, only.pos = TRUE)
         markers.fm.list
       } else {
-
+        markers.fm.list <- FindMarkers(sc, ident.1 = name.clone, min.pct = min.pct.expression, logfc.threshold = min.logfc)
+        markers.fm.list
       }
 
       # markers.fm.list2 <- subset(markers.fm.list,markers.fm.list$p_val_adj < input$pval.ex.filter)
@@ -14419,8 +14421,14 @@ runSTEGO <- function(){
           legend.position = input$legend_position,
         ) +
         scale_colour_gradient2(low = input$low.dotplot, mid = input$middle.dotplot, high = input$high.dotplot) +
+        scale_size_continuous(breaks = seq(0, 100, by = input$sequence_breaks_dotplot)) + # Adjust the breaks as needed
         scale_x_discrete(labels = label_wrap(20)) +
-        scale_y_discrete(labels = label_wrap(20))
+        scale_y_discrete(labels = label_wrap(20)) +
+        guides(
+          colour = guide_colorbar(order = 1),
+          size = guide_legend(order = 2)
+        ) +
+        guides(size=guide_legend(ncol=input$legend_columns))
     })
 
     output$all_expression_dotplot_top <- renderPlot({
@@ -15137,13 +15145,16 @@ runSTEGO <- function(){
           legend.text = element_text(colour = "black", size = size_legend, family = input$font_type),
           legend.position = input$legend_position,
         ) +
+        guides(color=guide_legend(ncol=input$legend_columns)) +
         scale_colour_gradient2(low = input$low.dotplot.ex, mid = input$middle.dotplot.ex, high = input$high.dotplot.ex) +
+        scale_size_continuous(breaks = seq(0, 100, by = input$sequence_breaks_dotplot)) + # Adjust the breaks as needed
         scale_x_discrete(labels = label_wrap(20)) +
         scale_y_discrete(labels = label_wrap(20)) +
         guides(
-          color = guide_colorbar(title = "Average", order = 1),
-          size = guide_legend(title = "Percent", order = 1)
-        )
+          colour = guide_colorbar(order = 1),
+          size = guide_legend(order = 2)
+        ) +
+        guides(size=guide_legend(ncol=input$legend_columns))
     })
 
     output$relative_expression_dotplot_ex <- renderPlot({
@@ -15278,7 +15289,6 @@ runSTEGO <- function(){
         ggplot(md_gene, aes(y = V1, x = expansion.status, fill = expansion.status)) +
           geom_jitter(height = 0, width = 0.1) +
           geom_violin() +
-          theme(legend.position = "none", ) +
           theme_bw() +
           theme(
             axis.title.y = element_blank(),
@@ -15289,11 +15299,11 @@ runSTEGO <- function(){
             legend.text = element_text(colour = "black", size = input$Legend_size, family = input$font_type),
             legend.title = element_blank(),
             legend.position = input$legend_position,
-          )
+          ) +
+          guides(color=guide_legend(ncol=input$legend_columns))
       } else {
         ggplot(md_gene, aes(y = V1, x = expansion.status, fill = expansion.status)) +
           geom_violin() +
-          theme(legend.position = "none", ) +
           theme_bw() +
           theme(
             axis.title.y = element_blank(),
@@ -15304,7 +15314,8 @@ runSTEGO <- function(){
             legend.text = element_text(colour = "black", size = input$Legend_size, family = input$font_type),
             legend.title = element_blank(),
             legend.position = input$legend_position,
-          )
+          ) +
+          guides(color=guide_legend(ncol=input$legend_columns))
       }
 
 
@@ -15697,6 +15708,7 @@ runSTEGO <- function(){
           legend.title = element_blank(),
           legend.position = input$legend_position,
         ) +
+        guides(color=guide_legend(ncol=input$legend_columns)) +
         theme_bw()
       if (input$Split_by_group == "no") {
         df <- df
@@ -15913,7 +15925,8 @@ runSTEGO <- function(){
           legend.text = element_text(colour = "black", size = input$Legend_size, family = input$font_type),
           legend.position = input$legend_position,
           legend.title = element_blank()
-        )
+        ) +
+        guides(color=guide_legend(ncol=input$legend_columns))
     })
 
     output$Pie_Epitope_plot <- renderPlot({
@@ -16153,8 +16166,14 @@ runSTEGO <- function(){
           legend.position = input$legend_position,
         ) +
         scale_colour_gradient2(low = input$low.dotplot.epi, mid = input$middle.dotplot.epi, high = input$high.dotplot.epi) +
+        scale_size_continuous(breaks = seq(0, 100, by = input$sequence_breaks_dotplot)) + # Adjust the breaks as needed
         scale_x_discrete(labels = label_wrap(20)) +
-        scale_y_discrete(labels = label_wrap(20))
+        scale_y_discrete(labels = label_wrap(20)) +
+        guides(
+          colour = guide_colorbar(order = 1),
+          size = guide_legend(order = 2)
+        ) +
+        guides(size=guide_legend(ncol=input$legend_columns))
     })
 
     output$checking_epi_dot_issue <- DT::renderDT(escape = FALSE, filter = list(position = "top", clear = FALSE), options = list(autoWidth = FALSE, lengthMenu = c(1, 2, 5, 10, 20, 50, 100), pageLength = 20, scrollX = TRUE), {
@@ -17425,9 +17444,16 @@ runSTEGO <- function(){
           legend.text = element_text(colour = "black", size = size_legend, family = input$font_type),
           legend.position = input$legend_position,
         ) +
+        guides(color=guide_legend(ncol=input$legend_columns)) +
         scale_colour_gradient2(low = input$low.dotplot.clust, mid = input$middle.dotplot.clust, high = input$high.dotplot.clust) +
+        scale_size_continuous(breaks = seq(0, 100, by = input$sequence_breaks_dotplot)) + # Adjust the breaks as needed
         scale_x_discrete(labels = label_wrap(20)) +
-        scale_y_discrete(labels = label_wrap(20))
+        scale_y_discrete(labels = label_wrap(20)) +
+        guides(
+          colour = guide_colorbar(order = 1),
+          size = guide_legend(order = 2)
+        ) +
+        guides(size=guide_legend(ncol=input$legend_columns))
     })
 
     output$all_expression_dotplot_cluster <- renderPlot({
@@ -20200,8 +20226,14 @@ runSTEGO <- function(){
                 legend.position = input$legend_position,
               ) +
               scale_colour_gradient2(low = input$low.dotplot, mid = input$middle.dotplot, high = input$high.dotplot) +
+              scale_size_continuous(breaks = seq(0, 100, by = input$sequence_breaks_dotplot)) + # Adjust the breaks as needed
               scale_x_discrete(labels = label_wrap(20)) +
-              scale_y_discrete(labels = label_wrap(20))
+              scale_y_discrete(labels = label_wrap(20)) +
+              guides(
+                colour = guide_colorbar(order = 1),
+                size = guide_legend(order = 2)
+              ) +
+              guides(size=guide_legend(ncol=input$legend_columns))
 
 
             file.name.clone <- paste("prioritization/ImmunoDom/", i, "_", gsub("[/]", "", gsub("&", "", name.clone)), "_dotplot_plot", "_", today(), ".png", sep = "")
@@ -20701,8 +20733,14 @@ runSTEGO <- function(){
                   legend.position = input$legend_position,
                 ) +
                 scale_colour_gradient2(low = input$low.dotplot, mid = input$middle.dotplot, high = input$high.dotplot) +
+                scale_size_continuous(breaks = seq(0, 100, by = input$sequence_breaks_dotplot)) + # Adjust the breaks as needed
                 scale_x_discrete(labels = label_wrap(20)) +
-                scale_y_discrete(labels = label_wrap(20))
+                scale_y_discrete(labels = label_wrap(20)) +
+                guides(
+                  colour = guide_colorbar(order = 1),
+                  size = guide_legend(order = 2)
+                ) +
+                guides(size=guide_legend(ncol=input$legend_columns))
 
 
               file.name.clone <- paste("prioritization/Multi/PublicLike/", i, "_", gsub("[/]", "", gsub("&", "", name.clone)), "_dotplot_plot", "_", today(), ".png", sep = "")
@@ -20887,8 +20925,14 @@ runSTEGO <- function(){
                 legend.position = input$legend_position,
               ) +
               scale_colour_gradient2(low = input$low.dotplot, mid = input$middle.dotplot, high = input$high.dotplot) +
+              scale_size_continuous(breaks = seq(0, 100, by = input$sequence_breaks_dotplot)) + # Adjust the breaks as needed
               scale_x_discrete(labels = label_wrap(20)) +
-              scale_y_discrete(labels = label_wrap(20))
+              scale_y_discrete(labels = label_wrap(20)) +
+              guides(
+                colour = guide_colorbar(order = 1),
+                size = guide_legend(order = 2)
+              ) +
+              guides(size=guide_legend(ncol=input$legend_columns))
 
 
             file.name.clone <- paste("prioritization/Multi/Unique/", i, "_", gsub("[/]", "", gsub("&", "", name.clone)), "_dotplot_plot", "_", today(), ".png", sep = "")
@@ -21786,8 +21830,14 @@ runSTEGO <- function(){
                   legend.position = input$legend_position,
                 ) +
                 scale_colour_gradient2(low = input$low.dotplot.clust, mid = input$middle.dotplot.clust, high = input$high.dotplot.clust) +
+                scale_size_continuous(breaks = seq(0, 100, by = input$sequence_breaks_dotplot)) + # Adjust the breaks as needed
                 scale_x_discrete(labels = label_wrap(20)) +
-                scale_y_discrete(labels = label_wrap(20))
+                scale_y_discrete(labels = label_wrap(20)) +
+                guides(
+                  colour = guide_colorbar(order = 1),
+                  size = guide_legend(order = 2)
+                ) +
+                guides(size=guide_legend(ncol=input$legend_columns))
 
               top.name.clonotypes.top_png <- paste(dirName, i, "_", Vgene, "_A_dot.plot_", x, ".png", sep = "")
               png(top.name.clonotypes.top_png,
@@ -22105,8 +22155,14 @@ runSTEGO <- function(){
                   legend.position = input$legend_position,
                 ) +
                 scale_colour_gradient2(low = input$low.dotplot.clust, mid = input$middle.dotplot.clust, high = input$high.dotplot.clust) +
+                scale_size_continuous(breaks = seq(0, 100, by = input$sequence_breaks_dotplot)) + # Adjust the breaks as needed
                 scale_x_discrete(labels = label_wrap(20)) +
-                scale_y_discrete(labels = label_wrap(20))
+                scale_y_discrete(labels = label_wrap(20)) +
+                guides(
+                  colour = guide_colorbar(order = 1),
+                  size = guide_legend(order = 2)
+                ) +
+                guides(size=guide_legend(ncol=input$legend_columns))
 
               top.name.clonotypes.top_png <- paste(dirName, i, "_", Vgene, "_G_dot.plot_", x, ".png", sep = "")
               png(top.name.clonotypes.top_png,
@@ -22430,8 +22486,14 @@ runSTEGO <- function(){
                   legend.position = input$legend_position,
                 ) +
                 scale_colour_gradient2(low = input$low.dotplot.clust, mid = input$middle.dotplot.clust, high = input$high.dotplot.clust) +
+                scale_size_continuous(breaks = seq(0, 100, by = input$sequence_breaks_dotplot)) + # Adjust the breaks as needed
                 scale_x_discrete(labels = label_wrap(20)) +
-                scale_y_discrete(labels = label_wrap(20))
+                scale_y_discrete(labels = label_wrap(20)) +
+                guides(
+                  colour = guide_colorbar(order = 1),
+                  size = guide_legend(order = 2)
+                ) +
+                guides(size=guide_legend(ncol=input$legend_columns))
 
               top.name.clonotypes.top_png <- paste(dirName, i, "_", Vgene, "_B_dot.plot_", x, ".png", sep = "")
               png(top.name.clonotypes.top_png,
@@ -22757,8 +22819,14 @@ runSTEGO <- function(){
                   legend.position = input$legend_position,
                 ) +
                 scale_colour_gradient2(low = input$low.dotplot.clust, mid = input$middle.dotplot.clust, high = input$high.dotplot.clust) +
+                scale_size_continuous(breaks = seq(0, 100, by = input$sequence_breaks_dotplot)) + # Adjust the breaks as needed
                 scale_x_discrete(labels = label_wrap(20)) +
-                scale_y_discrete(labels = label_wrap(20))
+                scale_y_discrete(labels = label_wrap(20)) +
+                guides(
+                  colour = guide_colorbar(order = 1),
+                  size = guide_legend(order = 2)
+                ) +
+                guides(size=guide_legend(ncol=input$legend_columns))
 
               top.name.clonotypes.top_png <- paste(dirName, i, "_", Vgene, "_D_dot.plot_", x, ".png", sep = "")
               png(top.name.clonotypes.top_png,
@@ -23307,8 +23375,14 @@ runSTEGO <- function(){
                   legend.position = input$legend_position,
                 ) +
                 scale_colour_gradient2(low = input$low.dotplot.clust, mid = input$middle.dotplot.clust, high = input$high.dotplot.clust) +
+                scale_size_continuous(breaks = seq(0, 100, by = input$sequence_breaks_dotplot)) + # Adjust the breaks as needed
                 scale_x_discrete(labels = label_wrap(20)) +
-                scale_y_discrete(labels = label_wrap(20))
+                scale_y_discrete(labels = label_wrap(20)) +
+                guides(
+                  colour = guide_colorbar(order = 1),
+                  size = guide_legend(order = 2)
+                ) +
+                guides(size=guide_legend(ncol=input$legend_columns))
 
               top.name.clonotypes.top_png <- paste(dir_to_create, i, "_", selected.epitope.name, "_", Epi.selected.function.name, "_Epitope_dot.plot_", x, ".png", sep = "")
               png(top.name.clonotypes.top_png,
