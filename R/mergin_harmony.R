@@ -62,7 +62,7 @@ merging_ClusTCR2 <- function (directory = "1_ClusTCR",chain = "AG", output_dir =
 #' @description
 #' This function is to aid im merging multiple Seurat object, which will then need to undergo harmony merging after this step. We have included a loop that merges two Seurat objects at a time to ensure time efficiency  (exponentially gets smaller from the previous sequential merging process)
 #'
-#' @param set_directory set the path to the directory with the. Default = current working directory. The program will reset the directory to the original to not impact the function of STEGO.R project file. If you stop the script, you will need to manually reset the working directory with setwd("../"), to go back one directory.
+#' @param seurat_files set the path to the directory with the. Default = current working directory. The program will reset the directory to the original to not impact the function of STEGO.R project file. If you stop the script, you will need to manually reset the working directory with setwd("../"), to go back one directory.
 #' @param merge_RDS Set to TRUE once you have check the directory with the .rds file
 #' @param pattern_RDS uses the list.files function to identify the .rds objects for merging in the 2_scObj
 #' @param species Species: hs or mm, as the humans (hs) use upper case and the mouse (mm) gene use proper case.
@@ -70,6 +70,7 @@ merging_ClusTCR2 <- function (directory = "1_ClusTCR",chain = "AG", output_dir =
 #' @param own_features If you want to reduce the file size to your own features change to TRUE
 #' @param own_features_df Add in a data frame of the list of your features of one column only.
 #' @param Seurat_Version Current version of Seurat V5 requires joining layers in the merging process.
+#' @param max_features set the maximum number of features to keep per file.
 #' @import Seurat
 #' @importFrom purrr reduce
 #' @return A merged Seurat RDS object.
