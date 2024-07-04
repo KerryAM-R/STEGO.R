@@ -240,6 +240,7 @@ runSTEGO <- function(){
 
   # UI page -----
   ui <- fluidPage(
+    useShinyjs(),  # Initialize shinyjs
     # add hint explanation -----
     tags$head(
       tags$style(HTML(
@@ -556,7 +557,26 @@ runSTEGO <- function(){
     tags$style(HTML("
     .name-header3 {
       color: #6F00B0;
+      font-weight: bold;
     font-size: 16px
+    }
+  ")),
+
+    tags$style(HTML("
+    .name-header4 {
+      color: #6F00B0;
+      font-weight: bold;
+      text-align: center;
+     font-size: 16px
+    }
+  ")),
+
+    tags$style(HTML("
+    .name-header5 {
+      color: #6F00B0;
+      font-weight: bold;
+      text-align: center;
+     font-size: 20px
     }
   ")),
     # add in disable function ----
@@ -752,9 +772,9 @@ runSTEGO <- function(){
               ),
 
               fluidRow(
-                column(6, checkboxInput("filtering_TCR", p("paired chains?", class = "name-header3"), value = FALSE, width = NULL)),
-                column(6, checkboxInput("TCR_present",  p("TCR present?", class = "name-header3"), value = TRUE, width = NULL)),
-                column(6, checkboxInput("BCR_present",  p("BCR present?", class = "name-header3"), value = FALSE, width = NULL)),
+                column(6, checkboxInput("filtering_TCR", p("paired chains?", class = "name-header2"), value = FALSE, width = NULL)),
+                column(6, checkboxInput("TCR_present",  p("TCR present?", class = "name-header2"), value = TRUE, width = NULL)),
+                column(6, checkboxInput("BCR_present",  p("BCR present?", class = "name-header2"), value = FALSE, width = NULL)),
               ),
             ),
             # main panel ------
@@ -1951,7 +1971,6 @@ runSTEGO <- function(){
         # side bar layout ------
         sidebarLayout(
           sidebarPanel(
-            ######
             id = "tPanel4", style = "overflow-y:scroll; max-height: 1000px; position:relative;", width = 3,
             conditionalPanel(
               condition = "input.check_up_files== 'up'",
@@ -2041,142 +2060,89 @@ runSTEGO <- function(){
             ),
 
             selectInput("V_gene_sc", "V gene with/without CDR3", choices = ""),
-            selectInput("Samp_col", "Selected Individual", choices = ""),
+            selectInput("Samp_col", "Selected Sample", choices = ""),
 
             conditionalPanel(
               condition = "input.check_up_files != 'up'",
+
               fluidRow(
-                column(6, selectInput("Split_by_group", "Display by Selected Individual", choices = c("no", "yes"))),
-                column(6, numericInput("wrap_row", h5("Number of plot rows"), value = 2)),
                 conditionalPanel(
-                  condition = "input.Panel_TCRUMAP != 'TCR_and_GEX_tb'",
+                  condition = "input.check_up_files == 'up2'",
+                  div(class = "select-input-container",
+
+                      column(12, selectInput("Split_by_group_overview", "Split by Selected Sample", choices = c("no", "yes"))),
+                      div(class = "hint-icon",
+                          icon("circle-question", lib = "font-awesome")),
+                      div(class = "hint-text", "If switched to 'yes', the following plots will be separated by the 'Selected Sample' column in Overview section"),
+                  )),
+                column(12, numericInput("wrap_row", ("Number of plot rows"), value = 2))
+
+              ),
+              fluidRow(
+                conditionalPanel(
+                  condition = "input.check_up_files == 'TCR_and_GEX_tb'",
                   # conditionalPanel(
                   #   condition = "input.Split_by_group == 'yes'",
-                  column(6, selectInput("Split_group_by_", "Split graph by:", choices = ""))
+                  column(6, selectInput("Split_by_group_TCRGEx", "Split graph?", choices = c("no", "yes"))),
+                  column(6, selectInput("Split_group_by_", "Split graph by:", choices = "")),
+
                   # ),
+
+
+
                 ),
 
               ),
-              selectInput("colourtype", "Colouring Palettes", choices = c("default", "rainbow", "random", "heat.colors", "terrain.colors", "topo.colors", "hcl.colors", "one")),
-            ),
-
-            conditionalPanel(
-              condition = "input.check_up_files != 'up'",
-              conditionalPanel(
-                condition = "input.Panel_TCRUMAP != 'Expanded'",
-                conditionalPanel(
-                  condition = "input.check_up_files != 'up2'",
-                  uiOutput("classification_to_add")
-                )
-              )
-            ),
-            # Need to check the colouring by, may need to reduce to 1?
-            conditionalPanel(
-              condition = "input.check_up_files == 'up2'",
-              uiOutput("classification_to_add_overview")
-            ),
-
-            # side bar layout expansion priority UI -------
-            conditionalPanel(
-              condition = "input.check_up_files == 'Prior' || input.check_up_files == 'TCR_and_GEX_tb' ",
-              conditionalPanel(
-                condition = "input.Panel_TCRUMAP == 'Expanded'",
-                h4("Expanded cut-offs and colouring"),
-                fluidRow(
-                  column(6, div(class = "select-input-container",
-                                numericInput("cutoff.expanded", "Cut off greater than", value = 0.5, step = 0.01, min = 0, max = 0.99),
-                                div(class = "hint-icon",
-                                    icon("circle-question", lib = "font-awesome")),
-                                div(class = "hint-text2", "This is to calculate the number of clone cut-off that is deemed to be expanded. e.g., >0.5 == 50% or more of the repertoire that is used to calculate the count cut-off for what is deemed to be expanded"),
-                  )
-                  ),
-
-                  h5("Expansion Dot plot"),
-                  column(6,
-                         uiOutput("cut.off_expanded2"),
-
-                  ),
-                  column(6, uiOutput("classification_to_add2")),
-                ),
-                fluidRow(
-                  column(6, numericInput("cut.off_percent_rep", "Percent of Repertoire", value = 1, step = 1, min = 1, max = 100)),
-                  column(6, numericInput("size.dot.umap", "size of UMAP dot's", value = 2, step = 1, min = 1))
-                )
-              ),
-            ),
-            conditionalPanel(
-              condition = "input.check_up_files == 'TCR_and_GEX_tb'",
-
-              conditionalPanel(
-                condition = "input.Panel_TCRUMAP == 'Expanded'",
-                fluidRow(
-                  column(12, uiOutput("Expanded.dotplot.cutoffs")),
-                  column(12, selectizeInput("selected_Indiv_Ex_1", "Samp 1", choices = "", multiple = T)),
-                  column(12, selectizeInput("selected_Indiv_Ex_2", "Samp 2", choices = "", multiple = T)),
-                )
-              )
-            ),
-            conditionalPanel(
-              condition = "input.Panel_TCRUMAP=='ClusTCR2'",
-              selectInput("chain_TCR", "Chain to display", choices = c("TRA","TRG","TRB","TRD", "IgH", "IgKL")),
-            ),
-            conditionalPanel(
-              condition = "input.PriorTBMods == 'PriorClustTB' || input.Panel_TCRUMAP == 'ClusTCR2'",
-              selectizeInput("Clusters_to_dis_PIE", "Clusters to display", choices = "", multiple = F)
-            ),
-
-            # Expanded stat cut-offs -----
-
-            conditionalPanel(
-              condition = "input.PriorTBMods == 'PriorRepertoireTB' || input.check_up_files == 'TCR_and_GEX_tb' ",
+              p("Restricting to specific samples.",class = "name-header4"),
               fluidRow(
-                h4("Cut-offs for Find Marker"),
-                column(6, numericInput("min_point_", "Min point cut off", value = 0.25)),
-                column(6, numericInput("LogFC_", "Min LogFC cut off", value = 0.25)),
-                column(6, numericInput("pval.ex.filter", "adj.p-val cut-off", value = 0.1)),
-                column(6, numericInput("sequence_breaks_dotplot","Bins for pt.exp",value = 10)),
-                column(6,checkboxInput("logFC_pval_findmarker",h5("Positive only?"),value = T),style = "padding-top: 25px;"),
-              )
-            ),
-            conditionalPanel(
-              condition = "input.Panel_TCRUMAP == 'Marker'",
-              column(12, selectInput("col_marker_scale", "Colour scale", choices = col_markers, selected = col_markers[1])),
-            ),
-            conditionalPanel(
-              condition = "input.check_up_files != 'up' ",
+
+                column(12, div(class = "select-input-container",
+                               selectInput("by_indiv_pie_epi",p("Display one individual?",class = "name-header3"), choices = c("no", "yes")),
+                               div(class = "hint-icon",
+                                   icon("circle-question", lib = "font-awesome")),
+                               div(class = "hint-text", "This paramater is used primarily for the clonal abudance section. If changed to yes, the TCR summary table will be based on the 'Displayed sample: ' input. The displayed sample is based on the unique variables from the 'Selected Sample' variable."),
+                )),
+              ),
+
+              fluidRow(
+                conditionalPanel(
+                  condition = "input.by_indiv_pie_epi == 'yes'",
+                  column(12, selectInput("selected_Indiv", "Selected sample: ", choices = "")
+                  )
+                )
+              ),
+
+
+              p("Colouring parameters",class = "name-header4"),
+              conditionalPanel(
+                condition = "input.check_up_files == 'up2'",
+                uiOutput("classification_to_add_overview")
+              ),
+              conditionalPanel(
+                condition = "input.check_up_files != 'up'",
+                conditionalPanel(
+                  condition = "input.Panel_TCRUMAP != 'Expanded'",
+                  conditionalPanel(
+                    condition = "input.check_up_files != 'up2'",
+                    uiOutput("classification_to_add")
+                  )
+                )
+              ),
+
+              selectInput("colourtype", "Colouring Palettes", choices = c("default", "rainbow", "random", "heat.colors", "terrain.colors", "topo.colors", "hcl.colors", "one")),
               fluidRow(
                 column(6, colourInput("one.colour.default", "One colour", "grey50")),
                 column(6, colourInput("NA_col_analysis", "NA colour", "grey90"), )
               ),
+            ),
 
-              conditionalPanel(
-                condition = "input.check_up_files == 'up2' || input.check_up_files == 'Prior'",
-                conditionalPanel(
-                  condition = "input.QC_panel == 'TCR'",
 
-                  fluidRow(column(12, selectInput("Graph_type_bar", "Type of graph", choices = c("Number_expanded", "Frequency_expanded", "Top_clonotypes")))),
-                  conditionalPanel(
-                    condition = "input.Graph_type_bar == 'Top_clonotypes'",
-                    fluidRow(
-                      column(12, numericInput("top_no_clonotypes", "Top clonotypes per group", value = 1, step = 1, min = 0, max = 20))
-                    )),
-                )
-              ),
+            # Need to check the colouring by, may need to reduce to 1?
 
-              h4("What individuals to include"),
 
-              fluidRow(
-                column(6, selectInput("by_indiv_pie_epi", "Display one individual?", choices = c("no", "yes"))),
-                column(6, conditionalPanel(
-                  condition = "input.by_indiv_pie_epi == 'yes'",
-                  fluidRow(
-                    selectInput("selected_Indiv", "Display one individual", choices = "")
-                  )
-                )
-                ),
-              ),
-              h4("Plot parameters (all)"),
-              checkboxInput("jitter","Display with jitter in violin plot?", value = T),
+            conditionalPanel(
+              condition = "input.check_up_files != 'up' ",
+              p("Plot parameters (all)",class = "name-header4"),
               fluidRow(
                 column(6, numericInput("text_size", "Axis number size", value = 20)),
                 column(6, numericInput("title.text.sizer2", "Axis text size", value = 20))),
@@ -2184,7 +2150,7 @@ runSTEGO <- function(){
                 column(6, numericInput("Strip_text_size", "Strip text size (e.g., grey bars)", value = 20)),
                 column(6, numericInput("anno_text_size", "Annotation text size", value = 6)),
               ),
-              h4("Legend parameters (all)"),
+              p("Legend parameters (all)",class = "name-header4"),
               fluidRow(
                 column(6, numericInput("Legend_size", "Legend text size", value = 12)),
                 column(6, numericInput("legend_columns", "Number of columns", value = 2)),
@@ -2192,11 +2158,201 @@ runSTEGO <- function(){
               ),
               selectInput("font_type", label = "Type of font", choices = font, selected = "Times New Roman"),
             ),
+
+            conditionalPanel(
+              condition = "input.check_up_files == 'up2' || input.check_up_files == 'Prior'",
+              p("Overview analysis",class = "name-header4"),
+              conditionalPanel(
+                condition = "input.QC_panel == 'TCR'",
+
+                fluidRow(column(12, selectInput("Graph_type_bar", "Type of graph", choices = c("Number_expanded", "Frequency_expanded", "Top_clonotypes")))),
+                conditionalPanel(
+                  condition = "input.Graph_type_bar == 'Top_clonotypes'",
+                  fluidRow(
+                    column(12, numericInput("top_no_clonotypes", "Top clonotypes per group", value = 1, step = 1, min = 0, max = 20))
+                  )),
+              )
+            ),
+
+            conditionalPanel(
+              condition = "input.PriorTBMods == 'PriorRepertoireTB' || input.check_up_files == 'TCR_and_GEX_tb' ",
+              p("TCR -> GEx analysis",class = "name-header5"),
+              conditionalPanel(
+                condition = "input.check_up_files == 'TCR_and_GEX_tb'",
+                p("Heatmap colouring",class = "name-header4"),
+                fluidRow(
+                  column(4,colourInput("min_FC_col", "Zero", value = "white")),
+                  column(4,colourInput("med_FC_col", "1 or more", value = "#E9C2FF")),
+                  column(4,colourInput("max_FC_col", "Max colour", value = "#6F00B0")),
+                ),
+              ),
+
+              #####
+              # abundance variables
+              ####
+              conditionalPanel(
+                condition = "input.Panel_TCRUMAP == 'top_clone'",
+                p("Clonal Abundance",class = "name-header4"),
+                fluidRow(
+                  column(6, numericInput("singlets_filter","Min clone count",value = 2)),
+                  column(
+                    6,
+                    conditionalPanel(
+                      condition = "input.Panel_TCRUMAP=='top_clone'",
+                      div(class = "select-input-container",
+                          checkboxInput("limit_to_top_clones",p("Filter tables to the most abundant clones?",class = "name-header3"),value = T)
+                      )
+                    ),
+                  ),
+                  column(
+                    6,
+                    conditionalPanel(
+                      condition = "input.Panel_TCRUMAP=='top_clone' && input.limit_to_top_clones",
+                      numericInput("max_top_clone_limit", "Filter to:", value = 50)
+                    ),
+                  )
+                ),
+
+                fluidRow(
+                  column(12,selectInput("comparison_abudance","Compare (ident.2)",choices = c("Background","clones"))),
+                  column(3,""),
+                  column(6,actionButton("run_stats_abudance","Run stats (abudance)")),
+                ),
+              ),
+
+              fluidRow(
+                p("Cut-offs for FindMarker",class = "name-header4"),
+                column(6, numericInput("min_point_", "Min point cut off", value = 0.25)),
+                column(6, numericInput("LogFC_", "Min LogFC cut off", value = 0.25)),
+                column(6, numericInput("pval.ex.filter", "adj.p-val cut-off", value = 0.1)),
+                column(6,
+                       div(class = "select-input-container",
+                           numericInput("sequence_breaks_dotplot","Bins for ptc.exp",value = 10),
+                           div(class = "hint-icon",
+                               icon("circle-question", lib = "font-awesome")),
+                           div(class = "hint-text", "This value selects bins for the average number of cells expressing the selected transcript. The default for the DotPlot() function from Seurat was 25, and here we over-ride the value with 10 increments, as to better represent the spread of cellular expression"),
+
+                       )),
+
+
+                column(12, div(class = "select-input-container",
+                               checkboxInput("logFC_pval_findmarker",p("Positive only?",class = "name-header3"),value = T),
+                               div(class = "hint-icon",
+                                   icon("circle-question", lib = "font-awesome")),
+                               div(class = "hint-text", "The 'FindMarker' function from Seruat that does the pseudo-bulk analysis can be restricted to transcripts that are positively assoicated with the clone(s) or condition of interest. Here the user can use this checkbox to restrict to positive value or not."),
+                ),
+                )),
+
+              conditionalPanel(
+                condition = "input.check_up_files == 'TCR_and_GEX_tb'",
+                p("Dotplot colouring",class = "name-header4"),
+                fluidRow(
+                  column(4, colourInput("low.dotplot", "Lower color:", "#00BFFF")),
+                  column(4, colourInput("middle.dotplot", "Middle color:", "white")),
+                  column(4, colourInput("high.dotplot", "High color:", "#00008B")),
+                  column(4, checkboxInput("restrict.dotplot", p("Restrict sig. transcripts?",class = "name-header3"), value = T)),
+                  column(4, numericInput("restrict.dotplot.num", "Total genes to display:", value = 30))
+                ),
+              ),
+              fluidRow(
+                p("Violin plots",class = "name-header4"),
+                column(12, div(class = "select-input-container",
+                               checkboxInput("jitter",p("Display with jitter in violin plot?",class = "name-header3"), value = T),
+
+                               div(class = "hint-icon",
+                                   icon("circle-question", lib = "font-awesome")),
+                               div(class = "hint-text", "For the Violin plots,displays the scaled expression of the transcripts, the user can chose to keep the points on the plot as well or remove them"),
+                )),
+                column(6,numericInput("alpha_violin","Transparancy of violin",value = 0.5,min = 0,max = 1, step= 0.1)),
+              ),
+            ),
+
+
+
+            #####
+            # expansion specific side panel  --------
+            conditionalPanel(
+              condition = "input.check_up_files == 'Prior' || input.check_up_files == 'TCR_and_GEX_tb' ",
+              conditionalPanel(
+                condition = "input.Panel_TCRUMAP == 'Expanded'",
+                p("Expanded cut-offs and colouring",class = "name-header4"),
+                fluidRow(
+                  column(6, div(class = "select-input-container",
+                                numericInput("cutoff.expanded", "Cut off greater than", value = 0.5, step = 0.01, min = 0, max = 0.99),
+                                div(class = "hint-icon",
+                                    icon("circle-question", lib = "font-awesome")),
+                                div(class = "hint-text2", "This is to calculate the number of clone cut-off that is deemed to be expanded. e.g., >0.5 == 50% or more of the repertoire that is used to calculate the count cut-off for what is deemed to be expanded"),
+                  )),
+                  column(6,
+                         uiOutput("cut.off_expanded2"),
+
+                  )
+                ),
+
+                # p("Expansion Dot plot",class = "name-header4"),
+                fluidRow(
+                  column(6, uiOutput("classification_to_add2")),
+                ),
+
+              ),
+            ),
+
+            conditionalPanel(
+              condition = "input.check_up_files == 'TCR_and_GEX_tb'",
+
+              conditionalPanel(
+                condition = "input.Panel_TCRUMAP == 'Expanded'",
+                fluidRow(
+                  column(12, selectizeInput("selected_Indiv_Ex_1", "Samp 1", choices = "", multiple = T)),
+                  column(12, selectizeInput("selected_Indiv_Ex_2", "Samp 2", choices = "", multiple = T)),
+                  column(12,  actionButton("caluclate_Exp","Calc Expansion Stats")),
+                ),
+
+              )
+            ),
+
+            #####
+            # Clustering specific side panel  --------
+            conditionalPanel(
+              condition = "input.Panel_TCRUMAP=='ClusTCR2'",
+              p("Clustering variables",class = "name-header4"),
+              selectInput("chain_TCR", "Chain to display", choices = c("TRA","TRG","TRB","TRD", "IgH", "IgKL")),
+              fluidRow(
+                # column(3, checkboxInput("positive_only_clust","Restrict to positive?",value = T)),
+                column(6,  actionButton("caluclate_clust","Calc Clustering Stats")),
+              ),
+
+            ),
+            conditionalPanel(
+              condition = "input.PriorTBMods == 'PriorClustTB' || input.Panel_TCRUMAP == 'ClusTCR2'",
+              selectizeInput("Clusters_to_dis_PIE", "Clusters to display", choices = "", multiple = F)
+            ),
+
+            conditionalPanel(
+              condition = "input.Panel_TCRUMAP == 'Marker'",
+              column(12, selectInput("col_marker_scale", "Colour scale", choices = col_markers, selected = col_markers[1])),
+            ),
+            conditionalPanel(
+
+              condition = "input.check_up_files == 'Prior'",
+              p("Prioritization",class = "name-header4"),
+              fluidRow(
+                column(6, numericInput("cut.off_percent_rep", "Percent of Repertoire", value = 1, step = 1, min = 1, max = 100)),
+                column(6, numericInput("size.dot.umap", "size of UMAP dot's", value = 2, step = 1, min = 1))
+              ),
+              # column(12, uiOutput("Expanded.dotplot.cutoffs"))
+            ),
+
+
+
             ###### state of the analysis section as a csv file --------
 
             # Upload button
             # fileInput("uploadData", "Upload State")
           ),
+
+
+          #####
 
           # add in clustering  (why did I add this comment?) -----
           mainPanel(
@@ -2208,8 +2364,6 @@ runSTEGO <- function(){
                        div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
                        fluidRow(
                          column(12, div(DT::DTOutput("meta.data_check_upload",height = "200px"))),
-                         column(12, div(DT::DTOutput("Sample_names_merging_sc",height = "200px"))),
-                         # column(12,  div(DT::DTOutput("Tb_TCR_clonotypes.Umap"))),
                          column(12, div(DT::DTOutput("Tb_ClusTCR_test",height = "200px"))),
                          column(12, div(DT::DTOutput("Tb_tcrex_test",height = "200px")))
                        ),
@@ -2218,17 +2372,17 @@ runSTEGO <- function(){
               ############
               # main panel of 4. Analysis
               ############
-
               # UMAP -> TCR -----
               tabPanel("Overview",
                        value = "up2",
                        fluidRow(
                          div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
-                         column(12, selectInput("ID_Column_factor", "Order of graph (Selected Individual)", choices = "", multiple = T, width = "1200px")),
+                         column(12, selectInput("ID_Column_factor", "Order of graph (Selected Sample)", choices = "", multiple = T, width = "1400px")),
                        ),
 
                        tabsetPanel(
                          id = "QC_panel",
+                         ############
                          # T cell classification ------
                          tabPanel("GEX",
                                   value = "GEX_panel",
@@ -2559,22 +2713,16 @@ runSTEGO <- function(){
                        )
               ),
               # end of differential expression -----
+              #######
               # TCR and GEX analysis section-----
+              #######
               tabPanel("TCR -> GEX",
                        value = "TCR_and_GEX_tb",
                        fluidRow(
-
-                         # conditionalPanel(
-                         #   condition = "input.Split_by_group == 'yes' | input.",
                          column(
                            12,
                            selectInput("Graph_split_order", "Order of split by:", choices = "", multiple = T, width = "1400px")
-                           # ),
                          ),
-
-                         column(3,colourInput("min_FC_col", "Zero colour", value = "white")),
-                         column(3,colourInput("med_FC_col", "from one colour", value = "#E9C2FF")),
-                         column(3,colourInput("max_FC_col", "Max colour", value = "#6F00B0")),
                        ),
                        # Classification to include ------
                        tabsetPanel(
@@ -2582,31 +2730,31 @@ runSTEGO <- function(){
                          # top clonotypes plot -----
                          tabPanel("Clone abundance",
                                   value = "top_clone",
-                                  fluidRow(
-                                    column(
-                                      3,
-                                      conditionalPanel(
-                                        condition = "input.Panel_TCRUMAP=='top_clone'",
-                                        checkboxInput("limit_to_top_clones", "Limit to the top clones", value = T)
-                                      ),
-                                    ),
-                                    column(
-                                      3,
-                                      conditionalPanel(
-                                        condition = "input.Panel_TCRUMAP=='top_clone' && input.limit_to_top_clones",
-                                        numericInput("max_top_clone_limit", "1 to max value", value = 50)
-                                      ),
-                                    )
-                                  ),
+
                                   fluidRow(
                                     column(
                                       12,
                                       conditionalPanel(
                                         condition = "input.Panel_TCRUMAP=='top_clone'",
-                                        selectInput("Selected_clonotype", "Select clonotype:", choices = "", width = "1400px", multiple = T)
+                                        selectInput("Selected_clonotype", "Select clonotype (ident.1):", choices = "", width = "1400px", multiple = T)
                                       ),
                                     ),
                                   ),
+
+                                  fluidRow(
+                                    column(
+                                      12,
+                                      conditionalPanel(
+                                        condition = "input.Panel_TCRUMAP=='top_clone' && input.comparison_abudance != 'Background'",
+                                        selectInput("Selected_clonotype2", "Select clonotype (ident.2):", choices = "", width = "1400px", multiple = T)
+                                      ),
+                                    ),
+                                  ),
+                                  fluidRow(
+                                    column(6,textInput("name_clonotype_selected", "Ident.1", "", width = "600px"),),
+                                    column(6,textInput("name_clonotype_selected2", "Ident.2", "", width = "600px"),),
+                                  ),
+
                                   tabsetPanel(
                                     tabPanel(
                                       "Summary table",
@@ -2665,7 +2813,6 @@ runSTEGO <- function(){
                                       div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
                                       fluidRow(
                                         column(3, selectInput("Plot_type_selected", "Plot", choices = c("pie", "bar", "UMAP"))),
-                                        # column(3, numericInput("size_selected_top", "Size of Point", value = 2)),
                                       ),
                                       fluidRow(
                                         column(
@@ -2687,12 +2834,39 @@ runSTEGO <- function(){
                                         column(2, style = "margin-top: 25px;", downloadButton("downloadPlotPNG_top_clonotype_pie", "Download PNG"))
                                       ),
                                     ),
+                                    tabPanel(
+                                      "Stats",
+                                      div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
+                                      downloadButton("downloaddf_FindMarker_Top", "Download stats table"),
+                                      div(DT::DTOutput("Ridge_chart_alpha_gamma_stat_comp")),
+
+                                    ),
+                                    tabPanel(
+                                      "Dotplot",
+
+                                      div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
+
+
+
+                                      plotOutput("all_expression_dotplot_top", height = "400px"),
+
+                                      fluidRow(
+                                        column(1, numericInput("width_all_expression_dotplot_top", "Width of PDF", value = 20)),
+                                        column(1, numericInput("height_all_expression_dotplot_top", "Height of PDF", value = 4)),
+                                        column(2, style = "margin-top: 25px;", downloadButton("downloadPlot_all_expression_dotplot_top", "Download PDF")),
+                                        column(2, numericInput("width_png_all_expression_dotplot_top", "Width of PNG", value = 2200)),
+                                        column(2, numericInput("height_png_all_expression_dotplot_top", "Height of PNG", value = 800)),
+                                        column(2, numericInput("resolution_PNG_all_expression_dotplot_top", "Resolution of PNG", value = 144)),
+                                        column(2, style = "margin-top: 25px;", downloadButton("downloadPlotPNG_all_expression_dotplot_top", "Download PNG"))
+                                      ),
+                                    ),
+
                                     # add in find marker for comparing population to other for top clonotype
 
                                     tabPanel(
                                       "Ridge/Violin plots",
                                       div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
-                                      actionButton("run_string.data_Exp_top", "View Ridge plot"),
+                                      actionButton("run_string.data_Exp_top", "View plot"),
                                       fluidRow(column(12, selectInput("string.data_Exp_top", "column names for summary", "", multiple = F, width = "1200px"))),
                                       fluidRow(
                                         column(3, checkboxInput("restric_ex", "Restrict to above a threshold?", value = F)),
@@ -2717,9 +2891,7 @@ runSTEGO <- function(){
                                         ),
                                         column(6, plotOutput("Ridge_chart_alpha_gamma_plot_out", height = "600px"))
                                       ),
-                                      # fluidRow(
-                                      #   column(6, )
-                                      # ),
+
                                       fluidRow(
                                         column(1, numericInput("width_Ridge_chart_alpha_gamma_plot_out", "Width of PDF", value = 10)),
                                         column(1, numericInput("height_Ridge_chart_alpha_gamma_plot_out", "Height of PDF", value = 8)),
@@ -2730,34 +2902,7 @@ runSTEGO <- function(){
                                         column(2, style = "margin-top: 25px;", downloadButton("downloadPlotPNG_Ridge_chart_alpha_gamma_plot_out", "Download PNG"))
                                       ),
                                     ),
-                                    tabPanel(
-                                      "Stats",
-                                      div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
-                                      div(DT::DTOutput("Ridge_chart_alpha_gamma_stat_comp")),
-                                      downloadButton("downloaddf_FindMarker_Top", "Download stat (Right)")
-                                    ),
-                                    tabPanel(
-                                      "Dotplot",
-                                      fluidRow(
-                                        column(2, colourInput("low.dotplot", "Lower color:", "#00BFFF")),
-                                        column(2, colourInput("middle.dotplot", "Middle color:", "white")),
-                                        column(2, colourInput("high.dotplot", "High color:", "#00008B")),
-                                        column(2, checkboxInput("restict_no_points", "Restrict Label", value = F)),
-                                        column(2, numericInput("pval.ex.top_genes", "Top genes to display", value = 30)),
-                                      ),
-                                      div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
-                                      plotOutput("all_expression_dotplot_top", height = "400px"),
-                                      textInput("name_clonotype_selected", "Name of clone", "clone 1"),
-                                      fluidRow(
-                                        column(1, numericInput("width_all_expression_dotplot_top", "Width of PDF", value = 20)),
-                                        column(1, numericInput("height_all_expression_dotplot_top", "Height of PDF", value = 4)),
-                                        column(2, style = "margin-top: 25px;", downloadButton("downloadPlot_all_expression_dotplot_top", "Download PDF")),
-                                        column(2, numericInput("width_png_all_expression_dotplot_top", "Width of PNG", value = 2200)),
-                                        column(2, numericInput("height_png_all_expression_dotplot_top", "Height of PNG", value = 800)),
-                                        column(2, numericInput("resolution_PNG_all_expression_dotplot_top", "Resolution of PNG", value = 144)),
-                                        column(2, style = "margin-top: 25px;", downloadButton("downloadPlotPNG_all_expression_dotplot_top", "Download PNG"))
-                                      ),
-                                    ),
+
                                     tabPanel(
                                       "Over-representation",
                                       fluidRow(
@@ -2778,10 +2923,6 @@ runSTEGO <- function(){
                          ###### Expanded phenotype -----
                          tabPanel("Expanded",
                                   value = "Expanded",
-                                  fluidRow(
-                                    # column(3, checkboxInput("positive_only_Ex","Restrict to positive?",value = T)),
-                                    column(3,  actionButton("caluclate_Exp","Calc Expansion Stats")),
-                                  ),
                                   fluidRow(
                                     column(12, selectInput("Graph_split_order_EXP","Order of expanded",choices = "", width = "1200px", multiple = TRUE),),
 
@@ -2824,11 +2965,6 @@ runSTEGO <- function(){
                                     ),
                                     tabPanel("Dotplot",
                                              value = "ExPan_dot",
-                                             fluidRow(
-                                               column(2, colourInput("low.dotplot.ex", "Lower color:", "#00BFFF")),
-                                               column(2, colourInput("middle.dotplot.ex", "Middle color:", "white")),
-                                               column(2, colourInput("high.dotplot.ex", "High color:", "#00008B")),
-                                             ),
                                              div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
                                              plotOutput("relative_expression_dotplot_ex", height = "600px"),
                                              fluidRow(
@@ -2869,10 +3005,7 @@ runSTEGO <- function(){
                          # ClusTCR2 Analysis -----
                          tabPanel("ClusTCR2",
                                   value = "ClusTCR2",
-                                  fluidRow(
-                                    # column(3, checkboxInput("positive_only_clust","Restrict to positive?",value = T)),
-                                    column(3,  actionButton("caluclate_clust","Calc Clustering Stats")),
-                                  ),
+
 
                                   tabsetPanel(
                                     tabPanel(
@@ -2946,13 +3079,6 @@ runSTEGO <- function(){
                                     # dotplot Cluster ------
                                     tabPanel("Dotplot",
                                              value = "ClusPan_dot",
-                                             fluidRow(
-                                               column(2, colourInput("low.dotplot.clust", "Lower color:", "#00BFFF")),
-                                               column(2, colourInput("middle.dotplot.clust", "Middle color:", "white")),
-                                               column(2, colourInput("high.dotplot.clust", "High color:", "#00008B")),
-                                               column(2, checkboxInput("restrict.dotpot.clust", "Restrict to top list", value = F)),
-                                               column(2, numericInput("restrict.dotpot.num.clust", "Total genes to display:", value = 10))
-                                             ),
                                              div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
                                              plotOutput("all_expression_dotplot_cluster", height = "400px"),
                                              fluidRow(
@@ -3095,11 +3221,10 @@ runSTEGO <- function(){
                                     tabPanel("Dotplot",
                                              value = "EpiPan_dot",
                                              fluidRow(
-                                               column(2, colourInput("low.dotplot.epi", "Lower color:", "#00BFFF")),
-                                               column(2, colourInput("middle.dotplot.epi", "Middle color:", "white")),
-                                               column(2, colourInput("high.dotplot.epi", "High color:", "#00008B")),
-                                               column(2, checkboxInput("restrict.dotpot.epi", "Restrict to top list", value = F)),
-                                               column(2, numericInput("restrict.dotpot.num.epi", "Total genes to display:", value = 10))
+                                               column(2, colourInput("low.dotplot", "Lower color:", "#00BFFF")),
+                                               column(2, colourInput("middle.dotplot", "Middle color:", "white")),
+                                               column(2, colourInput("high.dotplot", "High color:", "#00008B")),
+
                                              ),
                                              div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
                                              plotOutput("all_expression_dotplot_epi", height = "400px"),
@@ -3684,8 +3809,6 @@ runSTEGO <- function(){
       # c("10x_HS","BD_HS.Immune.Panel","BD_HS.Full.Panel","10x_MM","BD_MM_Full.Panel","BD_MM_Immune.Panel"
     })
 
-
-
     output$classification_to_add <- renderUI({
       sc <- UMAP_metadata_with_labs()
       validate(
@@ -3695,13 +3818,11 @@ runSTEGO <- function(){
         )
       )
       df3.meta <- c(names(sc@meta.data))
-      # df3.meta <- df3.meta[!grepl("RNA",df3.meta) & !grepl("BCR",df3.meta) & !grepl("TCR",df3.meta)& !grepl("_gene",df3.meta) & !grepl("allele",df3.meta) & !grepl("percent",df3.meta) & !grepl("cdr3",df3.meta)]
-
-      # tags$style("#Colour_By_this {background-color:#e5e5e5;}")
 
       selectInput("Colour_By_this", "Colour by: ", choices = df3.meta, selected = "Sample_Name")
     })
-    ## overview colouring
+
+
     output$classification_to_add_overview <- renderUI({
       sc <- UMAP_metadata_with_labs()
       validate(
@@ -3711,8 +3832,6 @@ runSTEGO <- function(){
         )
       )
       df3.meta <- c(names(sc@meta.data))
-      # df3.meta <- df3.meta[!grepl("RNA",df3.meta) & !grepl("BCR",df3.meta) & !grepl("TCR",df3.meta)& !grepl("_gene",df3.meta) & !grepl("allele",df3.meta) & !grepl("percent",df3.meta) & !grepl("cdr3",df3.meta)]
-      # tags$style("#Colour_By_this_overview {background-color:#e5e5e5;}")
       selectInput("Colour_By_this_overview", "Colour by: ", choices = df3.meta, selected = "seurat_clusters")
     })
     output$classification_to_add_epitope <- renderUI({
@@ -4390,9 +4509,9 @@ runSTEGO <- function(){
                                                )
                                         )
         )
-        print(table(contig_paired$pairing))
+        # print(table(contig_paired$pairing))
         contig_paired$pairing[is.na(contig_paired$pairing)] <- "OTHER"
-        print(table(contig_paired$pairing))
+        # print(table(contig_paired$pairing))
       }
 
       contig_paired_only <- contig_paired
@@ -4649,7 +4768,7 @@ runSTEGO <- function(){
       if (input$filtering_TCR == T) {
         contig_paired_only <- subset(contig_paired_only, contig_paired_only$junction_IgH != "None")
         contig_paired_only <- subset(contig_paired_only, contig_paired_only$junction_IgLK != "None")
-        print(dim(contig_paired_only))
+        # print(dim(contig_paired_only))
       }
 
 
@@ -4706,7 +4825,7 @@ runSTEGO <- function(){
       contig_paired_only$vdj_gene_cdr3_IgH_IgLK <- gsub(" & $", "", contig_paired_only$vdj_gene_cdr3_IgH_IgLK)
 
       names(contig_paired_only)[names(contig_paired_only) %in% "cell_id"] <- "Cell_Index"
-      print(names(contig_paired_only))
+      # print(names(contig_paired_only))
 
       contig_paired_only <- contig_paired_only[!duplicated(contig_paired_only$Cell_Index), ] # remove duplicates
 
@@ -11159,44 +11278,19 @@ runSTEGO <- function(){
       )
     })
 
-    output$Sample_names_merging_sc <- DT::renderDT(escape = FALSE, options = list(autoWidth = FALSE, lengthMenu = c(2, 5, 10, 20, 50, 100), pageLength = 2, scrollX = TRUE), {
-      sc <- UMAP_metadata_with_labs()
-      validate(
-        need(
-          nrow(sc) > 0,
-          error_message_val_UMAP
-        )
-      )
-      umap.meta <- sc@meta.data
-      umap.meta$ID_Column <- umap.meta[,names(umap.meta) %in% input$Samp_col]
-      umap.meta$v_gene_selected <- umap.meta[,names(umap.meta) %in% input$V_gene_sc]
-
-      # names(umap.meta)[names(umap.meta) %in% input$Samp_col] <- "ID_Column"
-      # names(umap.meta)[names(umap.meta) %in% input$V_gene_sc] <- "v_gene_selected"
-      if (nrow(umap.meta) > 0) {
-        umap.meta
-      } else {
-        as.data.frame("Isssue with the file...")
-      }
-    })
-
-
     # checking issue with analysis ------
     output$meta.data_check_upload <- DT::renderDT(escape = FALSE, options = list(autoWidth = FALSE, lengthMenu = c(2, 5, 10, 20, 50, 100), pageLength = 2, scrollX = TRUE), {
       sc <- UMAP_metadata_with_labs()
       validate(
         need(
           nrow(sc) > 0,
-          error_message_val_UMAP
+          "Upload .rds file and will render the meta-data from the Seurat object."
         )
       )
 
       umap.meta <- sc@meta.data
       if (length(input$Samp_col) > 0) {
-        # message(paste("the ID column selected is: ",input$Samp_col))
         umap.meta$ID_Column <- umap.meta[,names(umap.meta) %in% input$Samp_col]
-
-        # names(umap.meta)[names(umap.meta) %in% input$Samp_col] <- "ID_Column"
       }
 
       if (length(input$V_gene_sc) > 0) {
@@ -12011,7 +12105,7 @@ runSTEGO <- function(){
       names(colorblind_vector) <- "cols"
       UMAP.wt.clonality$ID_Column <- UMAP.wt.clonality[, names(UMAP.wt.clonality) %in% input$Samp_col]
 
-      if (input$Split_by_group == "yes") {
+      if (input$Split_by_group_overview == "yes") {
         UMAP.wt.clonality <- UMAP.wt.clonality[UMAP.wt.clonality$ID_Column %in% input$ID_Column_factor, ]
       }
 
@@ -12039,7 +12133,7 @@ runSTEGO <- function(){
         )
 
 
-      if (input$Split_by_group == "no") {
+      if (input$Split_by_group_overview == "no") {
         plot
       } else {
         plot + facet_wrap(~ID_Column, nrow = input$wrap_row)
@@ -12307,11 +12401,11 @@ runSTEGO <- function(){
 
 
 
-      if (input$display_all_samps == "yes" & input$Split_by_group == "no") {
+      if (input$display_all_samps == "yes" & input$Split_by_group_overview == "no") {
         topclones_col
-      } else if (input$display_all_samps == "yes" & input$Split_by_group == "yes") {
+      } else if (input$display_all_samps == "yes" & input$Split_by_group_overview == "yes") {
         topclones_col
-      } else if (input$display_all_samps == "no" & input$Split_by_group == "yes") {
+      } else if (input$display_all_samps == "no" & input$Split_by_group_overview == "yes") {
         UMAP.wt.clonality2 <- UMAP.wt.clonality2[UMAP.wt.clonality2$ID_Column %in% input$ID_Column_metadata, ]
         topclones_col <- topclones_col[topclones_col$topclones %in% unique(UMAP.wt.clonality2$topclones), ]
         topclones_col
@@ -12346,7 +12440,7 @@ runSTEGO <- function(){
           legend.position = input$legend_position,
         )
 
-      if (input$Split_by_group == "no") {
+      if (input$Split_by_group_overview == "no") {
         plot
       } else {
         plot + facet_wrap(~ID_Column, nrow = input$wrap_row)
@@ -12629,18 +12723,18 @@ runSTEGO <- function(){
       )
       req(Percent_tab_df())
       percent <- Percent_tab_df()
-
       round(percent,4)
 
     })
     output$downloaddf_Percent_tab <- downloadHandler(
       filename = function() {
         x <- today()
-        paste("GEx_percent_", input$Colour_By_this_overview, "_", x, ".tsv", sep = "")
+        paste("GEx_percent_", input$Colour_By_this_overview, "_", x, ".csv", sep = "")
       },
       content = function(file) {
         df <- as.data.frame(Percent_tab_df())
-        write.table(df, file, row.names = F, sep = "\t", quote = F)
+        names(df) <- c(input$Samp_col, input$Colour_By_this_overview,"Percentage")
+        write.csv(df, file, row.names = F, quote = F)
       }
     )
 
@@ -12806,7 +12900,7 @@ runSTEGO <- function(){
           legend.position = input$legend_position,
         )
 
-      if (input$Split_by_group == "no") {
+      if (input$Split_by_group_overview == "no") {
         df <- df
       } else {
         df <- df + facet_wrap(~ID_Column, nrow = input$wrap_row)
@@ -13028,7 +13122,7 @@ runSTEGO <- function(){
         }
       }
       total_condition_function$freq <- total_condition_function$cloneCount / rowSums(emtpy_mat)
-      print(total_condition_function)
+      # print(total_condition_function)
       if (input$chart_overview == "pie") {
         ggplot(total_condition_function, aes(x = "", y = freq, fill = as.character(Selected_function), group = ID_Column)) +
           geom_bar(stat = "identity", width = 1) +
@@ -13245,7 +13339,7 @@ runSTEGO <- function(){
         validate(
           need(
             FALSE,
-            paste("Updating Selected Individual column.")
+            paste("Updating Selected Sample column.")
           )
         )
       }
@@ -13317,13 +13411,8 @@ runSTEGO <- function(){
           error_message_val1
         )
       )
+      BD_sum <- subset(BD_sum, BD_sum$Total_count >= input$singlets_filter)
 
-      # if (input$analysis_set.type)
-      BD_sum <- subset(BD_sum, BD_sum$Total_count > 2)
-      # if(input$restict_vGene) {
-      #   BD_sum$Topclone <- BD_sum[,names(BD_sum) %in% input$v_gene_top_clone]
-      #   BD_sum <- subset(BD_sum,BD_sum$Topclone == input$top_clone_selected)
-      # }
       if (input$limit_to_top_clones) {
         BD_sum <- BD_sum[1:input$max_top_clone_limit, ]
       }
@@ -13337,7 +13426,98 @@ runSTEGO <- function(){
     })
 
 
+    observe({
+      sc <- UMAP_metadata_with_labs()
+      validate(
+        need(
+          nrow(sc) > 0,
+          "Upload"
+        )
+      )
 
+      v_genes_selectetd <- input$Selected_clonotype
+      v_genes_selectetd <- gsub("_"," ",v_genes_selectetd)
+      if(length(v_genes_selectetd) == 1) {
+        updateTextInput(
+          session,
+          "name_clonotype_selected",
+          "Name of clone",
+          v_genes_selectetd
+        )
+      } else {
+        updateTextInput(
+          session,
+          "name_clonotype_selected",
+          "Name of clone",
+          "Group 1"
+        )
+      }
+
+    })
+
+
+    observe({
+      BD_sum <- Top_clonotype_df2()
+      validate(
+        need(
+          nrow(BD_sum) > 0,
+          error_message_val1
+        )
+      )
+      BD_sum <- subset(BD_sum, BD_sum$Total_count >= input$singlets_filter)
+      if (input$limit_to_top_clones) {
+        BD_sum <- BD_sum[1:input$max_top_clone_limit, ]
+      }
+
+      updateSelectInput(
+        session,
+        "Selected_clonotype2",
+        choices = BD_sum$cluster_name,
+        selected = BD_sum$cluster_name[2]
+      )
+    })
+
+
+    observe({
+      sc <- UMAP_metadata_with_labs()
+      validate(
+        need(
+          nrow(sc) > 0,
+          "Upload"
+        )
+      )
+
+      if (input$comparison_abudance == 'Background') {
+        updateTextInput(
+          session,
+          "name_clonotype_selected2",
+          "Name of clone",
+          "BG"
+        )
+      } else {
+
+
+        v_genes_selectetd <- input$Selected_clonotype2
+        v_genes_selectetd <- gsub("_"," ",v_genes_selectetd)
+
+        if(length(v_genes_selectetd) == 1) {
+          updateTextInput(
+            session,
+            "name_clonotype_selected2",
+            "Name of clone",
+            v_genes_selectetd
+          )
+        } else {
+          updateTextInput(
+            session,
+            "name_clonotype_selected2",
+            "Name of clone",
+            "Group 2"
+          )
+        }
+      }
+
+    })
 
 
     select_split_by <- reactive({
@@ -13389,7 +13569,13 @@ runSTEGO <- function(){
       )
       df3.meta <- sc@meta.data
       df3.meta$cluster_name <- df3.meta[, names(df3.meta) %in% input$V_gene_sc]
-      top_BD_clonotype <- df3.meta[df3.meta$cluster_name %in% input$Selected_clonotype, ]
+
+      if (input$comparison_abudance == 'Background') {
+        top_BD_clonotype <- df3.meta[df3.meta$cluster_name %in% input$Selected_clonotype, ]
+      } else {
+        top_BD_clonotype <- df3.meta[df3.meta$cluster_name %in% c(input$Selected_clonotype,input$Selected_clonotype2), ]
+      }
+
       top_BD_clonotype
     })
 
@@ -13448,6 +13634,7 @@ runSTEGO <- function(){
     output$myPanel_Top_bar_clonotype <- renderUI({
       cols_Top_bar_clonotype()
     })
+
     colors_cols_Top_bar_clonotype <- reactive({
       dtop_clonotype_bar_code <- top_clonotype_bar_code()
       dtop_clonotype_bar_code$Selected_chain <- dtop_clonotype_bar_code[, names(dtop_clonotype_bar_code) %in% input$V_gene_sc]
@@ -13718,13 +13905,7 @@ runSTEGO <- function(){
 
     })
 
-    output$top_clonotype_pie <- renderPlot({
-      if (input$Plot_type_selected == "pie" |input$Plot_type_selected == "bar" ) {
-        Pie_chart_alpha_gamma()
-      } else {
-        UMAP_chart_alpha_gamma()
-      }
-    })
+
 
     #### top  UMAP -----
     UMAP_chart_alpha_gamma <- reactive({
@@ -13756,18 +13937,24 @@ runSTEGO <- function(){
         ) +
         scale_size(guide = "none")
 
-      # if (input$Split_by_group2=="no") {
-      #   plot_pie
-      # }
-      # else {
+      if(input$Split_by_group_TCRGEx == "yes") {
+        plot_pie <- plot_pie + facet_wrap(~ top_BD_cluster$Selected_group, nrow = input$wrap_row)
+      } else {
+        plot_pie <- plot_pie
+      }
 
-      plot_pie <- plot_pie + facet_wrap(~ top_BD_cluster$Selected_group, nrow = input$wrap_row)
       #
 
       plot_pie
     })
 
-
+    output$top_clonotype_pie <- renderPlot({
+      if (input$Plot_type_selected == "pie" |input$Plot_type_selected == "bar" ) {
+        Pie_chart_alpha_gamma()
+      } else {
+        UMAP_chart_alpha_gamma()
+      }
+    })
     #### top heatmap ------
     Selected_top_plot <- reactive({
       cluster <- top_clonotype_bar_code()
@@ -13889,8 +14076,9 @@ runSTEGO <- function(){
 
     #### Ridge plot (expression per T cell) ----
     vals_Ridge_top <- reactiveValues(output_stats = NULL)
+    stat_abundance <- reactiveValues(stats_ab = NULL)
 
-    compare.stat <- reactive({
+    observeEvent(input$run_stats_abudance,{
       sc <- UMAP_metadata_with_labs()
 
       validate(
@@ -13900,11 +14088,12 @@ runSTEGO <- function(){
         )
       )
 
+
       df <- as.data.frame(sc@meta.data)
 
       df <- df %>%
         select(c(input$Samp_col, input$V_gene_sc), everything())
-      print(head(df))
+      # print(head(df))
       # message("checking for two")
       unique.df <- (df[, names(df) %in% c(input$Samp_col, input$V_gene_sc)])
       names(unique.df) <- c("group", "chain")
@@ -13913,14 +14102,43 @@ runSTEGO <- function(){
       unique.df <- subset(unique.df, unique.df$group != "NA")
 
       unique.df$cloneCount <- 1
-      unique.df
+
       df_unique_sum <- ddply(unique.df, names(unique.df)[-c(3)], numcolwise(sum))
       df_unique_sum <- df_unique_sum[order(df_unique_sum$cloneCount, decreasing = T), ]
 
       sc@meta.data$Vgene <- sc@meta.data[, names(sc@meta.data) %in% input$V_gene_sc]
 
-      name.clone <- input$Selected_clonotype
-      sc@meta.data$Gene_select <- ifelse(sc@meta.data$Vgene %in% name.clone, name.clone, "BG")
+      if(input$comparison_abudance == "Background") {
+        name.clone <- input$Selected_clonotype
+
+        sc@meta.data$Gene_select <- ifelse(sc@meta.data$Vgene %in% name.clone, name.clone, "BG")
+        # print(table(sc@meta.data$Gene_select))
+        len_name.clone <- as.data.frame(sc@meta.data$Gene_select)
+        len_name.clone <- as.data.frame(table(len_name.clone))
+        names(len_name.clone) <- c("var1","freq")
+
+        len_name.clone_selected1 <- len_name.clone[len_name.clone$var1 %in% name.clone,]
+        len_name.clone_selected1 <- as.data.frame(len_name.clone_selected1)
+
+      } else {
+        name.clone <- input$Selected_clonotype
+        name.clone2 <- input$Selected_clonotype2
+        sc@meta.data$Gene_select <- ifelse(sc@meta.data$Vgene %in% name.clone, name.clone,
+                                           ifelse(sc@meta.data$Vgene %in% name.clone2, name.clone2, "BG"))
+
+        # print(table(sc@meta.data$Gene_select))
+        len_name.clone <- as.data.frame(sc@meta.data$Gene_select)
+        len_name.clone <- as.data.frame(table(len_name.clone))
+        names(len_name.clone) <- c("var1","freq")
+
+        len_name.clone_selected1 <- len_name.clone[len_name.clone$var1 %in% name.clone,]
+        len_name.clone_selected1 <- as.data.frame(len_name.clone_selected1)
+        len_name.clone_selected2 <- len_name.clone[len_name.clone$var1 %in% name.clone2,]
+        len_name.clone_selected2 <- as.data.frame(len_name.clone_selected1)
+
+      }
+
+
       sc@meta.data
       unique(sc@meta.data$Gene_select)
       Idents(object = sc) <- sc@meta.data$Gene_select
@@ -13929,30 +14147,48 @@ runSTEGO <- function(){
       min.logfc <- input$LogFC_ # 0.25 is standard
       p.val.cutoff <- input$pval_top # (1/10^3) is standard, use (1/10^0) to ignore
 
-      cluster.names <- unique(Idents(sc))[order(unique(Idents(sc)))]
-      as.data.frame(cluster.names)
-      # # print(paste0("calculating markers for cluster ",name.clone,". Total: ",length(cluster.names)," clusters"))
-      if(input$logFC_pval_findmarker) {
-        markers.fm.list <- FindMarkers(sc, ident.1 = name.clone, min.pct = min.pct.expression, logfc.threshold = min.logfc, only.pos = TRUE)
-        markers.fm.list
-      } else {
-        markers.fm.list <- FindMarkers(sc, ident.1 = name.clone, min.pct = min.pct.expression, logfc.threshold = min.logfc)
-        markers.fm.list
-      }
 
-      # markers.fm.list2 <- subset(markers.fm.list,markers.fm.list$p_val_adj < input$pval.ex.filter)
-      # as.data.frame(markers.fm.list2)
+      if (input$comparison_abudance == "Background" && sum(len_name.clone_selected1$freq) > 2) {
+        if(input$logFC_pval_findmarker) {
+          markers.fm.list <- FindMarkers(sc, ident.1 = name.clone, min.pct = min.pct.expression, logfc.threshold = min.logfc, only.pos = TRUE)
+          markers.fm.list
+        } else {
+          markers.fm.list <- FindMarkers(sc, ident.1 = name.clone, min.pct = min.pct.expression, logfc.threshold = min.logfc)
+          markers.fm.list
+        }
+
+      } else if(input$comparison_abudance != "Background" && sum(len_name.clone_selected1$freq) > 2 && sum(len_name.clone_selected2$freq) > 2) {
+        if(input$logFC_pval_findmarker) {
+          markers.fm.list <- FindMarkers(sc, ident.1 = name.clone,ident.2 = name.clone2, min.pct = min.pct.expression, logfc.threshold = min.logfc, only.pos = TRUE)
+          markers.fm.list
+        } else {
+          markers.fm.list <- FindMarkers(sc, ident.1 = name.clone, ident.2 = name.clone2, min.pct = min.pct.expression, logfc.threshold = min.logfc)
+          markers.fm.list
+        }
+
+      } else {
+        markers.fm.list <- "empty"
+      }
+      stat_abundance$stats_ab <- markers.fm.list
     })
+
+    compare.stat <- reactive({
+      stat_abundance$stats_ab
+
+    })
+
+
     output$Ridge_chart_alpha_gamma_stat_comp <- DT::renderDT(escape = FALSE, options = list(autoWidth = FALSE, lengthMenu = c(2, 5, 10, 20, 50, 100), pageLength = 10, scrollX = TRUE), {
-      sc <- UMAP_metadata_with_labs()
+      sc <- compare.stat()
 
       validate(
         need(
           nrow(sc) > 0,
-          error_message_val_sc
+          "Run stats (abundance) located in sidebar"
         )
       )
-      compare.stat()
+
+      sc
     })
 
     output$downloaddf_FindMarker_Top <- downloadHandler(
@@ -13978,7 +14214,16 @@ runSTEGO <- function(){
         )
       )
 
-      df <- as.data.frame(rownames(sc@assays$RNA$scale.data))
+      validate(
+        need(
+          nrow(stat_abundance$stats_ab) > 0,
+          "Run the stats button first"
+        )
+      )
+
+      req(compare.stat())
+
+      df <- as.data.frame(rownames(compare.stat()))
       names(df) <- "V1"
 
       req(df)
@@ -14034,18 +14279,14 @@ runSTEGO <- function(){
       top_BD_cluster <- top_BD_cluster[top_BD_cluster$Selected_function %in% input$Graph_split_order, ]
       top_BD_cluster$Selected_function <- as.character(top_BD_cluster[, names(top_BD_cluster) %in% input$Split_group_by_])
       top_BD_cluster$Selected_function <- factor(top_BD_cluster$Selected_function, levels = input$Graph_split_order)
-      # print(names(top_BD_cluster))
-      # print(names(gene_df))
 
       df <-   merge(top_BD_cluster, gene_df, by = "Cell_Index")
-      print(head(df))
+      # print(head(df))
       df
     })
 
     Ridge_chart_alpha_gamma_plot <- reactive({
       df <- Ridge_chart_alpha_gamma_df()
-
-
 
       df$expressed <- ifelse(df[, names(df) %in% input$string.data_Exp_top] > input$Gre_ex, "expressed", "Not expressed")
 
@@ -14087,13 +14328,13 @@ runSTEGO <- function(){
 
       if(length(unique(df$Selected_function))>1) {
         message("multiple groups")
-        print(head(df))
+        # print(head(df))
 
-        print(aov(get(input$string.data_Exp_top) ~ get(input$Split_group_by_), data = df2))
+        # print(aov(get(input$string.data_Exp_top) ~ get(input$Split_group_by_), data = df2))
 
         at <- TukeyHSD(aov(get(input$string.data_Exp_top) ~ get(input$Split_group_by_), data = df2))
 
-        print(at)
+        # print(at)
 
         tab <- as.data.frame(at[1])
         names(tab) <- c("diff", "lwr", "upr", "p.adj")
@@ -14155,6 +14396,7 @@ runSTEGO <- function(){
       merge(top_BD_cluster, gene_df, by = "Cell_Index")
     })
 
+
     Violin_chart_alpha_gamma_plot <- reactive({
       df <- Ridge_chart_alpha_gamma_df()
       # df <- df[df$Selected_group %in% input$Graph_split_order,]
@@ -14171,44 +14413,119 @@ runSTEGO <- function(){
 
       df2$Selected_function <- factor(df2$Selected_function, levels = input$Graph_split_order)
 
-      if (input$jitter) {
-        ggplot(df2, aes(y = get(input$string.data_Exp_top), x = Selected_function, fill = Selected_function)) +
 
-          geom_jitter(height = 0, width = 0.1) +
-          geom_violin(alpha = 0.25) +
-          theme(legend.position = "none", ) +
-          theme_bw() +
-          theme(
-            axis.title.y = element_blank(),
-            axis.text.y = element_text(colour = "black", family = input$font_type, size = input$text_size),
-            axis.text.x = element_text(colour = "black", family = input$font_type, size = input$text_size, angle = 90),
-            axis.title.x = element_blank(),
-            legend.text = element_text(colour = "black", size = input$Legend_size, family = input$font_type),
-            legend.title = element_text(colour = "black", size = 20, family = input$font_type),
-            legend.position = "none",
-            title = element_text(colour = "black", family = input$font_type, size = input$Strip_text_size),
-          ) +
-          ggtitle(input$string.data_Exp_top) +
-          scale_y_continuous(limits = c(input$ylow, input$yhigh))
+
+      if(input$comparison_abudance == "Background") {
+        if (input$jitter) {
+          plot <- ggplot(df2, aes(y = get(input$string.data_Exp_top), x = Selected_function, fill = Selected_function)) +
+            geom_jitter(height = 0, width = 0.1) +
+            geom_violin(alpha = input$alpha_violin) +
+            theme(legend.position = "none", ) +
+            theme_bw() +
+            theme(
+              axis.title.y = element_blank(),
+              axis.text.y = element_text(colour = "black", family = input$font_type, size = input$text_size),
+              axis.text.x = element_text(colour = "black", family = input$font_type, size = input$text_size, angle = 90),
+              axis.title.x = element_blank(),
+              legend.text = element_text(colour = "black", size = input$Legend_size, family = input$font_type),
+              legend.title = element_text(colour = "black", size = 20, family = input$font_type),
+              legend.position = "none",
+              title = element_text(colour = "black", family = input$font_type, size = input$Strip_text_size),
+            ) +
+            ggtitle(input$string.data_Exp_top) +
+            scale_y_continuous(limits = c(input$ylow, input$yhigh))
+        } else {
+          plot <- ggplot(df2, aes(y = get(input$string.data_Exp_top), x = Selected_function, fill = Selected_function)) +
+            geom_violin() +
+            theme(legend.position = "none") +
+            theme_bw() +
+            theme(
+              axis.title.y = element_blank(),
+              axis.text.y = element_text(colour = "black", family = input$font_type, size = input$text_size),
+              axis.text.x = element_text(colour = "black", family = input$font_type, size = input$text_size, angle = 90),
+              axis.title.x = element_blank(),
+              legend.text = element_text(colour = "black", size = input$Legend_size, family = input$font_type),
+              legend.title = element_text(colour = "black", size = 20, family = input$font_type),
+              legend.position = "none",
+              title = element_text(colour = "black", family = input$font_type, size = input$Strip_text_size),
+            ) +
+            ggtitle(input$string.data_Exp_top) +
+            scale_y_continuous(limits = c(input$ylow, input$yhigh))
+        }
+
       } else {
-        ggplot(df2, aes(y = get(input$string.data_Exp_top), x = Selected_function, fill = Selected_function)) +
-          geom_violin() +
-          theme(legend.position = "none", ) +
-          theme_bw() +
-          theme(
-            axis.title.y = element_blank(),
-            axis.text.y = element_text(colour = "black", family = input$font_type, size = input$text_size),
-            axis.text.x = element_text(colour = "black", family = input$font_type, size = input$text_size, angle = 90),
-            axis.title.x = element_blank(),
-            legend.text = element_text(colour = "black", size = input$Legend_size, family = input$font_type),
-            legend.title = element_text(colour = "black", size = 20, family = input$font_type),
-            legend.position = "none",
-            title = element_text(colour = "black", family = input$font_type, size = input$Strip_text_size),
-          ) +
-          ggtitle(input$string.data_Exp_top) +
-          scale_y_continuous(limits = c(input$ylow, input$yhigh))
+
+        df2$cluster_name <- gsub("_"," ",df2$cluster_name)
+        df2$cluster_name <- gsub(" & "," ",df2$cluster_name)
+
+        num <- as.data.frame(unique(df2$cluster_name))
+
+        if (input$colourtype == "default") {
+          colorblind_vector <- c(gg_fill_hue(dim(num)[1]))
+        } else if (input$colourtype == "hcl.colors") {
+          colorblind_vector <- c(hcl.colors(dim(num)[1], palette = "viridis"))
+        } else if (input$colourtype == "topo.colors") {
+          colorblind_vector <- c(topo.colors(dim(num)[1]))
+        } else if (input$colourtype == "heat.colors") {
+          colorblind_vector <- c(heat.colors(dim(num)[1]))
+        } else if (input$colourtype == "terrain.colors") {
+          colorblind_vector <- c(terrain.colors(dim(num)[1]))
+        } else if (input$colourtype == "rainbow") {
+          colorblind_vector <- c(rainbow(dim(num)[1]))
+        } else if (input$colourtype == "random") {
+          colorblind_vector <- distinctColorPalette(dim(num)[1])
+        } else {
+
+          colorblind_vector <- rep(input$one.colour.default,dim(num)[1])
+        }
+
+
+
+
+        if (input$jitter) {
+          print(names(df2))
+          plot <- ggplot(df2, aes(y = get(input$string.data_Exp_top), x = Selected_function)) +
+            geom_jitter(height = 0, width = 0.1, aes(colour = df2$cluster_name)) +
+            geom_violin(alpha = input$alpha_violin ,show.legend = F) +
+            theme_bw() +
+            theme(
+              axis.title.y = element_blank(),
+              axis.text.y = element_text(colour = "black", family = input$font_type, size = input$text_size),
+              axis.text.x = element_text(colour = "black", family = input$font_type, size = input$text_size, angle = 90),
+              axis.title.x = element_blank(),
+              legend.text = element_text(colour = "black", size = input$Legend_size, family = input$font_type),
+              legend.title = element_blank(),
+              legend.position = input$legend_position,
+
+              title = element_text(colour = "black", family = input$font_type, size = input$Strip_text_size),
+            ) +
+            ggtitle(input$string.data_Exp_top) +
+            scale_y_continuous(limits = c(input$ylow, input$yhigh)) +
+            guides(fill = 'none') +
+            scale_color_manual(labels = ~ stringr::str_wrap(.x, width = 20), values = colorblind_vector, na.value = input$NA_col_analysis)
+
+        } else {
+          plot <- ggplot(df2, aes(y = get(input$string.data_Exp_top), x = Selected_function, fill = Selected_function)) +
+            geom_violin() +
+            theme_bw() +
+            theme(
+              axis.title.y = element_blank(),
+              axis.text.y = element_text(colour = "black", family = input$font_type, size = input$text_size),
+              axis.text.x = element_text(colour = "black", family = input$font_type, size = input$text_size, angle = 90),
+              axis.title.x = element_blank(),
+              legend.text = element_text(colour = "black", size = input$Legend_size, family = input$font_type),
+              legend.title = element_text(colour = "black", size = 20, family = input$font_type),
+              legend.position = "none",
+              title = element_text(colour = "black", family = input$font_type, size = input$Strip_text_size),
+            ) +
+            ggtitle(input$string.data_Exp_top) +
+            scale_y_continuous(limits = c(input$ylow, input$yhigh))
+        }
+
+
       }
 
+      plot
 
     })
 
@@ -14222,6 +14539,9 @@ runSTEGO <- function(){
           error_message_val_sc
         )
       )
+
+      req(input$Selected_clonotype,input$Selected_clonotype2)
+
       df <- as.data.frame(sc@assays$RNA$scale.data)
       req(df)
 
@@ -14231,12 +14551,27 @@ runSTEGO <- function(){
       gene_df <- MainTcell[, names(MainTcell) %in% c("Cell_Index", input$string.data_Exp_top)]
       df3.meta <- sc@meta.data
       df3.meta$cluster_name <- df3.meta[, names(df3.meta) %in% input$V_gene_sc]
-      df3.meta$selected_top_clonotype <- ifelse(df3.meta$cluster_name == input$Selected_clonotype, "SC", "BG")
-      df3.meta$selected_top_clonotype[is.na(df3.meta$selected_top_clonotype)] <- "BG"
+
+
+      if(input$comparison_abudance == "Background") {
+        df3.meta$selected_top_clonotype <- ifelse(df3.meta$cluster_name %in% input$Selected_clonotype, input$name_clonotype_selected, input$name_clonotype_selected2)
+        df3.meta$selected_top_clonotype[is.na(df3.meta$selected_top_clonotype)] <- input$Selected_clonotype2
+      } else {
+        df3.meta$selected_top_clonotype <- ifelse(df3.meta$cluster_name %in% input$Selected_clonotype, input$name_clonotype_selected,
+                                                  ifelse(df3.meta$cluster_name %in% input$Selected_clonotype2, input$name_clonotype_selected2, "other"))
+
+        print(unique(df3.meta$selected_top_clonotype))
+
+        df3.meta$selected_top_clonotype[is.na(df3.meta$selected_top_clonotype)] <- "other"
+        df3.meta <- df3.meta[df3.meta$selected_top_clonotype != "other",]
+      }
+
       top_BD_clonotype2 <- merge(df3.meta, gene_df, by = "Cell_Index")
       top_BD_clonotype2
     })
+
     Ridge_chart_alpha_gamma_plot_comp <- reactive({
+
       df <- Ridge_chart_alpha_gamma_df_all()
       df$expressed <- ifelse(df[, names(df) %in% input$string.data_Exp_top] > input$Gre_ex, "expressed", "Not expressed")
 
@@ -14279,19 +14614,23 @@ runSTEGO <- function(){
       if (input$jitter) {
         ggplot(df2, aes(y = get(input$string.data_Exp_top), x = selected_top_clonotype, fill = selected_top_clonotype)) +
           geom_jitter(height = 0, width = 0.1) +
-          geom_violin(alpha = 0.25) +
+          geom_violin(alpha = input$alpha_violin) +
           theme_bw() +
           theme(
             axis.title.y = element_blank(),
             axis.text.y = element_text(colour = "black", family = input$font_type, size = input$text_size),
-            axis.text.x = element_text(colour = "black", family = input$font_type, size = input$text_size),
+            axis.text.x = element_text(colour = "black", family = input$font_type, size = input$text_size, angle = 90),
             axis.title.x = element_blank(),
             title = element_text(colour = "black", family = input$font_type, size = input$Strip_text_size),
             legend.text = element_text(colour = "black", size = input$Legend_size, family = input$font_type),
             legend.title = element_blank(),
             legend.position = "none",
           ) +
-          scale_y_continuous(limits = c(input$ylow, input$yhigh))
+          scale_y_continuous(limits = c(input$ylow, input$yhigh)) +
+          scale_x_discrete(labels = ~ str_wrap(as.character(.x), 10))
+
+
+
       } else {
         ggplot(df2, aes(y = get(input$string.data_Exp_top), x = selected_top_clonotype, fill = selected_top_clonotype)) +
           geom_violin() +
@@ -14397,14 +14736,25 @@ runSTEGO <- function(){
 
       name.clone <- input$Selected_clonotype
 
-      sc@meta.data$Gene_select <- ifelse(sc@meta.data$Vgene %in% name.clone, input$name_clonotype_selected, "BG")
-      print(unique(sc@meta.data$Gene_select))
+      if(input$comparison_abudance == "Background") {
+        sc@meta.data$Gene_select <- ifelse(sc@meta.data$Vgene %in% input$Selected_clonotype, input$name_clonotype_selected, input$name_clonotype_selected2)
+        sc@meta.data$Gene_select[is.na(sc@meta.data$Gene_select)] <- input$Selected_clonotype2
+      } else {
+        sc@meta.data$Gene_select <- ifelse(sc@meta.data$Vgene %in% input$Selected_clonotype, input$name_clonotype_selected,
+                                           ifelse(sc@meta.data$Vgene %in% input$Selected_clonotype2, input$name_clonotype_selected2, "other"))
+        sc@meta.data$Gene_select[is.na(sc@meta.data$Gene_select)] <- "other"
+        print(sc)
+        sc <- subset(sc, subset = Gene_select != "other")
+        print(sc)
+      }
+
+      # print(unique(sc@meta.data$Gene_select))
       Idents(object = sc) <- sc@meta.data$Gene_select
-      if (input$restict_no_points == F) {
+      if (input$restrict.dotplot == F) {
         list.names <- rownames(compare.stat())
       } else {
         list.names <- rownames(compare.stat())
-        list.names <- list.names[1:input$pval.ex.top_genes]
+        list.names <- list.names[1:input$restrict.dotplot.num]
       }
 
       size_legend <- input$Legend_size - 2
@@ -14432,6 +14782,15 @@ runSTEGO <- function(){
     })
 
     output$all_expression_dotplot_top <- renderPlot({
+      sc <- compare.stat()
+      validate(
+        need(
+          nrow(sc) > 0,
+          "Run stats (abundance) located in sidebar"
+        )
+      )
+      req(input$Selected_clonotype,input$Selected_clonotype2)
+
       all_expression_plot_top()
     })
 
@@ -14490,6 +14849,7 @@ runSTEGO <- function(){
       geneSet$background.genes <- background.genes
 
       markers.fm.list <- compare.stat()
+      req(markers.fm.list)
 
       DEx.genes <- as.data.frame(rownames(markers.fm.list))
       names(DEx.genes) <- "V1"
@@ -14688,9 +15048,9 @@ runSTEGO <- function(){
       df3.meta <- c(names(Expansion_check_tb()))
 
       if (length(df3.meta) > 0) {
-        selectInput("Colour_By_this_Expanded", "Expanded Colour by: ", choices = df3.meta, selected = "expand.singlets")
+        selectInput("Colour_By_this_Expanded", "Expanded UMAP colour: ", choices = df3.meta, selected = "expand.singlets")
       } else {
-        selectInput("Colour_By_this_Expanded", "Expanded Colour by: ", choices = "expand.singlets", selected = "expand.singlets")
+        selectInput("Colour_By_this_Expanded", "Expanded UMAP colour: ", choices = "expand.singlets", selected = "expand.singlets")
       }
     })
     #
@@ -14880,7 +15240,7 @@ runSTEGO <- function(){
           legend.position = input$legend_position,
         )
 
-      if (input$Split_by_group == "no") {
+      if (input$Split_by_group_TCRGEx == "no") {
         df <- df
       } else {
         df <- df + facet_wrap(~ID_Column, nrow = input$wrap_row)
@@ -14948,7 +15308,7 @@ runSTEGO <- function(){
 
       rownames(md.ex) <- md.ex$Cell_Index
       sc@meta.data <- md.ex
-      print(sc)
+      # print(sc)
       sc
     })
 
@@ -15066,14 +15426,8 @@ runSTEGO <- function(){
     })
 
     Vals_expanded.stats <- reactive({
-
       Vals_expanded.stats_fn$output_ex1
     })
-
-
-
-
-
 
     output$compare.stat_Ex <- DT::renderDT(escape = FALSE, options = list(autoWidth = FALSE, lengthMenu = c(2, 5, 10, 20, 50, 100), pageLength = 10, scrollX = TRUE), {
       sc <- UMAP_metadata_with_labs()
@@ -15104,20 +15458,21 @@ runSTEGO <- function(){
 
     ## dot plot Expanded ----
     relative_expression_plot_ex <- reactive({
-      sc <- Vals_expanded.stats()
+      stats <- Vals_expanded.stats()
       validate(
         need(
-          nrow(sc) > 0,
+          nrow(stats) > 0,
           error_message_val_sc
         )
       )
 
+      print(stats)
 
 
-      if (input$restrict.dotpot == "yes") {
-        list.names <- rownames(Vals_expanded.stats())[1:input$restrict.dotpot.num]
+      if (input$restrict.dotplot == "yes") {
+        list.names <- rownames(stats)[1:input$restrict.dotplot.num]
       } else {
-        list.names <- rownames(Vals_expanded.stats())
+        list.names <- rownames(stats)
       }
 
       sc <- compare.stat_Expanded()
@@ -15128,8 +15483,17 @@ runSTEGO <- function(){
         )
       )
 
-      sc@meta.data$expansion.status <- factor(sc@meta.data$expansion.status, levels = input$Graph_split_order_EXP)
+      message("printing compar.stat_expanded")
+      print(names(sc@meta.data))
 
+      # sc@meta.data$expansion.status <- factor(sc@meta.data$expansion.status, levels = input$Graph_split_order_EXP)
+      print(head(sc@meta.data$expansion.status))
+      print(sc@meta.data$expansion.status %in% input$Graph_split_order_EXP)
+
+      sc@meta.data$samps_desired <- ifelse(sc@meta.data$expansion.status %in% input$Graph_split_order_EXP, "keep","remove")
+      print(sc)
+      sc <- subset(sc, subset = samps_desired == "keep")
+      print(sc)
       Idents(object = sc) <- sc@meta.data$expansion.status
 
       size_legend <- input$Legend_size - 2
@@ -15146,7 +15510,7 @@ runSTEGO <- function(){
           legend.position = input$legend_position,
         ) +
         guides(color=guide_legend(ncol=input$legend_columns)) +
-        scale_colour_gradient2(low = input$low.dotplot.ex, mid = input$middle.dotplot.ex, high = input$high.dotplot.ex) +
+        scale_colour_gradient2(low = input$low.dotplot, mid = input$middle.dotplot, high = input$high.dotplot) +
         scale_size_continuous(breaks = seq(0, 100, by = input$sequence_breaks_dotplot)) + # Adjust the breaks as needed
         scale_x_discrete(labels = label_wrap(20)) +
         scale_y_discrete(labels = label_wrap(20)) +
@@ -15288,7 +15652,7 @@ runSTEGO <- function(){
       if (input$jitter) {
         ggplot(md_gene, aes(y = V1, x = expansion.status, fill = expansion.status)) +
           geom_jitter(height = 0, width = 0.1) +
-          geom_violin() +
+          geom_violin(alpha = input$alpha_violin) +
           theme_bw() +
           theme(
             axis.title.y = element_blank(),
@@ -15690,8 +16054,6 @@ runSTEGO <- function(){
       df3.meta$selected <- factor(df3.meta$selected, levels = unique(df3.meta$selected))
 
       df3.meta$ID_Column <-  df3.meta[,names(df3.meta) %in% input$Split_group_by_]
-      # names(df3.meta)[names(df3.meta) %in% input$Split_group_by_] <- "ID_Column"
-      # df3.meta$ID_Column<- df3.meta[df3.meta$ID_Column %in% input$ID_Column_factor,]
       df3.meta$ID_Column <- factor(df3.meta$ID_Column, levels = input$Graph_split_order)
 
       num <- as.data.frame(unique(df3.meta$selected))
@@ -15710,7 +16072,7 @@ runSTEGO <- function(){
         ) +
         guides(color=guide_legend(ncol=input$legend_columns)) +
         theme_bw()
-      if (input$Split_by_group == "no") {
+      if (input$Split_by_group_TCRGEx == "no") {
         df <- df
       } else {
         df <- df + facet_wrap(~ID_Column, nrow = input$wrap_row)
@@ -16145,11 +16507,11 @@ runSTEGO <- function(){
       sc@meta.data <- checking
       Idents(object = sc) <- sc@meta.data$epi_selected
 
-      if (input$restrict.dotpot.epi == F) {
+      if (input$restrict.dotplot == F) {
         list.names <- rownames(compare.stat_Epi())
       } else {
         list.names <- rownames(compare.stat_Epi())
-        list.names <- list.names[1:input$restrict.dotpot.num.epi]
+        list.names <- list.names[1:input$restrict.dotplot.num]
       }
 
       size_legend <- input$Legend_size - 2
@@ -16165,7 +16527,7 @@ runSTEGO <- function(){
           legend.text = element_text(colour = "black", size = size_legend, family = input$font_type),
           legend.position = input$legend_position,
         ) +
-        scale_colour_gradient2(low = input$low.dotplot.epi, mid = input$middle.dotplot.epi, high = input$high.dotplot.epi) +
+        scale_colour_gradient2(low = input$low.dotplot, mid = input$middle.dotplot, high = input$high.dotplot) +
         scale_size_continuous(breaks = seq(0, 100, by = input$sequence_breaks_dotplot)) + # Adjust the breaks as needed
         scale_x_discrete(labels = label_wrap(20)) +
         scale_y_discrete(labels = label_wrap(20)) +
@@ -16216,13 +16578,13 @@ runSTEGO <- function(){
       sc@meta.data <- checking
       Idents(object = sc) <- sc@meta.data$epi_selected
       as.data.frame(unique(Idents(object = sc)))
-      # if (input$restict_no_points == F ) {
+      # if (input$restrict.dotplot == F ) {
       #   list.names <- rownames(compare.stat_Epi())
       # }
       #
       # else {
       #   list.names <- rownames(compare.stat_Epi())
-      #   list.names <- list.names[1:input$pval.ex.top_genes]
+      #   list.names <- list.names[1:input$restrict.dotplot.num]
       # }
     })
 
@@ -16842,8 +17204,6 @@ runSTEGO <- function(){
 
     UMAP_ClusTCR2 <- reactive({
 
-
-      #
       cluster <- clusTCR2_df()
       validate(
         need(
@@ -16856,7 +17216,7 @@ runSTEGO <- function(){
       cluster <- cluster[order(cluster$ID_Column), ]
       cluster$split_by <- cluster[, names(cluster) %in% input$Split_group_by_]
 
-      if (input$Split_by_group == "yes") {
+      if (input$Split_by_group_TCRGEx == "yes") {
         cluster$split_by <- factor(cluster$split_by, levels = input$Graph_split_order)
         req(input$Graph_split_order)
         cluster <- cluster[cluster$split_by %in% input$Graph_split_order,]
@@ -16895,7 +17255,7 @@ runSTEGO <- function(){
           axis.title.x = element_text(colour = "black", family = input$font_type, size = input$title.text.sizer2),
         )
 
-      if (input$Split_by_group == "no") {
+      if (input$Split_by_group_TCRGEx == "no") {
         figure
       } else {
         figure +
@@ -17424,11 +17784,11 @@ runSTEGO <- function(){
       sc@meta.data <- md.checking
       Idents(object = sc) <- sc@meta.data$Clust_selected
 
-      if (input$restrict.dotpot.clust == F) {
+      if (input$restrict.dotplot == F) {
         list.names <- rownames(compare.stat_Cluster())
       } else {
         list.names <- rownames(compare.stat_Cluster())
-        list.names <- list.names[1:input$restrict.dotpot.num.clust]
+        list.names <- list.names[1:input$restrict.dotplot.num]
       }
 
       size_legend <- input$Legend_size - 2
@@ -17445,7 +17805,7 @@ runSTEGO <- function(){
           legend.position = input$legend_position,
         ) +
         guides(color=guide_legend(ncol=input$legend_columns)) +
-        scale_colour_gradient2(low = input$low.dotplot.clust, mid = input$middle.dotplot.clust, high = input$high.dotplot.clust) +
+        scale_colour_gradient2(low = input$low.dotplot, mid = input$middle.dotplot, high = input$high.dotplot) +
         scale_size_continuous(breaks = seq(0, 100, by = input$sequence_breaks_dotplot)) + # Adjust the breaks as needed
         scale_x_discrete(labels = label_wrap(20)) +
         scale_y_discrete(labels = label_wrap(20)) +
@@ -17567,7 +17927,7 @@ runSTEGO <- function(){
       if (input$jitter) {
         ggplot(md_gene, aes(y = V1, x = Clust_selected, fill = Clust_selected)) +
           geom_jitter(height = 0, width = 0.1) +
-          geom_violin(alpha = 0.75) +
+          geom_violin(alpha = input$alpha_violin) +
           theme(legend.position = "none", ) +
           theme_bw() +
           theme(
@@ -18776,7 +19136,7 @@ runSTEGO <- function(){
           legend.title = element_blank(),
           legend.position = input$legend_position,
         )
-      if (input$Split_by_group == "no") {
+      if (input$Split_by_group_TCRGEx == "no") {
         plot +
           labs(title = input$Var_to_col_marker)
       } else {
@@ -18847,10 +19207,7 @@ runSTEGO <- function(){
         if (input$jitter) {
           plot <-  ggplot(umap.meta, aes(y = scale, x = ID)) +
             geom_jitter() +
-            geom_violin() +
-            theme(
-              legend.position = "none",
-            ) +
+            geom_violin(alpha = input$alpha_violin) +
             theme_bw()  +
             theme(
               plot.title = element_blank(),
@@ -18865,9 +19222,6 @@ runSTEGO <- function(){
         } else {
           plot <-  ggplot(umap.meta, aes(y = scale, x = ID)) +
             geom_violin() +
-            theme(
-              legend.position = "none",
-            ) +
             theme_bw()  +
             theme(
               plot.title = element_blank(),
@@ -18880,10 +19234,6 @@ runSTEGO <- function(){
               legend.position = "none",
             )
         }
-
-
-
-
         if(input$show_cutoff_line) {
           plot + geom_hline(yintercept = input$cutoff_marker_gt, color = "orange", size = 3)
         } else {
@@ -18905,7 +19255,6 @@ runSTEGO <- function(){
 
       }
     })
-
 
     output$marker_selected_VioRidge_plot <- renderPlot({
       umap.meta <- MainTcell_counts_names()
@@ -19769,58 +20118,55 @@ runSTEGO <- function(){
       # df3.meta <- df3.meta[!grepl("RNA",df3.meta) & !grepl("BCR",df3.meta) & !grepl("TCR",df3.meta)& !grepl("_gene",df3.meta) & !grepl("allele",df3.meta) & !grepl("percent",df3.meta) & !grepl("cdr3",df3.meta)]
       numericInput("cut.off_expanded", "Cut off greater than", value = num.cut.off, step = 1, min = 1)
     })
-    output$Expanded.dotplot.cutoffs <- renderUI({
-      sc <- UMAP_metadata_with_labs()
-      validate(
-        need(
-          nrow(sc) > 0,
-          "upload file"
-        )
-      )
-
-      TCR_Expanded_Df <- TCR_Expanded_fun(sc, (input$Samp_col), (input$V_gene_sc))
-      TCR_Expanded_Df$obs <- 1
-      TCR_Expanded_Df2 <- subset(TCR_Expanded_Df, TCR_Expanded_Df$percent > input$cut.off_percent_rep)
-      observations <- sum(TCR_Expanded_Df2$obs)
-      percentage <- sum(TCR_Expanded_Df2$percent)
-      length.samp.ID <- length(unique(TCR_Expanded_Df$ID_Column))
-      # print(length.samp.ID)
-      mat <- mat_sum(sc, input$Samp_col, input$V_gene_sc)
-
-      if (observations > 0) {
-        fluidRow(
-          column(6, selectInput("restrict.dotpot", "Restrict to top list", choices = c("no", "yes"), selected = "no")),
-          column(6, numericInput("restrict.dotpot.num", "Total genes to display:", value = 40)),
-        )
-      } else {
-        sc <- UMAP_metadata_with_labs()
-        validate(
-          need(
-            nrow(sc) > 0,
-            error_message_val_UMAP
-          )
-        )
-
-        markers.fm.list2 <- Vals_expanded.stats()
-        req(markers.fm.list2)
-        if (length(rownames(markers.fm.list2)) > 40) {
-          selected.restrict.dotpot <- "yes"
-          value.restrict.dotpot.num <- 40
-
-          fluidRow(
-            column(6, selectInput("restrict.dotpot", "Restrict to top list", choices = c("no", "yes"), selected = selected.restrict.dotpot)),
-            column(6, numericInput("restrict.dotpot.num", "Total genes to display:", value = value.restrict.dotpot.num)),
-          )
-        } else {
-          fluidRow(
-            column(6, selectInput("restrict.dotpot", "Restrict to top list", choices = c("no", "yes"), selected = "no")),
-            column(6, numericInput("restrict.dotpot.num", "Total genes to display:", value = 40)),
-          )
-        }
-      }
-
-      # df3.meta <- df3.meta[!grepl("RNA",df3.meta) & !grepl("BCR",df3.meta) & !grepl("TCR",df3.meta)& !grepl("_gene",df3.meta) & !grepl("allele",df3.meta) & !grepl("percent",df3.meta) & !grepl("cdr3",df3.meta)]
-    })
+    # output$Expanded.dotplot.cutoffs <- renderUI({
+    #   sc <- UMAP_metadata_with_labs()
+    #   validate(
+    #     need(
+    #       nrow(sc) > 0,
+    #       "upload file"
+    #     )
+    #   )
+    #
+    #   TCR_Expanded_Df <- TCR_Expanded_fun(sc, (input$Samp_col), (input$V_gene_sc))
+    #   TCR_Expanded_Df$obs <- 1
+    #   TCR_Expanded_Df2 <- subset(TCR_Expanded_Df, TCR_Expanded_Df$percent > input$cut.off_percent_rep)
+    #   observations <- sum(TCR_Expanded_Df2$obs)
+    #   percentage <- sum(TCR_Expanded_Df2$percent)
+    #   length.samp.ID <- length(unique(TCR_Expanded_Df$ID_Column))
+    #   # print(length.samp.ID)
+    #   mat <- mat_sum(sc, input$Samp_col, input$V_gene_sc)
+    #
+    #   if (observations > 0) {
+    #
+    #   } else {
+    #     sc <- UMAP_metadata_with_labs()
+    #     validate(
+    #       need(
+    #         nrow(sc) > 0,
+    #         error_message_val_UMAP
+    #       )
+    #     )
+    #
+    #     markers.fm.list2 <- Vals_expanded.stats()
+    #     req(markers.fm.list2)
+    #     if (length(rownames(markers.fm.list2)) > 30) {
+    #       selected.restrict.dotpot <- "yes"
+    #       value.restrict.dotplot.num <- 30
+    #
+    #       fluidRow(
+    #         column(6, selectInput("restrict.dotpot", "Restrict to top list", choices = c("no", "yes"), selected = selected.restrict.dotpot)),
+    #         column(6, numericInput("restrict.dotplot.num", "Total genes to display:", value = value.restrict.dotplot.num)),
+    #       )
+    #     } else {
+    #       fluidRow(
+    #         column(6, selectInput("restrict.dotpot", "Restrict to top list", choices = c("no", "yes"), selected = "no")),
+    #         column(6, numericInput("restrict.dotplot.num", "Total genes to display:", value = 30)),
+    #       )
+    #     }
+    #   }
+    #
+    #   # df3.meta <- df3.meta[!grepl("RNA",df3.meta) & !grepl("BCR",df3.meta) & !grepl("TCR",df3.meta)& !grepl("_gene",df3.meta) & !grepl("allele",df3.meta) & !grepl("percent",df3.meta) & !grepl("cdr3",df3.meta)]
+    # })
 
     ## prioritising and automating the analysis ------
 
@@ -20074,7 +20420,7 @@ runSTEGO <- function(){
       df3.meta$cluster_name <- df3.meta[, names(df3.meta) %in% input$V_gene_sc]
 
       BD_sum <- Top_clonotype_df2()
-      BD_sum <- subset(BD_sum, BD_sum$Total_count > 1)
+      BD_sum <- subset(BD_sum, BD_sum$Total_count >= input$singlets_filter)
 
       TCR_Expanded_Df <- TCR_Expanded_fun(sc, (input$Samp_col), (input$V_gene_sc))
       TCR_Expanded_Df$obs <- 1
@@ -20170,7 +20516,8 @@ runSTEGO <- function(){
       sc@meta.data$Vgene <- sc@meta.data[, names(sc@meta.data) %in% input$V_gene_sc]
 
       BD_sum <- Top_clonotype_df2()
-      BD_sum <- subset(BD_sum, BD_sum$Total_count > 1)
+      BD_sum <- subset(BD_sum, BD_sum$Total_count >= input$singlets_filter)
+
       TCR_Expanded_Df <- TCR_Expanded_fun(sc, (input$Samp_col), (input$V_gene_sc))
       TCR_Expanded_Df$obs <- 1
       TCR_Expanded_Df2 <- subset(TCR_Expanded_Df, TCR_Expanded_Df$percent > input$cut.off_percent_rep)
@@ -21829,7 +22176,7 @@ runSTEGO <- function(){
                   legend.text = element_text(colour = "black", size = size_legend, family = input$font_type),
                   legend.position = input$legend_position,
                 ) +
-                scale_colour_gradient2(low = input$low.dotplot.clust, mid = input$middle.dotplot.clust, high = input$high.dotplot.clust) +
+                scale_colour_gradient2(low = input$low.dotplot, mid = input$middle.dotplot, high = input$high.dotplot) +
                 scale_size_continuous(breaks = seq(0, 100, by = input$sequence_breaks_dotplot)) + # Adjust the breaks as needed
                 scale_x_discrete(labels = label_wrap(20)) +
                 scale_y_discrete(labels = label_wrap(20)) +
@@ -22154,7 +22501,7 @@ runSTEGO <- function(){
                   legend.text = element_text(colour = "black", size = size_legend, family = input$font_type),
                   legend.position = input$legend_position,
                 ) +
-                scale_colour_gradient2(low = input$low.dotplot.clust, mid = input$middle.dotplot.clust, high = input$high.dotplot.clust) +
+                scale_colour_gradient2(low = input$low.dotplot, mid = input$middle.dotplot, high = input$high.dotplot) +
                 scale_size_continuous(breaks = seq(0, 100, by = input$sequence_breaks_dotplot)) + # Adjust the breaks as needed
                 scale_x_discrete(labels = label_wrap(20)) +
                 scale_y_discrete(labels = label_wrap(20)) +
@@ -22485,7 +22832,7 @@ runSTEGO <- function(){
                   legend.text = element_text(colour = "black", size = size_legend, family = input$font_type),
                   legend.position = input$legend_position,
                 ) +
-                scale_colour_gradient2(low = input$low.dotplot.clust, mid = input$middle.dotplot.clust, high = input$high.dotplot.clust) +
+                scale_colour_gradient2(low = input$low.dotplot, mid = input$middle.dotplot, high = input$high.dotplot) +
                 scale_size_continuous(breaks = seq(0, 100, by = input$sequence_breaks_dotplot)) + # Adjust the breaks as needed
                 scale_x_discrete(labels = label_wrap(20)) +
                 scale_y_discrete(labels = label_wrap(20)) +
@@ -22818,7 +23165,7 @@ runSTEGO <- function(){
                   legend.text = element_text(colour = "black", size = size_legend, family = input$font_type),
                   legend.position = input$legend_position,
                 ) +
-                scale_colour_gradient2(low = input$low.dotplot.clust, mid = input$middle.dotplot.clust, high = input$high.dotplot.clust) +
+                scale_colour_gradient2(low = input$low.dotplot, mid = input$middle.dotplot, high = input$high.dotplot) +
                 scale_size_continuous(breaks = seq(0, 100, by = input$sequence_breaks_dotplot)) + # Adjust the breaks as needed
                 scale_x_discrete(labels = label_wrap(20)) +
                 scale_y_discrete(labels = label_wrap(20)) +
@@ -23374,7 +23721,7 @@ runSTEGO <- function(){
                   legend.text = element_text(colour = "black", size = size_legend, family = input$font_type),
                   legend.position = input$legend_position,
                 ) +
-                scale_colour_gradient2(low = input$low.dotplot.clust, mid = input$middle.dotplot.clust, high = input$high.dotplot.clust) +
+                scale_colour_gradient2(low = input$low.dotplot, mid = input$middle.dotplot, high = input$high.dotplot) +
                 scale_size_continuous(breaks = seq(0, 100, by = input$sequence_breaks_dotplot)) + # Adjust the breaks as needed
                 scale_x_discrete(labels = label_wrap(20)) +
                 scale_y_discrete(labels = label_wrap(20)) +
