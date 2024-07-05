@@ -2194,32 +2194,29 @@ runSTEGO <- function(){
                 condition = "input.Panel_TCRUMAP == 'top_clone'",
                 p("Clonal Abundance",class = "name-header4"),
                 fluidRow(
-                  column(6, numericInput("singlets_filter","Min clone count",value = 2)),
+                  column(12,selectInput("comparison_abundance","Compare to:",choices = c("Background","Singlets","Clones"))),
+
                   column(
-                    6,
-                    conditionalPanel(
+                    6, conditionalPanel(
                       condition = "input.Panel_TCRUMAP=='top_clone'",
                       div(class = "select-input-container",
-                          checkboxInput("limit_to_top_clones",p("Filter tables to the most abundant clones?",class = "name-header3"),value = T)
+                          checkboxInput("limit_to_top_clones",p("Filter table?",class = "name-header3"),value = T)
                       )
                     ),
                   ),
-                  column(
-                    6,
-                    conditionalPanel(
-                      condition = "input.Panel_TCRUMAP=='top_clone' && input.limit_to_top_clones",
-                      numericInput("max_top_clone_limit", "Filter to:", value = 50)
-                    ),
-                  )
+                  conditionalPanel(condition = "input.Panel_TCRUMAP=='top_clone' && input.limit_to_top_clones",
+                                   column(6, numericInput("max_top_clone_limit", "Max number of clones:", value = 50)),
+                                   column(6, numericInput("singlets_filter","Filter ident.1 and ident.2 TCR list \u2264:",value = 2)),
+                  ),
                 ),
 
                 fluidRow(
-                  column(12,selectInput("comparison_abudance","Compare (ident.2)",choices = c("Background","clones"))),
+
                   column(3,""),
                   column(6,actionButton("run_stats_abudance","Run stats (abudance)")),
                 ),
               ),
-
+              p(" "),
               fluidRow(
                 p("Cut-offs for FindMarker",class = "name-header4"),
                 column(6, numericInput("min_point_", "Min point cut off", value = 0.25)),
@@ -2231,10 +2228,7 @@ runSTEGO <- function(){
                            div(class = "hint-icon",
                                icon("circle-question", lib = "font-awesome")),
                            div(class = "hint-text", "This value selects bins for the average number of cells expressing the selected transcript. The default for the DotPlot() function from Seurat was 25, and here we over-ride the value with 10 increments, as to better represent the spread of cellular expression"),
-
                        )),
-
-
                 column(12, div(class = "select-input-container",
                                checkboxInput("logFC_pval_findmarker",p("Positive only?",class = "name-header3"),value = T),
                                div(class = "hint-icon",
@@ -2384,7 +2378,7 @@ runSTEGO <- function(){
                          id = "QC_panel",
                          ############
                          # T cell classification ------
-                         tabPanel("GEX",
+                         tabPanel("GEx",
                                   value = "GEX_panel",
                                   tabsetPanel(
                                     id = "Panel_class",
@@ -2745,16 +2739,15 @@ runSTEGO <- function(){
                                     column(
                                       12,
                                       conditionalPanel(
-                                        condition = "input.Panel_TCRUMAP=='top_clone' && input.comparison_abudance != 'Background'",
+                                        condition = "input.Panel_TCRUMAP=='top_clone' && input.comparison_abundance == 'Clones'",
                                         selectInput("Selected_clonotype2", "Select clonotype (ident.2):", choices = "", width = "1400px", multiple = T)
                                       ),
                                     ),
                                   ),
                                   fluidRow(
-                                    column(6,textInput("name_clonotype_selected", "Ident.1", "", width = "600px"),),
-                                    column(6,textInput("name_clonotype_selected2", "Ident.2", "", width = "600px"),),
+                                    column(6,textInput("name_clonotype_selected", "Ident.1", "", width = "600px")),
+                                    column(6,textInput("name_clonotype_selected2", "Ident.2", "", width = "600px")),
                                   ),
-
                                   tabsetPanel(
                                     tabPanel(
                                       "Summary table",
@@ -2802,12 +2795,6 @@ runSTEGO <- function(){
                                                column(2, style = "margin-top: 25px;", downloadButton("downloadPlotPNG_heatmap_topclone_plot", "Download PNG"))
                                              ),
                                     ),
-                                    #####.
-                                    # tabPanel("Pie labs",
-                                    #          add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "200px",width = "200px", color = "#6F00B0"),
-                                    #          div(DT::DTOutput("Top_clonotype_Labs")),
-                                    #
-                                    # ),
                                     tabPanel(
                                       "Percentage",
                                       div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
@@ -11829,9 +11816,8 @@ runSTEGO <- function(){
 
       ggplot(top10_2, aes(x = ID_Column, y = frequency, fill = v_gene_selected, label = v_gene_selected, colour = "black")) +
         geom_bar(stat = "identity") +
-        theme_bw()
-
-      scale_fill_manual(values = alpha(unique.top$col, 1), na.value = input$NA_col_analysis, labels = ~ stringr::str_wrap(.x, width = 20)) +
+        theme_bw() +
+        scale_fill_manual(values = alpha(unique.top$col, 1), na.value = input$NA_col_analysis, labels = ~ stringr::str_wrap(.x, width = 20)) +
         scale_colour_manual(values = "black", guide = "none") +
         theme(
           axis.title.y = element_text(colour = "black", family = input$font_type, size = input$title.text.sizer2),
@@ -13425,6 +13411,17 @@ runSTEGO <- function(){
       )
     })
 
+    singlets_list <- reactive({
+      BD_sum <- Top_clonotype_df2()
+      validate(
+        need(
+          nrow(BD_sum) > 0,
+          error_message_val1
+        )
+      )
+      BD_sum <- subset(BD_sum, BD_sum$Total_count == 1)
+      BD_sum
+    })
 
     observe({
       sc <- UMAP_metadata_with_labs()
@@ -13487,16 +13484,21 @@ runSTEGO <- function(){
         )
       )
 
-      if (input$comparison_abudance == 'Background') {
+      if (input$comparison_abundance == 'Background') {
         updateTextInput(
           session,
           "name_clonotype_selected2",
           "Name of clone",
           "BG"
         )
+      } else if (input$comparison_abundance == 'Singlets') {
+        updateTextInput(
+          session,
+          "name_clonotype_selected2",
+          "Name of clone",
+          "singlets"
+        )
       } else {
-
-
         v_genes_selectetd <- input$Selected_clonotype2
         v_genes_selectetd <- gsub("_"," ",v_genes_selectetd)
 
@@ -13570,8 +13572,14 @@ runSTEGO <- function(){
       df3.meta <- sc@meta.data
       df3.meta$cluster_name <- df3.meta[, names(df3.meta) %in% input$V_gene_sc]
 
-      if (input$comparison_abudance == 'Background') {
+      if (input$comparison_abundance == 'Background') {
         top_BD_clonotype <- df3.meta[df3.meta$cluster_name %in% input$Selected_clonotype, ]
+      } else if (input$comparison_abundance == 'Singlets') {
+        df <- singlets_list()
+        message("singlet analysis")
+        top_BD_clonotype <- df3.meta[df3.meta$cluster_name %in% c(input$Selected_clonotype,unique(df$cluster_name)), ]
+        top_BD_clonotype$cluster_name <- ifelse(top_BD_clonotype$cluster_name %in% input$Selected_clonotype,input$Selected_clonotype,"singlet")
+        print(table(top_BD_clonotype$cluster_name))
       } else {
         top_BD_clonotype <- df3.meta[df3.meta$cluster_name %in% c(input$Selected_clonotype,input$Selected_clonotype2), ]
       }
@@ -13582,7 +13590,12 @@ runSTEGO <- function(){
     ##### bar graph of top clonotypes -----
     cols_Top_bar_clonotype <- reactive({
       dtop_clonotype_bar_code <- top_clonotype_bar_code()
-      dtop_clonotype_bar_code$Selected_chain <- dtop_clonotype_bar_code[, names(dtop_clonotype_bar_code) %in% input$V_gene_sc]
+      if (input$comparison_abundance == 'Background' || input$comparison_abundance == 'Clones') {
+        dtop_clonotype_bar_code$Selected_chain <- dtop_clonotype_bar_code[, names(dtop_clonotype_bar_code) %in% input$V_gene_sc]
+      } else {
+        dtop_clonotype_bar_code$Selected_chain <- dtop_clonotype_bar_code$cluster_name
+        dtop_clonotype_bar_code$Selected_chain <- factor(dtop_clonotype_bar_code$Selected_chain,levels = c(input$Selected_clonotype,"singlet"))
+      }
 
       # top_BD_cluster$Selected_function <- factor(top_BD_cluster$Selected_function,levels = unique(top_BD_cluster$Selected_function))
       num <- as.data.frame(unique(dtop_clonotype_bar_code$Selected_chain))
@@ -13631,14 +13644,20 @@ runSTEGO <- function(){
         })
       } # one colour
     })
+
     output$myPanel_Top_bar_clonotype <- renderUI({
       cols_Top_bar_clonotype()
     })
 
     colors_cols_Top_bar_clonotype <- reactive({
       dtop_clonotype_bar_code <- top_clonotype_bar_code()
-      dtop_clonotype_bar_code$Selected_chain <- dtop_clonotype_bar_code[, names(dtop_clonotype_bar_code) %in% input$V_gene_sc]
-      # top_BD_cluster$Selected_function <- factor(top_BD_cluster$Selected_function,levels = unique(top_BD_cluster$Selected_function))
+      if (input$comparison_abundance == 'Background' || input$comparison_abundance == 'Clones') {
+        dtop_clonotype_bar_code$Selected_chain <- dtop_clonotype_bar_code[, names(dtop_clonotype_bar_code) %in% input$V_gene_sc]
+      } else {
+        dtop_clonotype_bar_code$Selected_chain <- dtop_clonotype_bar_code$cluster_name
+        dtop_clonotype_bar_code$Selected_chain <- factor(dtop_clonotype_bar_code$Selected_chain,levels = c(input$Selected_clonotype,"singlet"))
+        print(table(dtop_clonotype_bar_code$Selected_chain))
+      }
       num <- as.data.frame(unique(dtop_clonotype_bar_code$Selected_chain))
       num <- as.data.frame(num[complete.cases(num) == T, ])
 
@@ -13687,7 +13706,13 @@ runSTEGO <- function(){
       colorblind_vector <- as.data.frame(colorblind_vector)
       names(colorblind_vector) <- "cols"
 
-      dtop_clonotype_bar_code$Selected_chain2 <- dtop_clonotype_bar_code[, names(dtop_clonotype_bar_code) %in% input$V_gene_sc]
+      if (input$comparison_abundance == 'Background' || input$comparison_abundance == 'Clones') {
+        dtop_clonotype_bar_code$Selected_chain2 <- dtop_clonotype_bar_code[, names(dtop_clonotype_bar_code) %in% input$V_gene_sc]
+      } else {
+        dtop_clonotype_bar_code$Selected_chain2 <- dtop_clonotype_bar_code$cluster_name
+        dtop_clonotype_bar_code$Selected_chain <- factor(dtop_clonotype_bar_code$Selected_chain,levels = c(input$Selected_clonotype,"singlet"))
+      }
+
       dtop_clonotype_bar_code$Selected_chain3 <- gsub("_", " ", dtop_clonotype_bar_code$Selected_chain2)
       dtop_clonotype_bar_code$Selected_chain3 <- gsub("[.]", " ", dtop_clonotype_bar_code$Selected_chain3)
 
@@ -14078,6 +14103,24 @@ runSTEGO <- function(){
     vals_Ridge_top <- reactiveValues(output_stats = NULL)
     stat_abundance <- reactiveValues(stats_ab = NULL)
 
+    # Clear the table when comparison_abundance changes
+    observeEvent(c(input$comparison_abundance,input$Selected_clonotype,input$Selected_clonotype2, input$logFC_pval_findmarker), {
+      print("Inputs changed!")
+      print(input$comparison_abundance)
+      print(input$Selected_clonotype)
+
+      if(input$comparison_abundance == "Clones") {
+        print(input$Selected_clonotype2)
+      }
+
+      # Clear stat_abundance$stats_ab
+      stat_abundance$stats_ab <- NULL
+
+      # Print to verify that stats_ab has been cleared
+      print("Cleared tabled with changes")
+
+    })
+
     observeEvent(input$run_stats_abudance,{
       sc <- UMAP_metadata_with_labs()
 
@@ -14093,8 +14136,7 @@ runSTEGO <- function(){
 
       df <- df %>%
         select(c(input$Samp_col, input$V_gene_sc), everything())
-      # print(head(df))
-      # message("checking for two")
+
       unique.df <- (df[, names(df) %in% c(input$Samp_col, input$V_gene_sc)])
       names(unique.df) <- c("group", "chain")
 
@@ -14108,7 +14150,7 @@ runSTEGO <- function(){
 
       sc@meta.data$Vgene <- sc@meta.data[, names(sc@meta.data) %in% input$V_gene_sc]
 
-      if(input$comparison_abudance == "Background") {
+      if(input$comparison_abundance == "Background") {
         name.clone <- input$Selected_clonotype
 
         sc@meta.data$Gene_select <- ifelse(sc@meta.data$Vgene %in% name.clone, name.clone, "BG")
@@ -14120,13 +14162,34 @@ runSTEGO <- function(){
         len_name.clone_selected1 <- len_name.clone[len_name.clone$var1 %in% name.clone,]
         len_name.clone_selected1 <- as.data.frame(len_name.clone_selected1)
 
+      } else if (input$comparison_abundance == "Singlets") {
+
+        BD_sum <- Top_clonotype_df2()
+        req(BD_sum)
+        singlet <- subset(BD_sum,BD_sum$Total_count == 1)
+        singlet.list <- singlet$cluster_name
+        name.clone <- input$Selected_clonotype
+
+        sc@meta.data$Gene_select <- ifelse(sc@meta.data$Vgene %in% name.clone, name.clone,
+                                           ifelse(sc@meta.data$Vgene %in% singlet.list,"singlet", "other"))
+
+        message("processing singlets")
+        print(table(sc@meta.data$Gene_select))
+
+        len_name.clone <- as.data.frame(sc@meta.data$Gene_select)
+        len_name.clone <- as.data.frame(table(len_name.clone))
+        names(len_name.clone) <- c("var1","freq")
+
+        len_name.clone_selected1 <- len_name.clone[len_name.clone$var1 %in% name.clone,]
+        len_name.clone_selected1 <- as.data.frame(len_name.clone_selected1)
+        print(len_name.clone_selected1)
+
       } else {
         name.clone <- input$Selected_clonotype
         name.clone2 <- input$Selected_clonotype2
         sc@meta.data$Gene_select <- ifelse(sc@meta.data$Vgene %in% name.clone, name.clone,
                                            ifelse(sc@meta.data$Vgene %in% name.clone2, name.clone2, "BG"))
 
-        # print(table(sc@meta.data$Gene_select))
         len_name.clone <- as.data.frame(sc@meta.data$Gene_select)
         len_name.clone <- as.data.frame(table(len_name.clone))
         names(len_name.clone) <- c("var1","freq")
@@ -14134,7 +14197,7 @@ runSTEGO <- function(){
         len_name.clone_selected1 <- len_name.clone[len_name.clone$var1 %in% name.clone,]
         len_name.clone_selected1 <- as.data.frame(len_name.clone_selected1)
         len_name.clone_selected2 <- len_name.clone[len_name.clone$var1 %in% name.clone2,]
-        len_name.clone_selected2 <- as.data.frame(len_name.clone_selected1)
+        len_name.clone_selected2 <- as.data.frame(len_name.clone_selected2)
 
       }
 
@@ -14148,7 +14211,7 @@ runSTEGO <- function(){
       p.val.cutoff <- input$pval_top # (1/10^3) is standard, use (1/10^0) to ignore
 
 
-      if (input$comparison_abudance == "Background" && sum(len_name.clone_selected1$freq) > 2) {
+      if (input$comparison_abundance == "Background" && sum(len_name.clone_selected1$freq) > 2) {
         if(input$logFC_pval_findmarker) {
           markers.fm.list <- FindMarkers(sc, ident.1 = name.clone, min.pct = min.pct.expression, logfc.threshold = min.logfc, only.pos = TRUE)
           markers.fm.list
@@ -14157,7 +14220,17 @@ runSTEGO <- function(){
           markers.fm.list
         }
 
-      } else if(input$comparison_abudance != "Background" && sum(len_name.clone_selected1$freq) > 2 && sum(len_name.clone_selected2$freq) > 2) {
+      } else if (input$comparison_abundance == "Singlets" && sum(len_name.clone_selected1$freq) > 2) {
+        if(input$logFC_pval_findmarker) {
+          print(table(Idents(object = sc)))
+          markers.fm.list <- FindMarkers(sc, ident.1 = name.clone, ident.2 = "singlet", min.pct = min.pct.expression, logfc.threshold = min.logfc, only.pos = TRUE)
+          markers.fm.list
+        } else {
+          markers.fm.list <- FindMarkers(sc, ident.1 = name.clone, ident.2 = "singlet", min.pct = min.pct.expression, logfc.threshold = min.logfc)
+          markers.fm.list
+        }
+
+      } else if(input$comparison_abundance == "Clones" && sum(len_name.clone_selected1$freq) > 2 && sum(len_name.clone_selected2$freq) > 2) {
         if(input$logFC_pval_findmarker) {
           markers.fm.list <- FindMarkers(sc, ident.1 = name.clone,ident.2 = name.clone2, min.pct = min.pct.expression, logfc.threshold = min.logfc, only.pos = TRUE)
           markers.fm.list
@@ -14172,24 +14245,27 @@ runSTEGO <- function(){
       stat_abundance$stats_ab <- markers.fm.list
     })
 
+
+
     compare.stat <- reactive({
       stat_abundance$stats_ab
 
     })
 
 
-    output$Ridge_chart_alpha_gamma_stat_comp <- DT::renderDT(escape = FALSE, options = list(autoWidth = FALSE, lengthMenu = c(2, 5, 10, 20, 50, 100), pageLength = 10, scrollX = TRUE), {
+
+    output$Ridge_chart_alpha_gamma_stat_comp <- DT::renderDT({
+
+
       sc <- compare.stat()
 
-      validate(
-        need(
-          nrow(sc) > 0,
-          "Run stats (abundance) located in sidebar"
-        )
-      )
+      if (is.null(sc) || nrow(sc) == 0) {
+        return(NULL)  # Return NULL if sc is NULL or empty
+      }
 
-      sc
+      DT::datatable(sc, escape = FALSE, options = list(autoWidth = FALSE, lengthMenu = c(2, 5, 10, 20, 50, 100), pageLength = 10, scrollX = TRUE))
     })
+
 
     output$downloaddf_FindMarker_Top <- downloadHandler(
       filename = function() {
@@ -14415,7 +14491,7 @@ runSTEGO <- function(){
 
 
 
-      if(input$comparison_abudance == "Background") {
+      if(input$comparison_abundance == "Background") {
         if (input$jitter) {
           plot <- ggplot(df2, aes(y = get(input$string.data_Exp_top), x = Selected_function, fill = Selected_function)) +
             geom_jitter(height = 0, width = 0.1) +
@@ -14553,7 +14629,7 @@ runSTEGO <- function(){
       df3.meta$cluster_name <- df3.meta[, names(df3.meta) %in% input$V_gene_sc]
 
 
-      if(input$comparison_abudance == "Background") {
+      if(input$comparison_abundance == "Background") {
         df3.meta$selected_top_clonotype <- ifelse(df3.meta$cluster_name %in% input$Selected_clonotype, input$name_clonotype_selected, input$name_clonotype_selected2)
         df3.meta$selected_top_clonotype[is.na(df3.meta$selected_top_clonotype)] <- input$Selected_clonotype2
       } else {
@@ -14590,7 +14666,6 @@ runSTEGO <- function(){
           legend.text = element_text(colour = "black", size = input$Legend_size, family = input$font_type),
           legend.title = element_blank(),
           axis.text.x = element_blank(),
-          # axis.text.y = element_blank(),
           axis.title.x = element_blank(),
           axis.title.y = element_blank(),
           legend.position = "none"
@@ -14736,16 +14811,29 @@ runSTEGO <- function(){
 
       name.clone <- input$Selected_clonotype
 
-      if(input$comparison_abudance == "Background") {
+      if(input$comparison_abundance == "Background") {
         sc@meta.data$Gene_select <- ifelse(sc@meta.data$Vgene %in% input$Selected_clonotype, input$name_clonotype_selected, input$name_clonotype_selected2)
         sc@meta.data$Gene_select[is.na(sc@meta.data$Gene_select)] <- input$Selected_clonotype2
+      } else if (input$comparison_abundance == "Singlets") {
+
+        BD_sum <- Top_clonotype_df2()
+        req(BD_sum)
+        singlet <- subset(BD_sum,BD_sum$Total_count == 1)
+        singlet.list <- singlet$cluster_name
+        name.clone <- input$Selected_clonotype
+
+        sc@meta.data$Gene_select <- ifelse(sc@meta.data$Vgene %in% input$Selected_clonotype, input$name_clonotype_selected,
+                                           ifelse(sc@meta.data$Vgene %in% singlet.list,"singlet", "other"))
+
+        sc <- subset(sc, subset = Gene_select != "other")
+
       } else {
         sc@meta.data$Gene_select <- ifelse(sc@meta.data$Vgene %in% input$Selected_clonotype, input$name_clonotype_selected,
                                            ifelse(sc@meta.data$Vgene %in% input$Selected_clonotype2, input$name_clonotype_selected2, "other"))
+
         sc@meta.data$Gene_select[is.na(sc@meta.data$Gene_select)] <- "other"
-        print(sc)
         sc <- subset(sc, subset = Gene_select != "other")
-        print(sc)
+
       }
 
       # print(unique(sc@meta.data$Gene_select))
