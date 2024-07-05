@@ -17,6 +17,8 @@ merging_multi_SeuratRDS(
 )
 }
 \arguments{
+\item{seurat_files}{set the path to the directory with the. Default = current working directory. The program will reset the directory to the original to not impact the function of STEGO.R project file. If you stop the script, you will need to manually reset the working directory with setwd("../"), to go back one directory.}
+
 \item{merge_RDS}{Set to TRUE once you have check the directory with the .rds file}
 
 \item{pattern_RDS}{uses the list.files function to identify the .rds objects for merging in the 2_scObj}
@@ -29,9 +31,9 @@ merging_multi_SeuratRDS(
 
 \item{Seurat_Version}{Current version of Seurat V5 requires joining layers in the merging process.}
 
-\item{own_features_df}{Add in a data frame of the list of your features of one column only.}
+\item{max_features}{set the maximum number of features to keep per file.}
 
-\item{set_directory}{set the path to the directory with the. Default = current working directory. The program will reset the directory to the original to not impact the function of STEGO.R project file. If you stop the script, you will need to manually reset the working directory with setwd("../"), to go back one directory.}
+\item{own_features_df}{Add in a data frame of the list of your features of one column only.}
 }
 \value{
 A merged Seurat RDS object.
