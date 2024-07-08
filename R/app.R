@@ -314,7 +314,6 @@ runSTEGO <- function(){
 ")),
 
     # check box size and colouring ------
-
     tags$style("input[type=checkbox] {
                     transform: scale(1);
            }
@@ -558,6 +557,7 @@ runSTEGO <- function(){
     tags$style(HTML("
     .name-header_functions {
       color: black;
+      font-size: 15px;
       font-weight: bold;
       margin-bottom: -5px; /* Adjust margin as needed */
     }
@@ -603,7 +603,7 @@ runSTEGO <- function(){
               id = "tPanel4", style = "overflow-y:scroll; max-height: 800px; position:relative;", width = 3,
               conditionalPanel(
                 condition = "input.panel_10x != 'auto_10x'",
-                h4("File name"),
+                p("File name",class = "name-header5"),
                 fluidRow(
                   column(6, div(class = "name-BD", textInput("group10x", p("Add Group name",class = "name-header_functions"), ""))),
                   column(6, div(class = "name-BD", textInput("Indiv10x", p("Add Individual name",class = "name-header_functions"), "")))
@@ -617,15 +617,12 @@ runSTEGO <- function(){
                 ),
                 selectInput("csv_contig_file", p("format of the contig file",class = "name-header_functions"), choices = c("csv/csv.gz", "tsv")),
                 fileInput("file_TCR_10x", p("filtered contig annotations",class = "name-header_functions")),
-                selectInput("BCR_TCR_10x", "Type of data", choices = c("TCR only", "BCR only"))),
+                selectInput("BCR_TCR_10x", p("Type of data",class = "name-header_functions"), choices = c("TCR only", "BCR only"))),
               conditionalPanel(
                 condition = "input.panel_10x == 'auto_10x'",
-
-
               )
 
             ),
-            # 10x main panel -----
             mainPanel(
               width = 9,
               tabsetPanel(
@@ -664,7 +661,6 @@ runSTEGO <- function(){
                          div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
                          div(DT::DTOutput("tb_10x_matrix2")),
                          tags$head(tags$style("#sum_tb_10x1  {white-space: nowrap;  }")),
-
                          div(DT::DTOutput("sum_tb_10x1")),
                          div(DT::DTOutput("tb_10x_meta1")),
 
@@ -673,7 +669,7 @@ runSTEGO <- function(){
                          value = 3,
                          tags$head(tags$style("#tb_10x_contigues1  {white-space: nowrap;  }")),
                          fluidRow(
-                           column(3,selectInput("chain_clusTCR2_10x", "Select to download", choices = c("AG", "BD", "IgH", "IgLK")), ),
+                           column(3,selectInput("chain_clusTCR2_10x", p("Select to download",class = "name-header_functions"), choices = c("AG", "BD", "IgH", "IgLK")), ),
                            column(3, downloadButton("downloadtb_10x_contigues1", "Download clusTCR"),style = "padding-top: 25px;")
                          ),
 
@@ -716,60 +712,60 @@ runSTEGO <- function(){
               # UPLOAD the three files...
               # selectInput("dataset_BD", "Choose a dataset:", choices = c("test_data_BD", "own_data_BD")),
               div(class = "name-BD",
-                  h4("Add File Name", class = "name-header"),
+                  h4("Add File Name", class = "name-header5"),
                   textInput("name_BD",h5("e.g., Samp1_Tumor", class = "name-header"), value = "")),
               fluidRow(
-                column(6, numericInput("no_lines_skip_Tags", "If needed, skip first 7 lines of Sample Tag", value = 7, min = 0, max = 20, step = 7), ),
-                column(6, fileInput("file_calls_BD", "Sample Tag Calls (.csv)",
+                column(6, numericInput("no_lines_skip_Tags", p("Skip first 7 lines (Tags)",class = "name-header_functions"), value = 7, min = 0, max = 20, step = 7), ),
+                column(6, fileInput("file_calls_BD", p("Sample Tag Calls (.csv)",class = "name-header_functions"),
                                     accept = c("text/csv", "text/comma-separated-values,text/plain", ".csv")
                 ), )
               ),
               h5("Upload the matrix files"),
-              selectInput("Format_bd", "Format type", choices = c("cellXgene", "Barcode_features_matrix"), selected = "Barcode_features_matrix"),
+              selectInput("Format_bd", p("Format type",class = "name-header_functions"), choices = c("cellXgene", "Barcode_features_matrix"), selected = "Barcode_features_matrix"),
               conditionalPanel(
                 condition = "input.Format_bd=='Barcode_features_matrix'",
-                fileInput("file_barcode_bd", "Barcode file (.tsv.gz or .tsv)"),
-                fileInput("file_features_bd", "Features file (.tsv.gz or .tsv)"),
-                fileInput("file_matrix_bd", "Matrix file"),
+                fileInput("file_barcode_bd", p("Barcode file (.tsv.gz or .tsv)",class = "name-header_functions")),
+                fileInput("file_features_bd", p("Features file (.tsv.gz or .tsv)",class = "name-header_functions")),
+                fileInput("file_matrix_bd", p("Matrix file",class = "name-header_functions")),
               ),
               conditionalPanel(
                 condition = "input.Format_bd=='cellXgene'",
                 fluidRow(
-                  column(6, numericInput("no_lines_skip_counts", "If needed, skip first 7 lines of Count Matrix", value = 7, min = 0, max = 10, step = 7), ),
-                  column(6, fileInput("file_counts_BD", "Counts (.csv)",
+                  column(6, numericInput("no_lines_skip_counts", "Skip first 7 lines (Matrix)", value = 7, min = 0, max = 10, step = 7), ),
+                  column(6, fileInput("file_counts_BD", p("Counts (.csv)",class = "name-header_functions"),
                                       accept = c("text/csv", "text/comma-separated-values,text/plain", ".csv")
                   ), ),
                 ),
               ),
               h5("Upload the TCR Contig file"),
-              selectInput("filtered_list", "Contig Format", choices = c("Paired", "Dominant", "Unfiltered"), selected = "Dominant"),
+              selectInput("filtered_list", p("Contig Format",class = "name-header_functions"), choices = c("Paired", "Dominant", "Unfiltered"), selected = "Dominant"),
               conditionalPanel(
                 condition = "input.filtered_list=='Paired'",
                 fluidRow(
-                  column(6, numericInput("no_lines_skip_TCR", "If needed, skip first 7 lines of VDJ Contig file", value = 7, min = 0, max = 10, step = 7), ),
-                  column(6, fileInput("file_TCR_BD", "TCR file (.csv)",
+                  column(6, numericInput("no_lines_skip_TCR", p("Skip first 7 lines (Contig)",class = "name-header_functions"), value = 7, min = 0, max = 10, step = 7), ),
+                  column(6, fileInput("file_TCR_BD", p("TCR file (.csv)",class = "name-header_functions"),
                                       accept = c("text/csv", "text/comma-separated-values,text/plain", ".csv")
                   )),
                 ),
               ),
               conditionalPanel(
                 condition = "input.filtered_list=='Dominant' || input.filtered_list=='Unfiltered'",
-                fileInput("file_TCR_bd2", "Contig AIRR file (tsv or tsv.gz)",
+                fileInput("file_TCR_bd2", p("Contig AIRR file (tsv or tsv.gz)",class = "name-header_functions"),
                           accept = c(".tsv", "tsv",".tsv.gz","tsv.gz")
                 )
               ),
               ### filter out non-function TCR and un-paired TCR
               conditionalPanel(
                 condition = "input.filtered_list=='Dominant' || input.filtered_list=='Unfiltered'",
-                selectInput("locus_column", h5("Chain (e.g. locus)"), ""),
+                selectInput("locus_column", p("Chain (e.g. locus)",class = "name-header_functions"), ""),
               ),
               conditionalPanel(
                 condition = "input.filtered_list=='Paired'",
                 fluidRow(
-                  column(6, selectInput("V_gene_AG_BDrhap", h6("Alpha/Gamma V gene"), ""), ),
-                  column(6, selectInput("Junction_AG_BDrhap", h6("Alpha/Gamma junction"), ""), ),
-                  column(6, selectInput("V_gene_BD_BDrhap", h6("Beta/Delta V gene"), "")),
-                  column(6, selectInput("Junction_BD_BDrhap", h6("Beta/Delta junction"), ""))
+                  column(6, selectInput("V_gene_AG_BDrhap", p("Alpha/Gamma V gene",class = "name-header_functions"), ""), ),
+                  column(6, selectInput("Junction_AG_BDrhap", p("Alpha/Gamma junction",class = "name-header_functions"), ""), ),
+                  column(6, selectInput("V_gene_BD_BDrhap", p("Beta/Delta V gene",class = "name-header_functions"), "")),
+                  column(6, selectInput("Junction_BD_BDrhap", p("Beta/Delta junction",class = "name-header_functions"), ""))
                 ),
               ),
 
@@ -779,7 +775,7 @@ runSTEGO <- function(){
                 column(6, checkboxInput("BCR_present",  p("BCR present?", class = "name-header2"), value = FALSE, width = NULL)),
               ),
             ),
-            # main panel ------
+
             mainPanel(
               width = 9,
               tabsetPanel(
@@ -812,15 +808,10 @@ runSTEGO <- function(){
                     div(DT::DTOutput("test.files.bd4", height = "200px")),
                   ),
                 ),
-                # tabPanel("Checking Merge",
-                #
-                #          div(DT::DTOutput("Check_table")),
-                #
-                #          ),
                 tabPanel(
                   "clusTCR2",
                   tags$head(tags$style("#tb_clusTCR  {white-space: nowrap;  }")),
-                  selectInput("chain_clusTCR2_bd", "Select to download", choices = c("AG", "BD", "IgH", "IgLK")),
+                  selectInput("chain_clusTCR2_bd",p("Select to download",class = "name-header_functions"), choices = c("AG", "BD", "IgH", "IgLK")),
                   downloadButton("downloaddf_clusTCR", "Download table"),
 
                   div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
@@ -845,7 +836,6 @@ runSTEGO <- function(){
                   div(DT::DTOutput("tb_count_matrix", height = "200px")),
                   div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
                   div(DT::DTOutput("tb_metadata_sc", height = "200px")),
-
                 ),
                 tabPanel(
                   "TCR_Explore",
@@ -853,28 +843,24 @@ runSTEGO <- function(){
                   downloadButton("downloadtb_TCR_Explore", "Download table"),
                   div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
                   div(DT::DTOutput("tb_TCR_Explore", height = "200px")),
-
                 ),
                 tabPanel(
                   "Multi-TCR",
                   downloadButton("downloadtb_multiTCR", "Download Multi-TCR table"),
                   div(DT::DTOutput("tb_multiTCR", height = "200px")),
-
                 ),
                 tabPanel(
                   "Create Sample Tags file",
                   downloadButton("downloadtb_sample_tags", "Download Tags"),
                   tags$head(tags$style("#tb_sample_tags_created  {white-space: nowrap;  }")),
-                  div(class = "name-BD",textInput("sample_tags_name", "Name of sample", value = "BD EA splenocyte")),
+                  div(class = "name-BD",textInput("sample_tags_name", p("Name of sample",class = "name-header_functions"), value = "BD EA splenocyte")),
                   div(DT::DTOutput("tb_sample_tags_created", height = "200px")),
-
                 ),
               )
             )
           ),
         ),
         # BD rhapsody end ----
-
         # array format -----
         tabPanel(
           "Array",
@@ -888,8 +874,8 @@ runSTEGO <- function(){
                         accept = c("text/csv", "text/comma-separated-values,text/plain", "txt.gz")
               ),
               checkboxInput("pairing_TCR_Array",p("Paired only?", class = "name-header2")),
-              div(class = "name-BD",textInput("sample_name_Array", "Add sample name", "Treatment_group")),
-              div(class = "name-BD",textInput("name.array", "Add file name", "FileName"))
+              div(class = "name-BD",textInput("sample_name_Array", p("Add sample name",class = "name-header_functions"), "Treatment_group")),
+              div(class = "name-BD",textInput("name.array", p("Add file name",class = "name-header_functions"), "FileName"))
             ),
             mainPanel(
               width = 9,
@@ -923,7 +909,7 @@ runSTEGO <- function(){
                     column(3, downloadButton("downloadtb_array_metadata2", "Download metadata"))
                   ),
                 ),
-                tabPanel("TCR_Explore")
+                # tabPanel("TCR_Explore")
               )
             )
           )
@@ -935,10 +921,10 @@ runSTEGO <- function(){
           sidebarLayout(
             sidebarPanel(
               width = 3,
-              div(class = "name-BD",textInput("project_name5", h4("Name of Project", class = "name-header2"), value = "Proj")),
+              div(class = "name-BD",textInput("project_name5", p("Name of Project",class = "name-header_functions"), value = "Proj")),
               # textInput("", "Name of Project", value = ""),
               fileInput("file1_h5Seurat.file",
-                        "Choose .h5Seurat files from directory",
+                        p("Choose .h5Seurat files from directory",class = "name-header_functions"),
                         multiple = TRUE,
                         accept = c(".h5Seurat", "h5Seurat")
               ),
@@ -952,7 +938,7 @@ runSTEGO <- function(){
                 id = "Converting_formatting",
                 tabPanel("Converting",
                          value = "converting_PA",
-                         h4("Convert .h5Seurat (V4 Seurat) to .rds"),
+                         p("Convert .h5Seurat (V4 Seurat) to .rds",class = "name-header_functions"),
                          verbatimTextOutput("Convert_to_RDS_out")
                 )
               )
@@ -972,7 +958,7 @@ runSTEGO <- function(){
               # selectInput("dataset2", "Choose a dataset:", choices = c("test_data_clusTCR2","own_data_clusTCR2")),
               # fluidRow(
               column(12, div(class = "select-input-container",
-                             fileInput("file2_TCRexMerge", "Select files to merge",
+                             fileInput("file2_TCRexMerge", p("Select files to merge",class = "name-header_functions"),
                                        multiple = TRUE,
                              ),
                              div(class = "hint-icon",
@@ -1004,10 +990,10 @@ runSTEGO <- function(){
               id = "tPanel4", style = "overflow-y:scroll; max-height: 800px; position:relative;", width = 3,
               # selectInput("dataset2", "Choose a dataset:", choices = c("test_data_clusTCR2","own_data_clusTCR2")),
 
-              selectInput("Clust_lab_tab_output", "Add prefix to file", choices = c("AG", "BD", "IgH", "IgKL")),
+              selectInput("Clust_lab_tab_output", p("Add prefix to file",class = "name-header_functions"), choices = c("AG", "BD", "IgH", "IgKL")),
               conditionalPanel(
                 condition = "input.clusTCR2_tabs=='merge'",
-                fileInput("file1_ClusTCR2_multiple", "Select files to merge",
+                fileInput("file1_ClusTCR2_multiple", p("Select files to merge",class = "name-header_functions"),
                           multiple = TRUE,
                           accept = c("text/csv", "text/comma-separated-values,text/plain", ".csv")
                 )
@@ -1016,32 +1002,26 @@ runSTEGO <- function(){
               conditionalPanel(
                 condition = "input.clusTCR2_tabs == 'extract_clustcr'",
                 fileInput("file1_extract_clusTCR2",
-                          "Upload .rds file",
+                          p("Upload .rds file",class = "name-header_functions"),
                           multiple = F,
                           accept = c(".rds", "rds")
                 ),
-                selectInput("junction_aa_extracting","Junction (aa)",choices = ""),
-                selectInput("v_gene_extracting","V gene",choices = ""),
+                selectInput("junction_aa_extracting",p("Junction (aa)",class = "name-header_functions"),choices = ""),
+                selectInput("v_gene_extracting",p("V gene",class = "name-header_functions"),choices = ""),
                 div(downloadButton("downloaddf_RDS_extracted_clustcr2_file", "Download extracted clusTCR2 table"),style = "padding-top: 25px;"),
-
-
-                # selectInput("sample_name_extracting","smple_name",choices = ""),
-
               ),
-
               ######
               conditionalPanel(
                 condition = "input.clusTCR2_tabs == 'clustering_clustcr'",
-
                 conditionalPanel(
                   condition = "input.clusTCR2_tabs2 == 'processing1'",
-                  fileInput("file2_ClusTCR2", "Select file for Clustering",
+                  fileInput("file2_ClusTCR2", p("Select file for Clustering",class = "name-header_functions"),
                             accept = c("text/csv", "text/comma-separated-values,text/plain", ".csv")
                   ),
 
                   fluidRow(
-                    column(6, selectInput("clusTCR2_names", label = h5("CDR3"), "")),
-                    column(6, selectInput("clusTCR2_Vgene", label = h5("V gene"), "")),
+                    column(6, selectInput("clusTCR2_names", label = p("CDR3",class = "name-header_functions"), "")),
+                    column(6, selectInput("clusTCR2_Vgene", label = p("V gene",class = "name-header_functions"), "")),
                   ),
                   fluidRow(
                     column(6, checkboxInput("allele_ClusTCR2", p("Remove allele *00?", class = "name-header2"), value = T)),
@@ -1050,13 +1030,12 @@ runSTEGO <- function(){
                 ),
                 conditionalPanel(
                   condition = "input.clusTCR2_tabs2 != 'processing1'",
-                  h5("Click to run/update clustering"),
+                  p("Click to run/update clustering",class = "name-header5"),
                   div(actionButton("run_ClusTCR2", "Run Clustering"), style = "padding-top: 25px;")
                 ),
               ),
               conditionalPanel(
                 condition = "input.clusTCR2_tabs2 != 'processing1'",
-
                 conditionalPanel(
                   condition = "input.run_ClusTCR2 > 0",
                   div(downloadButton("download_ClusTCR_labels", "Download Cluster table"),style = "padding-top: 25px;")
@@ -1069,25 +1048,14 @@ runSTEGO <- function(){
                 id = "clusTCR2_tabs",
                 tabPanel("Merge Multiple Files",
                          value = "merge",
-
                          div(downloadButton("downloaddf_multiple_ClusTCR2", "Download table") ,style = "padding-top: 25px;"),
-
                          div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
-
                          div(DT::DTOutput("DEx_multiple_ClusTCR2")),
-
                 ),
-                ######
                 tabPanel("Extract data (.rds)", value = "extract_clustcr" ,
-
                          div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
-
                          div(DT::DTOutput("RDS_extracted_clustcr2_file")),
-
-
-
                 ),
-                #####
                 tabPanel("Clustering", value = "clustering_clustcr",
                          tabsetPanel(id = "clusTCR2_tabs2",
                                      tabPanel("Inputs",
@@ -1111,25 +1079,25 @@ runSTEGO <- function(){
                                        "Figures",
                                        # cluster number
                                        fluidRow(
-                                         column(3, numericInput("selected_Cluster", "Selected cluster", value = 1)),
-                                         column(3, numericInput("filter_connections", "Keep connections >", value = 1)),
+                                         column(3, numericInput("selected_Cluster", p("Selected cluster",class = "name-header_functions"), value = 1)),
+                                         column(3, numericInput("filter_connections", p("Keep connections >",class = "name-header_functions"), value = 1)),
                                          # Name (CDR3_V_gene_Cluster), cluster, CDR3, V_gene, Len (length of CDR3 sequence),CDR3_selected,Name_selected,cluster_selected, (_selected only prints names of the chosen cluster), None
-                                         column(3, selectInput("lab_clust_by", "Label cluster by:", choices = c("Name", "cluster", "CDR3", "V_gene", "Len", "CDR3_selected", "Name_selected", "cluster_selected", "None"), selected = "cluster")),
-                                         # column(3, selectInput("Clust_size_order", "Order of cluster", choices = c("cluster", "Original_cluster", "Clust_size_order"), selected = "Clust_size_order")),
-                                         column(3, selectInput("colour_ClusTCR2", "Type of colouring", choices = c("color_all", "color_test"), selected = "color_test")),
-                                         column(3, numericInput("text_size1", "Text size of selected cluster", value = 4)),
-                                         column(3, numericInput("text_size2", "Text size of non-selected cluster", value = 2)),
+                                         column(3, selectInput("lab_clust_by", p("Label cluster by:",class = "name-header_functions"), choices = c("Name", "cluster", "CDR3", "V_gene", "Len", "CDR3_selected", "Name_selected", "cluster_selected", "None"), selected = "cluster")),
+                                         column(3, selectInput("colour_ClusTCR2",p("Type of colouring",class = "name-header_functions"), choices = c("color_all", "color_test"), selected = "color_test")),
+                                         column(3, numericInput("text_size1",p("Text size of selected cluster",class = "name-header_functions"), value = 4)),
+                                         column(3, numericInput("text_size2",p("Text size of non-selected cluster",class = "name-header_functions"), value = 2)),
                                        ),
                                        fluidRow(
                                          conditionalPanel(
                                            condition = "input.colour_ClusTCR2 == 'color_all'",
-                                           column(3, selectInput("colour_ClusTCR2_types", "Colour panel", choices = c("default", "rainbow", "random", "heat.colors", "terrain.colors", "topo.colors", "hcl.colors"))),
+                                           column(3, selectInput("colour_ClusTCR2_types",p("Colour panel",class = "name-header_functions"),
+                                                                 choices = c("default", "rainbow", "random", "heat.colors", "terrain.colors", "topo.colors", "hcl.colors"))),
                                          ),
                                          conditionalPanel(
                                            condition = "input.colour_ClusTCR2 == 'color_test'",
                                            fluidRow(
-                                             column(3, colourInput("sel_colour_netplot", "Selected colour", "purple")),
-                                             column(3, colourInput("nonsel_colour_netplot", "Non-selected colour", "grey80")),
+                                             column(3, colourInput("sel_colour_netplot",p("Selected colour",class = "name-header_functions"), "purple")),
+                                             column(3, colourInput("nonsel_colour_netplot",p("Non-selected colour",class = "name-header_functions"), "grey80")),
                                            )
                                          )
                                        ),
@@ -1138,27 +1106,25 @@ runSTEGO <- function(){
                                          column(4, plotOutput("MP_ClusTCR", height = "200px")),
                                        ),
                                        fluidRow(
-                                         column(1, numericInput("width_Network_plot2", "Width of PDF", value = 10)),
-                                         column(1, numericInput("height_Network_plot2", "Height of PDF", value = 8)),
-                                         column(2, style = "margin-top: 25px;", downloadButton("downloadPlot_Network_plot2", "Download PDF")),
-                                         column(2, numericInput("width_png_Network_plot2", "Width of PNG", value = 1200)),
-                                         column(2, numericInput("height_png_Network_plot2", "Height of PNG", value = 1000)),
-                                         column(2, numericInput("resolution_PNG_Network_plot2", "Resolution of PNG", value = 144)),
-                                         column(2, style = "margin-top: 25px;", downloadButton("downloadPlotPNG_Network_plot2", "Download PNG")),
+                                         column(2, numericInput("width_Network_plot2",p("Width (PDF)",class = "name-header_functions"), value = 10)),
+                                         column(2, numericInput("height_Network_plot2",p("Height (PDF)",class = "name-header_functions"), value = 8)),
+                                         column(1, style = "margin-top: 20px;", downloadButton("downloadPlot_Network_plot2", "PDF")),
+                                         column(2, numericInput("width_png_Network_plot2",p("Width (PNG)",class = "name-header_functions"), value = 1200)),
+                                         column(2, numericInput("height_png_Network_plot2",p("Height (PNG)",class = "name-header_functions"), value = 1000)),
+                                         column(2, numericInput("resolution_PNG_Network_plot2",p("Resolution (PNG)",class = "name-header_functions"), value = 144)),
+                                         column(1, style = "margin-top: 20px;", downloadButton("downloadPlotPNG_Network_plot2", "PNG")),
                                        ),
                                        fluidRow(
-                                         column(1, numericInput("width_Motif_plot2", "Width of PDF", value = 10)),
-                                         column(1, numericInput("height_Motif_plot2", "Height of PDF", value = 3.5)),
-                                         column(2, style = "margin-top: 25px;", downloadButton("downloadPlot_Motif_plot2", "Download PDF")),
-                                         column(2, numericInput("width_png_Motif_plot2", "Width of PNG", value = 1200)),
-                                         column(2, numericInput("height_png_Motif_plot2", "Height of PNG", value = 600)),
-                                         column(2, numericInput("resolution_PNG_Motif_plot2", "Resolution of PNG", value = 144)),
-                                         column(2, style = "margin-top: 25px;", downloadButton("downloadPlotPNG_Motif_plot2", "Download PNG"))
+                                         column(2, numericInput("width_Motif_plot2",p("Width (PDF)",class = "name-header_functions"), value = 10)),
+                                         column(2, numericInput("height_Motif_plot2",p("Height (PDF)",class = "name-header_functions"), value = 3.5)),
+                                         column(1, style = "margin-top: 20px;", downloadButton("downloadPlot_Motif_plot2", "PDF")),
+                                         column(2, numericInput("width_png_Motif_plot2",p("Width (PNG)",class = "name-header_functions"), value = 1200)),
+                                         column(2, numericInput("height_png_Motif_plot2",p("Height (PNG)",class = "name-header_functions"), value = 600)),
+                                         column(2, numericInput("resolution_PNG_Motif_plot2",p("Resolution (PNG)",class = "name-header_functions"), value = 144)),
+                                         column(1, style = "margin-top: 20px;", downloadButton("downloadPlotPNG_Motif_plot2", "PNG"))
                                        ),
                                      ),
-                                     # tabPanel("Time",
 
-                                     # )
                          )
                 )
               )
@@ -1177,8 +1143,8 @@ runSTEGO <- function(){
             sidebarPanel(shinyjs::useShinyjs(),
                          id = "side-panel",
                          style = "overflow-y:scroll; max-height: 800px; position:relative;", width = 3,
-                         div(class = "name-BD",textInput("project_name", h4("Sample/Project Name",class = "name-header2"), value = "")),
-                         fileInput("file_SC", "Load count matrix (csv for BDrhap, csv.gz or .h5 for 10x)"),
+                         div(class = "name-BD",textInput("project_name", p("Sample/Project Name",class = "name-header_functions"), value = "")),
+                         fileInput("file_SC",p("Load count matrix (csv for BDrhap, csv.gz or .h5 for 10x)",class = "name-header_functions")),
                          fluidRow(
                            column(4,checkboxInput("abTCR_available",p("abTCR?", class = "name-header2"),value = T)),
                            column(4,checkboxInput("gdTCR_available",p("gdTCR?", class = "name-header2"),value = F)),
@@ -1187,16 +1153,18 @@ runSTEGO <- function(){
 
                          conditionalPanel(
                            condition = ("input.abTCR_available == true"),
-                           fileInput("file_SC_meta", "Upload abTCR meta.data (.csv.gz or .csv)", )),
+                           fileInput("file_SC_meta",p("Upload abTCR meta.data (.csv.gz or .csv)",class = "name-header_functions"), )),
                          conditionalPanel(
                            condition = ("input.gdTCR_available == true"),
-                           fileInput("file_SC_meta2", "Upload gdTCR meta.data (.csv.gz or .csv)", )),
+                           fileInput("file_SC_meta2",p("Upload gdTCR meta.data (.csv.gz or .csv)",class = "name-header_functions"), )),
                          conditionalPanel(
                            condition = ("input.BCR_available == true"),
-                           fileInput("file_SC_meta3", "Upload BCR meta.data (.csv.gz or .csv)", )),
+                           fileInput("file_SC_meta3",p("Upload BCR meta.data (.csv.gz or .csv)",class = "name-header_functions"), )),
                          # selectInput("species","Species",choices = c("human","mouse","other")),
-                         selectInput("df_seruatobj_type", "Data type", choices = c("10x_Genomics (raw)", "10x_Genomics (.h5)","BD Rhapsody (Human Immune panel)","BD Rhapsody (Full panel)", "BD Rhapsody (Mouse)", "Array")),
-                         selectInput("stored_in_expression", "Does the .h5 object has multiple part?", choices = c("no", "yes")),
+                         selectInput("df_seruatobj_type",p("Data type",class = "name-header_functions"),
+                                     choices = c("10x_Genomics (raw)", "10x_Genomics (.h5)","BD Rhapsody (Human Immune panel)","BD Rhapsody (Full panel)", "BD Rhapsody (Mouse)", "Array")),
+                         selectInput("stored_in_expression",p("Does the .h5 object has multiple part?",class = "name-header_functions"),
+                                     choices = c("no", "yes")),
                          uiOutput("feature_input"),
                          actionButton('run_violin', 'Filter', onclick = "$(tab).removeClass('disabled-1')"),
 
@@ -1204,12 +1172,10 @@ runSTEGO <- function(){
                          conditionalPanel(
                            condition = ("input.run_violin != 0"),
                            fluidRow(
-                             column(6, numericInput("dimension_sc", "Max dimensions for clustering", value = 15)),
-                             column(6, numericInput("resolution", "Resolution of clusters", value = 1)),
+                             column(6, numericInput("dimension_sc",p("Max dimensions for clustering",class = "name-header_functions"), value = 15)),
+                             column(6, numericInput("resolution",p("Resolution of clusters",class = "name-header_functions"), value = 1)),
                            ),
-
                            div(actionButton("run_reduction", "Run clustering", onclick = "$(tab).removeClass('disabled-2')"), style = "padding-top: 25px;"),
-
                            conditionalPanel(
                              condition = ("input.run_reduction != 0"),
                              div(actionButton("run_metadata", "Impute metadata after clustering", onclick = "$(tab).removeClass('disabled-3')"), style = "padding-top: 25px;"),
@@ -1223,7 +1189,6 @@ runSTEGO <- function(){
                          div(actionButton("clearDataBtn", "Clear Data"), # Add clear data button here
                          ),
                          tags$hr(),
-                         # actionButton("reset_input", "Reset inputs")
             ),
             # QC main panel -----
             mainPanel(
@@ -1249,13 +1214,13 @@ runSTEGO <- function(){
                       div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
                       plotOutput("before_plot_sc", height = "600px"),
                       fluidRow(
-                        column(1, numericInput("width_before_plot_sc", "Width of PDF", value = 10)),
-                        column(1, numericInput("height_before_plot_sc", "Height of PDF", value = 8)),
-                        column(2, style = "margin-top: 25px;", downloadButton("downloadPlot_before_plot_sc", "Download PDF")),
-                        column(2, numericInput("width_png_before_plot_sc", "Width of PNG", value = 1200)),
-                        column(2, numericInput("height_png_before_plot_sc", "Height of PNG", value = 1000)),
-                        column(2, numericInput("resolution_PNG_before_plot_sc", "Resolution of PNG", value = 144)),
-                        column(2, style = "margin-top: 25px;", downloadButton("downloadPlotPNG_before_plot_sc", "Download PNG")),
+                        column(2, numericInput("width_before_plot_sc",p("Width (PDF)",class = "name-header_functions"), value = 10)),
+                        column(2, numericInput("height_before_plot_sc",p("Height (PDF)",class = "name-header_functions"), value = 8)),
+                        column(1, style = "margin-top: 20px;", downloadButton("downloadPlot_before_plot_sc", "PDF")),
+                        column(2, numericInput("width_png_before_plot_sc",p("Width (PNG)",class = "name-header_functions"), value = 1200)),
+                        column(2, numericInput("height_png_before_plot_sc",p("Height (PNG)",class = "name-header_functions"), value = 1000)),
+                        column(2, numericInput("resolution_PNG_before_plot_sc",p("Resolution (PNG)",class = "name-header_functions"), value = 144)),
+                        column(1, style = "margin-top: 20px;", downloadButton("downloadPlotPNG_before_plot_sc", "PNG")),
                       ),
                     ),
                     tabPanel(
@@ -1264,13 +1229,13 @@ runSTEGO <- function(){
                       div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
                       plotOutput("after_plot_sc", height = "600px"),
                       fluidRow(
-                        column(1, numericInput("width_after_plot_sc", "Width of PDF", value = 10)),
-                        column(1, numericInput("height_after_plot_sc", "Height of PDF", value = 8)),
-                        column(2, style = "margin-top: 25px;", downloadButton("downloadPlot_after_plot_sc", "Download PDF")),
-                        column(2, numericInput("width_png_after_plot_sc", "Width of PNG", value = 1200)),
-                        column(2, numericInput("height_png_after_plot_sc", "Height of PNG", value = 1000)),
-                        column(2, numericInput("resolution_PNG_after_plot_sc", "Resolution of PNG", value = 144)),
-                        column(2, style = "margin-top: 25px;", downloadButton("downloadPlotPNG_after_plot_sc", "Download PNG")),
+                        column(2, numericInput("width_after_plot_sc",p("Width (PDF)",class = "name-header_functions"), value = 10)),
+                        column(2, numericInput("height_after_plot_sc",p("Height (PDF)",class = "name-header_functions"), value = 8)),
+                        column(1, style = "margin-top: 20px;", downloadButton("downloadPlot_after_plot_sc", "PDF")),
+                        column(2, numericInput("width_png_after_plot_sc",p("Width (PNG)",class = "name-header_functions"), value = 1200)),
+                        column(2, numericInput("height_png_after_plot_sc",p("Height (PNG)",class = "name-header_functions"), value = 1000)),
+                        column(2, numericInput("resolution_PNG_after_plot_sc",p("Resolution (PNG)",class = "name-header_functions"), value = 144)),
+                        column(1, style = "margin-top: 20px;", downloadButton("downloadPlotPNG_after_plot_sc", "PNG")),
                       ),
                       tags$script(
                         '
@@ -1307,13 +1272,13 @@ runSTEGO <- function(){
                   div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
                   plotOutput("create_elbowPlot_sc", height = "600px"),
                   fluidRow(
-                    column(1, numericInput("width_create_elbowPlot_sc", "Width of PDF", value = 10)),
-                    column(1, numericInput("height_create_elbowPlot_sc", "Height of PDF", value = 8)),
-                    column(2, style = "margin-top: 25px;", downloadButton("downloadPlot_create_elbowPlot_sc", "Download PDF")),
-                    column(2, numericInput("width_png_create_elbowPlot_sc", "Width of PNG", value = 1200)),
-                    column(2, numericInput("height_png_create_elbowPlot_sc", "Height of PNG", value = 1000)),
-                    column(2, numericInput("resolution_PNG_create_elbowPlot_sc", "Resolution of PNG", value = 144)),
-                    column(2, style = "margin-top: 25px;", downloadButton("downloadPlotPNG_create_elbowPlot_sc", "Download PNG")),
+                    column(2, numericInput("width_create_elbowPlot_sc",p("Width (PDF)",class = "name-header_functions"), value = 10)),
+                    column(2, numericInput("height_create_elbowPlot_sc",p("Height (PDF)",class = "name-header_functions"), value = 8)),
+                    column(1, style = "margin-top: 20px;", downloadButton("downloadPlot_create_elbowPlot_sc", "PDF")),
+                    column(2, numericInput("width_png_create_elbowPlot_sc",p("Width (PNG)",class = "name-header_functions"), value = 1200)),
+                    column(2, numericInput("height_png_create_elbowPlot_sc",p("Height (PNG)",class = "name-header_functions"), value = 1000)),
+                    column(2, numericInput("resolution_PNG_create_elbowPlot_sc",p("Resolution (PNG)",class = "name-header_functions"), value = 144)),
+                    column(1, style = "margin-top: 20px;", downloadButton("downloadPlotPNG_create_elbowPlot_sc", "PNG")),
                   ),
                   tags$script(
                     '
@@ -1351,13 +1316,13 @@ runSTEGO <- function(){
                   div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
                   plotOutput("plot_10_features_sc", height = "600px"),
                   fluidRow(
-                    column(1, numericInput("width_plot_10_features_sc", "Width of PDF", value = 10)),
-                    column(1, numericInput("height_plot_10_features_sc", "Height of PDF", value = 8)),
-                    column(2, style = "margin-top: 25px;", downloadButton("downloadPlot_plot_10_features_sc", "Download PDF")),
-                    column(2, numericInput("width_png_plot_10_features_sc", "Width of PNG", value = 1200)),
-                    column(2, numericInput("height_png_plot_10_features_sc", "Height of PNG", value = 1000)),
-                    column(2, numericInput("resolution_PNG_plot_10_features_sc", "Resolution of PNG", value = 144)),
-                    column(2, style = "margin-top: 25px;", downloadButton("downloadPlotPNG_plot_10_features_sc", "Download PNG")),
+                    column(2, numericInput("width_plot_10_features_sc",p("Width (PDF)",class = "name-header_functions"), value = 10)),
+                    column(2, numericInput("height_plot_10_features_sc",p("Height (PDF)",class = "name-header_functions"), value = 8)),
+                    column(1, style = "margin-top: 20px;", downloadButton("downloadPlot_plot_10_features_sc", "PDF")),
+                    column(2, numericInput("width_png_plot_10_features_sc",p("Width (PNG)",class = "name-header_functions"), value = 1200)),
+                    column(2, numericInput("height_png_plot_10_features_sc",p("Height (PNG)",class = "name-header_functions"), value = 1000)),
+                    column(2, numericInput("resolution_PNG_plot_10_features_sc",p("Resolution (PNG)",class = "name-header_functions"), value = 144)),
+                    column(1, style = "margin-top: 20px;", downloadButton("downloadPlotPNG_plot_10_features_sc", "PNG")),
                   ),
 
                   tags$script(
@@ -1418,14 +1383,12 @@ runSTEGO <- function(){
   });
     '
                   ),
-
                 ), # Export a table with meta.data and expression.
                 tabPanel(
                   "Add metadata", value = "Add_meta_data_to_sc",
 
                   div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
                   div(DT::DTOutput("DEx_table_meta.data")),
-
                   tags$script(
                     '
     var tab6 = $(\'a[data-value="Add_meta_data_to_sc"]\').parent();
@@ -1465,13 +1428,14 @@ runSTEGO <- function(){
             # Sidebar with a slider input
             sidebarPanel(
               id = "tPanel5", style = "overflow-y:scroll; max-height: 800px; position:relative;", width = 3,
-              div(class = "name-BD",textInput("project_name2", h4("Name of Project", class = "name-header2"), value = "Proj")),
+              div(class = "name-BD",textInput("project_name2", p("Name of Project",class = "name-header_functions"), value = "Proj")),
               conditionalPanel(
                 condition = "input.Merging_and_batching == 'Merging_Harmony'",
-                selectInput("sample.type.source_merging", "Species", choices = c("hs", "mm")),
+                selectInput("sample.type.source_merging",p("Species",class = "name-header_functions"),
+                            choices = c("hs", "mm")),
 
                 fileInput("file1_rds.file",
-                          "Choose .rds files from merging",
+                          p("Choose .rds files from merging",class = "name-header_functions"),
                           multiple = TRUE,
                           accept = c("rds", ".rds")
                 ),
@@ -1485,9 +1449,8 @@ runSTEGO <- function(){
                   )),
 
                 checkboxInput("include_additional_genes",p("Add additional genes?",class = "name-header2"),value = F),
-
                 fileInput("file_user_genes",
-                          "Choose .csv files that has required genes",
+                          p("Choose .csv files that has required genes",class = "name-header_functions"),
                           multiple = F,
                           accept = c("csv", ".csv","comma")
                 ),
@@ -1497,11 +1460,12 @@ runSTEGO <- function(){
               ),
               conditionalPanel(
                 condition = "input.Merging_and_batching != 'Merging_Harmony'",
-                selectInput("Seruat_version_merge", "Seurat Version", choices = c("V4", "V5"), selected = "V5"),
-                selectInput("sample.type.source", "Species", choices = ""),
-
+                selectInput("Seruat_version_merge",p("Seurat Version",class = "name-header_functions"),
+                            choices = c("V4", "V5"), selected = "V5"),
+                selectInput("sample.type.source", p("Species",class = "name-header_functions"),
+                            choices = ""),
                 fileInput("file1_rds.Merged_data_for_harmony",
-                          "Upload .rds file for Batch correction with Harmony",
+                          p("Upload .rds file for Batch correction with Harmony",class = "name-header_functions"),
                           multiple = F,
                           accept = c(".rds", "rds")
                 ),
@@ -1525,9 +1489,6 @@ runSTEGO <- function(){
                                condition = "input.different_tech == true",
                                verbatimTextOutput("testing_mult_same"),
                              ),
-
-
-
                            ),
                            tabPanel(
                              "merging",
@@ -1536,20 +1497,13 @@ runSTEGO <- function(){
                            ),
                          ),
                 ),
-
                 tabPanel("Batch correction",
                          tabsetPanel(
-
-
                            tabPanel(
                              "Variable data",
                              div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
-                             # verbatimTextOutput("Scaling_check_output"),
                              verbatimTextOutput("testing_mult3"),
                              actionButton("run_var", "Run VariableFeatures"),
-
-
-
                              div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
                              verbatimTextOutput("var_harmony_verbrose")
                            ),
@@ -1580,8 +1534,8 @@ runSTEGO <- function(){
                            tabPanel(
                              "Dimentional reduction",
                              fluidRow(
-                               column(3, numericInput("dimension_Merged", "Max number of dimensions", value = 30)),
-                               column(6, numericInput("res_merged", "Resolution of clusters", value = 0.5)),
+                               column(3, numericInput("dimension_Merged", p("Max number of dimensions",class = "name-header_functions"), value = 30)),
+                               column(6, numericInput("res_merged",p("Resolution of clusters",class = "name-header_functions"), value = 0.5)),
                              ),
                              actionButton("run_reduction_harmony", "Run Dimentional reduction"),
                              div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
@@ -1592,18 +1546,19 @@ runSTEGO <- function(){
                              div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
                              plotOutput("create_UMAP_merged", height = "600px"),
                              fluidRow(
-                               column(1, numericInput("width_sc_merged", "Width of PDF", value = 10)),
-                               column(1, numericInput("height_sc_merged", "Height of PDF", value = 8)),
-                               column(2, style = "margin-top: 25px;", downloadButton("downloadPlot_sc_merged", "Download Network PDF")),
-                               column(2, numericInput("width_png_sc_merged", "Width of PNG", value = 1200)),
-                               column(2, numericInput("height_png_sc_merged", "Height of PNG", value = 1000)),
-                               column(2, numericInput("resolution_PNG_sc_merged", "Resolution of PNG", value = 144)),
-                               column(2, style = "margin-top: 25px;", downloadButton("downloadPlotPNG_sc_merged", "Download Network PNG")),
+                               column(2, numericInput("width_sc_merged",p("Width (PDF)",class = "name-header_functions"), value = 10)),
+                               column(2, numericInput("height_sc_merged",p("Height (PDF)",class = "name-header_functions"), value = 8)),
+                               column(1, style = "margin-top: 20px;", downloadButton("downloadPlot_sc_merged", "Download Network PDF")),
+                               column(2, numericInput("width_png_sc_merged",p("Width (PNG)",class = "name-header_functions"), value = 1200)),
+                               column(2, numericInput("height_png_sc_merged",p("Height (PNG)",class = "name-header_functions"), value = 1000)),
+                               column(2, numericInput("resolution_PNG_sc_merged",p("Resolution (PNG)",class = "name-header_functions"), value = 144)),
+                               column(1, style = "margin-top: 20px;", downloadButton("downloadPlotPNG_sc_merged", "Download Network PNG")),
                              ),
                            ),
                          )
                 )
-              ))
+              )
+            )
           )
         ),
 
@@ -1618,16 +1573,18 @@ runSTEGO <- function(){
             sidebarPanel(
               id = "tPanel4", style = "overflow-y:scroll; max-height: 800px; position:relative;", width = 3,
               # uiOutput("Detect_version"),
-              div(class = "name-BD",textInput("project_name3", h4("Name of Project", class = "name-header2"), value = "")),
-              selectInput("Data_types", "Source", choices = c("10x_HS", "BD_HS.Immune.Panel", "BD_HS.Full.Panel", "10x_MM", "BD_MM_Full.Panel", "BD_MM_Immune.Panel", "TCR-seq")),
-              selectInput("sample.type.source.markers", "Species", choices = ""),
+              div(class = "name-BD",textInput("project_name3", p("Name of Project",class = "name-header_functions"), value = "")),
+              selectInput("Data_types",p("Source",class = "name-header_functions"),
+                          choices = c("10x_HS", "BD_HS.Immune.Panel", "BD_HS.Full.Panel", "10x_MM", "BD_MM_Full.Panel", "BD_MM_Immune.Panel", "TCR-seq")),
+              selectInput("sample.type.source.markers",p("Species",class = "name-header_functions"),
+                          choices = ""),
               fileInput("file1_rds.file2",
-                        "Choose merged or single .rds files from directory",
+                        p("Choose merged or single .rds files from directory",class = "name-header_functions"),
                         multiple = TRUE,
                         accept = c(".rds", "rds")
               ),
-
-              selectInput("Require_custom_geneset", "Require custom genes?", choices = c("no", "yes")),
+              selectInput("Require_custom_geneset",p("Require custom genes?",class = "name-header_functions"),
+                          choices = c("no", "yes")),
               uiOutput("scGate_cutoffs"),
               downloadButton("downloaddf_SeruatObj_annotated", "Download Annotated Seurat"),
             ),
@@ -1641,34 +1598,32 @@ runSTEGO <- function(){
                 ),
                 tabPanel(
                   "scGATE",
-                  selectInput("reduction_anno", "Reduction to use", choices = c("calculate", "pca", "umap", "harmony"), selected = "harmony"),
-
-
+                  selectInput("reduction_anno",p("Reduction to use",class = "name-header_functions"),
+                              choices = c("calculate", "pca", "umap", "harmony"), selected = "harmony"),
                   # custom annotations databases
                   conditionalPanel(
                     condition = "input.Require_custom_geneset == 'yes'",
                     fluidRow(
                       column(2, checkboxInput("GeneSet1_scGate", p("GeneSet1", class = "name-header2"), value = F)),
-                      column(2, textInput("geneset1_name", "Name", value = "GeneSet1")),
+                      column(2, textInput("geneset1_name",p("Name",class = "name-header_functions"), value = "GeneSet1")),
                       column(2, checkboxInput("GeneSet2_scGate", p("GeneSet2", class = "name-header2"), value = F)),
-                      column(2, textInput("geneset2_name", "Name", value = "GeneSet2")),
+                      column(2, textInput("geneset2_name",p("Name",class = "name-header_functions"), value = "GeneSet2")),
                       column(2, checkboxInput("GeneSet3_scGate", p("GeneSet3", class = "name-header2"), value = F)),
-                      column(2, textInput("geneset3_name", "Name", value = "GeneSet3")),
+                      column(2, textInput("geneset3_name",p("Name",class = "name-header_functions"), value = "GeneSet3")),
                       column(2, checkboxInput("GeneSet4_scGate", p("GeneSet4", class = "name-header2"), value = F)),
-                      column(2, textInput("geneset4_name", "Name", value = "GeneSet4")),
+                      column(2, textInput("geneset4_name",p("Name",class = "name-header_functions"), value = "GeneSet4")),
                       column(2, checkboxInput("GeneSet5_scGate", p("GeneSet5", class = "name-header2"), value = F)),
-                      column(2, textInput("geneset5_name", "Name", value = "GeneSet5")),
+                      column(2, textInput("geneset5_name",p("Name",class = "name-header_functions"), value = "GeneSet5")),
                       column(2, checkboxInput("GeneSet6_scGate", p("GeneSet6", class = "name-header2"), value = F)),
-                      column(2, textInput("geneset6_name", "Name", value = "GeneSet6")),
+                      column(2, textInput("geneset6_name",p("Name",class = "name-header_functions"), value = "GeneSet6")),
                       column(2, checkboxInput("GeneSet7_scGate", p("GeneSet7", class = "name-header2"), value = F)),
-                      column(2, textInput("geneset7_name", "Name", value = "GeneSet7")),
+                      column(2, textInput("geneset7_name",p("Name",class = "name-header_functions"), value = "GeneSet7")),
                       column(2, checkboxInput("GeneSet8_scGate", p("GeneSet8", class = "name-header2"), value = F)),
-                      column(2, textInput("geneset8_name", "Name", value = "GeneSet8")),
+                      column(2, textInput("geneset8_name",p("Name",class = "name-header_functions"), value = "GeneSet8")),
                       column(2, checkboxInput("GeneSet9_scGate", p("GeneSet9", class = "name-header2"), value = F)),
-                      column(2, textInput("geneset9_name", "Name", value = "GeneSet9")),
+                      column(2, textInput("geneset9_name",p("Name",class = "name-header_functions"), value = "GeneSet9")),
                     )
                   ),
-
 
                   # human 10x annotations
                   conditionalPanel(
@@ -1693,14 +1648,14 @@ runSTEGO <- function(){
                     "input.Data_types == 'BD_MM_Full.Panel' || input.Data_types =='10x_MM'",
                     h5("Under development"),
                     div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
-                    h6("Curated from Sharland lab"),
+                    p("Curated from Sharland lab",class = "name-header5"),
                     fluidRow(
                       column(3, checkboxInput("BDrhapsody_scGATE.MM.Tcell", p("Major T cell popualtions", class = "name-header2"), value = F)),
                       column(3, checkboxInput("BDrhapsody_scGATE.MM.Memory", p("Memory", class = "name-header2"), value = F)),
                       column(3, checkboxInput("BDrhapsody_scGATE.MM.signatures",p("signatures", class = "name-header2"), value = F)),
                       column(3, checkboxInput("BDrhapsody_scGATE.MM.Innate.NK", p("Innate & NK", class = "name-header2"), value = F)),
                     ),
-                    h6("From the human BD Rhapsody searches"),
+                    p("From the human BD Rhapsody searches",class = "name-header5"),
                     fluidRow(
                       column(3, checkboxInput("BDrhapsody_scGATE.MM.TNF.IFNg", p("TNF.IFNg", class = "name-header2"), value = F)),
                       column(3, checkboxInput("BDrhapsody_scGATE.MM.subtypes", p("Subtypes", class = "name-header2"), value = F)),
@@ -1794,90 +1749,34 @@ runSTEGO <- function(){
                 # display metadata -----
                 tabPanel(
                   "Feature plot",
-                  #   fluidRow(
-                  #     column(3, numericInput("min.ptc.sc", "minimum point", value = 0.25)),
-                  #     column(3, numericInput("logfc.ptc.sc", "Log fold change", value = 0.25)),
-                  #     column(3, selectInput("normalN", "Type of Differnetial expression",
-                  #       choices = c("wilcox", "bimod", "roc", "t", "negbinom", "poisson", "LR", "MAST", "DESeq2")
-                  #     )),
-                  #     column(3, style = "margin-top: 25px;", actionButton("run_differental.exp", "run differental expression"), )
-                  # ),
-                  #   fluidRow(
-                  #     column(4, selectInput("multiple_group_sc", "Include group comparison", choices = c("no", "yes"))),
-                  #     column(4, selectInput("meta_data_sc_clust", "Cluster by", choices = "")),
-                  #     column(4, selectInput("meta_data_sc_", "Add group", choices = "")),
-                  #
-                  # ),
-                  # tabsetPanel(
-                  # id = "Panel_DEX",
-                  # Cluster table -----
-                  # tabPanel("Checking files",
-                  #          div(DT::DTOutput("list_of_genes")),
-                  #
-                  #          # verbatimTextOutput("checking_files_markers_featurePlot_sc"),
-                  #          ),
-                  # tabPanel(
+
                   p("   "),
                   actionButton("run_string.data3", "View Feature plot"),
                   fluidRow(column(12, selectInput("string.data3", "column names for summary", "", multiple = T, width = "1200px"))),
                   fluidRow(
                     column(2, checkboxInput("label_is_true_features", p("Add plot lables", class = "name-header2"), value = T)),
-                    column(2, selectInput("norm_expression_for_all", "Set Maximum", choices = c("no", "yes"))),
-                    column(2, numericInput("max_norm_FP", "Set maximum scale value", value = 10, step = 1, min = 1)),
-                    column(2, colourInput("lower_col_FP", "Min (Colour)", value = "grey90")),
-                    column(2, colourInput("upper_col_FP", "Max (colour)", value = "Darkblue"))
+                    column(2, selectInput("norm_expression_for_all",p("Set Maximum",class = "name-header_functions"), choices = c("no", "yes"))),
+                    column(2, numericInput("max_norm_FP",p("Set maximum scale value",class = "name-header_functions"), value = 10, step = 1, min = 1)),
+                    column(2, colourInput("lower_col_FP",p("Min (Colour)",class = "name-header_functions"), value = "grey90")),
+                    column(2, colourInput("upper_col_FP",p("Max (colour)",class = "name-header_functions"), value = "Darkblue"))
                   ),
                   plotOutput("markers_featurePlot_sc", height = "600px"),
                   fluidRow(
-                    column(3, numericInput("width_markers_featurePlot_sc", "Width of PDF", value = 10)),
-                    column(3, numericInput("height_markers_featurePlot_sc", "Height of PDF", value = 8)),
+                    column(3, numericInput("width_markers_featurePlot_sc",p("Width (PDF)",class = "name-header_functions"), value = 10)),
+                    column(3, numericInput("height_markers_featurePlot_sc",p("Height (PDF)",class = "name-header_functions"), value = 8)),
                     column(3),
-                    column(3, style = "margin-top: 25px;", downloadButton("downloadPlot_markers_featurePlot_sc", "Download PDF"))
+                    column(3, style = "margin-top: 25px;", downloadButton("downloadPlot_markers_featurePlot_sc", "PDF"))
                   ),
                   fluidRow(
-                    column(3, numericInput("width_png_markers_featurePlot_sc", "Width of PNG", value = 1200)),
-                    column(3, numericInput("height_png_markers_featurePlot_sc", "Height of PNG", value = 1000)),
-                    column(3, numericInput("resolution_PNG_markers_featurePlot_sc", "Resolution of PNG", value = 144)),
-                    column(3, style = "margin-top: 25px;", downloadButton("downloadPlotPNG_markers_featurePlot_sc", "Download PNG"))
+                    column(3, numericInput("width_png_markers_featurePlot_sc",p("Width (PNG)",class = "name-header_functions"), value = 1200)),
+                    column(3, numericInput("height_png_markers_featurePlot_sc",p("Height (PNG)",class = "name-header_functions"), value = 1000)),
+                    column(3, numericInput("resolution_PNG_markers_featurePlot_sc",p("Resolution (PNG)",class = "name-header_functions"), value = 144)),
+                    column(3, style = "margin-top: 25px;", downloadButton("downloadPlotPNG_markers_featurePlot_sc", "PNG"))
                   )
-                  # ),
-                  # differential expression within clusters ----
-                  # tabPanel("Treatment differences within clusters",
-                  #   value = 55,
-                  #   actionButton("run_update_clust", "Update comparisons"),
-                  #   fluidRow(
-                  #     column(4, selectInput("unique.Idents1", "comaprison 1", choices = "")),
-                  #     column(4, selectInput("unique.Idents2", "comaprison 2", choices = "")),
-                  #   ),
-                  #   tabsetPanel(
-                  #     tabPanel(
-                  #       "Table",
-                  #       div(DT::DTOutput("DEx_table_comparison")),
-                  #       downloadButton("downloaddf_DEx_sc", "Download Table (.csv)"),
-                  #       downloadButton("downloaddf_DEx_sc_ggVolcanoR", "Download ggVolcanoR compatible table (.csv)")
-                  #     ),
-                  #     tabPanel(
-                  #       "Plot",
-                  #       plotOutput("volc_plot_cluster", height = "600px")
-                  #     )
-                  #   ),
-                  # ),
-                  # tabPanel("Cluster differences (All markers)",
-                  #   value = 5,
-                  #   div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
-                  #   div(DT::DTOutput("DEx_table_clusters")),
-                  #   downloadButton("downloaddf_DEx_table_clusters", "Download Table (.csv)")
-                  # ),
-                  # )
                 ),
-
                 # meta data table ------
                 tabPanel(
                   "Meta data table",
-                  fluidRow(
-                    # column(3,checkboxInput("add.kmeans","Add K-means classification", value = F)),
-                    # column(3,checkboxInput("add.scGATE","Add scGATE classifications", value = T))
-                  ),
                   div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
                   div(DT::DTOutput("DEx_table_TcellClass_scGATE")),
                 )
@@ -1892,13 +1791,13 @@ runSTEGO <- function(){
           sidebarLayout(
             sidebarPanel(
               id = "tPanelSamps", style = "max-height: 800px; position:relative;", width = 3,
-              div(class = "name-BD",textInput("project_name4", h4("Name of Project", class = "name-header2"), value = "")),
+              div(class = "name-BD",textInput("project_name4", p("Name of Project", class = "name-header5"), value = "")),
               fileInput("file1_rds.fileSampsRemove",
-                        "Upload .rds file",
+                        p("Upload .rds file",class = "name-header_functions"),
                         multiple = F,
                         accept = c(".rds", "rds")
               ),
-              selectInput("Samp_col_SampToRemove", "Column name", choices = ""),
+              selectInput("Samp_col_SampToRemove",p("Column name",class = "name-header_functions"), choices = ""),
               downloadButton("downloaddf_SeruatObj_annotated_SampToKeep", "Download .rds"),
             ),
             mainPanel(
@@ -1907,14 +1806,15 @@ runSTEGO <- function(){
                 tabPanel(
                   "Remove Samps",
                   div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
-                  h5("Before Samples are removed"),
+                  p("Before Samples are removed",class = "name-header5"),
                   actionButton("run_remove_samps", "Remove samples"),
                   verbatimTextOutput("Preliminary_samp_to_remove"),
-                  # selectInput("DownVColumn", "Chose subset type:", choices = c("Meta_data", "Down_sampling")),
-                  numericInput("downsamp_limit", "Down sampling limit", value = 1000),
+                  numericInput("downsamp_limit",p("Down sampling limit",class = "name-header_functions"),
+                               value = 1000),
                   div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
-                  selectInput("ID_Column_factor_SampToRemove", "Order of graph", choices = "", multiple = T, width = "1400px"),
-                  h5("After Samples are removed"),
+                  selectInput("ID_Column_factor_SampToRemove",p("Order of graph",class = "name-header_functions"),
+                              choices = "", multiple = T, width = "1400px"),
+                  p("After Samples are removed",class = "name-header_functions"),
                   verbatimTextOutput("Filtered_samp_to_remove"),
                 ),
               )
@@ -1928,9 +1828,10 @@ runSTEGO <- function(){
                    sidebarPanel(
                      id = "tPanelSamps", style = "max-height: 800px; position:relative;", width = 3,
                      div(class = "name-BD",textInput("project_name_remove", h4("Name of Project", class = "name-header2"), value = "")),
-                     selectInput("sample_name_column_reformatting","Sample_Name column in meta-data",""),
+                     selectInput("sample_name_column_reformatting",p("Sample_Name column in meta-data",class = "name-header_functions"),
+                                 ""),
                      fileInput("file1_rds.reformatting_md",
-                               "Upload .rds file",
+                               p("Upload .rds file",class = "name-header_functions"),
                                multiple = F,
                                accept = c(".rds", "rds")
                      ),
@@ -1943,34 +1844,24 @@ runSTEGO <- function(){
                        tabPanel(
                          "Reformatting",
                          fluidRow(
-                           column(3,selectInput("TCR_alpha_gamma_cdr3_reformatting","Alpha/gamma vj_gene","")),
-                           column(3,selectInput("TCR_alpha_gamma_cdr3_reformatting_ag_cd3","Alpha/gamma cdr3","")),
-                           column(3,selectInput("TCR_alpha_gamma_cdr3_reformatting2","Beta/delta vdj_gene","")),
-                           column(3,selectInput("TCR_alpha_gamma_cdr3_reformatting_bd_cd3","Beta/delta cdr3","")),
+                           column(3,selectInput("TCR_alpha_gamma_cdr3_reformatting",p("Alpha/gamma vj_gene",class = "name-header_functions"),"")),
+                           column(3,selectInput("TCR_alpha_gamma_cdr3_reformatting_ag_cd3",p("Alpha/gamma cdr3",class = "name-header_functions"),"")),
+                           column(3,selectInput("TCR_alpha_gamma_cdr3_reformatting2",p("Beta/delta vdj_gene",class = "name-header_functions"),"")),
+                           column(3,selectInput("TCR_alpha_gamma_cdr3_reformatting_bd_cd3",p("Beta/delta cdr3",class = "name-header_functions"),"")),
                          ),
                          column(12, div(DT::DTOutput("DT_reformatting_before",height = "200px"))),
                          column(12, div(DT::DTOutput("DT_reformatting_after",height = "200px"))),
-
-
                        ),
-
                      )
                    )
                  )
-
-
-
-
         ),
-
-        # tabPanel("STEP3. Markdown"),
       ),
 
       ###################
       # 4. Analysis (UI side panel) ---------
       tabPanel(
         "STEP 4. Analysis", id = "step4_analysis",
-
         # side bar layout ------
         sidebarLayout(
           sidebarPanel(
@@ -2401,7 +2292,8 @@ runSTEGO <- function(){
                        value = "up2",
                        fluidRow(
                          div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
-                         column(12, selectInput("ID_Column_factor",p("Order of graph (Selected Sample)",class = "name-header_functions"), choices = "", multiple = T, width = "1400px")),
+                         column(12, selectInput("ID_Column_factor",p("Order of graph (Selected Sample)",class = "name-header_functions"),
+                                                choices = "", multiple = T, width = "1400px")),
                        ),
 
                        tabsetPanel(
@@ -2442,13 +2334,13 @@ runSTEGO <- function(){
                                                column(9, plotOutput("UMAP_all_classification2", height = "600px"))
                                              ),
                                              fluidRow(
-                                               column(1, numericInput("width_UMAP_all_classification",p("Width of PDF",class = "name-header_functions"), value = 10)),
-                                               column(1, numericInput("height_UMAP_all_classification",p("Height of PDF",class = "name-header_functions"), value = 8)),
-                                               column(2, style = "margin-top: 25px;", downloadButton("downloadPlot_UMAP_all_classification", "Download PDF")),
-                                               column(2, numericInput("width_png_UMAP_all_classification", p("Width of PNG",class = "name-header_functions"), value = 1200)),
-                                               column(2, numericInput("height_png_UMAP_all_classification", p("Height of PNG",class = "name-header_functions"), value = 1000)),
-                                               column(2, numericInput("resolution_PNG_UMAP_all_classification", p("Resolution of PNG",class = "name-header_functions"), value = 144)),
-                                               column(2, style = "margin-top: 25px;", downloadButton("downloadPlotPNG_UMAP_all_classification", "Download PNG"))
+                                               column(2, numericInput("width_UMAP_all_classification",p("Width (PDF)",class = "name-header_functions"), value = 10)),
+                                               column(2, numericInput("height_UMAP_all_classification",p("Height (PDF)",class = "name-header_functions"), value = 8)),
+                                               column(1, style = "margin-top: 20px;", downloadButton("downloadPlot_UMAP_all_classification", "PDF")),
+                                               column(2, numericInput("width_png_UMAP_all_classification", p("Width (PNG)",class = "name-header_functions"), value = 1200)),
+                                               column(2, numericInput("height_png_UMAP_all_classification", p("Height (PNG)",class = "name-header_functions"), value = 1000)),
+                                               column(2, numericInput("resolution_PNG_UMAP_all_classification", p("Resolution (PNG)",class = "name-header_functions"), value = 144)),
+                                               column(1, style = "margin-top: 20px;", downloadButton("downloadPlotPNG_UMAP_all_classification", "PNG"))
                                              ),
                                     ),
                                     tabPanel("Summary chart",
@@ -2458,9 +2350,6 @@ runSTEGO <- function(){
                                                column(3, selectInput("chart_overview",p("Chart type",class = "name-header_functions"), choices = c("pie","bar"))),
 
                                              ),
-
-
-
                                              fluidRow(
                                                column(
                                                  3,
@@ -2476,13 +2365,13 @@ runSTEGO <- function(){
                                              # ),
 
                                              fluidRow(
-                                               column(1, numericInput("width_Classification_clonotype_pie", "Width of PDF", value = 10)),
-                                               column(1, numericInput("height_Classification_clonotype_pie", "Height of PDF", value = 8)),
-                                               column(2, style = "margin-top: 25px;", downloadButton("downloadPlot_Classification_clonotype_pie", "Download PDF")),
-                                               column(2, numericInput("width_png_Classification_clonotype_pie", "Width of PNG", value = 1200)),
-                                               column(2, numericInput("height_png_Classification_clonotype_pie", "Height of PNG", value = 1000)),
-                                               column(2, numericInput("resolution_PNG_Classification_clonotype_pie", "Resolution of PNG", value = 144)),
-                                               column(2, style = "margin-top: 25px;", downloadButton("downloadPlotPNG_Classification_clonotype_pie", "Download PNG"))
+                                               column(2, numericInput("width_Classification_clonotype_pie",p("Width (PDF)",class = "name-header_functions"), value = 10)),
+                                               column(2, numericInput("height_Classification_clonotype_pie",p("Height (PDF)",class = "name-header_functions"), value = 8)),
+                                               column(1, style = "margin-top: 20px;", downloadButton("downloadPlot_Classification_clonotype_pie", "PDF")),
+                                               column(2, numericInput("width_png_Classification_clonotype_pie",p("Width (PNG)",class = "name-header_functions"), value = 1200)),
+                                               column(2, numericInput("height_png_Classification_clonotype_pie",p("Height (PNG)",class = "name-header_functions"), value = 1000)),
+                                               column(2, numericInput("resolution_PNG_Classification_clonotype_pie",p("Resolution (PNG)",class = "name-header_functions"), value = 144)),
+                                               column(1, style = "margin-top: 20px;", downloadButton("downloadPlotPNG_Classification_clonotype_pie", "PNG"))
                                              ),
                                     ),
                                   ),
@@ -2497,7 +2386,8 @@ runSTEGO <- function(){
                                tabsetPanel(
                                  tabPanel(
                                    "Summary Table",
-                                   selectInput("other_selected_summary_columns","Add other summary columns", multiple = T, "",width = "1200px"),
+                                   selectInput("other_selected_summary_columns",p("Add other summary columns",class = "name-header_functions"),
+                                               multiple = T, "",width = "1200px"),
                                    div(DT::DTOutput("Summary_TCR_tb")),
                                    downloadButton("downloaddf_Summary_TCR_tb", "Download table")
                                  ),
@@ -2511,13 +2401,13 @@ runSTEGO <- function(){
                                    "Upset Plot",
                                    plotOutput("Upset_plot_overlap"),
                                    fluidRow(
-                                     column(1, numericInput("width_Upset_plot_overlap", "Width of PDF", value = 10)),
-                                     column(1, numericInput("height_Upset_plot_overlap", "Height of PDF", value = 8)),
-                                     column(2, style = "margin-top: 25px;", downloadButton("downloadPlot_Upset_plot_overlap", "Download PDF")),
-                                     column(2, numericInput("width_png_Upset_plot_overlap", "Width of PNG", value = 1200)),
-                                     column(2, numericInput("height_png_Upset_plot_overlap", "Height of PNG", value = 1000)),
-                                     column(2, numericInput("resolution_PNG_Upset_plot_overlap", "Resolution of PNG", value = 144)),
-                                     column(2, style = "margin-top: 25px;", downloadButton("downloadPlotPNG_Upset_plot_overlap", "Download PNG"))
+                                     column(2, numericInput("width_Upset_plot_overlap",p("Width (PDF)",class = "name-header_functions"), value = 10)),
+                                     column(2, numericInput("height_Upset_plot_overlap",p("Height (PDF)",class = "name-header_functions"), value = 8)),
+                                     column(1, style = "margin-top: 20px;", downloadButton("downloadPlot_Upset_plot_overlap", "PDF")),
+                                     column(2, numericInput("width_png_Upset_plot_overlap",p("Width (PNG)",class = "name-header_functions"), value = 1200)),
+                                     column(2, numericInput("height_png_Upset_plot_overlap",p("Height (PNG)",class = "name-header_functions"), value = 1000)),
+                                     column(2, numericInput("resolution_PNG_Upset_plot_overlap",p("Resolution (PNG)",class = "name-header_functions"), value = 144)),
+                                     column(1, style = "margin-top: 20px;", downloadButton("downloadPlotPNG_Upset_plot_overlap", "PNG"))
                                    ),
                                  ),
                                )
@@ -2532,17 +2422,17 @@ runSTEGO <- function(){
                                         conditionalPanel(
                                           condition = "input.is_a_time_series",
 
-                                          column(2,selectInput("separator_input", "Select Separators:",
+                                          column(2,selectInput("separator_input", p("Select Separators:",class = "name-header_functions"),
                                                                choices = c("_" = "_.*", "-" = "-.*", "." = "\\..*", "|" = "\\|.*", "#" = "#*", "^" = "\\^*", "&" = "&.*"),
                                                                selected = "-",
                                                                multiple = F),),
-                                          column(2,selectInput("comparison_operator", "Choose comparison operator:",
+                                          column(2,selectInput("comparison_operator",p("Choose comparison operator:",class = "name-header_functions"),
                                                                choices = c("Equal to" = "==", "Greater than or equal to" = ">="),
                                                                selected = c("Greater than or equal to" = ">=")),),
-                                          column(2,numericInput("cutoff_upset", "Enter cutoff value:", value = 2),)
+                                          column(2,numericInput("cutoff_upset",p("Enter cutoff value:",class = "name-header_functions"), value = 2),)
                                         ),
-                                        column(2,numericInput("max_number_lines_to","Maximum to display",value = 10)),
-                                        column(2,numericInput("Total_count_Cutoff","Min count threshold",value = 1)),
+                                        column(2,numericInput("max_number_lines_to",p("Maximum to display",class = "name-header_functions"),value = 10)),
+                                        column(2,numericInput("Total_count_Cutoff",p("Min count threshold",class = "name-header_functions"),value = 1)),
 
 
                                       ),
@@ -2551,7 +2441,7 @@ runSTEGO <- function(){
 
                                         column(2,conditionalPanel(
                                           condition = "input.is_a_time_series",
-                                          selectizeInput("Group_for_line_graph","Display multi-sample clones for: ",""))),
+                                          selectizeInput("Group_for_line_graph",p("Display multi-sample clones for: ",class = "name-header_functions"),""))),
                                       ),
 
                                       tabsetPanel(
@@ -2563,11 +2453,11 @@ runSTEGO <- function(){
                                                    conditionalPanel(
                                                      condition = "input.is_a_time_series",
                                                      # column(2,sliderInput("number_of_conditions","Number of conditions",value = 2, min = 2 , max = 3)),
-                                                     column(2,selectInput("separator_input2", "Select Separators:",
+                                                     column(2,selectInput("separator_input2",p("Select Separators:",class = "name-header_functions"),
                                                                           choices = c("_" = "_", "-" = "-", "." = "\\.", "|" = "\\|", "#" = "#", "^" = "\\^", "&" = "&"),
                                                                           selected = "-",
                                                                           multiple = T)),
-                                                     column(2,selectInput("display_all_samps_line","Display all?",choices = c("no","yes"))),
+                                                     # column(2,selectInput("display_all_samps_line","Display all?",choices = c("no","yes"))),
                                                      column(3,
                                                             conditionalPanel(
                                                               condition = "input.number_of_conditions == 3",textInput("shape_legend_name","Shape legend name",value = ""))
@@ -2575,28 +2465,28 @@ runSTEGO <- function(){
                                                    ),
                                                  ),
 
-                                                 conditionalPanel(
-                                                   condition = "input.display_all_samps_line == 'no'",
+                                                 # conditionalPanel(
+                                                 #   condition = "input.display_all_samps_line == 'no'",
 
-                                                   plotOutput("line_graph_output"),
+                                                 plotOutput("line_graph_output"),
 
-                                                 ),
+                                                 # ),
 
-                                                 conditionalPanel(
-                                                   condition = "input.display_all_samps_line == 'yes'",
-
-                                                   plotOutput("line_graph_all_output"),
-
-                                                 ),
+                                                 # conditionalPanel(
+                                                 #   condition = "input.display_all_samps_line == 'yes'",
+                                                 #
+                                                 #   plotOutput("line_graph_all_output"),
+                                                 #
+                                                 # ),
 
                                                  fluidRow(
-                                                   column(1, numericInput("width_line_graph_output", "Width of PDF", value = 10)),
-                                                   column(1, numericInput("height_line_graph_output", "Height of PDF", value = 8)),
-                                                   column(2, style = "margin-top: 25px;", downloadButton("downloadPlot_line_graph_output", "Download PDF")),
-                                                   column(2, numericInput("width_png_line_graph_output", "Width of PNG", value = 2400)),
-                                                   column(2, numericInput("height_png_line_graph_output", "Height of PNG", value = 1000)),
-                                                   column(2, numericInput("resolution_PNG_line_graph_output", "Resolution of PNG", value = 144)),
-                                                   column(2, style = "margin-top: 25px;", downloadButton("downloadPlotPNG_line_graph_output", "Download PNG"))
+                                                   column(2, numericInput("width_line_graph_output",p("Width (PDF)",class = "name-header_functions"), value = 10)),
+                                                   column(2, numericInput("height_line_graph_output",p("Height (PDF)",class = "name-header_functions"), value = 8)),
+                                                   column(1, style = "margin-top: 20px;", downloadButton("downloadPlot_line_graph_output", "PDF")),
+                                                   column(2, numericInput("width_png_line_graph_output",p("Width (PNG)",class = "name-header_functions"), value = 2400)),
+                                                   column(2, numericInput("height_png_line_graph_output",p("Height (PNG)",class = "name-header_functions"), value = 1000)),
+                                                   column(2, numericInput("resolution_PNG_line_graph_output",p("Resolution (PNG)",class = "name-header_functions"), value = 144)),
+                                                   column(1, style = "margin-top: 20px;", downloadButton("downloadPlotPNG_line_graph_output", "PNG"))
                                                  ),
                                         )
                                       ),
@@ -2636,13 +2526,13 @@ runSTEGO <- function(){
                                         ),
                                       ),
                                       fluidRow(
-                                        column(1, numericInput("width_clonality.bar.graph", "Width of PDF", value = 10)),
-                                        column(1, numericInput("height_clonality.bar.graph", "Height of PDF", value = 8)),
-                                        column(2, style = "margin-top: 25px;", downloadButton("downloadPlot_clonaity.bar.graph", "Download PDF")),
-                                        column(2, numericInput("width_png_clonality.bar.graph", "Width of PNG", value = 1200)),
-                                        column(2, numericInput("height_png_clonality.bar.graph", "Height of PNG", value = 1000)),
-                                        column(2, numericInput("resolution_PNG_clonality.bar.graph", "Resolution of PNG", value = 144)),
-                                        column(2, style = "margin-top: 25px;", downloadButton("downloadPlotPNG_clonaity.bar.graph", "Download PNG"))
+                                        column(2, numericInput("width_clonality.bar.graph",p("Width (PDF)",class = "name-header_functions"), value = 10)),
+                                        column(2, numericInput("height_clonality.bar.graph",p("Height (PDF)",class = "name-header_functions"), value = 8)),
+                                        column(1, style = "margin-top: 20px;", downloadButton("downloadPlot_clonaity.bar.graph", "PDF")),
+                                        column(2, numericInput("width_png_clonality.bar.graph",p("Width (PNG)",class = "name-header_functions"), value = 1200)),
+                                        column(2, numericInput("height_png_clonality.bar.graph",p("Height (PNG)",class = "name-header_functions"), value = 1000)),
+                                        column(2, numericInput("resolution_PNG_clonality.bar.graph",p("Resolution (PNG)",class = "name-header_functions"), value = 144)),
+                                        column(1, style = "margin-top: 20px;", downloadButton("downloadPlotPNG_clonaity.bar.graph", "PNG"))
                                       ),
                              ),
                              # UMAP clonality -> TCR -----
@@ -2657,7 +2547,7 @@ runSTEGO <- function(){
                                           "UMAP",
                                           div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
                                           fluidRow(
-                                            column(3, selectInput("filter_umap_expand", "Filter plot", choices = c("no", "yes"))),
+                                            column(3, selectInput("filter_umap_expand",p("Filter plot",class = "name-header_functions"), choices = c("no", "yes"))),
                                           ),
                                           conditionalPanel(
                                             condition = "input.filter_umap_expand == 'yes'",
@@ -2681,13 +2571,13 @@ runSTEGO <- function(){
                                               column(9, plotOutput("clonality.TCR.UMAP", height = "600px"))
                                             ),
                                             fluidRow(
-                                              column(1, numericInput("width_TCR.UMAP", "Width of PDF", value = 10)),
-                                              column(1, numericInput("height_TCR.UMAP", "Height of PDF", value = 8)),
-                                              column(2, style = "margin-top: 25px;", downloadButton("downloadPlot_TCR.UMAP", "Download PDF")),
-                                              column(2, numericInput("width_png_TCR.UMAP", "Width of PNG", value = 1600)),
-                                              column(2, numericInput("height_png_TCR.UMAP", "Height of PNG", value = 1000)),
-                                              column(2, numericInput("resolution_PNG_TCR.UMAP", "Resolution of PNG", value = 144)),
-                                              column(2, style = "margin-top: 25px;", downloadButton("downloadPlotPNG_TCR.UMAP", "Download PNG"))
+                                              column(2, numericInput("width_TCR.UMAP",p("Width (PDF)",class = "name-header_functions"), value = 10)),
+                                              column(2, numericInput("height_TCR.UMAP",p("Height (PDF)",class = "name-header_functions"), value = 8)),
+                                              column(1, style = "margin-top: 20px;", downloadButton("downloadPlot_TCR.UMAP", "PDF")),
+                                              column(2, numericInput("width_png_TCR.UMAP",p("Width (PNG)",class = "name-header_functions"), value = 1600)),
+                                              column(2, numericInput("height_png_TCR.UMAP",p("Height (PNG)",class = "name-header_functions"), value = 1000)),
+                                              column(2, numericInput("resolution_PNG_TCR.UMAP",p("Resolution (PNG)",class = "name-header_functions"), value = 144)),
+                                              column(1, style = "margin-top: 20px;", downloadButton("downloadPlotPNG_TCR.UMAP", "PNG"))
                                             ),
                                           ),
                                           conditionalPanel(
@@ -2695,12 +2585,11 @@ runSTEGO <- function(){
                                             #
 
                                             fluidRow(
-                                              # column(4,selectInput("Split_by_group","Include group comparison",choices=c("no","yes"))),
-                                              column(4, selectInput("display_all_samps", "Display all sample", choices = c("yes", "no"))),
+                                              column(4, selectInput("display_all_samps",p("Display all sample",class = "name-header_functions"), choices = c("yes", "no"))),
                                             ),
                                             conditionalPanel(
                                               condition = "input.display_all_samps == 'no'",
-                                              column(8, selectInput("ID_Column_metadata", "Select to display", choices = "", multiple = T, width = "800px"))
+                                              column(8, selectInput("ID_Column_metadata",p("Select to display",class = "name-header_functions"), choices = "", multiple = T, width = "800px"))
                                             ),
                                             div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
                                             fluidRow(
@@ -2713,13 +2602,13 @@ runSTEGO <- function(){
                                               ),
                                               column(9, plotOutput("clonality.TCR.UMAP.top", height = "600px")),
                                               fluidRow(
-                                                column(1, numericInput("width_TCR.UMAP_top", "Width of PDF", value = 10)),
-                                                column(1, numericInput("height_TCR.UMAP_top", "Height of PDF", value = 8)),
-                                                column(2, style = "margin-top: 25px;", downloadButton("downloadPlot_TCR.UMAP_top", "Download PDF")),
-                                                column(2, numericInput("width_png_TCR.UMAP_top", "Width of PNG", value = 1800)),
-                                                column(2, numericInput("height_png_TCR.UMAP_top", "Height of PNG", value = 1000)),
-                                                column(2, numericInput("resolution_PNG_TCR.UMAP_top", "Resolution of PNG", value = 144)),
-                                                column(2, style = "margin-top: 25px;", downloadButton("downloadPlotPNG_TCR.UMAP_top", "Download PNG"))
+                                                column(2, numericInput("width_TCR.UMAP_top",p("Width (PDF)",class = "name-header_functions"), value = 10)),
+                                                column(2, numericInput("height_TCR.UMAP_top",p("Height (PDF)",class = "name-header_functions"), value = 8)),
+                                                column(1, style = "margin-top: 20px;", downloadButton("downloadPlot_TCR.UMAP_top", "PDF")),
+                                                column(2, numericInput("width_png_TCR.UMAP_top",p("Width (PNG)",class = "name-header_functions"), value = 1800)),
+                                                column(2, numericInput("height_png_TCR.UMAP_top",p("Height (PNG)",class = "name-header_functions"), value = 1000)),
+                                                column(2, numericInput("resolution_PNG_TCR.UMAP_top",p("Resolution (PNG)",class = "name-header_functions"), value = 144)),
+                                                column(1, style = "margin-top: 20px;", downloadButton("downloadPlotPNG_TCR.UMAP_top", "PNG"))
                                               ),
                                             ),
                                           ),
@@ -2728,12 +2617,6 @@ runSTEGO <- function(){
                              ),
                            ),
                          ),
-
-
-
-                         # tabPanel("Clonotype overlap per cluster (upset plot)",
-                         #          # add in upset plot per cluster
-                         #          )
                        )
               ),
               # end of differential expression -----
@@ -2745,7 +2628,7 @@ runSTEGO <- function(){
                        fluidRow(
                          column(
                            12,
-                           selectInput("Graph_split_order", "Order of split by:", choices = "", multiple = T, width = "1400px")
+                           selectInput("Graph_split_order",p("Order of split by:",class = "name-header_functions"), choices = "", multiple = T, width = "1400px")
                          ),
                        ),
                        # Classification to include ------
@@ -2760,23 +2643,23 @@ runSTEGO <- function(){
                                       12,
                                       conditionalPanel(
                                         condition = "input.Panel_TCRUMAP=='top_clone'",
-                                        selectInput("Selected_clonotype", "Select clonotype (ident.1):", choices = "", width = "1400px", multiple = T)
+                                        selectInput("Selected_clonotype",p("Select clonotype (ident.1):",class = "name-header_functions"),
+                                                    choices = "", width = "1400px", multiple = T)
                                       ),
                                     ),
                                   ),
-
                                   fluidRow(
                                     column(
                                       12,
                                       conditionalPanel(
                                         condition = "input.Panel_TCRUMAP=='top_clone' && input.comparison_abundance == 'Clones'",
-                                        selectInput("Selected_clonotype2", "Select clonotype (ident.2):", choices = "", width = "1400px", multiple = T)
+                                        selectInput("Selected_clonotype2",p("Select clonotype (ident.2):",class = "name-header_functions"), choices = "", width = "1400px", multiple = T)
                                       ),
                                     ),
                                   ),
                                   fluidRow(
-                                    column(6,textInput("name_clonotype_selected", "Ident.1", "", width = "600px")),
-                                    column(6,textInput("name_clonotype_selected2", "Ident.2", "", width = "600px")),
+                                    column(6,textInput("name_clonotype_selected",p("Ident.1",class = "name-header_functions"), "", width = "600px")),
+                                    column(6,textInput("name_clonotype_selected2",p("Ident.2",class = "name-header_functions"), "", width = "600px")),
                                   ),
                                   tabsetPanel(
                                     tabPanel(
@@ -2799,37 +2682,37 @@ runSTEGO <- function(){
                                         column(9, plotOutput("top_clonotype", height = "600px"))
                                       ),
                                       fluidRow(
-                                        column(1, numericInput("width_top_clonotype", "Width of PDF", value = 10)),
-                                        column(1, numericInput("height_top_clonotype", "Height of PDF", value = 8)),
-                                        column(2, style = "margin-top: 25px;", downloadButton("downloadPlot_top_clonotype", "Download PDF")),
-                                        column(2, numericInput("width_png_top_clonotype", "Width of PNG", value = 1200)),
-                                        column(2, numericInput("height_png_top_clonotype", "Height of PNG", value = 1000)),
-                                        column(2, numericInput("resolution_PNG_top_clonotype", "Resolution of PNG", value = 144)),
-                                        column(2, style = "margin-top: 25px;", downloadButton("downloadPlotPNG_top_clonotype", "Download PNG"))
+                                        column(2, numericInput("width_top_clonotype",p("Width (PDF)",class = "name-header_functions"), value = 10)),
+                                        column(2, numericInput("height_top_clonotype",p("Height (PDF)",class = "name-header_functions"), value = 8)),
+                                        column(1, style = "margin-top: 20px;", downloadButton("downloadPlot_top_clonotype", "PDF")),
+                                        column(2, numericInput("width_png_top_clonotype",p("Width (PNG)",class = "name-header_functions"), value = 1200)),
+                                        column(2, numericInput("height_png_top_clonotype",p("Height (PNG)",class = "name-header_functions"), value = 1000)),
+                                        column(2, numericInput("resolution_PNG_top_clonotype",p("Resolution (PNG)",class = "name-header_functions"), value = 144)),
+                                        column(1, style = "margin-top: 20px;", downloadButton("downloadPlotPNG_top_clonotype", "PNG"))
                                       ),
                                     ),
 
 
                                     tabPanel("heatmap",
                                              value = "TopHeat",
-                                             p("Colour by: = x-axis; Split graph by: = y-axis for this heatmap"),
+                                             p("Colour by: = x-axis; Split graph by: = y-axis for this heatmap",class = "name-header_functions"),
                                              div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
                                              plotOutput("heatmap_topclone_plot", height = "600px"),
                                              fluidRow(
-                                               column(1, numericInput("width_heatmap_topclone_plot", "Width of PDF", value = 10)),
-                                               column(1, numericInput("height_heatmap_topclone_plot", "Height of PDF", value = 8)),
-                                               column(2, style = "margin-top: 25px;", downloadButton("downloadPlot_heatmap_topclone_plot", "Download PDF")),
-                                               column(2, numericInput("width_png_heatmap_topclone_plot", "Width of PNG", value = 1200)),
-                                               column(2, numericInput("height_png_heatmap_topclone_plot", "Height of PNG", value = 1000)),
-                                               column(2, numericInput("resolution_heatmap_topclone_plot", "Resolution of PNG", value = 144)),
-                                               column(2, style = "margin-top: 25px;", downloadButton("downloadPlotPNG_heatmap_topclone_plot", "Download PNG"))
+                                               column(2, numericInput("width_heatmap_topclone_plot",p("Width (PDF)",class = "name-header_functions"), value = 10)),
+                                               column(2, numericInput("height_heatmap_topclone_plot",p("Height (PDF)",class = "name-header_functions"), value = 8)),
+                                               column(1, style = "margin-top: 20px;", downloadButton("downloadPlot_heatmap_topclone_plot", "PDF")),
+                                               column(2, numericInput("width_png_heatmap_topclone_plot",p("Width (PNG)",class = "name-header_functions"), value = 1200)),
+                                               column(2, numericInput("height_png_heatmap_topclone_plot",p("Height (PNG)",class = "name-header_functions"), value = 1000)),
+                                               column(2, numericInput("resolution_heatmap_topclone_plot",p("Resolution (PNG)",class = "name-header_functions"), value = 144)),
+                                               column(1, style = "margin-top: 20px;", downloadButton("downloadPlotPNG_heatmap_topclone_plot", "PNG"))
                                              ),
                                     ),
                                     tabPanel(
                                       "Percentage",
                                       div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
                                       fluidRow(
-                                        column(3, selectInput("Plot_type_selected", "Plot", choices = c("pie", "bar", "UMAP"))),
+                                        column(3, selectInput("Plot_type_selected",p("Type of plot:",class = "name-header_functions"), choices = c("pie", "bar", "UMAP"))),
                                       ),
                                       fluidRow(
                                         column(
@@ -2842,13 +2725,13 @@ runSTEGO <- function(){
                                         column(9, plotOutput("top_clonotype_pie", height = "600px")),
                                       ),
                                       fluidRow(
-                                        column(1, numericInput("width_top_clonotype_pie", "Width of PDF", value = 10)),
-                                        column(1, numericInput("height_top_clonotype_pie", "Height of PDF", value = 8)),
-                                        column(2, style = "margin-top: 25px;", downloadButton("downloadPlot_top_clonotype_pie", "Download PDF")),
-                                        column(2, numericInput("width_png_top_clonotype_pie", "Width of PNG", value = 1200)),
-                                        column(2, numericInput("height_png_top_clonotype_pie", "Height of PNG", value = 1000)),
-                                        column(2, numericInput("resolution_PNG_top_clonotype_pie", "Resolution of PNG", value = 144)),
-                                        column(2, style = "margin-top: 25px;", downloadButton("downloadPlotPNG_top_clonotype_pie", "Download PNG"))
+                                        column(2, numericInput("width_top_clonotype_pie",p("Width (PDF)",class = "name-header_functions"), value = 10)),
+                                        column(2, numericInput("height_top_clonotype_pie",p("Height (PDF)",class = "name-header_functions"), value = 8)),
+                                        column(1, style = "margin-top: 20px;", downloadButton("downloadPlot_top_clonotype_pie", "PDF")),
+                                        column(2, numericInput("width_png_top_clonotype_pie",p("Width (PNG)",class = "name-header_functions"), value = 1200)),
+                                        column(2, numericInput("height_png_top_clonotype_pie",p("Height (PNG)",class = "name-header_functions"), value = 1000)),
+                                        column(2, numericInput("resolution_PNG_top_clonotype_pie",p("Resolution (PNG)",class = "name-header_functions"), value = 144)),
+                                        column(1, style = "margin-top: 20px;", downloadButton("downloadPlotPNG_top_clonotype_pie", "PNG"))
                                       ),
                                     ),
                                     tabPanel(
@@ -2856,49 +2739,41 @@ runSTEGO <- function(){
                                       div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
                                       downloadButton("downloaddf_FindMarker_Top", "Download stats table"),
                                       div(DT::DTOutput("Ridge_chart_alpha_gamma_stat_comp")),
-
                                     ),
                                     tabPanel(
                                       "Dotplot",
-
                                       div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
-
-
-
                                       plotOutput("all_expression_dotplot_top", height = "400px"),
-
                                       fluidRow(
-                                        column(1, numericInput("width_all_expression_dotplot_top", "Width of PDF", value = 20)),
-                                        column(1, numericInput("height_all_expression_dotplot_top", "Height of PDF", value = 4)),
-                                        column(2, style = "margin-top: 25px;", downloadButton("downloadPlot_all_expression_dotplot_top", "Download PDF")),
-                                        column(2, numericInput("width_png_all_expression_dotplot_top", "Width of PNG", value = 2200)),
-                                        column(2, numericInput("height_png_all_expression_dotplot_top", "Height of PNG", value = 800)),
-                                        column(2, numericInput("resolution_PNG_all_expression_dotplot_top", "Resolution of PNG", value = 144)),
-                                        column(2, style = "margin-top: 25px;", downloadButton("downloadPlotPNG_all_expression_dotplot_top", "Download PNG"))
+                                        column(2, numericInput("width_all_expression_dotplot_top",p("Width (PDF)",class = "name-header_functions"), value = 20)),
+                                        column(2, numericInput("height_all_expression_dotplot_top",p("Height (PDF)",class = "name-header_functions"), value = 4)),
+                                        column(1, style = "margin-top: 20px;", downloadButton("downloadPlot_all_expression_dotplot_top", "PDF")),
+                                        column(2, numericInput("width_png_all_expression_dotplot_top",p("Width (PNG)",class = "name-header_functions"), value = 2200)),
+                                        column(2, numericInput("height_png_all_expression_dotplot_top",p("Height (PNG)",class = "name-header_functions"), value = 800)),
+                                        column(2, numericInput("resolution_PNG_all_expression_dotplot_top",p("Resolution (PNG)",class = "name-header_functions"), value = 144)),
+                                        column(1, style = "margin-top: 20px;", downloadButton("downloadPlotPNG_all_expression_dotplot_top", "PNG"))
                                       ),
                                     ),
-
-                                    # add in find marker for comparing population to other for top clonotype
 
                                     tabPanel(
                                       "Ridge/Violin plots",
                                       div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
                                       actionButton("run_string.data_Exp_top", "View plot"),
-                                      fluidRow(column(12, selectInput("string.data_Exp_top", "column names for summary", "", multiple = F, width = "1200px"))),
                                       fluidRow(
-                                        column(3, checkboxInput("restric_ex", p("Restrict to above a threshold?", class = "name-header2"), value = F)),
-                                        column(3, numericInput("Gre_ex", "Expression above:", value = 0)),
-                                        column(3, selectInput("plot_type_ridgvi", "Plot type", choices = c("Ridge (selected clonotype)", "Ridge (stats)", "Violin (selected clonotype)", "Violin (stats)"),selected = "Violin (selected clonotype)"))),
-                                      fluidRow(
-                                        column(3,numericInput("ylow","y-axis (min)","")),
-                                        column(3,numericInput("yhigh","y-axis (max)","")),
-                                        column(3,numericInput("ybreak","y-axis number breaks",value = 1))
+                                        column(3, selectInput("string.data_Exp_top",p("column names for summary",class = "name-header_functions"),
+                                                              "")),
+                                        column(3, selectInput("plot_type_ridgvi",p("Plot type:",class = "name-header_functions"),
+                                                              choices = c("Ridge (selected clonotype)", "Ridge (stats)", "Violin (selected clonotype)", "Violin (stats)"),
+                                                              selected = "Violin (selected clonotype)"))
                                       ),
 
+
+                                      fluidRow(
+                                        column(3,numericInput("ylow",p("y-axis (min)",class = "name-header_functions"),"")),
+                                        column(3,numericInput("yhigh",p("y-axis (max)",class = "name-header_functions"),"")),
+                                        column(3,numericInput("ybreak",p("y-axis number breaks",class = "name-header_functions"),value = 1))
+                                      ),
                                       div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
-
-
-
                                       fluidRow(
                                         conditionalPanel(
                                           condition = "input.plot_type_ridgvi=='Ridge (selected clonotype)' | input.plot_type_ridgvi=='Violin (selected clonotype)'",
@@ -2910,38 +2785,35 @@ runSTEGO <- function(){
                                       ),
 
                                       fluidRow(
-                                        column(1, numericInput("width_Ridge_chart_alpha_gamma_plot_out", "Width of PDF", value = 10)),
-                                        column(1, numericInput("height_Ridge_chart_alpha_gamma_plot_out", "Height of PDF", value = 8)),
-                                        column(2, style = "margin-top: 25px;", downloadButton("downloadPlot_Ridge_chart_alpha_gamma_plot_out", "Download PDF")),
-                                        column(2, numericInput("width_png_Ridge_chart_alpha_gamma_plot_out", "Width of PNG", value = 1200)),
-                                        column(2, numericInput("height_png_Ridge_chart_alpha_gamma_plot_out", "Height of PNG", value = 1000)),
-                                        column(2, numericInput("resolution_PNG_Ridge_chart_alpha_gamma_plot_out", "Resolution of PNG", value = 144)),
-                                        column(2, style = "margin-top: 25px;", downloadButton("downloadPlotPNG_Ridge_chart_alpha_gamma_plot_out", "Download PNG"))
+                                        column(2, numericInput("width_Ridge_chart_alpha_gamma_plot_out",p("Width (PDF)",class = "name-header_functions"), value = 10)),
+                                        column(2, numericInput("height_Ridge_chart_alpha_gamma_plot_out",p("Height (PDF)",class = "name-header_functions"), value = 8)),
+                                        column(1, style = "margin-top: 20px;", downloadButton("downloadPlot_Ridge_chart_alpha_gamma_plot_out", "PDF")),
+                                        column(2, numericInput("width_png_Ridge_chart_alpha_gamma_plot_out",p("Width (PNG)",class = "name-header_functions"), value = 1200)),
+                                        column(2, numericInput("height_png_Ridge_chart_alpha_gamma_plot_out",p("Height (PNG)",class = "name-header_functions"), value = 1000)),
+                                        column(2, numericInput("resolution_PNG_Ridge_chart_alpha_gamma_plot_out",p("Resolution (PNG)",class = "name-header_functions"), value = 144)),
+                                        column(1, style = "margin-top: 20px;", downloadButton("downloadPlotPNG_Ridge_chart_alpha_gamma_plot_out", "PNG"))
                                       ),
                                     ),
-
                                     tabPanel(
                                       "Over-representation",
                                       fluidRow(
-                                        column(3, numericInput("in.geneset.cutoff_top", "Min number of genes in GeneSet", value = 1, min = 0, step = 1, max = 60000)),
-                                        column(3, numericInput("p.val_cutoff_top", "p-val cut-off", value = 0.05, min = 0, max = 1)),
-                                        # column(3,numericInput("adjust_cutoff_top","BH cut-off",value = 1, min = 0, max = 1)),
+                                        column(3, numericInput("in.geneset.cutoff_top",p("Min number of genes in GeneSet",class = "name-header_functions"),
+                                                               value = 1, min = 0, step = 1, max = 60000)),
+                                        column(3, numericInput("p.val_cutoff_top",p("p-val cut-off",class = "name-header_functions"),
+                                                               value = 0.05, min = 0, max = 1)),
                                       ),
                                       div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
                                       div(DT::DTOutput("Over_rep_Top_clones_Tab")),
                                       downloadButton("downloadtb_over.rep.Top_Ex", "Download table")
-                                      #
                                     ),
-                                    # ),
-                                    # ),
                                   ),
                          ),
-
                          ###### Expanded phenotype -----
                          tabPanel("Expanded",
                                   value = "Expanded",
                                   fluidRow(
-                                    column(12, selectInput("Graph_split_order_EXP","Order of expanded",choices = "", width = "1200px", multiple = TRUE),),
+                                    column(12, selectInput("Graph_split_order_EXP",p("Order of expanded",class = "name-header_functions"),
+                                                           choices = "", width = "1200px", multiple = TRUE),),
 
                                   ),
                                   tabsetPanel(
@@ -2965,13 +2837,13 @@ runSTEGO <- function(){
                                                column(9, plotOutput("UMAP_Expanded", height = "600px"))
                                              ),
                                              fluidRow(
-                                               column(1, numericInput("width_UMAP_Expanded", "Width of PDF", value = 10)),
-                                               column(1, numericInput("height_UMAP_Expanded", "Height of PDF", value = 8)),
-                                               column(2, style = "margin-top: 25px;", downloadButton("downloadPlot_UMAP_Expanded", "Download PDF")),
-                                               column(2, numericInput("width_png_UMAP_Expanded", "Width of PNG", value = 1200)),
-                                               column(2, numericInput("height_png_UMAP_Expanded", "Height of PNG", value = 1000)),
-                                               column(2, numericInput("resolution_PNG_UMAP_Expanded", "Resolution of PNG", value = 144)),
-                                               column(2, style = "margin-top: 25px;", downloadButton("downloadPlotPNG_UMAP_Expanded", "Download PNG"))
+                                               column(2, numericInput("width_UMAP_Expanded",p("Width (PDF)",class = "name-header_functions"), value = 10)),
+                                               column(2, numericInput("height_UMAP_Expanded",p("Height (PDF)",class = "name-header_functions"), value = 8)),
+                                               column(1, style = "margin-top: 20px;", downloadButton("downloadPlot_UMAP_Expanded", "PDF")),
+                                               column(2, numericInput("width_png_UMAP_Expanded",p("Width (PNG)",class = "name-header_functions"), value = 1200)),
+                                               column(2, numericInput("height_png_UMAP_Expanded",p("Height (PNG)",class = "name-header_functions"), value = 1000)),
+                                               column(2, numericInput("resolution_PNG_UMAP_Expanded",p("Resolution (PNG)",class = "name-header_functions"), value = 144)),
+                                               column(1, style = "margin-top: 20px;", downloadButton("downloadPlotPNG_UMAP_Expanded", "PNG"))
                                              ),
                                     ),
                                     tabPanel("Stats",
@@ -2985,32 +2857,28 @@ runSTEGO <- function(){
                                              div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
                                              plotOutput("relative_expression_dotplot_ex", height = "600px"),
                                              fluidRow(
-                                               column(1, numericInput("width_all_expression_dotplot_ex", "Width of PDF", value = 20)),
-                                               column(1, numericInput("height_all_expression_dotplot_ex", "Height of PDF", value = 4)),
-                                               column(2, style = "margin-top: 25px;", downloadButton("downloadPlot_all_expression_dotplot_ex", "Download PDF")),
-                                               column(2, numericInput("width_png_all_expression_dotplot_ex", "Width of PNG", value = 2400)),
-                                               column(2, numericInput("height_png_all_expression_dotplot_ex", "Height of PNG", value = 600)),
-                                               column(2, numericInput("resolution_PNG_all_expression_dotplot_ex", "Resolution of PNG", value = 144)),
-                                               column(2, style = "margin-top: 25px;", downloadButton("downloadPlotPNG_all_expression_dotplot_ex", "Download PNG"))
+                                               column(2, numericInput("width_all_expression_dotplot_ex",p("Width (PDF)",class = "name-header_functions"), value = 20)),
+                                               column(2, numericInput("height_all_expression_dotplot_ex",p("Height (PDF)",class = "name-header_functions"), value = 4)),
+                                               column(1, style = "margin-top: 20px;", downloadButton("downloadPlot_all_expression_dotplot_ex", "PDF")),
+                                               column(2, numericInput("width_png_all_expression_dotplot_ex",p("Width (PNG)",class = "name-header_functions"), value = 2400)),
+                                               column(2, numericInput("height_png_all_expression_dotplot_ex",p("Height (PNG)",class = "name-header_functions"), value = 600)),
+                                               column(2, numericInput("resolution_PNG_all_expression_dotplot_ex",p("Resolution (PNG)",class = "name-header_functions"), value = 144)),
+                                               column(1, style = "margin-top: 20px;", downloadButton("downloadPlotPNG_all_expression_dotplot_ex", "PNG"))
                                              ),
                                     ),
                                     tabPanel("Violin",
-                                             selectInput("Ex_transcripts_of_interest","Significant genes",choices = ""),
-                                             # tabsetPanel(
-                                             # tabPanel("Table",
-                                             #          div(DT::DTOutput("Selected_transcript_exp")),
-                                             #          ),
-                                             tabPanel("plot",
-                                                      plotOutput("Violin_expanded_sig", height = "600px")
-                                             )
+                                             selectInput("Ex_transcripts_of_interest",p("Significant genes",class = "name-header_functions"),choices = ""),
+                                             # tabPanel("plot",
+                                             plotOutput("Violin_expanded_sig", height = "600px")
                                              # )
                                     ),
-
                                     tabPanel("Over-representation",
                                              value = "ExPan_OvRep",
                                              fluidRow(
-                                               column(3, numericInput("in.geneset.cutoff_Exp", "Min number of genes in GeneSet", value = 1, min = 0, step = 1, max = 60000)),
-                                               column(3, numericInput("p.val_cutoff_Exp", "p-val cut-off", value = 0.05, min = 0, max = 1)),
+                                               column(3, numericInput("in.geneset.cutoff_Exp",p("Min number of genes in GeneSet",class = "name-header_functions"),
+                                                                      value = 1, min = 0, step = 1, max = 60000)),
+                                               column(3, numericInput("p.val_cutoff_Exp",p("p-val cut-off",class = "name-header_functions"),
+                                                                      value = 0.05, min = 0, max = 1)),
                                              ),
                                              div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
                                              div(DT::DTOutput("Over_rep_Exp_Tab")),
@@ -3022,8 +2890,6 @@ runSTEGO <- function(){
                          # ClusTCR2 Analysis -----
                          tabPanel("ClusTCR2",
                                   value = "ClusTCR2",
-
-
                                   tabsetPanel(
                                     tabPanel(
                                       "Table.Clust",
@@ -3045,13 +2911,13 @@ runSTEGO <- function(){
                                         column(9, plotOutput("UMAP_ClusTCR2_plot", height = "600px"))
                                       ),
                                       fluidRow(
-                                        column(1, numericInput("width_UMAP_ClusTCR2_plot", "Width of PDF", value = 10)),
-                                        column(1, numericInput("height_UMAP_ClusTCR2_plot", "Height of PDF", value = 8)),
-                                        column(2, style = "margin-top: 25px;", downloadButton("downloadPlot_UMAP_ClusTCR2_plot", "Download PDF")),
-                                        column(2, numericInput("width_png_UMAP_ClusTCR2_plot", "Width of PNG", value = 1200)),
-                                        column(2, numericInput("height_png_UMAP_ClusTCR2_plot", "Height of PNG", value = 1000)),
-                                        column(2, numericInput("resolution_PNG_UMAP_ClusTCR2_plot", "Resolution of PNG", value = 144)),
-                                        column(2, style = "margin-top: 25px;", downloadButton("downloadPlotPNG_UMAP_ClusTCR2_plot", "Download PNG"))
+                                        column(2, numericInput("width_UMAP_ClusTCR2_plot",p("Width (PDF)",class = "name-header_functions"), value = 10)),
+                                        column(2, numericInput("height_UMAP_ClusTCR2_plot",p("Height (PDF)",class = "name-header_functions"), value = 8)),
+                                        column(1, style = "margin-top: 20px;", downloadButton("downloadPlot_UMAP_ClusTCR2_plot", "PDF")),
+                                        column(2, numericInput("width_png_UMAP_ClusTCR2_plot",p("Width (PNG)",class = "name-header_functions"), value = 1200)),
+                                        column(2, numericInput("height_png_UMAP_ClusTCR2_plot",p("Height (PNG)",class = "name-header_functions"), value = 1000)),
+                                        column(2, numericInput("resolution_PNG_UMAP_ClusTCR2_plot",p("Resolution (PNG)",class = "name-header_functions"), value = 144)),
+                                        column(1, style = "margin-top: 20px;", downloadButton("downloadPlotPNG_UMAP_ClusTCR2_plot", "PNG"))
                                       ),
                                     ),
                                     tabPanel(
@@ -3060,29 +2926,29 @@ runSTEGO <- function(){
                                       plotOutput("Motif_ClusTCR2_cluster", height = "300px"),
                                       verbatimTextOutput("print_unique_cases"),
                                       fluidRow(
-                                        column(1, numericInput("width_Motif_ClusTCR2_cluster", "Width of PDF", value = 10)),
-                                        column(1, numericInput("height_Motif_ClusTCR2_cluster", "Height of PDF", value = 4)),
-                                        column(2, style = "margin-top: 25px;", downloadButton("downloadPlot_Motif_ClusTCR2_cluster", "Download PDF")),
-                                        column(2, numericInput("width_png_Motif_ClusTCR2_cluster", "Width of PNG", value = 2400)),
-                                        column(2, numericInput("height_png_Motif_ClusTCR2_cluster", "Height of PNG", value = 600)),
-                                        column(2, numericInput("resolution_PNG_Motif_ClusTCR2_cluster", "Resolution of PNG", value = 144)),
-                                        column(2, style = "margin-top: 25px;", downloadButton("downloadPlotPNG_Motif_ClusTCR2_cluster", "Download PNG"))
+                                        column(2, numericInput("width_Motif_ClusTCR2_cluster",p("Width (PDF)",class = "name-header_functions"), value = 10)),
+                                        column(2, numericInput("height_Motif_ClusTCR2_cluster",p("Height (PDF)",class = "name-header_functions"), value = 4)),
+                                        column(1, style = "margin-top: 20px;", downloadButton("downloadPlot_Motif_ClusTCR2_cluster", "PDF")),
+                                        column(2, numericInput("width_png_Motif_ClusTCR2_cluster",p("Width (PNG)",class = "name-header_functions"), value = 2400)),
+                                        column(2, numericInput("height_png_Motif_ClusTCR2_cluster",p("Height (PNG)",class = "name-header_functions"), value = 600)),
+                                        column(2, numericInput("resolution_PNG_Motif_ClusTCR2_cluster",p("Resolution (PNG)",class = "name-header_functions"), value = 144)),
+                                        column(1, style = "margin-top: 20px;", downloadButton("downloadPlotPNG_Motif_ClusTCR2_cluster", "PNG"))
                                       ),
                                     ),
                                     #####
                                     tabPanel("heatmap",
                                              value = "ClustHeat",
                                              div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
-                                             p("Colour by: = x-axis; Split graph by: = y-axis for this heatmap"),
+                                             p("Colour by: = x-axis; Split graph by: = y-axis for this heatmap",class = "name-header_functions"),
                                              plotOutput("Pie_ClusTCR2_plot", height = "600px"),
                                              fluidRow(
-                                               column(1, numericInput("width_Pie_ClusTCR2_plot", "Width of PDF", value = 10)),
-                                               column(1, numericInput("height_Pie_ClusTCR2_plot", "Height of PDF", value = 8)),
-                                               column(2, style = "margin-top: 25px;", downloadButton("downloadPlot_Pie_ClusTCR2_plot", "Download PDF")),
-                                               column(2, numericInput("width_png_Pie_ClusTCR2_plot", "Width of PNG", value = 1200)),
-                                               column(2, numericInput("height_png_Pie_ClusTCR2_plot", "Height of PNG", value = 1000)),
-                                               column(2, numericInput("resolution_PNG_Pie_ClusTCR2_plot", "Resolution of PNG", value = 144)),
-                                               column(2, style = "margin-top: 25px;", downloadButton("downloadPlotPNG_Pie_ClusTCR2_plot", "Download PNG"))
+                                               column(2, numericInput("width_Pie_ClusTCR2_plot",p("Width (PDF)",class = "name-header_functions"), value = 10)),
+                                               column(2, numericInput("height_Pie_ClusTCR2_plot",p("Height (PDF)",class = "name-header_functions"), value = 8)),
+                                               column(1, style = "margin-top: 20px;", downloadButton("downloadPlot_Pie_ClusTCR2_plot", "PDF")),
+                                               column(2, numericInput("width_png_Pie_ClusTCR2_plot",p("Width (PNG)",class = "name-header_functions"), value = 1200)),
+                                               column(2, numericInput("height_png_Pie_ClusTCR2_plot",p("Height (PNG)",class = "name-header_functions"), value = 1000)),
+                                               column(2, numericInput("resolution_PNG_Pie_ClusTCR2_plot",p("Resolution (PNG)",class = "name-header_functions"), value = 144)),
+                                               column(1, style = "margin-top: 20px;", downloadButton("downloadPlotPNG_Pie_ClusTCR2_plot", "PNG"))
                                              ),
                                     ),
 
@@ -3099,41 +2965,38 @@ runSTEGO <- function(){
                                              div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
                                              plotOutput("all_expression_dotplot_cluster", height = "400px"),
                                              fluidRow(
-                                               column(1, numericInput("width_all_expression_dotplot_clust", "Width of PDF", value = 20)),
-                                               column(1, numericInput("height_all_expression_dotplot_clust", "Height of PDF", value = 8)),
-                                               column(2, style = "margin-top: 25px;", downloadButton("downloadPlot_all_expression_dotplot_clust", "Download PDF")),
-                                               column(2, numericInput("width_png_all_expression_dotplot_clust", "Width of PNG", value = 2400)),
-                                               column(2, numericInput("height_png_all_expression_dotplot_clust", "Height of PNG", value = 700)),
-                                               column(2, numericInput("resolution_PNG_all_expression_dotplot_clust", "Resolution of PNG", value = 144)),
-                                               column(2, style = "margin-top: 25px;", downloadButton("downloadPlotPNG_all_expression_dotplot_clust", "Download PNG"))
+                                               column(2, numericInput("width_all_expression_dotplot_clust",p("Width (PDF)",class = "name-header_functions"), value = 20)),
+                                               column(2, numericInput("height_all_expression_dotplot_clust",p("Height (PDF)",class = "name-header_functions"), value = 8)),
+                                               column(1, style = "margin-top: 20px;", downloadButton("downloadPlot_all_expression_dotplot_clust", "PDF")),
+                                               column(2, numericInput("width_png_all_expression_dotplot_clust",p("Width (PNG)",class = "name-header_functions"), value = 2400)),
+                                               column(2, numericInput("height_png_all_expression_dotplot_clust",p("Height (PNG)",class = "name-header_functions"), value = 700)),
+                                               column(2, numericInput("resolution_PNG_all_expression_dotplot_clust",p("Resolution (PNG)",class = "name-header_functions"), value = 144)),
+                                               column(1, style = "margin-top: 20px;", downloadButton("downloadPlotPNG_all_expression_dotplot_clust", "PNG"))
                                              ),
                                     ),
 
                                     tabPanel("Violin",
                                              div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
-                                             selectInput("Clust_transcripts_of_interest","Significant genes",choices = ""),
-                                             div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
-
+                                             selectInput("Clust_transcripts_of_interest",p("Significant genes",class = "name-header_functions"),
+                                                         choices = ""),
                                              plotOutput("Violin_clust_sig", height = "600px"),
-
                                              fluidRow(
-                                               column(1, numericInput("width_Violin_clust_sig", "Width of PDF", value = 10)),
-                                               column(1, numericInput("height_Violin_clust_sig", "Height of PDF", value = 8)),
-                                               column(2, style = "margin-top: 25px;", downloadButton("downloadPlot_Violin_clust_sig", "Download PDF")),
-                                               column(2, numericInput("width_png_Violin_clust_sig", "Width of PNG", value = 1200)),
-                                               column(2, numericInput("height_png_Violin_clust_sig", "Height of PNG", value = 1000)),
-                                               column(2, numericInput("resolution_PNG_Violin_clust_sig", "Resolution of PNG", value = 144)),
-                                               column(2, style = "margin-top: 25px;", downloadButton("downloadPlotPNG_Violin_clust_sig", "Download PNG"))
+                                               column(2, numericInput("width_Violin_clust_sig",p("Width (PDF)",class = "name-header_functions"), value = 10)),
+                                               column(2, numericInput("height_Violin_clust_sig",p("Height (PDF)",class = "name-header_functions"), value = 8)),
+                                               column(1, style = "margin-top: 20px;", downloadButton("downloadPlot_Violin_clust_sig", "PDF")),
+                                               column(2, numericInput("width_png_Violin_clust_sig",p("Width (PNG)",class = "name-header_functions"), value = 1200)),
+                                               column(2, numericInput("height_png_Violin_clust_sig",p("Height (PNG)",class = "name-header_functions"), value = 1000)),
+                                               column(2, numericInput("resolution_PNG_Violin_clust_sig",p("Resolution (PNG)",class = "name-header_functions"), value = 144)),
+                                               column(1, style = "margin-top: 20px;", downloadButton("downloadPlotPNG_Violin_clust_sig", "PNG"))
                                              ),
-
                                     ),
-
                                     tabPanel("Over-representation",
                                              value = "ClusPan_OvRep",
                                              fluidRow(
-                                               column(3, numericInput("in.geneset.cutoff_Clust", "Min number of genes in GeneSet", value = 1, min = 0, step = 1, max = 60000)),
-                                               column(3, numericInput("p.val_cutoff_Clust", "p-val cut-off", value = 0.05, min = 0, max = 1)),
-                                               # column(3,numericInput("adjust_cutoff_Clust","BH cut-off",value = 1, min = 0, max = 1)),
+                                               column(3, numericInput("in.geneset.cutoff_Clust",p("Min number of genes in GeneSet",class = "name-header_functions"),
+                                                                      value = 1, min = 0, step = 1, max = 60000)),
+                                               column(3, numericInput("p.val_cutoff_Clust",p("p-val cut-off",class = "name-header_functions"),
+                                                                      value = 0.05, min = 0, max = 1)),
                                              ),
                                              div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
                                              div(DT::DTOutput("Over_rep_Cluster_Tab")),
@@ -3147,10 +3010,6 @@ runSTEGO <- function(){
 
                                   tabsetPanel(
                                     id = "EpitipeTabs",
-                                    # tabPanel("Uploaded Epitope file",
-                                    #          add_busy_spinner(spin = "fading-circle",position = "top-right",margins = c(10,10),height = "200px",width = "200px", color = "#6F00B0"),
-                                    #          div(DT::DTOutput("MainTcell_Check")),
-                                    # ),
                                     tabPanel(
                                       "Summary Table",
                                       div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
@@ -3162,20 +3021,18 @@ runSTEGO <- function(){
                                       div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
                                       plotOutput("Heatmap_epi_plot", height = "600px"),
                                       fluidRow(
-                                        column(1, numericInput("width_Heatmap_epi_plot", "Width of PDF", value = 10)),
-                                        column(1, numericInput("height_Heatmap_epi_plot", "Height of PDF", value = 8)),
-                                        column(2, style = "margin-top: 25px;", downloadButton("downloadPlot_Heatmap_epi_plot", "Download PDF")),
-                                        column(2, numericInput("width_png_Heatmap_epi_plot", "Width of PNG", value = 1200)),
-                                        column(2, numericInput("height_png_Heatmap_epi_plot", "Height of PNG", value = 1000)),
-                                        column(2, numericInput("resolution_PNG_Heatmap_epi_plot", "Resolution of PNG", value = 144)),
-                                        column(2, style = "margin-top: 25px;", downloadButton("downloadPlotPNG_Heatmap_epi_plot", "Download PNG"))
+                                        column(2, numericInput("width_Heatmap_epi_plot",p("Width (PDF)",class = "name-header_functions"), value = 10)),
+                                        column(2, numericInput("height_Heatmap_epi_plot",p("Height (PDF)",class = "name-header_functions"), value = 8)),
+                                        column(1, style = "margin-top: 20px;", downloadButton("downloadPlot_Heatmap_epi_plot", "PDF")),
+                                        column(2, numericInput("width_png_Heatmap_epi_plot",p("Width (PNG)",class = "name-header_functions"), value = 1200)),
+                                        column(2, numericInput("height_png_Heatmap_epi_plot",p("Height (PNG)",class = "name-header_functions"), value = 1000)),
+                                        column(2, numericInput("resolution_PNG_Heatmap_epi_plot",p("Resolution (PNG)",class = "name-header_functions"), value = 144)),
+                                        column(1, style = "margin-top: 20px;", downloadButton("downloadPlotPNG_Heatmap_epi_plot", "PNG"))
                                       ),
                                     ),
                                     tabPanel(
                                       "UMAP",
                                       numericInput("value_size_epi_umap", "Size of epitope dots", value = 2),
-
-                                      # column(3,selectInput("epitope_umap_selected","Select",choices = c("beta","epitope","pathology"),selected = "pathology")),
                                       div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
                                       fluidRow(
                                         column(
@@ -3188,13 +3045,13 @@ runSTEGO <- function(){
                                         column(9, plotOutput("UMAP_Epitope_plot", height = "600px"))
                                       ),
                                       fluidRow(
-                                        column(1, numericInput("width_UMAP_Epitope", "Width of PDF", value = 10)),
-                                        column(1, numericInput("height_UMAP_Epitope", "Height of PDF", value = 8)),
-                                        column(2, style = "margin-top: 25px;", downloadButton("downloadPlot_UMAP_Epitope", "Download PDF")),
-                                        column(2, numericInput("width_png_UMAP_Epitope", "Width of PNG", value = 1200)),
-                                        column(2, numericInput("height_png_UMAP_Epitope", "Height of PNG", value = 1000)),
-                                        column(2, numericInput("resolution_PNG_UMAP_Epitope", "Resolution of PNG", value = 144)),
-                                        column(2, style = "margin-top: 25px;", downloadButton("downloadPlotPNG_UMAP_Epitope", "Download PNG"))
+                                        column(2, numericInput("width_UMAP_Epitope",p("Width (PDF)",class = "name-header_functions"), value = 10)),
+                                        column(2, numericInput("height_UMAP_Epitope",p("Height (PDF)",class = "name-header_functions"), value = 8)),
+                                        column(1, style = "margin-top: 20px;", downloadButton("downloadPlot_UMAP_Epitope", "PDF")),
+                                        column(2, numericInput("width_png_UMAP_Epitope",p("Width (PNG)",class = "name-header_functions"), value = 1200)),
+                                        column(2, numericInput("height_png_UMAP_Epitope",p("Height (PNG)",class = "name-header_functions"), value = 1000)),
+                                        column(2, numericInput("resolution_PNG_UMAP_Epitope",p("Resolution (PNG)",class = "name-header_functions"), value = 144)),
+                                        column(1, style = "margin-top: 20px;", downloadButton("downloadPlotPNG_UMAP_Epitope", "PNG"))
                                       ),
                                     ),
                                     tabPanel(
@@ -3211,13 +3068,13 @@ runSTEGO <- function(){
                                         column(9, plotOutput("Pie_Epitope_plot", height = "600px"))
                                       ),
                                       fluidRow(
-                                        column(1, numericInput("width_Pie_Epitope", "Width of PDF", value = 10)),
-                                        column(1, numericInput("height_Pie_Epitope", "Height of PDF", value = 8)),
-                                        column(2, style = "margin-top: 25px;", downloadButton("downloadPlot_Pie_Epitope", "Download PDF")),
-                                        column(2, numericInput("width_png_Pie_Epitope", "Width of PNG", value = 1200)),
-                                        column(2, numericInput("height_png_Pie_Epitope", "Height of PNG", value = 1000)),
-                                        column(2, numericInput("resolution_PNG_Pie_Epitope", "Resolution of PNG", value = 144)),
-                                        column(2, style = "margin-top: 25px;", downloadButton("downloadPlotPNG_Pie_Epitope", "Download PNG"))
+                                        column(2, numericInput("width_Pie_Epitope",p("Width (PDF)",class = "name-header_functions"), value = 10)),
+                                        column(2, numericInput("height_Pie_Epitope",p("Height (PDF)",class = "name-header_functions"), value = 8)),
+                                        column(1, style = "margin-top: 20px;", downloadButton("downloadPlot_Pie_Epitope", "PDF")),
+                                        column(2, numericInput("width_png_Pie_Epitope",p("Width (PNG)",class = "name-header_functions"), value = 1200)),
+                                        column(2, numericInput("height_png_Pie_Epitope",p("Height (PNG)",class = "name-header_functions"), value = 1000)),
+                                        column(2, numericInput("resolution_PNG_Pie_Epitope",p("Resolution (PNG)",class = "name-header_functions"), value = 144)),
+                                        column(1, style = "margin-top: 20px;", downloadButton("downloadPlotPNG_Pie_Epitope", "PNG"))
                                       ),
                                     ),
                                     tabPanel("Stats",
@@ -3229,42 +3086,32 @@ runSTEGO <- function(){
                                     ),
                                     tabPanel("Dotplot",
                                              value = "EpiPan_dot",
-                                             fluidRow(
-                                               column(2, colourInput("low.dotplot", "Lower color:", "#00BFFF")),
-                                               column(2, colourInput("middle.dotplot", "Middle color:", "white")),
-                                               column(2, colourInput("high.dotplot", "High color:", "#00008B")),
-
-                                             ),
                                              div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
                                              plotOutput("all_expression_dotplot_epi", height = "400px"),
                                              fluidRow(
-                                               column(1, numericInput("width_all_expression_dotplot_epi", "Width of PDF", value = 20)),
-                                               column(1, numericInput("height_all_expression_dotplot_epi", "Height of PDF", value = 4)),
-                                               column(2, style = "margin-top: 25px;", downloadButton("downloadPlot_all_expression_dotplot_epi", "Download PDF")),
-                                               column(2, numericInput("width_png_all_expression_dotplot_epi", "Width of PNG", value = 2400)),
-                                               column(2, numericInput("height_png_all_expression_dotplot_epi", "Height of PNG", value = 700)),
-                                               column(2, numericInput("resolution_PNG_all_expression_dotplot_epi", "Resolution of PNG", value = 144)),
-                                               column(2, style = "margin-top: 25px;", downloadButton("downloadPlotPNG_all_expression_dotplot_epi", "Download PNG"))
+                                               column(2, numericInput("width_all_expression_dotplot_epi",p("Width (PDF)",class = "name-header_functions"), value = 20)),
+                                               column(2, numericInput("height_all_expression_dotplot_epi",p("Height (PDF)",class = "name-header_functions"), value = 4)),
+                                               column(1, style = "margin-top: 20px;", downloadButton("downloadPlot_all_expression_dotplot_epi", "PDF")),
+                                               column(2, numericInput("width_png_all_expression_dotplot_epi",p("Width (PNG)",class = "name-header_functions"), value = 2400)),
+                                               column(2, numericInput("height_png_all_expression_dotplot_epi",p("Height (PNG)",class = "name-header_functions"), value = 700)),
+                                               column(2, numericInput("resolution_PNG_all_expression_dotplot_epi",p("Resolution (PNG)",class = "name-header_functions"), value = 144)),
+                                               column(1, style = "margin-top: 20px;", downloadButton("downloadPlotPNG_all_expression_dotplot_epi", "PNG"))
                                              ),
                                     ),
                                     tabPanel("Over-representation",
                                              value = "EpiPan_OvRep",
                                              fluidRow(
-                                               column(3, numericInput("in.geneset.cutoff_Epi", "Min number of genes in GeneSet", value = 1, min = 0, step = 1, max = 60000)),
-                                               column(3, numericInput("p.val_cutoff_Epi", "p-val cut-off", value = 0.05, min = 0, max = 1)),
+                                               column(3, numericInput("in.geneset.cutoff_Epi",p("Min number of genes in GeneSet",class = "name-header_functions"),
+                                                                      value = 1, min = 0, step = 1, max = 60000)),
+                                               column(3, numericInput("p.val_cutoff_Epi",p("p-val cut-off",class = "name-header_functions"),
+                                                                      value = 0.05, min = 0, max = 1)),
                                              ),
                                              div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
                                              div(DT::DTOutput("Over_rep_Epi_Tab")),
                                              downloadButton("downloadtb_over.rep.Epi", "Download table")
-                                             #
                                     )
                                   ),
                          ),
-
-                         # Overlap ------
-
-                         # tabPanel("Clonotypes per cluster (Pie/bar plot)"),
-                         # tabPanel("Upset plot")
                        ),
               ),
               ########
@@ -3276,13 +3123,21 @@ runSTEGO <- function(){
                          id = "PriorTBMods",
                          tabPanel("Analysis steps",
                                   value = "ModstoConsid",
-                                  p("The prioritization section automates the analysis based on certain thresholds"),
-                                  p("There are three section"),
-                                  p("1. Clonotype"),
-                                  p("    - Single sample: immunodominant based on percentage threshold"),
-                                  p("2. Cluster"),
-                                  p("3. Epitope"),
-                                  p("Note: minimum threshold of expansion (n=3) per analysis. Cannot perform stats on n=1 or n=2"),
+                                  tags$div(
+                                    # class = "name-header3",
+                                    p("The prioritization section automates the analysis based on certain thresholds",class = "name-header3"),
+                                    p(strong("There are three sections")),
+                                    tags$ol(
+                                      tags$li("Clonotype",
+                                              tags$ul(
+                                                tags$li("Single sample: immunodominant based on percentage threshold")
+                                              )
+                                      ),
+                                      tags$li("Cluster"),
+                                      tags$li("Epitope")
+                                    ),
+                                    p(em("Note: minimum threshold of expansion (n=3) per analysis. Cannot perform stats on n=1 or n=2"))
+                                  )
                          ),
                          # modules of priority Top clone ------
                          tabPanel("Clonotype",
@@ -3311,14 +3166,14 @@ runSTEGO <- function(){
                                     column(3, uiOutput("Default_priority_cutoffD")),
                                   ),
                                   fluidRow(
-                                    column(3, numericInput("Sample_count_cluster", "A Sample count \u2265", value = 2, min = 1)),
-                                    column(3, numericInput("Total_cloneCount_cluster", "A Clone count \u2265", value = 3, min = 3)),
-                                    column(3, numericInput("Sample_count_cluster_G", "G Sample count \u2265", value = 2, min = 1)),
-                                    column(3, numericInput("Total_cloneCount_cluster_G", "G Clone count \u2265", value = 3, min = 3)),
-                                    column(3, numericInput("Sample_count_clusterB", "B Sample count \u2265", value = 3, min = 1)),
-                                    column(3, numericInput("Total_cloneCount_clusterB", "BD Clone count \u2265", value = 3, min = 3)),
-                                    column(3, numericInput("Sample_count_clusterD", "D Sample count \u2265", value = 3, min = 1)),
-                                    column(3, numericInput("Total_cloneCount_clusterD", "D Clone count \u2265", value = 3, min = 3)),
+                                    column(3, numericInput("Sample_count_cluster", p("A Sample count \u2265",class = "name-header_functions"), value = 2, min = 1)),
+                                    column(3, numericInput("Total_cloneCount_cluster",p("A Clone count \u2265",class = "name-header_functions"), value = 3, min = 3)),
+                                    column(3, numericInput("Sample_count_cluster_G", p("G Sample count \u2265",class = "name-header_functions"), value = 2, min = 1)),
+                                    column(3, numericInput("Total_cloneCount_cluster_G", p("G Clone count \u2265",class = "name-header_functions"), value = 3, min = 3)),
+                                    column(3, numericInput("Sample_count_clusterB", p("B Sample count \u2265",class = "name-header_functions"), value = 3, min = 1)),
+                                    column(3, numericInput("Total_cloneCount_clusterB", p("BD Clone count \u2265",class = "name-header_functions"), value = 3, min = 3)),
+                                    column(3, numericInput("Sample_count_clusterD", p("D Sample count \u2265",class = "name-header_functions"), value = 3, min = 1)),
+                                    column(3, numericInput("Total_cloneCount_clusterD", p("D Clone count \u2265",class = "name-header_functions"), value = 3, min = 3)),
                                   ),
                                   add_busy_spinner(spin = "fading-circle", position = "top-right",  height = "200px", width = "200px", color = "#6F00B0"),
                                   verbatimTextOutput("number_clusters_to_analyse_A"),
@@ -3334,7 +3189,7 @@ runSTEGO <- function(){
                          tabPanel("Epitope/Annotation",
                                   value = "PriorEpiTB",
                                   add_busy_spinner(spin = "fading-circle", position = "top-right",  height = "200px", width = "200px", color = "#6F00B0"),
-                                  checkboxInput("epitope_uploaded", "Add in Epitope data", value = T),
+                                  checkboxInput("epitope_uploaded", p("Add in Epitope data",class = "name-header_functions"), value = T),
                                   fluidRow(
                                     column(3, uiOutput("AddInEpiUI_1")),
                                     column(3, uiOutput("AddInEpiUI_2")),
@@ -3352,30 +3207,6 @@ runSTEGO <- function(){
                 "GEX -> TCR", value = "GEx_TCR",
                 # h5("Under Development..."),
                 tabsetPanel(
-                  ##### annotation GEX -> TCR --------
-                  # tabPanel("Annotation",
-                  #          value = "PanelAnno_GEXTCR",
-                  #          h5("Under Active Development... Only Table is complete"),
-                  #          fluidRow(
-                  #            column(3, uiOutput("AddInAnnoUI_man_1")),
-                  #            column(3, uiOutput("AddInAnnoUI_man_2")),
-                  #            column(3, selectInput("Slected_annotation", "Select annotation", choices = ""))
-                  #          ),
-                  #          tabsetPanel(
-                  #            tabPanel(
-                  #              "Table",
-                  #              div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
-                  #              div(DT::DTOutput("AnnoTable_perMarkers")),
-                  #              downloadButton("downloaddf_AnnoTable_perMarkers", "Download table"),
-                  #            ),
-                  #            tabPanel("UMAP"),
-                  #            tabPanel("TCR per Anno ID"),
-                  #            tabPanel("Stats"),
-                  #            tabPanel("Dot plot"),
-                  #            tabPanel("Over representation")
-                  #          )
-                  # ),
-
                   # marker specific TCR analysis --------
                   tabPanel("Marker",
                            value = "Marker",
@@ -3385,24 +3216,25 @@ runSTEGO <- function(){
                                "Single marker", value = "single_marker_panel",
 
                                fluidRow(
-
-                                 column(2, numericInput("Filter_lower_UMAP1_marker", "UMAP_1 >", value = -20)),
-                                 column(2, numericInput("Filter_lower_UMAP1_marker2", "UMAP_1 <", value = 20)),
-                                 column(2, numericInput("Filter_lower_UMAP2_marker", "UMAP_2 >", value = -20)),
-                                 column(2, numericInput("Filter_lower_UMAP2_marker2", "UMAP_2 <", value = 20)),
+                                 column(2, numericInput("Filter_lower_UMAP1_marker", p("UMAP_1 >",class = "name-header_functions"), value = -20)),
+                                 column(2, numericInput("Filter_lower_UMAP1_marker2",p("UMAP_1 <",class = "name-header_functions"), value = 20)),
+                                 column(2, numericInput("Filter_lower_UMAP2_marker",p("UMAP_2 >",class = "name-header_functions"), value = -20)),
+                                 column(2, numericInput("Filter_lower_UMAP2_marker2",p("UMAP_2 <",class = "name-header_functions"), value = 20)),
                                ),
                                # conditionalPanel(condition="input.Marker_Panel =='Marker_Panel_plot_stats'",
                                fluidRow(
-                                 column(3, selectInput("Analysis_marker_stats_type", "Analysis type", choices = c("Population", "Expanded"))),
-                                 column(3, selectInput("Help_marer", "Definitions", choices = c("No", "Yes"))),
-                                 column(3, numericInput("cutoff_marker_gt", "Marker +ve cut-off (>)", value = 0, step = 0.1)),
-                                 column(3, numericInput("pos_expanded_cut_off", "clone count (>) for +ve", value = 2, min = 1)),
+                                 column(3, selectInput("Analysis_marker_stats_type",p("Analysis type",class = "name-header_functions"),
+                                                       choices = c("Population", "Expanded"))),
+                                 column(3, selectInput("Help_marer",p("Definitions",class = "name-header_functions"),
+                                                       choices = c("No", "Yes"))),
+                                 column(3, numericInput("cutoff_marker_gt", p("Marker +ve cut-off (>)",class = "name-header_functions"), value = 0, step = 0.1)),
+                                 column(3, numericInput("pos_expanded_cut_off",p("clone count (>) for +ve",class = "name-header_functions"), value = 2, min = 1)),
                                ),
                                conditionalPanel(
                                  condition = "input.Help_marer == 'Yes'",
                                  # p(strong("1. Total."), "Refers to the marker of interest compared to all negative cells"),
-                                 p(strong("1. Population."), "Refers to the the restricted UMAP selected population and compared the +ve to -ve marker population."),
-                                 p(strong("2. Expanded."), "Compares the clonal expaned (min 3) vs non-expanded population for all cells +ve for the marker in the restricted UMAP space."),
+                                 p(strong("1. Population"), "Refers to the the restricted UMAP selected population and compared the +ve to -ve marker population."),
+                                 p(strong("2. Expanded"), "Compares the clonal expaned (min 3) vs non-expanded population for all cells +ve for the marker in the restricted UMAP space."),
                                ),
                                tabsetPanel(
                                  tabPanel("Table",
@@ -3418,41 +3250,33 @@ runSTEGO <- function(){
                                           numericInput("max_scale", "MAX scale", value = ""),
                                           plotOutput("marker_selected_UMAP_plot", height = "600px"),
                                           fluidRow(
-                                            column(3, numericInput("width_marker_selected_UMAP_plot", "Width of PDF", value = 10)),
-                                            column(3, numericInput("height_marker_selected_UMAP_plot", "Height of PDF", value = 8)),
-                                            column(3),
-                                            column(3, style = "margin-top: 25px;", downloadButton("downloadPlot_marker_selected_UMAP_plot", "Download PDF"))
-                                          ),
-                                          fluidRow(
-                                            column(3, numericInput("width_png_marker_selected_UMAP_plot", "Width of PNG", value = 1200)),
-                                            column(3, numericInput("height_png_marker_selected_UMAP_plot", "Height of PNG", value = 1000)),
-                                            column(3, numericInput("resolution_PNG_marker_selected_UMAP_plot", "Resolution of PNG", value = 144)),
-                                            column(3, style = "margin-top: 25px;", downloadButton("downloadPlotPNG_marker_selected_UMAP_plot", "Download PNG"))
+                                            column(2, numericInput("width_marker_selected_UMAP_plot",p("Width (PDF)",class = "name-header_functions"), value = 10)),
+                                            column(2, numericInput("height_marker_selected_UMAP_plot",p("Height (PDF)",class = "name-header_functions"), value = 8)),
+                                            column(1, style = "margin-top: 20px;", downloadButton("downloadPlot_marker_selected_UMAP_plot", "PDF")),
+                                            column(2, numericInput("width_png_marker_selected_UMAP_plot",p("Width (PNG)",class = "name-header_functions"), value = 1200)),
+                                            column(2, numericInput("height_png_marker_selected_UMAP_plot",p("Height (PNG)",class = "name-header_functions"), value = 1000)),
+                                            column(2, numericInput("resolution_PNG_marker_selected_UMAP_plot",p("Resolution (PNG)",class = "name-header_functions"), value = 144)),
+                                            column(1, style = "margin-top: 20px;", downloadButton("downloadPlotPNG_marker_selected_UMAP_plot", "PNG"))
                                           )
                                  ),
                                  tabPanel("Violin/Ridge plot",
                                           value = "Marker_Panel_plot_VR",
                                           h4("Filter marker of interest based on threshold"),
                                           fluidRow(
-                                            column(3, selectInput("select_plot_vio.ridge", "Plot type", choices = c("Violin", "Ridge")))
-                                          ),
-                                          fluidRow(
-                                            column(3, checkboxInput("show_cutoff_line","Show cut-off line?", value = F))
+                                            column(3, selectInput("select_plot_vio.ridge",p("Plot type",class = "name-header_functions"), choices = c("Violin", "Ridge"))),
+                                            column(3, style = "margin-top: 20px;",checkboxInput("show_cutoff_line",p("Show cut-off line?",class = "name-header2"), value = F))
                                           ),
                                           div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
                                           plotOutput("marker_selected_VioRidge_plot", height = "600px"),
 
                                           fluidRow(
-                                            column(3, numericInput("width_marker_selected_VioRidge_plot", "Width of PDF", value = 10)),
-                                            column(3, numericInput("height_marker_selected_VioRidge_plot", "Height of PDF", value = 8)),
-                                            column(3),
-                                            column(3, style = "margin-top: 25px;", downloadButton("downloadPlot_marker_selected_VioRidge_plot", "Download PDF"))
-                                          ),
-                                          fluidRow(
-                                            column(3, numericInput("width_png_marker_selected_VioRidge_plot", "Width of PNG", value = 1200)),
-                                            column(3, numericInput("height_png_marker_selected_VioRidge_plot", "Height of PNG", value = 1000)),
-                                            column(3, numericInput("resolution_marker_selected_VioRidge_plot", "Resolution of PNG", value = 144)),
-                                            column(3, style = "margin-top: 25px;", downloadButton("downloadPlotPNG_marker_selected_VioRidge_plot", "Download PNG"))
+                                            column(2, numericInput("width_marker_selected_VioRidge_plot",p("Width (PDF)",class = "name-header_functions"), value = 10)),
+                                            column(2, numericInput("height_marker_selected_VioRidge_plot",p("Height (PDF)",class = "name-header_functions"), value = 8)),
+                                            column(1, style = "margin-top: 20px;", downloadButton("downloadPlot_marker_selected_VioRidge_plot", "PDF")),
+                                            column(2, numericInput("width_png_marker_selected_VioRidge_plot",p("Width (PNG)",class = "name-header_functions"), value = 1200)),
+                                            column(2, numericInput("height_png_marker_selected_VioRidge_plot",p("Height (PNG)",class = "name-header_functions"), value = 1000)),
+                                            column(2, numericInput("resolution_marker_selected_VioRidge_plot",p("Resolution (PNG)",class = "name-header_functions"), value = 144)),
+                                            column(1, style = "margin-top: 20px;", downloadButton("downloadPlotPNG_marker_selected_VioRidge_plot", "PNG"))
                                           ),
 
                                  ),
@@ -3496,13 +3320,15 @@ runSTEGO <- function(){
                                "Dual marker analysis", value = "dual_marker_panel",
 
                                fluidRow(
-                                 column(2, numericInput("Filter_dual_UMAP1_marker", "UMAP_1 >", value = -20)),
-                                 column(2, numericInput("Filter_dual_UMAP1_marker2", "UMAP_1 <", value = 20)),
-                                 column(2, numericInput("Filter_dual_UMAP2_marker", "UMAP_2 >", value = -20)),
-                                 column(2, numericInput("Filter_dual_UMAP2_marker2", "UMAP_2 <", value = 20)),
+                                 column(2, numericInput("Filter_dual_UMAP1_marker", p("UMAP_1 >",class = "name-header_functions"), value = -20)),
+                                 column(2, numericInput("Filter_dual_UMAP1_marker2",p("UMAP_1 <",class = "name-header_functions"), value = 20)),
+                                 column(2, numericInput("Filter_dual_UMAP2_marker",p("UMAP_2 >",class = "name-header_functions"), value = -20)),
+                                 column(2, numericInput("Filter_dual_UMAP2_marker2",p("UMAP_2 <",class = "name-header_functions"), value = 20)),
                                  # column(2),
-                                 column(2, numericInput("X_axis_dot_dual", "X-axis line", value = 0, step = 0.1)),
-                                 column(2, numericInput("Y_axis_dot_dual", "Y-axis line", value = 0, step = 0.1)),
+                                 column(2, numericInput("X_axis_dot_dual",p("X-axis line",class = "name-header_functions"),
+                                                        value = 0, step = 0.1)),
+                                 column(2, numericInput("Y_axis_dot_dual",p("Y-axis line",class = "name-header_functions"),
+                                                        value = 0, step = 0.1)),
                                ),
                                tabsetPanel(
                                  tabPanel(
@@ -3514,8 +3340,8 @@ runSTEGO <- function(){
                                    "Feature plots",
                                    div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
                                    fluidRow(
-                                     column(3, numericInput("max_scale2", "MAX scale (left)", value = "")),
-                                     column(3, numericInput("max_scale3", "MAX scale (right)", value = "")),
+                                     column(3, numericInput("max_scale2",p("MAX scale (left)",class = "name-header_functions"), value = "")),
+                                     column(3, numericInput("max_scale3",p("MAX scale (right)",class = "name-header_functions"), value = "")),
                                    ),
                                    div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
                                    fluidRow(
@@ -3528,13 +3354,13 @@ runSTEGO <- function(){
                                    div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
                                    plotOutput("df_dotplot_marker_plot", height = "600px"),
                                    fluidRow(
-                                     column(1, numericInput("width_df_dotplot_marker_plot", "Width of PDF", value = 10)),
-                                     column(1, numericInput("height_df_dotplot_marker_plot", "Height of PDF", value = 8)),
-                                     column(2, style = "margin-top: 25px;", downloadButton("downloadPlot_df_dotplot_marker_plot", "Download Network PDF")),
-                                     column(2, numericInput("width_png_df_dotplot_marker_plot", "Width of PNG", value = 1200)),
-                                     column(2, numericInput("height_png_df_dotplot_marker_plot", "Height of PNG", value = 1000)),
-                                     column(2, numericInput("resolution_PNG_df_dotplot_marker_plot", "Resolution of PNG", value = 144)),
-                                     column(2, style = "margin-top: 25px;", downloadButton("downloadPlotPNG_df_dotplot_marker_plot", "Download Network PNG")),
+                                     column(2, numericInput("width_df_dotplot_marker_plot",p("Width (PDF)",class = "name-header_functions"), value = 10)),
+                                     column(2, numericInput("height_df_dotplot_marker_plot",p("Height (PDF)",class = "name-header_functions"), value = 8)),
+                                     column(1, style = "margin-top: 20px;", downloadButton("downloadPlot_df_dotplot_marker_plot", "PDF")),
+                                     column(2, numericInput("width_png_df_dotplot_marker_plot",p("Width (PNG)",class = "name-header_functions"), value = 1200)),
+                                     column(2, numericInput("height_png_df_dotplot_marker_plot",p("Height (PNG)",class = "name-header_functions"), value = 1000)),
+                                     column(2, numericInput("resolution_PNG_df_dotplot_marker_plot",p("Resolution (PNG)",class = "name-header_functions"), value = 144)),
+                                     column(1, style = "margin-top: 20px;", downloadButton("downloadPlotPNG_df_dotplot_marker_plot", "PNG")),
                                    ),
                                  ),
                                  # tabPanel("Violin plot"),# will include splitting by T cell/B cell markers? Ig?
@@ -3548,7 +3374,8 @@ runSTEGO <- function(){
                                  tabPanel(
                                    "Stats",
                                    div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
-                                   selectInput("quad_dualmarker", "Quadrant to compute", choices = c("Q1", "Q2", "Q3", "Q4")),
+                                   selectInput("quad_dualmarker",p("Quadrant to compute",class = "name-header_functions"),
+                                               choices = c("Q1", "Q2", "Q3", "Q4")),
                                    div(DT::DTOutput("dual_maker_TCR_statsTB")),
                                    downloadButton("Dule_marker_statsTBDownload", "Download table")
                                  ),
@@ -3560,21 +3387,7 @@ runSTEGO <- function(){
                 ),
 
               ),
-
-              ######
-              # tabPanel("Parameters Table",
-              #          div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
-              #          div(DT::DTOutput("parameterTable")),
-              #          # Download button
-              #          downloadButton("downloadData", "Download State"),
-              #
-              #
-              #
-              #          ),
             )
-
-
-            ######
           )
         )
       ),
@@ -3582,13 +3395,12 @@ runSTEGO <- function(){
 
       navbarMenu(
         "Post Analysis",
-
         # Extracting meta data -------
         tabPanel("Extract meta data",
                  sidebarLayout(
                    sidebarPanel(width = 3,
                                 fileInput("file1_extract.metadata",
-                                          "Upload .rds file",
+                                          p("Upload .rds file",class = "name-header_functions"),
                                           multiple = F,
                                           accept = c(".rds", "rds")
                                 ),
@@ -3610,7 +3422,7 @@ runSTEGO <- function(){
                  sidebarLayout(
                    sidebarPanel(width = 3,
                                 fileInput("file1_FilteringCluster",
-                                          "Upload .csv file",
+                                          p("Upload .csv file",class = "name-header_functions"),
                                           multiple = F,
                                           accept = c(".csv", "csv","csv.gz",".gz")
                                 ),
@@ -3625,11 +3437,8 @@ runSTEGO <- function(){
                      div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
                      uiOutput("filter_inputs"),
                      DTOutput("filtered_table")
-
-                     # )
                    )
                  )
-                 # p("Convert .h5Seurat to .rds")
         ),
         # summarising the data ------
 
@@ -3638,7 +3447,7 @@ runSTEGO <- function(){
                  sidebarLayout(
                    sidebarPanel(width = 3,
                                 fileInput("file1_summarising_data",
-                                          "Upload .csv file",
+                                          p("Upload .csv file",class = "name-header_functions"),
                                           multiple = F,
                                           accept = c(".csv", "csv","csv.gz",".gz")
                                 ),
@@ -3649,7 +3458,8 @@ runSTEGO <- function(){
                      # tabsetPanel(
                      id = "summary_for_data_tab",
                      div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
-                     selectInput("columns_for_summary","Select columns for summarising",choices = "",multiple = T, width = "1200px"),
+                     selectInput("columns_for_summary",p("Select columns for summarising",class = "name-header_functions"),
+                                 choices = "",multiple = T, width = "1200px"),
                      DTOutput("chain_table_summary_tb"),
                      # uiOutput("filter_inputs"),
                      DTOutput("loaded_for_summary")
@@ -3657,10 +3467,7 @@ runSTEGO <- function(){
                      # )
                    )
                  )
-                 # p("Convert .h5Seurat to .rds")
         ),
-
-
 
         # post analysis OLGA ------
         tabPanel("OLGA",
@@ -3739,9 +3546,6 @@ runSTEGO <- function(){
 
                  ),
                  tabPanel("Session Information")
-
-
-
       ),
     ), # nav page
   )
@@ -14369,15 +14173,15 @@ runSTEGO <- function(){
     Ridge_chart_alpha_gamma_plot <- reactive({
       df <- Ridge_chart_alpha_gamma_df()
 
-      df$expressed <- ifelse(df[, names(df) %in% input$string.data_Exp_top] > input$Gre_ex, "expressed", "Not expressed")
+      # df$expressed <- ifelse(df[, names(df) %in% input$string.data_Exp_top] > input$Gre_ex, "expressed", "Not expressed")
 
-      if (input$restric_ex == T) {
-        df2 <- subset(df, df$expressed == "expressed")
-      } else {
-        (
-          df2 <- df
-        )
-      }
+      # if (input$restric_ex == T) {
+      #   df2 <- subset(df, df$expressed == "expressed")
+      # } else {
+      #   (
+      df2 <- df
+      #   )
+      # }
 
       df2$Selected_function <- factor(df2$Selected_function, levels = input$Graph_split_order)
 
@@ -14396,15 +14200,15 @@ runSTEGO <- function(){
 
     Ridge_chart_alpha_gamma_stat_table <- reactive({
       df <- Ridge_chart_alpha_gamma_df()
-      df$expressed <- ifelse(df[, names(df) %in% input$string.data_Exp_top] > input$Gre_ex, "expressed", "Not expressed")
+      # df$expressed <- ifelse(df[, names(df) %in% input$string.data_Exp_top] > input$Gre_ex, "expressed", "Not expressed")
 
-      if (input$restric_ex == T) {
-        df2 <- subset(df, df$expressed == "expressed")
-      } else {
-        (
-          df2 <- df
-        )
-      }
+      # if (input$restric_ex == T) {
+      df2 <- subset(df, df$expressed == "expressed")
+      # } else {
+      #   (
+      df2 <- df
+      # )
+      # }
       df2[is.na(df2)] <- "-"
 
       if(length(unique(df$Selected_function))>1) {
@@ -14483,14 +14287,14 @@ runSTEGO <- function(){
       # df <- df[df$Selected_group %in% input$Graph_split_order,]
       # top_BD_cluster$Selected_group <- factor(top_BD_cluster$Selected_group,levels = input$Graph_split_order)
 
-      if (input$restric_ex == T) {
-        df$expressed <- ifelse(df[, names(df) %in% input$string.data_Exp_top] > input$Gre_ex, "expressed", "Not expressed")
-        print(head(df$expressed))
-        df2 <- subset(df, df$expressed == "expressed")
-      } else {
-        df2 <- df
+      # if (input$restric_ex == T) {
+      #   df$expressed <- ifelse(df[, names(df) %in% input$string.data_Exp_top] > input$Gre_ex, "expressed", "Not expressed")
+      #   print(head(df$expressed))
+      #   df2 <- subset(df, df$expressed == "expressed")
+      # } else {
+      df2 <- df
 
-      }
+      # }
 
       df2$Selected_function <- factor(df2$Selected_function, levels = input$Graph_split_order)
 
@@ -14654,15 +14458,15 @@ runSTEGO <- function(){
     Ridge_chart_alpha_gamma_plot_comp <- reactive({
 
       df <- Ridge_chart_alpha_gamma_df_all()
-      df$expressed <- ifelse(df[, names(df) %in% input$string.data_Exp_top] > input$Gre_ex, "expressed", "Not expressed")
+      # df$expressed <- ifelse(df[, names(df) %in% input$string.data_Exp_top] > input$Gre_ex, "expressed", "Not expressed")
 
-      if (input$restric_ex == T) {
-        df2 <- subset(df, df$expressed == "expressed")
-      } else {
-        (
-          df2 <- df
-        )
-      }
+      # if (input$restric_ex == T) {
+      # df2 <- subset(df, df$expressed == "expressed")
+      # } else {
+      #   (
+      df2 <- df
+      #   )
+      # }
 
       ggplot(df2, aes(x = get(input$string.data_Exp_top), y = selected_top_clonotype, fill = selected_top_clonotype)) +
         geom_density_ridges() +
@@ -14679,15 +14483,15 @@ runSTEGO <- function(){
 
     Violin_chart_alpha_gamma_plot_comp <- reactive({
       df <- Ridge_chart_alpha_gamma_df_all()
-      df$expressed <- ifelse(df[, names(df) %in% input$string.data_Exp_top] > input$Gre_ex, "expressed", "Not expressed")
+      # df$expressed <- ifelse(df[, names(df) %in% input$string.data_Exp_top] > input$Gre_ex, "expressed", "Not expressed")
 
-      if (input$restric_ex == T) {
-        df2 <- subset(df, df$expressed == "expressed")
-      } else {
-        (
-          df2 <- df
-        )
-      }
+      # if (input$restric_ex == T) {
+      # df2 <- subset(df, df$expressed == "expressed")
+      # } else {
+      # (
+      df2 <- df
+      # )
+      # }
 
 
 
@@ -16523,7 +16327,7 @@ runSTEGO <- function(){
       df3.meta <- sc@meta.data
       as.data.frame(Epitope_of_interest())
       epi <- epi[epi$epitope %in% input$Epi_of_interest, ]
-      epi <- epi[names(epi) %in% c("CDR3_beta", "epitope", "pathology")]
+      epi <- epi[,names(epi) %in% c("CDR3_beta", "epitope", "pathology")]
       epi <- unique(epi)
 
       if (input$datasource == "BD_Rhapsody_Paired") {
@@ -22315,10 +22119,10 @@ runSTEGO <- function(){
               dev.off()
 
               # column(2,style = "margin-top: 25px;",downloadButton('downloadPlot_all_expression_dotplot_clust','Download PDF')),
-              # column(2,numericInput("width_png_all_expression_dotplot_clust","Width of PNG", value = 2400)),
-              # column(2,numericInput("height_png_all_expression_dotplot_clust","Height of PNG", value = 700)),
-              # column(2,numericInput("resolution_PNG_all_expression_dotplot_clust","Resolution of PNG", value = 144)),
-              # column(2,style = "margin-top: 25px;",downloadButton('downloadPlotPNG_all_expression_dotplot_clust','Download PNG'))
+              # column(2,numericInput("width_png_all_expression_dotplot_clust","Width (PNG)", value = 2400)),
+              # column(2,numericInput("height_png_all_expression_dotplot_clust","Height (PNG)", value = 700)),
+              # column(2,numericInput("resolution_PNG_all_expression_dotplot_clust","Resolution (PNG)", value = 144)),
+              # column(2,style = "margin-top: 25px;",downloadButton('downloadPlotPNG_all_expression_dotplot_clust','PNG'))
 
               # stats OverRep analysis ----
               geneSet <- read.csv(system.file("OverRep", "GeneSets.csv", package = "STEGO.R"), header = T)
