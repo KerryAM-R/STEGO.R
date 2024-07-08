@@ -110,6 +110,7 @@ merging_multi_SeuratRDS <- function(seurat_files = "3_SCobj/3a",
       if (species == "hs") {
         list.sc[[model.name]] <- FindVariableFeatures(list.sc[[model.name]], selection.method = "vst", nfeatures = max_features)
         var.feat <- VariableFeatures(list.sc[[model.name]])
+        var.feat <- as.data.frame(var.feat)
         names(var.feat) <- "V1"
 
         anno.features <- read.csv(system.file("Kmean", "Kmeans.requires.annotation.csv", package = "STEGO.R"))
