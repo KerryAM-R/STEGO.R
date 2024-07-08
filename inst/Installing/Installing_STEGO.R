@@ -10,6 +10,8 @@ if (!require("BiocManager", quietly = TRUE))
 if (!require("usethis", quietly = TRUE))
   install.packages("usethis")
 
+git_credentials()
+
 devtools::install_github("KerryAM-R/STEGO.R")
 
 y # for Seurat source
