@@ -2415,7 +2415,7 @@ runSTEGO <- function(){
                              ##### line graph ----
                              tabPanel("Line Graph",
                                       p(" "),
-                                      fluidRow(column(2,actionButton("load_samp_name_list","Load samples"))),
+
                                       fluidRow(
                                         column(2,checkboxInput("is_a_time_series",p("Time series?", class = "name-header2"),value = T)),
 
@@ -2426,27 +2426,27 @@ runSTEGO <- function(){
                                                                choices = c("_" = "_.*", "-" = "-.*", "." = "\\..*", "|" = "\\|.*", "#" = "#*", "^" = "\\^*", "&" = "&.*"),
                                                                selected = "-",
                                                                multiple = F),),
-                                          column(2,selectInput("comparison_operator",p("Choose comparison operator:",class = "name-header_functions"),
+                                          column(4,selectInput("comparison_operator",p("Choose comparison operator:",class = "name-header_functions"),
                                                                choices = c("Equal to" = "==", "Greater than or equal to" = ">="),
                                                                selected = c("Greater than or equal to" = ">=")),),
                                           column(2,numericInput("cutoff_upset",p("Enter cutoff value:",class = "name-header_functions"), value = 2),)
                                         ),
-                                        column(2,numericInput("max_number_lines_to",p("Maximum to display",class = "name-header_functions"),value = 10)),
                                         column(2,numericInput("Total_count_Cutoff",p("Min count threshold",class = "name-header_functions"),value = 1)),
-
-
                                       ),
 
                                       fluidRow(
-
-                                        column(2,conditionalPanel(
+                                        column(2,numericInput("max_number_lines_to",p("Maximum to display",class = "name-header_functions"),value = 10)),
+                                        column(2,actionButton("load_samp_name_list","Load samples")),
+                                        column(4,conditionalPanel(
                                           condition = "input.is_a_time_series",
                                           selectizeInput("Group_for_line_graph",p("Display multi-sample clones for: ",class = "name-header_functions"),""))),
                                       ),
 
                                       tabsetPanel(
                                         tabPanel("Table",
+                                                 downloadButton("download_line_graph_table", "Download table"),
                                                  div(DT::DTOutput("Line_graph_table")),
+                                                 # div(DT::DTOutput("Line_graph_table2")),
                                         ),
                                         tabPanel("Line graph",
                                                  fluidRow(
@@ -2454,24 +2454,13 @@ runSTEGO <- function(){
                                                      condition = "input.is_a_time_series",
                                                      # column(2,sliderInput("number_of_conditions","Number of conditions",value = 2, min = 2 , max = 3)),
                                                      column(2,selectInput("separator_input2",p("Select Separators:",class = "name-header_functions"),
-                                                                          choices = c("_" = "_", "-" = "-", "." = "\\.", "|" = "\\|", "#" = "#", "^" = "\\^", "&" = "&"),
+                                                                          choices = c("_" = "_", "-" = "-", "." = "\\.", "|" = "\\|", "#" = "#", "^" = "\\^", "&" = "&.*"),
                                                                           selected = "-",
-                                                                          multiple = T)),
-                                                     # column(2,selectInput("display_all_samps_line","Display all?",choices = c("no","yes"))),
-                                                     column(3,
-                                                            conditionalPanel(
-                                                              condition = "input.number_of_conditions == 3",textInput("shape_legend_name","Shape legend name",value = ""))
-                                                     ),
+                                                                          multiple = F)),
                                                    ),
                                                  ),
-
-                                                 # conditionalPanel(
-                                                 #   condition = "input.display_all_samps_line == 'no'",
-
                                                  plotOutput("line_graph_output"),
-
                                                  # ),
-
                                                  # conditionalPanel(
                                                  #   condition = "input.display_all_samps_line == 'yes'",
                                                  #
@@ -18141,7 +18130,7 @@ runSTEGO <- function(){
     )
 
     # upset plot table -----
-    Upset_plot_overlap <- reactive({
+    Upset_plot_overlap_table <- reactive({
       sc <- UMAP_metadata_with_labs()
       validate(
         need(
@@ -18193,7 +18182,7 @@ runSTEGO <- function(){
     })
 
     output$Upset_plot_overlap_Tb <- DT::renderDT(escape = FALSE, filter = list(position = "top", clear = FALSE), options = list(autoWidth = FALSE, lengthMenu = c(2, 5, 10, 20, 50, 100), pageLength = 5, scrollX = TRUE), {
-      Upset_plot_overlap()
+      Upset_plot_overlap_table()
     })
 
     output$downloaddf_Upset_plot_overlap_Tb <- downloadHandler(
@@ -18201,7 +18190,7 @@ runSTEGO <- function(){
         paste(input$name_BD, "_Overlap_", gsub("-", ".", Sys.Date()), ".tsv", sep = "")
       },
       content = function(file) {
-        df <- as.data.frame(Upset_plot_overlap())
+        df <- as.data.frame(Upset_plot_overlap_table())
         write.csv(df, file)
       }
     )
@@ -18218,7 +18207,7 @@ runSTEGO <- function(){
         )
       )
 
-      clones <- Upset_plot_overlap()
+      clones <- Upset_plot_overlap_table()
       req(clones)
 
       if (input$comparison_operator == "==") {
@@ -18231,7 +18220,7 @@ runSTEGO <- function(){
 
       # Get the group names from the column names
       group_names <- unique(gsub(input$separator_input,"", colnames(original_data)))
-      group_names <- group_names[!(group_names %in% c("background", "TotalSamps", "CloneTotal"))]
+      group_names <- group_names[!(group_names %in% c("Background","background", "TotalSamps", "CloneTotal"))]
       print(group_names)
       group_names
 
@@ -18239,7 +18228,7 @@ runSTEGO <- function(){
 
     select_top_five <- reactive({
 
-      clones <- Upset_plot_overlap()
+      clones <- Upset_plot_overlap_table()
       req(clones)
 
       if (input$comparison_operator == "==") {
@@ -18340,6 +18329,8 @@ runSTEGO <- function(){
     output$Line_graph_table <- DT::renderDT(escape = FALSE, filter = list(position = "top", clear = FALSE), options = list(autoWidth = FALSE, lengthMenu = c(1, 2, 5, 10, 20, 50, 100), pageLength = 20, scrollX = TRUE), {
 
       list.df <- select_top_five()
+      message("for line graph")
+      print(list.df)
 
       if(input$is_a_time_series) {
         df <- as.data.frame(list.df[[input$Group_for_line_graph]])
@@ -18347,6 +18338,99 @@ runSTEGO <- function(){
 
           select_top_five()
         }
+    })
+
+
+
+    output$download_line_graph_table <- downloadHandler(
+      filename = function() {
+        # x <- today()
+        paste("line_graph_table_",input$Group_for_line_graph, ".csv", sep = "")
+      },
+      content = function(file) {
+        list.df <- select_top_five()
+        message("for line graph")
+        print(list.df)
+
+        if(input$is_a_time_series) {
+          df <- as.data.frame(list.df[[input$Group_for_line_graph]])
+          df } else {
+
+            df <-  select_top_five()
+          }
+
+        df <- as.data.frame(df)
+        write.csv(df, file, row.names = F)
+      }
+    )
+
+    output$Line_graph_table2 <- DT::renderDT(escape = FALSE, filter = list(position = "top", clear = FALSE), options = list(autoWidth = FALSE, lengthMenu = c(1, 2, 5, 10, 20, 50, 100), pageLength = 20, scrollX = TRUE), {
+      top_5_data_list <- select_top_five()
+      print(top_5_data_list)
+      if(input$is_a_time_series) {
+
+        print(top_5_data_list)
+        req(top_5_data_list)
+        # Remove empty data frames from top_5_data_list
+        top_5_data_list <- top_5_data_list[sapply(top_5_data_list, function(x) nrow(x) > 0)]
+
+      } else {
+        top_5_data_list <- select_top_five()
+      }
+      # Find the maximum count value across all datasets
+      max_count <- max(sapply(top_5_data_list, function(df) max(df)))
+      print(max_count)
+      # Round the maximum count value to the nearest 5 and then add 5
+      max_count <- ceiling(max_count / 5) * 5
+
+      if(input$is_a_time_series) {
+        # Create an empty list to store plots
+        plot_list <- list()
+        year <- input$Group_for_line_graph
+        print(year)
+
+        # Transpose the data frame and convert to data.frame
+        top_5_data <- top_5_data_list[[year]]
+        top_5_transposed <- as.data.frame(t(top_5_data), stringsAsFactors = FALSE)
+
+        # Add Year column
+        top_5_transposed$ID <- year
+
+        # Convert row names into a regular column
+        top_5_transposed$Sample_ID <- rownames(top_5_transposed)
+
+        # Split Sample_ID into separate columns for Group and Time
+        print(top_5_transposed$Sample_ID)
+        separator_input2 <- input$separator_input2
+
+        # Split the strings
+        split_strings <- strsplit(as.character(top_5_transposed$Sample_ID), separator_input2)
+
+        # Convert the list to a data frame
+        split_df <- do.call(rbind, lapply(split_strings, function(x) {
+          if(length(x) == 2) {
+            return(x)
+          } else {
+            return(c(x[1], NA)) # Handle cases where there might not be a second part
+          }
+        }))
+
+        # Convert to a data frame
+        split_df <- as.data.frame(split_df, stringsAsFactors = FALSE)
+
+        # Rename columns for clarity
+        names(split_df) <- c("V1", "V2")
+
+        # Combine with the original transposed data frame
+        top_5_transposed <- cbind(top_5_transposed, split_df)
+
+        # Print the resulting data frame to verify the output
+        print(top_5_transposed)
+
+        # Rest of your code for further processing and plotting
+      }
+
+
     })
 
     Line_graph_for_tracing <- reactive({
@@ -18362,7 +18446,6 @@ runSTEGO <- function(){
 
       } else {
         top_5_data_list <- select_top_five()
-
       }
       # Find the maximum count value across all datasets
       max_count <- max(sapply(top_5_data_list, function(df) max(df)))
@@ -18373,126 +18456,107 @@ runSTEGO <- function(){
       if(input$is_a_time_series) {
         # Create an empty list to store plots
         plot_list <- list()
+        year <- input$Group_for_line_graph
+        print(year)
 
-        # Iterate over each year in top_5_data_list
-        for (year in names(top_5_data_list)) {
-          # Transpose the data frame and convert to data.frame
-          top_5_data <- top_5_data_list[[year]]
+        # Transpose the data frame and convert to data.frame
+        top_5_data <- top_5_data_list[[year]]
+        top_5_transposed <- as.data.frame(t(top_5_data), stringsAsFactors = FALSE)
 
-          top_5_transposed <- as.data.frame(t(top_5_data), stringsAsFactors = FALSE)
+        # Add Year column
+        top_5_transposed$ID <- year
 
-          # Add Year column
-          top_5_transposed$ID <- year
+        # Convert row names into a regular column
+        top_5_transposed$Sample_ID <- rownames(top_5_transposed)
 
-          # Convert row names into a regular column
-          top_5_transposed$Sample_ID <- rownames(top_5_transposed)
-          # Split Sample_ID into separate columns for Group and Time
+        # Split Sample_ID into separate columns for Group and Time
+        print(top_5_transposed$Sample_ID)
+        separator_input2 <- input$separator_input2
 
-          # as.data.frame(do.call(rbind, strsplit(as.character(top_5_transposed$Sample_ID), "[.]")))
+        # Split the strings
+        split_strings <- strsplit(as.character(top_5_transposed$Sample_ID), separator_input2)
 
-          sample_parts <- strsplit(top_5_transposed$Sample_ID, input$separator_input2)
-          print(sample_parts)
-          #   # Loop over each part and assign them to new columns
-
-          for (i in 1:length(names(top_5_data_list))) {  # Assuming there are 3 parts after splitting
-            # Create new column names V1, V2, V3
-            new_col_name <- paste0("V", i)
-
-            # Extract the ith part from each split
-            top_5_transposed[[new_col_name]] <- sapply(sample_parts, function(x) ifelse(length(x) >= i, x[i], NA))
+        # Convert the list to a data frame
+        split_df <- do.call(rbind, lapply(split_strings, function(x) {
+          if(length(x) == 2) {
+            return(x)
+          } else {
+            return(c(x[1], NA)) # Handle cases where there might not be a second part
           }
+        }))
 
-          print(head(top_5_transposed))
-          all_names <- names(top_5_transposed)
-          print(all_names)
-          v_gene_names <- all_names[grep("TRAV|TRBV|TRGV|TRDV", all_names)]
-          print(v_gene_names)
+        # Convert to a data frame
+        split_df <- as.data.frame(split_df, stringsAsFactors = FALSE)
 
-          # Reshape the data into long format
-          data_long <- pivot_longer(top_5_transposed,
-                                    cols = v_gene_names,   # Exclude the Sample_ID, Group, and Time columns
-                                    names_to = "VDJ",  # New column name for time points
-                                    values_to = "Count")     # New column name for values
-          # data_long
-          print(data_long)
-          # Replace underscores with spaces in the VDJ variable
-          data_long$VDJ <- gsub("_", " ", data_long$VDJ)
-          data_long$VDJ <- gsub(" & ", " ", data_long$VDJ)
-          #   # Wrap the Time_Point variable based on spaces
-          data_long$VDJ <- str_wrap(data_long$VDJ, width = 10)  # Adjust width as needed
-          #
-          #   # Determine unique levels of VDJ
-          unique_vdj <- as.data.frame(unique(data_long$VDJ))
-          names(unique_vdj) <- "unique_vdj"
+        # Rename columns for clarity
+        names(split_df) <- c("V1", "V2")
 
-          set.seed(200)
-          unique_vdj$shape <- sample(1:25, nrow(unique_vdj))
-          data_long
+        # Combine with the original transposed data frame
+        top_5_transposed <- cbind(top_5_transposed, split_df)
 
-          # Create the plot
+        # Print the resulting data frame to verify the output
+        print(top_5_transposed)
 
-          # if(input$number_of_conditions == 2) {
+        # Rest of your code for further processing and plotting
 
-          req(length(data_long$V2>0))
 
-          p <- ggplot(data_long, aes(x = V2, y = Count, color = VDJ, shape = VDJ)) +
-            geom_point(size = 7) +  # Increased point size
-            geom_line(aes(group = paste(VDJ, V1)), linewidth = 1.25) +
-            scale_color_viridis_d(option = "C", begin = 0.2, end = 0.8) +
-            scale_shape_manual(values = unique_vdj$shape) +  # Use default shapes
-            labs(x = "", y = "", title = "", color = year, shape = year) +
-            theme_minimal() +
-            theme(legend.title = element_text(face = "bold", size = 16, family = input$font_type),
-                  legend.text = element_text(size = input$Legend_size, family = input$font_type),
-                  axis.text = element_text(size = 16, family = input$font_type),
-                  axis.title = element_blank(),
-                  plot.title = element_blank()
-            ) +
-            guides(color = guide_legend(
-              title.theme = element_text(margin = margin(b = 0)),  # Increase margin between title and items
-              label.theme = element_text(margin = margin(t = 15)),
-              override.aes = list(size = 7)# Increase margin between items
-            )) +
-            guides(color=guide_legend(ncol=input$legend_columns)) +
-            ylim(0, max_count)  # Set y-axis limits
+        print(head(top_5_transposed))
+        all_names <- names(top_5_transposed)
+        print(all_names)
+        v_gene_names <- all_names[grep("TRAV|TRBV|TRGV|TRDV", all_names)]
+        print(v_gene_names)
 
-          # Store the plot in the list
-          plot_list[[year]] <- p
-
-        }
-        # else if (input$number_of_conditions == 3) {
+        # Reshape the data into long format
+        data_long <- pivot_longer(top_5_transposed,
+                                  cols = v_gene_names,   # Exclude the Sample_ID, Group, and Time columns
+                                  names_to = "VDJ",  # New column name for time points
+                                  values_to = "Count")     # New column name for values
+        # data_long
+        print(data_long)
+        # Replace underscores with spaces in the VDJ variable
+        data_long$VDJ <- gsub("_", " ", data_long$VDJ)
+        data_long$VDJ <- gsub(" & ", " ", data_long$VDJ)
+        #   # Wrap the Time_Point variable based on spaces
+        data_long$VDJ <- str_wrap(data_long$VDJ, width = 10)  # Adjust width as needed
         #
-        #     req(length(data_long$V2>0), length(data_long$V3>0))
-        #
-        #     p <- ggplot(data_long, aes(x = V2, y = Count, color = VDJ, shape = V3)) +
-        #       geom_point(size = 7) +  # Increased point size
-        #       geom_line(aes(group = paste(VDJ, V1)), linewidth = 1.25) +
-        #       scale_color_viridis_d(option = "C", begin = 0.2, end = 0.8) +
-        #       scale_shape_manual(values = unique_vdj$shape) +  # Use default shapes
-        #       labs(x = "", y = "", title = "", color = year, shape = input$shape_legend_name) +
-        #       theme_minimal() +
-        #       theme(legend.title = element_text(colour = "black", size = input$Legend_size, family = input$font_type),
-        #             legend.text = element_text(size = input$Legend_size, family = input$font_type),
-        #             axis.text.y = element_text(colour = "black", family = input$font_type, size = input$text_size),
-        #             axis.text.x = element_text(colour = "black", family = input$font_type, size = input$text_size, angle = 0),
-        #             axis.title = element_blank(),
-        #             plot.title = element_blank()
-        #       ) +
-        #       guides(colour = guide_legend(order = 1,
-        #                                    title.theme = element_text(margin = margin(b = 0)),  # Increase margin between title and items
-        #                                    label.theme = element_text(margin = margin(t = 15)),
-        #
-        #       ),
-        #       shape = guide_legend(order = 1,
-        #                            title.theme = element_text(margin = margin(b = 0)),  # Increase margin between title and items
-        #                            label.theme = element_text(margin = margin(t = 15)),
-        #       )) +
-        #       ylim(0, max_count)  # Set y-axis limits
-        #
-        #     # Store the plot in the list
-        #     plot_list[[year]] <- p
-        #   }
-        # }
+        #   # Determine unique levels of VDJ
+        unique_vdj <- as.data.frame(unique(data_long$VDJ))
+        names(unique_vdj) <- "unique_vdj"
+
+        set.seed(200)
+        unique_vdj$shape <- sample(1:25, nrow(unique_vdj))
+        data_long
+
+        # Create the plot
+
+        # if(input$number_of_conditions == 2) {
+
+        req(length(data_long$V2>0))
+
+        p <- ggplot(data_long, aes(x = V2, y = Count, color = VDJ, shape = VDJ)) +
+          geom_point(size = 7) +  # Increased point size
+          geom_line(aes(group = paste(VDJ, V1)), linewidth = 1.25) +
+          scale_color_viridis_d(option = "C", begin = 0.2, end = 0.8) +
+          scale_shape_manual(values = unique_vdj$shape) +  # Use default shapes
+          labs(x = "", y = "", title = "", color = year, shape = year) +
+          theme_minimal() +
+          theme(legend.title = element_text(face = "bold", size = 16, family = input$font_type),
+                legend.text = element_text(size = input$Legend_size, family = input$font_type),
+                axis.text = element_text(size = 16, family = input$font_type),
+                axis.title = element_blank(),
+                plot.title = element_blank()
+          ) +
+          guides(color = guide_legend(
+            title.theme = element_text(margin = margin(b = 0)),  # Increase margin between title and items
+            label.theme = element_text(margin = margin(t = 15)),
+            override.aes = list(size = 7)# Increase margin between items
+          )) +
+          guides(color=guide_legend(ncol=input$legend_columns)) +
+          ylim(0, max_count)  # Set y-axis limits
+
+        # Store the plot in the list
+        plot_list[[year]] <- p
+
       } else {
         top_5_transposed <- as.data.frame(t(top_5_data_list), stringsAsFactors = FALSE)
         print(top_5_transposed)
@@ -18568,7 +18632,6 @@ runSTEGO <- function(){
       }
       plot_list
     })
-
 
     output$line_graph_output <- renderPlot({
       plot_list <- Line_graph_for_tracing()
@@ -18669,7 +18732,7 @@ runSTEGO <- function(){
       umap.meta$Selected_function <- umap.meta[,names(umap.meta) %in% input$Colour_By_this]
       umap.meta$Selected_group <- umap.meta[,names(umap.meta) %in% input$Split_group_by_]
 
-      Upset_plot_overlap <- Upset_plot_overlap()
+      Upset_plot_overlap <- Upset_plot_overlap_table()
       Upset_plot_overlap_top <- subset(Upset_plot_overlap, Upset_plot_overlap$sum > 1)
       Upset_plot_overlap_top$chain <- rownames(Upset_plot_overlap_top)
       umap.meta.overlap <- merge(Upset_plot_overlap_top, umap.meta, by = c("chain",map.meta$ID_Column))
