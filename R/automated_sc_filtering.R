@@ -1,3 +1,40 @@
+#' Log parameters for filtering
+#' @name log_parameters_SeuratQC
+#' @description
+#' This function is to automate step 3a. We highly recommend that you check your base parameters in the interface and then apply them to all of the data. The default parameters are set for human 10x
+#' @param log_file Name of the log file which will always be
+
+log_parameters_SeuratQC <- function(log_file, params_to_log = NULL) {
+  # Open the log_file in append mode
+  con <- file(log_file,open = "a")
+  # Get the versions of Seurat and STEGO.R
+  seurat_version <- packageVersion("Seurat")
+  stego_version <- packageVersion("STEGO.R")
+  # Start with a newline
+  writeLines("\n", con)
+
+  if (is.null(params_to_log)) {
+    message <- sprintf("Each file underwent filtering with the default STEGO.R (version %s) using Seurat (version %s)[ref].", stego_version, seurat_version)
+  } else {
+    non_default_params <- sapply(names(params_to_log), function(name) paste(name, " (", params_to_log[[name]], ")", sep = ""))
+    non_default_params_str <- paste(non_default_params, collapse = ", ")
+    message <- sprintf("Each file underwent filtering with the default STEGO.R (version %s) with Seurat (version %s)[ref] except for %s parameters.", stego_version, seurat_version, non_default_params_str)
+    non_default_params_str
+    grepl("features.max",non_default_params_str)
+    length(unique(names(params_to_log)))
+
+    message <-  ifelse(grepl("features.max",message),gsub("features.max","maximum features",message),message)
+    message <- ifelse(length(unique(names(params_to_log)))==1,gsub("parameters","parameter",message),message)
+    message
+  }
+  print(message)
+  # Write the message to the log file
+  writeLines(message, con)
+
+  # Close the file connection
+  close(con)
+}
+
 #' Automated preprocessing
 #' @name automated_sc_filtering
 #' @description
@@ -34,7 +71,7 @@ automated_sc_filtering <- function(folder = "1_SeuratQC",
                                    output_dir = "3_SCobj/3a/"
 ) {
 
-  main_directory <- "1_SeuratQC"
+  main_directory <- folder
   # main_directory <- main_directory
   main_folders <- list.files(paste(main_directory),full.names = T)
   samp_names <- main_folders[grepl("_count-matrix_10x.csv.gz", main_folders)]
@@ -44,6 +81,62 @@ automated_sc_filtering <- function(folder = "1_SeuratQC",
   samp_names2 <- main_folders2[grepl("_count-matrix_10x.csv.gz", main_folders2)]
   samp_names2 <- gsub("_count-matrix_10x.csv.gz","",samp_names2)
   num <- length(samp_names2)
+
+
+  default_params <- list(
+    folder = "1_SeuratQC",
+    dataset_type = "10x",
+    species = "hs",
+    features.min = 200,
+    features.max = 2500,
+    percent.mt = 20,
+    percent.rb = 5,
+    dimension_sc = 15,
+    resolution_sc = 1,
+    limit_to_TCR_GEx = FALSE,
+    save_plots = TRUE,
+    output_dir = "3_SCobj/3a/"
+  )
+
+  current_params <- list(folder = folder,
+                         dataset_type = dataset_type,
+                         species = species,
+                         features.min = features.min,
+                         features.max = features.max,
+                         percent.mt = percent.mt,
+                         percent.rb = percent.rb,
+                         dimension_sc = dimension_sc,
+                         resolution_sc = resolution_sc,
+                         limit_to_TCR_GEx = limit_to_TCR_GEx,
+                         save_plots = save_plots,
+                         output_dir = output_dir)
+
+  params_to_log <- list()
+
+  for (param_name in names(current_params)) {
+    if (!identical(current_params[[param_name]], default_params[[param_name]])) {
+      params_to_log[[param_name]] <- current_params[[param_name]]
+    }
+  }
+
+  log_file <- "method_file.txt"
+
+  con <- file(log_file,open = "a")
+  writeLines("\n", con)
+
+  message_samples <- paste0("There were ",num," files that underwent filtering.")
+  writeLines(message_samples, con)
+
+  # Close the file connection
+  close(con)
+
+  if (length(params_to_log) > 0) {
+    log_parameters_SeuratQC(log_file, params_to_log)
+  } else {
+    log_parameters_SeuratQC(log_file)
+  }
+
+
   for (i in 1:num) {
     # tic()
     message(paste("processing", i, "of", num))
