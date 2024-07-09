@@ -10,6 +10,7 @@ scGate_annotating(
   signature_for_testing = c("CD8A", "CD8B"),
   threshold = 0.25,
   TcellFunction = FALSE,
+  SimpleFunction = FALSE,
   immune_checkpoint = FALSE,
   senescence = FALSE,
   cycling = FALSE,

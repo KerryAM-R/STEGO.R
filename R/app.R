@@ -2207,9 +2207,14 @@ runSTEGO <- function(){
               p("Epitope variables",class = "name-header4"),
               fluidRow(
                 column(6, uiOutput("classification_to_add_epitope")),
-                column(6, uiOutput("classification_to_add_epitope2")),
+                column(6, uiOutput("classification_to_add_epitope2"))
+              ),
+              fluidRow(
                 column(6, actionButton("Update_epi", "Add in Epitope list")),
                 column(6, selectInput("Epi_of_interest", p("Epitope of interest",class = "name-header_functions"), "")),
+
+              ),
+              fluidRow(
                 column(3,""),
                 column(9,  actionButton("caluclate_Epi","Calc Epitope Stats")),
               ),
@@ -2994,7 +2999,7 @@ runSTEGO <- function(){
                                   )
                          ),
                          # epitope analysis -----
-                         tabPanel("Epitope",
+                         tabPanel("Epitope (TCRex)",
                                   value = "Epitope",
 
                                   tabsetPanel(
@@ -3069,9 +3074,16 @@ runSTEGO <- function(){
                                     tabPanel("Stats",
                                              value = "EpiPan_stat",
                                              div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
-                                             div(DT::DTOutput("Epi_of_interest_DF")),
-                                             div(DT::DTOutput("compare.stat_Epi_DT")),
-                                             downloadButton("downloadtb_compare.stat_Epi", "Download table")
+                                             fluidRow(
+                                               column(4,div(DT::DTOutput("Epi_of_interest_DF"))),
+                                               column(8,div(DT::DTOutput("compare.stat_Epi_DT")))
+                                             ),
+
+                                             fluidRow(
+                                               column(4,downloadButton("downloadtb_epi_summary_table", "Download Epi summary") ),
+                                               column(8, downloadButton("downloadtb_compare.stat_Epi", "Download Epi Stats"))
+                                             ),
+
                                     ),
                                     tabPanel("Dotplot",
                                              value = "EpiPan_dot",
@@ -3097,10 +3109,12 @@ runSTEGO <- function(){
                                              ),
                                              div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
                                              div(DT::DTOutput("Over_rep_Epi_Tab")),
+
                                              downloadButton("downloadtb_over.rep.Epi", "Download table")
                                     )
                                   ),
                          ),
+                         ## add here
                        ),
               ),
               ########
@@ -16276,6 +16290,17 @@ runSTEGO <- function(){
       as.data.frame(Epitope_of_interest())
     })
 
+
+    output$downloadtb_epi_summary_table <- downloadHandler(
+      filename = function() {
+        paste("Epi_summary_table_", input$Epi_of_interest,".csv", sep = "")
+      },
+      content = function(file) {
+        df <- as.data.frame(Epitope_of_interest())
+        write.csv(df, file, row.names = T)
+      }
+    )
+
     observeEvent(input$Update_epi, {
       sc <- UMAP_metadata_with_labs()
       epi <- data_sc_TCRex()
@@ -16299,7 +16324,7 @@ runSTEGO <- function(){
 
     Vals_expanded.stats_epi <- reactiveValues(output_epi=NULL)
 
-    observeEvent(c(input$logFC_pval_findmarker), {
+    observeEvent(c(input$logFC_pval_findmarker, input$Epi_of_interest), {
       Vals_expanded.stats_epi$output_epi <- NULL
     })
 
@@ -16313,8 +16338,9 @@ runSTEGO <- function(){
         )
       )
       req(input$Epi_of_interest)
+
       df3.meta <- sc@meta.data
-      as.data.frame(Epitope_of_interest())
+
       epi <- epi[epi$epitope %in% input$Epi_of_interest, ]
       epi <- epi[,names(epi) %in% c("CDR3_beta", "epitope", "pathology")]
       epi <- unique(epi)
@@ -16330,6 +16356,7 @@ runSTEGO <- function(){
       checking <- merge(df3.meta, epi, by = "CDR3_beta", all.x = T)
       rownames(checking) <- checking$Cell_Index
       name.check.epi <- unlist(unique(epi$epitope))
+
       checking$epi_selected <- ifelse(as.character(checking$epitope) == name.check.epi, name.check.epi, "not selected")
       rownames(checking) <- (checking$Cell_Index)
       checking <- checking[order(checking$order, decreasing = F), ]
@@ -16341,6 +16368,7 @@ runSTEGO <- function(){
       min.logfc <- input$LogFC_ # 0.25 is standard
 
       cluster.names <- unique(Idents(sc))[order(unique(Idents(sc)))]
+
       if (input$logFC_pval_findmarker) {
         markers.fm.list <- FindMarkers(sc, ident.1 = name.check.epi, min.pct = min.pct.expression, logfc.threshold = min.logfc, only.pos = TRUE)
         markers.fm.list2 <- subset(markers.fm.list, markers.fm.list$p_val_adj < input$pval.ex.filter)
@@ -16367,8 +16395,30 @@ runSTEGO <- function(){
           error_message_val_sc
         )
       )
-      compare.stat_Epi()
+
+      df <- compare.stat_Epi()
+      validate(
+        need(
+          nrow(df) > 0,
+          "Calc Epitope stats"
+        )
+      )
+
+      df
+
     })
+
+
+
+    output$downloadtb_compare.stat_Epi <- downloadHandler(
+      filename = function() {
+        paste("Stats_table_for_", input$Epi_of_interest,".csv", sep = "")
+      },
+      content = function(file) {
+        df <- as.data.frame(compare.stat_Epi())
+        write.csv(df, file, row.names = T)
+      }
+    )
 
     # Epitope dotplot ----
     all_expression_plot_epi <- reactive({
@@ -16381,6 +16431,9 @@ runSTEGO <- function(){
         )
       )
       req(input$Epi_of_interest)
+
+
+
       df3.meta <- sc@meta.data
       as.data.frame(Epitope_of_interest())
       epi <- epi[epi$epitope %in% input$Epi_of_interest, ]
@@ -16410,6 +16463,14 @@ runSTEGO <- function(){
       checking
       sc@meta.data <- checking
       Idents(object = sc) <- sc@meta.data$epi_selected
+
+      epi_stats <- compare.stat_Epi()
+      validate(
+        need(
+          nrow(epi_stats) > 0,
+          "Calc Epitope Stats located in the side bar"
+        )
+      )
 
       if (input$restrict.dotplot == F) {
         list.names <- rownames(compare.stat_Epi())
