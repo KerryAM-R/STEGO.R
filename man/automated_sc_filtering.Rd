@@ -26,17 +26,17 @@ automated_sc_filtering(
 
 \item{species}{either select hs or mm. This is due to the gene case with all caps for hs and proper case for mm.}
 
-\item{features.min}{minimum number of features}
+\item{features.min}{minimum number of features; default 200 for 10x and 45 for BD Immune panel}
 
-\item{features.max}{Maximum features}
+\item{features.max}{Maximum features; default 2500 for 10x and 160 for BD immune panel}
 
-\item{percent.mt}{Mitochondria DNA cut-off (<)}
+\item{percent.mt}{Mitochondria DNA cut-off (<); default 10\%}
 
-\item{percent.rb}{Ribosomal RNA cut-off (>)}
+\item{percent.rb}{Ribosomal RNA cut-off (>); default 20\%}
 
-\item{dimension_sc}{Set number of dimensions to use for the dimensional reduction.}
+\item{dimension_sc}{Set number of dimensions to use for the dimensional reduction. Default 15}
 
-\item{resolution_sc}{Set the Seurat unsupervised clustering; however, this wont be used for annotation purposes in this pipeline.}
+\item{resolution_sc}{Set the Seurat unsupervised clustering; however, this wont be used for annotation purposes in this pipeline. Default 1.}
 
 \item{limit_to_TCR_GEx}{Reduce the file to limit to the TCR seq and GEx only (recommended for large data sets)}
 

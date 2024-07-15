@@ -252,10 +252,10 @@ runSTEGO <- function(){
         border: 4px solid #41b000;
         border-radius: 5px;
         padding: 12px; /* Increased padding */
-        z-index: 1000; /* Ensure hint text is above other elements */
+        z-index: 200; /* Ensure hint text is above other elements */
         font-size: 14px; /* Decreased font size */
         text-align: center; /* Center alignment */
-        width: 200px; /* Set width to prevent stretching */
+        width: 250px; /* Set width to prevent stretching */
         color: #41b000; /* Change text color to purple */
       }
       .hint-text2 {
@@ -267,7 +267,21 @@ runSTEGO <- function(){
         padding: 12px; /* Increased padding */
         z-index: 1000; /* Ensure hint text is above other elements */
         font-size: 14px; /* Decreased font size */
-        text-align: center; /* Center alignment */
+        text-align: left; /* Center alignment */
+        width: 250px; /* Set width to prevent stretching */
+        color: #41b000; /* Change text color to purple */
+      }
+
+        .hint-text3 {
+        display: none;
+        position: absolute; /* Change position to relative */
+        background-color: #d8ffc2;
+        border: 4px solid #41b000;
+        border-radius: 5px;
+        padding: 12px; /* Increased padding */
+        z-index: 1000; /* Ensure hint text is above other elements */
+        font-size: 14px; /* Decreased font size */
+        text-align: left; /* Center alignment */
         width: 150px; /* Set width to prevent stretching */
         color: #41b000; /* Change text color to purple */
       }
@@ -297,10 +311,10 @@ runSTEGO <- function(){
         "
       $(document).ready(function(){
         $('.hint-icon, .hint-icon2').mouseenter(function(){
-          $(this).siblings('.hint-text, .hint-text2').show();
+          $(this).siblings('.hint-text, .hint-text2, .hint-text3').show();
         });
         $('.hint-icon, .hint-icon2').mouseleave(function(){
-          $(this).siblings('.hint-text, .hint-text2').hide();
+          $(this).siblings('.hint-text, .hint-text2, .hint-text3').hide();
         });
       });
       "
@@ -1150,7 +1164,6 @@ runSTEGO <- function(){
                            column(4,checkboxInput("gdTCR_available",p("gdTCR?", class = "name-header2"),value = F)),
                            column(4,checkboxInput("BCR_available",p("BCR?", class = "name-header2"),value = F)),
                          ),
-
                          conditionalPanel(
                            condition = ("input.abTCR_available == true"),
                            fileInput("file_SC_meta",p("Upload abTCR meta.data (.csv.gz or .csv)",class = "name-header_functions"), )),
@@ -1160,15 +1173,12 @@ runSTEGO <- function(){
                          conditionalPanel(
                            condition = ("input.BCR_available == true"),
                            fileInput("file_SC_meta3",p("Upload BCR meta.data (.csv.gz or .csv)",class = "name-header_functions"), )),
-                         # selectInput("species","Species",choices = c("human","mouse","other")),
                          selectInput("df_seruatobj_type",p("Data type",class = "name-header_functions"),
                                      choices = c("10x_Genomics (raw)", "10x_Genomics (.h5)","BD Rhapsody (Human Immune panel)","BD Rhapsody (Full panel)", "BD Rhapsody (Mouse)", "Array")),
                          selectInput("stored_in_expression",p("Does the .h5 object has multiple part?",class = "name-header_functions"),
                                      choices = c("no", "yes")),
                          uiOutput("feature_input"),
                          actionButton('run_violin', 'Filter', onclick = "$(tab).removeClass('disabled-1')"),
-
-                         # actionButton("run_violin", "Update Violin plot", onclick = "$(tab1).removeClass('disabled_after')"),
                          conditionalPanel(
                            condition = ("input.run_violin != 0"),
                            fluidRow(
@@ -1194,14 +1204,12 @@ runSTEGO <- function(){
             mainPanel(
               width = 9,
               tabsetPanel(
-                # tabPanel("Instructions"
-                #          ),
                 tabPanel(
                   "Uploaded Files",
                   div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
-                  div(DT::DTOutput("DEx_header_name_check.dt")),
+                  div(DT::DTOutput("DEx_header_name_check.dt",height = "200px")),
                   div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
-                  div(DT::DTOutput("DEx_view.meta.dt")),
+                  div(DT::DTOutput("DEx_view.meta.dt",height = "200px")),
                 ),
                 ######
                 tabPanel(
@@ -1415,6 +1423,33 @@ runSTEGO <- function(){
     '
                   ),
                 ),
+
+                tabPanel("Auto", value = "Automate_seurat_qc_process",
+                         p("We recommend investigating the cut-offs before using the automated button, as your parameters may be different from the defaults"),
+                         actionButton("run_auto_Seurat","Automated QC"),
+
+                         tags$script(
+                           '
+    var tab7 = $(\'a[data-value="Automate_seurat_qc_process"]\').parent();
+
+    $(function(){
+      $(tab7).addClass("disabled-2");
+
+      $(tab7.parent()).on("click", "li.disabled-3", function(e) {
+        e.preventDefault();
+        return false;
+      });
+    });
+    $(document).on("shiny:connected", function(e) {
+      $("#run_reduction").on("click", function() {
+        $(tab7).removeClass("disabled-2");
+      });
+    });
+    '
+                         ),
+
+                ),
+
               ),
             ),
             # end of QC -----
@@ -1508,31 +1543,94 @@ runSTEGO <- function(){
                              verbatimTextOutput("var_harmony_verbrose")
                            ),
                            tabPanel(
-                             "Scale data",
+                             "Scale data", value = "scale_dat_harm",
                              div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
                              actionButton("run_scale", "Run Scale"),
                              div(DT::DTOutput("Tb_scaling_features_for_annotation")),
                              div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
-                             verbatimTextOutput("scale_harmony_verbrose")
+                             verbatimTextOutput("scale_harmony_verbrose"),
+
+                             tags$script(
+                               '
+    var tab3b_2 = $(\'a[data-value="scale_dat_harm"]\').parent();
+
+    $(function(){
+      $(tab3b_2).addClass("disabled-2");
+
+      $(tab3b_2.parent()).on("click", "li.disabled-2", function(e) {
+        e.preventDefault();
+        return false;
+      });
+    });
+    $(document).on("shiny:connected", function(e) {
+      $("#run_var").on("click", function() {
+        $(tab3b_2).removeClass("disabled-2");
+      });
+    });
+    '
+                             ),
+
                            ),
                            tabPanel(
-                             "PCA",
+                             "PCA", value = "PCA_dat_harm",
                              div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
                              actionButton("run_PCA", "Run PCA"),
                              div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
-                             verbatimTextOutput("PCA_harmony_verbrose")
+                             verbatimTextOutput("PCA_harmony_verbrose"),
+
+                             tags$script(
+                               '
+    var tab3b_3 = $(\'a[data-value="PCA_dat_harm"]\').parent();
+
+    $(function(){
+      $(tab3b_3).addClass("disabled-2");
+
+      $(tab3b_3.parent()).on("click", "li.disabled-2", function(e) {
+        e.preventDefault();
+        return false;
+      });
+    });
+    $(document).on("shiny:connected", function(e) {
+      $("#run_scale").on("click", function() {
+        $(tab3b_3).removeClass("disabled-2");
+      });
+    });
+    '
+                             ),
+
                            ),
                            tabPanel(
-                             "harmony",
+                             "harmony",value = "harm_dat_harm",
                              div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
                              selectInput("meta_data_for_harmony","Group by variable", choices = "", selected = ""),
                              numericInput("Theta_for_harmony","theta",value = 2),
                              actionButton("run_harmony", "Run Harmony"),
                              div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
                              verbatimTextOutput("harmony_verbrose"),
+
+                             tags$script(
+                               '
+    var tab3b_4 = $(\'a[data-value="harm_dat_harm"]\').parent();
+
+    $(function(){
+      $(tab3b_4).addClass("disabled-2");
+
+      $(tab3b_4.parent()).on("click", "li.disabled-2", function(e) {
+        e.preventDefault();
+        return false;
+      });
+    });
+    $(document).on("shiny:connected", function(e) {
+      $("#run_PCA").on("click", function() {
+        $(tab3b_4).removeClass("disabled-2");
+      });
+    });
+    '
+                             ),
+
                            ),
                            tabPanel(
-                             "Dimentional reduction",
+                             "Dimentional reduction",value = "reduction_dat_harm",
                              fluidRow(
                                column(3, numericInput("dimension_Merged", p("Max number of dimensions",class = "name-header_functions"), value = 30)),
                                column(6, numericInput("res_merged",p("Resolution of clusters",class = "name-header_functions"), value = 0.5)),
@@ -1540,9 +1638,30 @@ runSTEGO <- function(){
                              actionButton("run_reduction_harmony", "Run Dimentional reduction"),
                              div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
                              verbatimTextOutput("testing_mult4"),
+
+                             tags$script(
+                               '
+    var tab3b_5 = $(\'a[data-value="reduction_dat_harm"]\').parent();
+
+    $(function(){
+      $(tab3b_5).addClass("disabled-2");
+
+      $(tab3b_5.parent()).on("click", "li.disabled-2", function(e) {
+        e.preventDefault();
+        return false;
+      });
+    });
+    $(document).on("shiny:connected", function(e) {
+      $("#run_harmony").on("click", function() {
+        $(tab3b_5).removeClass("disabled-2");
+      });
+    });
+    '
+                             ),
+
                            ),
                            tabPanel(
-                             "UMAP",
+                             "UMAP",value = "UMAP_dat_harm",
                              div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
                              plotOutput("create_UMAP_merged", height = "600px"),
                              fluidRow(
@@ -1554,6 +1673,28 @@ runSTEGO <- function(){
                                column(2, numericInput("resolution_PNG_sc_merged",p("Resolution (PNG)",class = "name-header_functions"), value = 144)),
                                column(1, style = "margin-top: 20px;", downloadButton("downloadPlotPNG_sc_merged", "Download Network PNG")),
                              ),
+
+                             tags$script(
+                               '
+    var tab3b_6 = $(\'a[data-value="UMAP_dat_harm"]\').parent();
+
+    $(function(){
+      $(tab3b_6).addClass("disabled-2");
+
+      $(tab3b_6.parent()).on("click", "li.disabled-2", function(e) {
+        e.preventDefault();
+        return false;
+      });
+    });
+    $(document).on("shiny:connected", function(e) {
+      $("#run_harmony").on("click", function() {
+        $(tab3b_6).removeClass("disabled-2");
+      });
+    });
+    '
+                             ),
+
+
                            ),
                          )
                 )
@@ -1600,7 +1741,6 @@ runSTEGO <- function(){
                   "scGATE",
                   selectInput("reduction_anno",p("Reduction to use",class = "name-header_functions"),
                               choices = c("calculate", "pca", "umap", "harmony"), selected = "harmony"),
-                  # custom annotations databases
                   conditionalPanel(
                     condition = "input.Require_custom_geneset == 'yes'",
                     fluidRow(
@@ -1638,7 +1778,9 @@ runSTEGO <- function(){
                       column(3, checkboxInput("hs_IC_scGATE", p("Immune checkpoint (Human)", class = "name-header2"), value = F)),
                       column(3, checkboxInput("hs_cytotoxic_scGATE", p("Cytotoxic (Human)", class = "name-header2"), value = F)),
                       column(3, checkboxInput("hs_senescence_scGATE", p("Senescence (Human)", class = "name-header2"), value = F)),
-                      column(3, checkboxInput("hs_cycling_scGATE", p("Cycling (Human)", class = "name-header2"), value = F)),
+                      column(3, checkboxInput("hs_cycling_scGATE", p("Cycling (Human)", class = "name-header2"), value = F))
+                    ),
+                    fluidRow(
                       column(3, checkboxInput("hs_TCRseq_scGATE", p("TCR-seq (Human)", class = "name-header2"), value = F)),
                     )
                   ),
@@ -1684,14 +1826,11 @@ runSTEGO <- function(){
                     condition = "input.Data_types == '10x_HS' || input.Data_types == 'BD_HS.Full.Panel' || 'BD_HS.Immune.Panel'",
                     div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
                     verbatimTextOutput("scGATE_verbatum_function"),
-                    div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
+                    verbatimTextOutput("scGATE_verbatum_simp_function"),
                     verbatimTextOutput("scGATE_verbatum_immune_check"),
-                    div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
                     verbatimTextOutput("scGATE_verbatum_cytotoxic"),
                     verbatimTextOutput("scGATE_verbatum_senescence"),
-                    div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
                     verbatimTextOutput("scGATE_verbatum_cycling"),
-                    div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
                     verbatimTextOutput("scGATE_verbatum_TCRseq"),
                   ),
                   conditionalPanel(
@@ -2101,7 +2240,17 @@ runSTEGO <- function(){
               ),
               p(" "),
               fluidRow(
-                p("Cut-offs for FindMarker",class = "name-header4"),
+                column(3,),
+                column(9,
+                       div(class = "select-input-container",
+                           p("Cut-offs for FindMarker",class = "name-header4"),
+                           div(class = "hint-icon",
+                               icon("circle-question", lib = "font-awesome")),
+                           div(class = "hint-text2", "This section is for the 'stats' tabs in each of the respective subsections. Below are the general filtering parameters. The information present in the stats table includes the transcripts in the row.names, p_val, average logFC, pct.1 (ident.1), pct.2 (ident.2), p_val_adj. The pct representes the fraction of cells that expressed the transcript of interest. To see the expression difference is visulised in the violin plot."),
+                       )),
+
+
+
                 column(6, numericInput("min_point_", p("Min point cut off",class = "name-header_functions"), value = 0.25)),
                 column(6, numericInput("LogFC_", p("Min LogFC cut off",class = "name-header_functions"), value = 0.25)),
                 column(6, numericInput("pval.ex.filter", p("adj.p-val cut-off",class = "name-header_functions"), value = 0.1)),
@@ -2110,7 +2259,7 @@ runSTEGO <- function(){
                            numericInput("sequence_breaks_dotplot",p("Bins for ptc.exp",class = "name-header_functions"),value = 10),
                            div(class = "hint-icon",
                                icon("circle-question", lib = "font-awesome")),
-                           div(class = "hint-text", "This value selects bins for the average number of cells expressing the selected transcript. The default for the DotPlot() function from Seurat was 25, and here we over-ride the value with 10 increments, as to better represent the spread of cellular expression"),
+                           div(class = "hint-text3", "This value selects bins for the average number of cells expressing the selected transcript. The default for the DotPlot() function from Seurat was 25, and here we over-ride the value with 10 increments, as to better represent the spread of cellular expression"),
                        )),
                 column(12, div(class = "select-input-container",
                                checkboxInput("logFC_pval_findmarker",p("Positive only?",class = "name-header3"),value = T),
@@ -2790,15 +2939,30 @@ runSTEGO <- function(){
                                     ),
                                     tabPanel(
                                       "Over-representation",
-                                      fluidRow(
-                                        column(3, numericInput("in.geneset.cutoff_top",p("Min number of genes in GeneSet",class = "name-header_functions"),
-                                                               value = 1, min = 0, step = 1, max = 60000)),
-                                        column(3, numericInput("p.val_cutoff_top",p("p-val cut-off",class = "name-header_functions"),
-                                                               value = 0.05, min = 0, max = 1)),
-                                      ),
-                                      div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
-                                      div(DT::DTOutput("Over_rep_Top_clones_Tab")),
-                                      downloadButton("downloadtb_over.rep.Top_Ex", "Download table")
+                                      p("Download the stats filtered table here, and the transcripts used for the background."),
+                                      tags$br(), # Add a line break
+                                      p("The p-value filter is located in the side-bar under FindMarker section"),
+                                      tags$br(), # Add a line break
+                                      p("Also, if you wish to use the expressed transcripts to for the enrichment, the table can be downloaded from FindMarker section."),
+                                      tags$br(), # Add a line break
+                                      p("Use either the below sites or of your choosing to identifed the enrichment."),
+                                      tags$br(), # Add a line break
+                                      p("This ",tags$a(href = "https://geneontology.org/", target = "_blank", "Gene Ontology")," website, can perform gene ontology with the biological pathways (BP), molecular pathways (MP) or cellular components (CC)"),
+
+                                      p("the following site",tags$a(href = "https://biit.cs.ut.ee/gprofiler/gost", target = "_blank", "gProfiler")," has the Gene Ontology (BP,MP and CC), biological pathways (KEGG, REACTOME, WP), regulatory motifs in DNA, protein databases and Human phenotype ontology database searches."),
+
+
+                                      # numericInput("Adj_pvalue_filter")
+
+                                      # fluidRow(
+                                      #   column(3, numericInput("in.geneset.cutoff_top",p("Min number of genes in GeneSet",class = "name-header_functions"),
+                                      #                          value = 1, min = 0, step = 1, max = 60000)),
+                                      #   column(3, numericInput("p.val_cutoff_top",p("p-val cut-off",class = "name-header_functions"),
+                                      #                          value = 0.05, min = 0, max = 1)),
+                                      # ),
+                                      # div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
+                                      # div(DT::DTOutput("Over_rep_Top_clones_Tab")),
+                                      # downloadButton("downloadtb_over.rep.Top_Ex", "Download table")
                                     ),
                                   ),
                          ),
@@ -2868,15 +3032,27 @@ runSTEGO <- function(){
                                     ),
                                     tabPanel("Over-representation",
                                              value = "ExPan_OvRep",
-                                             fluidRow(
-                                               column(3, numericInput("in.geneset.cutoff_Exp",p("Min number of genes in GeneSet",class = "name-header_functions"),
-                                                                      value = 1, min = 0, step = 1, max = 60000)),
-                                               column(3, numericInput("p.val_cutoff_Exp",p("p-val cut-off",class = "name-header_functions"),
-                                                                      value = 0.05, min = 0, max = 1)),
-                                             ),
-                                             div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
-                                             div(DT::DTOutput("Over_rep_Exp_Tab")),
-                                             downloadButton("downloadtb_over.rep_Exp", "Download table")
+                                             p("Download the stats filtered table here, and the transcripts used for the background."),
+                                             tags$br(), # Add a line break
+                                             p("The p-value filter is located in the side-bar under FindMarker section"),
+                                             tags$br(), # Add a line break
+                                             p("Also, if you wish to use the expressed transcripts to for the enrichment, the table can be downloaded from FindMarker section."),
+                                             tags$br(), # Add a line break
+                                             p("Use either the below sites or of your choosing to identifed the enrichment."),
+                                             tags$br(), # Add a line break
+                                             p("This ",tags$a(href = "https://geneontology.org/", target = "_blank", "Gene Ontology")," website, can perform gene ontology with the biological pathways (BP), molecular pathways (MP) or cellular components (CC)"),
+
+                                             p("the following site",tags$a(href = "https://biit.cs.ut.ee/gprofiler/gost", target = "_blank", "gProfiler")," has the Gene Ontology (BP,MP and CC), biological pathways (KEGG, REACTOME, WP), regulatory motifs in DNA, protein databases and Human phenotype ontology database searches."),
+
+                                             # fluidRow(
+                                             #   column(3, numericInput("in.geneset.cutoff_Exp",p("Min number of genes in GeneSet",class = "name-header_functions"),
+                                             #                          value = 1, min = 0, step = 1, max = 60000)),
+                                             #   column(3, numericInput("p.val_cutoff_Exp",p("p-val cut-off",class = "name-header_functions"),
+                                             #          value = 0.05, min = 0, max = 1)),
+                                             # ),
+                                             # div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
+                                             # div(DT::DTOutput("Over_rep_Exp_Tab")),
+                                             # downloadButton("downloadtb_over.rep_Exp", "Download table")
                                     )
                                   )
                          ),
@@ -2986,15 +3162,27 @@ runSTEGO <- function(){
                                     ),
                                     tabPanel("Over-representation",
                                              value = "ClusPan_OvRep",
-                                             fluidRow(
-                                               column(3, numericInput("in.geneset.cutoff_Clust",p("Min number of genes in GeneSet",class = "name-header_functions"),
-                                                                      value = 1, min = 0, step = 1, max = 60000)),
-                                               column(3, numericInput("p.val_cutoff_Clust",p("p-val cut-off",class = "name-header_functions"),
-                                                                      value = 0.05, min = 0, max = 1)),
-                                             ),
-                                             div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
-                                             div(DT::DTOutput("Over_rep_Cluster_Tab")),
-                                             downloadButton("downloadtb_over.rep.cluster", "Download table")
+                                             p("Download the stats filtered table here, and the transcripts used for the background."),
+                                             tags$br(), # Add a line break
+                                             p("The p-value filter is located in the side-bar under FindMarker section"),
+                                             tags$br(), # Add a line break
+                                             p("Also, if you wish to use the expressed transcripts to for the enrichment, the table can be downloaded from FindMarker section."),
+                                             tags$br(), # Add a line break
+                                             p("Use either the below sites or of your choosing to identifed the enrichment."),
+                                             tags$br(), # Add a line break
+                                             p("This ",tags$a(href = "https://geneontology.org/", target = "_blank", "Gene Ontology")," website, can perform gene ontology with the biological pathways (BP), molecular pathways (MP) or cellular components (CC)"),
+
+                                             p("the following site",tags$a(href = "https://biit.cs.ut.ee/gprofiler/gost", target = "_blank", "gProfiler")," has the Gene Ontology (BP,MP and CC), biological pathways (KEGG, REACTOME, WP), regulatory motifs in DNA, protein databases and Human phenotype ontology database searches."),
+
+                                             # fluidRow(
+                                             #   column(3, numericInput("in.geneset.cutoff_Clust",p("Min number of genes in GeneSet",class = "name-header_functions"),
+                                             #                          value = 1, min = 0, step = 1, max = 60000)),
+                                             #   column(3, numericInput("p.val_cutoff_Clust",p("p-val cut-off",class = "name-header_functions"),
+                                             #                          value = 0.05, min = 0, max = 1)),
+                                             # ),
+                                             # div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
+                                             # div(DT::DTOutput("Over_rep_Cluster_Tab")),
+                                             # downloadButton("downloadtb_over.rep.cluster", "Download table")
                                     )
                                   )
                          ),
@@ -3101,16 +3289,28 @@ runSTEGO <- function(){
                                     ),
                                     tabPanel("Over-representation",
                                              value = "EpiPan_OvRep",
-                                             fluidRow(
-                                               column(3, numericInput("in.geneset.cutoff_Epi",p("Min number of genes in GeneSet",class = "name-header_functions"),
-                                                                      value = 1, min = 0, step = 1, max = 60000)),
-                                               column(3, numericInput("p.val_cutoff_Epi",p("p-val cut-off",class = "name-header_functions"),
-                                                                      value = 0.05, min = 0, max = 1)),
-                                             ),
-                                             div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
-                                             div(DT::DTOutput("Over_rep_Epi_Tab")),
+                                             p("Download the stats filtered table here, and the transcripts used for the background."),
+                                             tags$br(), # Add a line break
+                                             p("The p-value filter is located in the side-bar under FindMarker section"),
+                                             tags$br(), # Add a line break
+                                             p("Also, if you wish to use the expressed transcripts to for the enrichment, the table can be downloaded from FindMarker section."),
+                                             tags$br(), # Add a line break
+                                             p("Use either the below sites or of your choosing to identifed the enrichment."),
+                                             tags$br(), # Add a line break
+                                             p("This ",tags$a(href = "https://geneontology.org/", target = "_blank", "Gene Ontology")," website, can perform gene ontology with the biological pathways (BP), molecular pathways (MP) or cellular components (CC)"),
 
-                                             downloadButton("downloadtb_over.rep.Epi", "Download table")
+                                             p("the following site",tags$a(href = "https://biit.cs.ut.ee/gprofiler/gost", target = "_blank", "gProfiler")," has the Gene Ontology (BP,MP and CC), biological pathways (KEGG, REACTOME, WP), regulatory motifs in DNA, protein databases and Human phenotype ontology database searches."),
+
+                                             # fluidRow(
+                                             #   column(3, numericInput("in.geneset.cutoff_Epi",p("Min number of genes in GeneSet",class = "name-header_functions"),
+                                             #                          value = 1, min = 0, step = 1, max = 60000)),
+                                             #   column(3, numericInput("p.val_cutoff_Epi",p("p-val cut-off",class = "name-header_functions"),
+                                             #                          value = 0.05, min = 0, max = 1)),
+                                             # ),
+                                             # div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
+                                             # div(DT::DTOutput("Over_rep_Epi_Tab")),
+                                             #
+                                             # downloadButton("downloadtb_over.rep.Epi", "Download table")
                                     )
                                   ),
                          ),
@@ -7134,7 +7334,9 @@ runSTEGO <- function(){
     )
 
 
-    # Seurat -----
+    #######################
+    # Seurat step 3a-----
+    #######################
     ## uploading the raw files ----
 
     # Define a reactive value to store the data
@@ -7692,6 +7894,42 @@ runSTEGO <- function(){
       }
     })
 
+
+    observeEvent( input$run_auto_Seurat,{
+
+      if(grepl("10x",input$df_seruatobj_type)) {
+        print("10x dataset")
+        automated_sc_filtering(dataset_type = "10x",
+                               features.min = input$features.min,
+                               features.max = input$features.max,
+                               percent.mt = input$percent.mt,
+                               percent.rb = input$percent.rb,
+                               dimension_sc = input$dimension_sc,
+                               resolution_sc = input$resolution,
+                               limit_to_TCR_GEx = F
+        )
+
+
+      } else {
+        automated_sc_filtering(dataset_type = "BD_Rhap",
+                               features.min = input$features.min,
+                               features.max = input$features.max,
+                               percent.mt = input$percent.mt,
+                               percent.rb = input$percent.rb,
+                               dimension_sc = input$dimension_sc,
+                               resolution_sc = input$resolution,
+                               limit_to_TCR_GEx = F
+        )
+
+      }
+
+
+
+    }
+
+
+    )
+
     getData <- reactive({
       inFile.seq <- input$file1_rds.file
 
@@ -8205,11 +8443,7 @@ runSTEGO <- function(){
           selected = "orig.ident"
         )
       }
-
-
     })
-
-
 
     observeEvent(input$run_harmony, {
       sc <- Vals_norm2$Norm1
@@ -8220,7 +8454,7 @@ runSTEGO <- function(){
         )
       )
 
-      # print(unique(sc@meta.data[,names(sc@meta.data) %in% input$meta_data_for_harmony]))
+      req(input$meta_data_for_harmony)
 
       sc@meta.data$group_by_var <- sc@meta.data[,names(sc@meta.data) %in% input$meta_data_for_harmony]
       sc@meta.data$group_by_var[is.na(sc@meta.data$group_by_var)] <- "unknown"
@@ -8836,12 +9070,53 @@ runSTEGO <- function(){
         sc@meta.data <- sc@meta.data[!grepl("_UCell", names(sc@meta.data))]
         sc@meta.data <- sc@meta.data[!grepl("is.pure_", names(sc@meta.data))]
         sc@meta.data <- sc@meta.data[!grepl("scGate_multi", names(sc@meta.data))]
+
+
+
         sc
       } else {
         sc
       }
       sc
     })
+
+    scGATE_anno_simplefunction <- reactive({
+      sc <- getData_2()
+      validate(
+        need(
+          nrow(sc) > 0,
+          "Upload file for annotation"
+        )
+      )
+      req(input$threshold_scGate)
+
+      len <- length(rownames(sc@assays$RNA$scale.data))
+
+      if (input$hs_simplefunction_scGATE) {
+        scGate_models_DB <- custom_db_scGATE(system.file("scGATE", "human/simple_functions", package = "STEGO.R"))
+
+        models.list <- scGate_models_DB
+
+        sc <- scGate(sc,
+                     model = models.list,
+                     pos.thr = input$threshold_scGate,
+                     neg.thr = input$threshold_scGate,
+                     nfeatures = len,
+                     reduction = input$reduction_anno,
+                     ncores = 8, min.cells = 1
+        )
+
+        sc@meta.data$TSimpleFunction <- sc@meta.data$scGate_multi
+        sc@meta.data <- sc@meta.data[!grepl("_UCell", names(sc@meta.data))]
+        sc@meta.data <- sc@meta.data[!grepl("is.pure_", names(sc@meta.data))]
+        sc@meta.data <- sc@meta.data[!grepl("scGate_multi", names(sc@meta.data))]
+        sc
+      } else {
+        sc
+      }
+      sc
+    })
+
 
     output$scGATE_verbatum_function <- renderPrint({
       if (input$hs_function_scGATE) {
@@ -8851,6 +9126,18 @@ runSTEGO <- function(){
         print("Function not run")
       }
     })
+
+
+    output$scGATE_verbatum_simp_function <- renderPrint({
+      if (input$hs_simplefunction_scGATE) {
+        sc <- scGATE_anno_simplefunction()
+        table(sc@meta.data$TSimpleFunction)
+      } else {
+        print("Simple Function not run")
+      }
+    })
+
+
 
     scGATE_anno_cycling <- reactive({
       sc <- getData_2()
@@ -9972,13 +10259,28 @@ runSTEGO <- function(){
       if (input$hs_function_scGATE) {
         obj <- scGATE_anno_function()
         sc@meta.data$Tcellfunction <- obj@meta.data$Tcellfunction
-        sc@meta.data$major <-ifelse(grepl("CD4",sc@meta.data$Tcellfunction),"CD4",
-                                    ifelse(grepl("CD8ab",sc@meta.data$Tcellfunction),"CD8ab",
-                                           ifelse(grepl("CD8aa",sc@meta.data$Tcellfunction),"CD8ab",
-                                                  ifelse(grepl("DN",sc@meta.data$Tcellfunction),"DN","other"
-                                                  ))))
+        sc@meta.data$majorTCF <-ifelse(grepl("CD4",sc@meta.data$Tcellfunction),"CD4",
+                                       ifelse(grepl("CD8ab",sc@meta.data$Tcellfunction),"CD8ab",
+                                              ifelse(grepl("CD8aa",sc@meta.data$Tcellfunction),"CD8ab",
+                                                     ifelse(grepl("DN",sc@meta.data$Tcellfunction),"DN","other"
+                                                     ))))
 
       }
+
+      if (input$hs_simplefunction_scGATE) {
+        obj <- scGATE_anno_simplefunction()
+        sc@meta.data$TSimpleFunction <- obj@meta.data$TSimpleFunction
+        sc@meta.data$majorTCsF <-ifelse(grepl("CD8[.]CD4",sc@meta.data$TSimpleFunction),"DP",
+                                        ifelse(grepl("CD4",sc@meta.data$TSimpleFunction),"CD4",
+                                               ifelse(grepl("Th",sc@meta.data$TSimpleFunction),"CD4",
+                                                      ifelse(grepl("Treg",sc@meta.data$TSimpleFunction),"CD4",
+                                                             ifelse(grepl("CD8",sc@meta.data$TSimpleFunction),"CD8",
+                                                                    ifelse(grepl("CD8",sc@meta.data$TSimpleFunction),"CD8",
+                                                                           ifelse(grepl("DN",sc@meta.data$TSimpleFunction),"DN","other"
+                                                                           )))))))
+
+      }
+
       if (input$hs_IC_scGATE) {
         obj <- scGATE_anno_immune_checkpoint()
         sc@meta.data$IC <- obj@meta.data$IC
@@ -10808,8 +11110,10 @@ runSTEGO <- function(){
       }
     )
 
-    # Analysis -----
+    #######################
+    # Analysis STEP 4. -----
 
+    #######################
     ## uploading seruat obj ----
     data_sc_pro <- reactive({
       inFile_sc_pro <- input$file_SC_pro
@@ -14821,7 +15125,6 @@ runSTEGO <- function(){
 
       geneSet2
     })
-
 
     Over_rep_Top_clones <- reactive({
       geneSet2 <- Over_rep_Top_clones_old()
@@ -22900,83 +23203,83 @@ runSTEGO <- function(){
 
               # stats OverRep analysis ----
 
-              if (dim(markers.fm.list2)[1] > 0) {
-                geneSet <- read.csv(system.file("OverRep", "GeneSets.csv", package = "STEGO.R"), header = T)
-
-                background.genes.name <- as.data.frame(rownames(sc@assays$RNA$scale.data))
-                names(background.genes.name) <- "V1"
-                background.genes <- length(rownames(sc@assays$RNA$scale.data))
-
-                #
-                geneSet$background.genes <- background.genes
-
-                DEx.genes <- as.data.frame(rownames(markers.fm.list2))
-                names(DEx.genes) <- "V1"
-                total.sig <- length(DEx.genes$V1)
-                geneSet$total.sig <- length(DEx.genes$V1)
-                # geneSet
-                geneSet$background.geneset <- NA
-                geneSet$background.geneset.name <- NA
-                geneSet$in.geneset <- NA
-                geneSet$in.geneset.name <- NA
-
-                if (input$datasource == "BD_Rhapsody_Paired" || input$datasource == "BD_Rhapsody_AIRR") { # selectInput("datasource", "Data source",choices=c("10x_Genomics","BD_Rhapsody_Paired","BD_Rhapsody_AIRR")),
-                  geneSet$GeneSet <- gsub("-", ".", geneSet$GeneSet)
-                }
-
-                if (input$species_analysis == "mm") { # selectInput("datasource", "Data source",choices=c("10x_Genomics","BD_Rhapsody_Paired","BD_Rhapsody_AIRR")),
-
-                  geneSet$GeneSet <- str_to_title(geneSet$GeneSet)
-                }
-                message(paste("Starting OverRep analysis of cluster ", i))
-                for (j in 1:dim(geneSet)[1]) {
-                  # listed GeneSet
-
-                  Gene.set.testing <- as.data.frame(strsplit(geneSet$GeneSet, ";")[j])
-                  names(Gene.set.testing) <- "V1"
-                  Gene.set.testing2 <- as.data.frame(unique(Gene.set.testing$V1))
-                  names(Gene.set.testing2) <- "V1"
-                  background.overlap <- merge(Gene.set.testing2, background.genes.name, by = "V1")
-                  geneSet$background.geneset[j] <- length(background.overlap$V1)
-                  geneSet$background.geneset.name[j] <- as.character(paste(unlist(background.overlap[1]), collapse = ";"))
-                  # in sig gene list
-                  overlap <- merge(background.overlap, DEx.genes, by = "V1")
-
-                  geneSet$in.geneset[j] <- length(overlap$V1)
-                  geneSet$in.geneset.name[j] <- as.character(paste(unlist(overlap[1]), collapse = ";"))
-                }
-
-                geneSet2 <- subset(geneSet, geneSet$in.geneset > 0)
-                message(paste(i, "has", length(geneSet2$in.geneset), "GeneSets in Epitope"))
-                if (length(geneSet2$in.geneset) > 0) {
-                  for (j in 1:dim(geneSet2)[1]) {
-                    tota.gene.set <- geneSet2$background.geneset[j] # genes that are identified in background
-                    in.geneset <- geneSet2$in.geneset[j] # DEx in geneset
-                    not.in.total <- background.genes - tota.gene.set
-                    not.in.geneset.sig <- total.sig - in.geneset
-                    d <- data.frame(gene.in.interest = c(in.geneset, not.in.geneset.sig), gene.not.interest = c(tota.gene.set, not.in.total))
-                    row.names(d) <- c("In_category", "not_in_category")
-
-                    if (in.geneset > 0) {
-                      geneSet2$p.val[j] <- unlist(fisher.test(d, alternative = "greater")$p.value)[1]
-                      geneSet2$lowerCI[j] <- unlist(fisher.test(d, alternative = "greater")$conf.int)[1]
-                      geneSet2$upperCI[j] <- unlist(fisher.test(d)$conf.int)[2]
-                      geneSet2$OR[j] <- round(unlist(fisher.test(d, alternative = "greater")$estimate)[1], 3)
-                    } else {
-                      geneSet2$p.value[j] <- "-"
-                      geneSet2$lowerCI[j] <- "-"
-                      geneSet2$upperCI[j] <- "-"
-                      geneSet2$OR[j] <- "-"
-                    }
-                  }
-                  geneSet2 <- geneSet2[order(geneSet2$p.val, decreasing = F), ]
-                  geneSet2$FDR <- p.adjust(geneSet2$p.val, method = "fdr")
-                  geneSet2$Bonferroni <- p.adjust(geneSet2$p.val, method = "bonferroni")
-                  message("Downloading over-rep table...")
-                  top.name.clonotypes <- paste(dirName, i, "_", Vgene, "_B_OverRep_", x, ".csv", sep = "")
-                  write.csv(geneSet2, top.name.clonotypes, row.names = F)
-                }
-              }
+              # if (dim(markers.fm.list2)[1] > 0) {
+              #   geneSet <- read.csv(system.file("OverRep", "GeneSets.csv", package = "STEGO.R"), header = T)
+              #
+              #   background.genes.name <- as.data.frame(rownames(sc@assays$RNA$scale.data))
+              #   names(background.genes.name) <- "V1"
+              #   background.genes <- length(rownames(sc@assays$RNA$scale.data))
+              #
+              #   #
+              #   geneSet$background.genes <- background.genes
+              #
+              #   DEx.genes <- as.data.frame(rownames(markers.fm.list2))
+              #   names(DEx.genes) <- "V1"
+              #   total.sig <- length(DEx.genes$V1)
+              #   geneSet$total.sig <- length(DEx.genes$V1)
+              #   # geneSet
+              #   geneSet$background.geneset <- NA
+              #   geneSet$background.geneset.name <- NA
+              #   geneSet$in.geneset <- NA
+              #   geneSet$in.geneset.name <- NA
+              #
+              #   if (input$datasource == "BD_Rhapsody_Paired" || input$datasource == "BD_Rhapsody_AIRR") { # selectInput("datasource", "Data source",choices=c("10x_Genomics","BD_Rhapsody_Paired","BD_Rhapsody_AIRR")),
+              #     geneSet$GeneSet <- gsub("-", ".", geneSet$GeneSet)
+              #   }
+              #
+              #   if (input$species_analysis == "mm") { # selectInput("datasource", "Data source",choices=c("10x_Genomics","BD_Rhapsody_Paired","BD_Rhapsody_AIRR")),
+              #
+              #     geneSet$GeneSet <- str_to_title(geneSet$GeneSet)
+              #   }
+              #   message(paste("Starting OverRep analysis of cluster ", i))
+              #   for (j in 1:dim(geneSet)[1]) {
+              #     # listed GeneSet
+              #
+              #     Gene.set.testing <- as.data.frame(strsplit(geneSet$GeneSet, ";")[j])
+              #     names(Gene.set.testing) <- "V1"
+              #     Gene.set.testing2 <- as.data.frame(unique(Gene.set.testing$V1))
+              #     names(Gene.set.testing2) <- "V1"
+              #     background.overlap <- merge(Gene.set.testing2, background.genes.name, by = "V1")
+              #     geneSet$background.geneset[j] <- length(background.overlap$V1)
+              #     geneSet$background.geneset.name[j] <- as.character(paste(unlist(background.overlap[1]), collapse = ";"))
+              #     # in sig gene list
+              #     overlap <- merge(background.overlap, DEx.genes, by = "V1")
+              #
+              #     geneSet$in.geneset[j] <- length(overlap$V1)
+              #     geneSet$in.geneset.name[j] <- as.character(paste(unlist(overlap[1]), collapse = ";"))
+              #   }
+              #
+              #   geneSet2 <- subset(geneSet, geneSet$in.geneset > 0)
+              #   message(paste(i, "has", length(geneSet2$in.geneset), "GeneSets in Epitope"))
+              #   if (length(geneSet2$in.geneset) > 0) {
+              #     for (j in 1:dim(geneSet2)[1]) {
+              #       tota.gene.set <- geneSet2$background.geneset[j] # genes that are identified in background
+              #       in.geneset <- geneSet2$in.geneset[j] # DEx in geneset
+              #       not.in.total <- background.genes - tota.gene.set
+              #       not.in.geneset.sig <- total.sig - in.geneset
+              #       d <- data.frame(gene.in.interest = c(in.geneset, not.in.geneset.sig), gene.not.interest = c(tota.gene.set, not.in.total))
+              #       row.names(d) <- c("In_category", "not_in_category")
+              #
+              #       if (in.geneset > 0) {
+              #         geneSet2$p.val[j] <- unlist(fisher.test(d, alternative = "greater")$p.value)[1]
+              #         geneSet2$lowerCI[j] <- unlist(fisher.test(d, alternative = "greater")$conf.int)[1]
+              #         geneSet2$upperCI[j] <- unlist(fisher.test(d)$conf.int)[2]
+              #         geneSet2$OR[j] <- round(unlist(fisher.test(d, alternative = "greater")$estimate)[1], 3)
+              #       } else {
+              #         geneSet2$p.value[j] <- "-"
+              #         geneSet2$lowerCI[j] <- "-"
+              #         geneSet2$upperCI[j] <- "-"
+              #         geneSet2$OR[j] <- "-"
+              #       }
+              #     }
+              #     geneSet2 <- geneSet2[order(geneSet2$p.val, decreasing = F), ]
+              #     geneSet2$FDR <- p.adjust(geneSet2$p.val, method = "fdr")
+              #     geneSet2$Bonferroni <- p.adjust(geneSet2$p.val, method = "bonferroni")
+              #     message("Downloading over-rep table...")
+              #     top.name.clonotypes <- paste(dirName, i, "_", Vgene, "_B_OverRep_", x, ".csv", sep = "")
+              #     write.csv(geneSet2, top.name.clonotypes, row.names = F)
+              #   }
+              # }
             }
           }
         }
@@ -23233,83 +23536,83 @@ runSTEGO <- function(){
 
               # stats OverRep analysis ----
 
-              if (dim(markers.fm.list2)[1] > 0) {
-                geneSet <- read.csv(system.file("OverRep", "GeneSets.csv", package = "STEGO.R"), header = T)
-
-                background.genes.name <- as.data.frame(rownames(sc@assays$RNA$scale.data))
-                names(background.genes.name) <- "V1"
-                background.genes <- length(rownames(sc@assays$RNA$scale.data))
-
-                #
-                geneSet$background.genes <- background.genes
-
-                DEx.genes <- as.data.frame(rownames(markers.fm.list2))
-                names(DEx.genes) <- "V1"
-                total.sig <- length(DEx.genes$V1)
-                geneSet$total.sig <- length(DEx.genes$V1)
-                # geneSet
-                geneSet$background.geneset <- NA
-                geneSet$background.geneset.name <- NA
-                geneSet$in.geneset <- NA
-                geneSet$in.geneset.name <- NA
-
-                if (input$datasource == "BD_Rhapsody_Paired" || input$datasource == "BD_Rhapsody_AIRR") { # selectInput("datasource", "Data source",choices=c("10x_Genomics","BD_Rhapsody_Paired","BD_Rhapsody_AIRR")),
-                  geneSet$GeneSet <- gsub("-", ".", geneSet$GeneSet)
-                }
-
-                if (input$species_analysis == "mm") { # selectInput("datasource", "Data source",choices=c("10x_Genomics","BD_Rhapsody_Paired","BD_Rhapsody_AIRR")),
-
-                  geneSet$GeneSet <- str_to_title(geneSet$GeneSet)
-                }
-                message(paste("Starting OverRep analysis of cluster ", i))
-                for (j in 1:dim(geneSet)[1]) {
-                  # listed GeneSet
-
-                  Gene.set.testing <- as.data.frame(strsplit(geneSet$GeneSet, ";")[j])
-                  names(Gene.set.testing) <- "V1"
-                  Gene.set.testing2 <- as.data.frame(unique(Gene.set.testing$V1))
-                  names(Gene.set.testing2) <- "V1"
-                  background.overlap <- merge(Gene.set.testing2, background.genes.name, by = "V1")
-                  geneSet$background.geneset[j] <- length(background.overlap$V1)
-                  geneSet$background.geneset.name[j] <- as.character(paste(unlist(background.overlap[1]), collapse = ";"))
-                  # in sig gene list
-                  overlap <- merge(background.overlap, DEx.genes, by = "V1")
-
-                  geneSet$in.geneset[j] <- length(overlap$V1)
-                  geneSet$in.geneset.name[j] <- as.character(paste(unlist(overlap[1]), collapse = ";"))
-                }
-
-                geneSet2 <- subset(geneSet, geneSet$in.geneset > 0)
-                message(paste(i, "has", length(geneSet2$in.geneset), "GeneSets in Epitope"))
-                if (length(geneSet2$in.geneset) > 0) {
-                  for (j in 1:dim(geneSet2)[1]) {
-                    tota.gene.set <- geneSet2$background.geneset[j] # genes that are identified in background
-                    in.geneset <- geneSet2$in.geneset[j] # DEx in geneset
-                    not.in.total <- background.genes - tota.gene.set
-                    not.in.geneset.sig <- total.sig - in.geneset
-                    d <- data.frame(gene.in.interest = c(in.geneset, not.in.geneset.sig), gene.not.interest = c(tota.gene.set, not.in.total))
-                    row.names(d) <- c("In_category", "not_in_category")
-
-                    if (in.geneset > 0) {
-                      geneSet2$p.val[j] <- unlist(fisher.test(d, alternative = "greater")$p.value)[1]
-                      geneSet2$lowerCI[j] <- unlist(fisher.test(d, alternative = "greater")$conf.int)[1]
-                      geneSet2$upperCI[j] <- unlist(fisher.test(d)$conf.int)[2]
-                      geneSet2$OR[j] <- round(unlist(fisher.test(d, alternative = "greater")$estimate)[1], 3)
-                    } else {
-                      geneSet2$p.value[j] <- "-"
-                      geneSet2$lowerCI[j] <- "-"
-                      geneSet2$upperCI[j] <- "-"
-                      geneSet2$OR[j] <- "-"
-                    }
-                  }
-                  geneSet2 <- geneSet2[order(geneSet2$p.val, decreasing = F), ]
-                  geneSet2$FDR <- p.adjust(geneSet2$p.val, method = "fdr")
-                  geneSet2$Bonferroni <- p.adjust(geneSet2$p.val, method = "bonferroni")
-                  message("Downloading over-rep table...")
-                  top.name.clonotypes <- paste(dirName, i, "_", Vgene, "_D_OverRep_", x, ".csv", sep = "")
-                  write.csv(geneSet2, top.name.clonotypes, row.names = F)
-                }
-              }
+              # if (dim(markers.fm.list2)[1] > 0) {
+              #   geneSet <- read.csv(system.file("OverRep", "GeneSets.csv", package = "STEGO.R"), header = T)
+              #
+              #   background.genes.name <- as.data.frame(rownames(sc@assays$RNA$scale.data))
+              #   names(background.genes.name) <- "V1"
+              #   background.genes <- length(rownames(sc@assays$RNA$scale.data))
+              #
+              #   #
+              #   geneSet$background.genes <- background.genes
+              #
+              #   DEx.genes <- as.data.frame(rownames(markers.fm.list2))
+              #   names(DEx.genes) <- "V1"
+              #   total.sig <- length(DEx.genes$V1)
+              #   geneSet$total.sig <- length(DEx.genes$V1)
+              #   # geneSet
+              #   geneSet$background.geneset <- NA
+              #   geneSet$background.geneset.name <- NA
+              #   geneSet$in.geneset <- NA
+              #   geneSet$in.geneset.name <- NA
+              #
+              #   if (input$datasource == "BD_Rhapsody_Paired" || input$datasource == "BD_Rhapsody_AIRR") { # selectInput("datasource", "Data source",choices=c("10x_Genomics","BD_Rhapsody_Paired","BD_Rhapsody_AIRR")),
+              #     geneSet$GeneSet <- gsub("-", ".", geneSet$GeneSet)
+              #   }
+              #
+              #   if (input$species_analysis == "mm") { # selectInput("datasource", "Data source",choices=c("10x_Genomics","BD_Rhapsody_Paired","BD_Rhapsody_AIRR")),
+              #
+              #     geneSet$GeneSet <- str_to_title(geneSet$GeneSet)
+              #   }
+              #   message(paste("Starting OverRep analysis of cluster ", i))
+              #   for (j in 1:dim(geneSet)[1]) {
+              #     # listed GeneSet
+              #
+              #     Gene.set.testing <- as.data.frame(strsplit(geneSet$GeneSet, ";")[j])
+              #     names(Gene.set.testing) <- "V1"
+              #     Gene.set.testing2 <- as.data.frame(unique(Gene.set.testing$V1))
+              #     names(Gene.set.testing2) <- "V1"
+              #     background.overlap <- merge(Gene.set.testing2, background.genes.name, by = "V1")
+              #     geneSet$background.geneset[j] <- length(background.overlap$V1)
+              #     geneSet$background.geneset.name[j] <- as.character(paste(unlist(background.overlap[1]), collapse = ";"))
+              #     # in sig gene list
+              #     overlap <- merge(background.overlap, DEx.genes, by = "V1")
+              #
+              #     geneSet$in.geneset[j] <- length(overlap$V1)
+              #     geneSet$in.geneset.name[j] <- as.character(paste(unlist(overlap[1]), collapse = ";"))
+              #   }
+              #
+              #   geneSet2 <- subset(geneSet, geneSet$in.geneset > 0)
+              #   message(paste(i, "has", length(geneSet2$in.geneset), "GeneSets in Epitope"))
+              #   if (length(geneSet2$in.geneset) > 0) {
+              #     for (j in 1:dim(geneSet2)[1]) {
+              #       tota.gene.set <- geneSet2$background.geneset[j] # genes that are identified in background
+              #       in.geneset <- geneSet2$in.geneset[j] # DEx in geneset
+              #       not.in.total <- background.genes - tota.gene.set
+              #       not.in.geneset.sig <- total.sig - in.geneset
+              #       d <- data.frame(gene.in.interest = c(in.geneset, not.in.geneset.sig), gene.not.interest = c(tota.gene.set, not.in.total))
+              #       row.names(d) <- c("In_category", "not_in_category")
+              #
+              #       if (in.geneset > 0) {
+              #         geneSet2$p.val[j] <- unlist(fisher.test(d, alternative = "greater")$p.value)[1]
+              #         geneSet2$lowerCI[j] <- unlist(fisher.test(d, alternative = "greater")$conf.int)[1]
+              #         geneSet2$upperCI[j] <- unlist(fisher.test(d)$conf.int)[2]
+              #         geneSet2$OR[j] <- round(unlist(fisher.test(d, alternative = "greater")$estimate)[1], 3)
+              #       } else {
+              #         geneSet2$p.value[j] <- "-"
+              #         geneSet2$lowerCI[j] <- "-"
+              #         geneSet2$upperCI[j] <- "-"
+              #         geneSet2$OR[j] <- "-"
+              #       }
+              #     }
+              #     geneSet2 <- geneSet2[order(geneSet2$p.val, decreasing = F), ]
+              #     geneSet2$FDR <- p.adjust(geneSet2$p.val, method = "fdr")
+              #     geneSet2$Bonferroni <- p.adjust(geneSet2$p.val, method = "bonferroni")
+              #     message("Downloading over-rep table...")
+              #     top.name.clonotypes <- paste(dirName, i, "_", Vgene, "_D_OverRep_", x, ".csv", sep = "")
+              #     write.csv(geneSet2, top.name.clonotypes, row.names = F)
+              #   }
+              # }
             }
           }
         }

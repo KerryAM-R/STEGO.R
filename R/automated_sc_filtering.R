@@ -45,12 +45,12 @@ log_parameters_SeuratQC <- function(log_file, params_to_log = NULL) {
 #' @import Seurat
 #' @import ggplot2
 #' @param species either select hs or mm. This is due to the gene case with all caps for hs and proper case for mm.
-#' @param features.min minimum number of features
-#' @param features.max Maximum features
-#' @param percent.mt Mitochondria DNA cut-off (<)
-#' @param percent.rb Ribosomal RNA cut-off (>)
-#' @param dimension_sc Set number of dimensions to use for the dimensional reduction.
-#' @param resolution_sc Set the Seurat unsupervised clustering; however, this wont be used for annotation purposes in this pipeline.
+#' @param features.min minimum number of features; default 200 for 10x and 45 for BD Immune panel
+#' @param features.max Maximum features; default 2500 for 10x and 160 for BD immune panel
+#' @param percent.mt Mitochondria DNA cut-off (<); default 10%
+#' @param percent.rb Ribosomal RNA cut-off (>); default 20%
+#' @param dimension_sc Set number of dimensions to use for the dimensional reduction. Default 15
+#' @param resolution_sc Set the Seurat unsupervised clustering; however, this wont be used for annotation purposes in this pipeline. Default 1.
 #' @param limit_to_TCR_GEx Reduce the file to limit to the TCR seq and GEx only (recommended for large data sets)
 #' @param save_plots Save the plots
 #' @param output_dir Location of the process .rds Seurat object filtered files
@@ -84,32 +84,25 @@ automated_sc_filtering <- function(folder = "1_SeuratQC",
 
 
   default_params <- list(
-    folder = "1_SeuratQC",
-    dataset_type = "10x",
-    species = "hs",
     features.min = 200,
     features.max = 2500,
     percent.mt = 20,
     percent.rb = 5,
     dimension_sc = 15,
     resolution_sc = 1,
-    limit_to_TCR_GEx = FALSE,
-    save_plots = TRUE,
-    output_dir = "3_SCobj/3a/"
+    limit_to_TCR_GEx = FALSE
   )
 
-  current_params <- list(folder = folder,
-                         dataset_type = dataset_type,
-                         species = species,
+  current_params <- list(
                          features.min = features.min,
                          features.max = features.max,
                          percent.mt = percent.mt,
                          percent.rb = percent.rb,
                          dimension_sc = dimension_sc,
                          resolution_sc = resolution_sc,
-                         limit_to_TCR_GEx = limit_to_TCR_GEx,
-                         save_plots = save_plots,
-                         output_dir = output_dir)
+                         limit_to_TCR_GEx = limit_to_TCR_GEx
+
+                         )
 
   params_to_log <- list()
 
@@ -119,7 +112,7 @@ automated_sc_filtering <- function(folder = "1_SeuratQC",
     }
   }
 
-  log_file <- "method_file.txt"
+  log_file <- "log_file.txt"
 
   con <- file(log_file,open = "a")
   writeLines("\n", con)

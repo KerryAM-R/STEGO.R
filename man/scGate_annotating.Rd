@@ -55,5 +55,5 @@ scGate_annotating(
 Seurat object with annotations
 }
 \description{
-This function aids in annotating T cell experiments with or without TCR-seq data. It includes six available T cell models: T cell functions, generic annotations, immune checkpoint, senescence, Th1 cytokines, cellular cycling (cell division), and a TCR-seq model.
+This function aids in annotating T cell experiments with or without TCR-seq data. It includes six available T cell models: T cell functions, generic annotations, immune checkpoint, senescence, Th1 cytokines, cellular cycling (cell division), and a TCR-seq model. Currently this function is for human only.
 }

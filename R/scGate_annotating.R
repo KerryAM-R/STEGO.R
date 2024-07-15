@@ -1,7 +1,69 @@
+#' log_parameters_scGate
+#'
+#' @description
+#' This function logs the parameters within the scGate annotation function. It should add the method text to the log file.
+#'
+#' @param log_file name of the log file called "method_file.txt". It will save in the project directory.
+#' @param model_to_log annotation models used
+#' @param params_to_log Other scGate parameters that were changed from the default.
+#'
+#' @export
+#'
+#' @return saves the log of the scGate prameters for the methods section.
+#'
+
+log_parameters_scGate <- function(log_file, model_to_log = NULL, params_to_log = NULL) {
+  # Open the log_file in append mode
+  con <- file(log_file, open = "a")
+
+  # Get the versions of Seurat and STEGO.R
+  scGate_version <- packageVersion("scGate")
+  stego_version <- packageVersion("STEGO.R")
+
+  # Start with a newline
+  writeLines("\n", con)
+
+  if (!is.null(params_to_log)) {
+    non_default_params <- sapply(names(params_to_log), function(name) paste(name, "(", params_to_log[[name]], ")", sep = ""))
+    non_default_params_str <- paste(non_default_params, collapse = ", ")
+  } else {
+    non_default_params_str <- ""
+  }
+
+  if (!is.null(model_to_log)) {
+    models_used <- sapply(names(model_to_log), function(name) paste(name))
+    if (length(models_used) > 1) {
+      models_used_str <- paste(paste(models_used[-length(models_used)], collapse = ", "), "and", models_used[length(models_used)])
+    } else {
+      models_used_str <- models_used
+    }
+  } else {
+    models_used_str <- ""
+  }
+
+  message <- sprintf("The merged object underwent annotating using the semi-supervised process with scGate (version %s)[ref]. The annotation models created in STEGO.R included %s. Additionally, the following scGate parameters were changed from the default values: %s. from the detu", scGate_version, models_used_str, non_default_params_str)
+
+  if (grepl("chunk_size", message)) {
+    message <- gsub("chunk_size", "number of cells per chunk ", message)
+  }
+
+  if (length(unique(names(params_to_log))) == 1) {
+    message <- gsub("parameters", "parameter", message)
+  }
+
+  print(message)
+
+  # Write the message to the log file
+  writeLines(message, con)
+
+  # Close the file connection
+  close(con)
+}
+
 #' scGate Annotating Function
 #'
 #' @description
-#' This function aids in annotating T cell experiments with or without TCR-seq data. It includes six available T cell models: T cell functions, generic annotations, immune checkpoint, senescence, Th1 cytokines, cellular cycling (cell division), and a TCR-seq model.
+#' This function aids in annotating T cell experiments with or without TCR-seq data. It includes six available T cell models: T cell functions, generic annotations, immune checkpoint, senescence, Th1 cytokines, cellular cycling (cell division), and a TCR-seq model. Currently this function is for human only.
 #'
 #' @param TcellFunction Logical; set to TRUE if you want to include the current T cell model.
 #' @param file Seurat object file. This requires the file to have the scaled data available for annotation purposes.
@@ -24,19 +86,88 @@
 #' @return Seurat object with annotations
 #'
 
-scGate_annotating <- function (file = file,
+scGate_annotating <- function (
+                               file = file,
                                Threshold_test = FALSE,
                                signature_for_testing = c("CD8A","CD8B"),
                                threshold = 0.25,
                                TcellFunction = FALSE,
+                               SimpleFunction = FALSE,
                                immune_checkpoint = FALSE,
-                               senescence = FALSE, cycling = FALSE, Th1_cytokines = FALSE, TCRseq = FALSE,
-                                reductionType = "harmony", chunk_size = 50000, output_dir = "output",
-                               Version = c("V5","V4","python"))
+                               senescence = FALSE,
+                               cycling = FALSE,
+                               Th1_cytokines = FALSE,
+                               TCRseq = FALSE,
+                               reductionType = "harmony",
+                               chunk_size = 50000,
+                               output_dir = "output",
+                               Version = c("V5","V4","python")
+                               )
 {
   set.seed(123) # Set a specific seed value, such as 123
   source(system.file("scGATE", "custom_df_scGATE.R", package = "STEGO.R"))
 
+  default_models <- list(
+    TcellFunction = F,
+    SimpleFunction = F,
+    immune_checkpoint = F,
+    senescence = F,
+    cycling = FALSE,
+    Th1_cytokines = F,
+    TCRseq = F
+  )
+  models <- list(
+    TcellFunction = TcellFunction,
+    SimpleFunction = SimpleFunction,
+    immune_checkpoint = immune_checkpoint,
+    senescence = senescence,
+    cycling = cycling,
+    Th1_cytokines = Th1_cytokines,
+    TCRseq = TCRseq
+  )
+print(models)
+
+  models_to_log <- list()
+  for (param_name in names(model)) {
+    if (!identical(model[[param_name]], default_models[[param_name]])) {
+      models_to_log[[param_name]] <- model[[param_name]]
+    }
+  }
+  models_to_log
+
+  default_params <- list(
+    threshold = 0.25,
+    reductionType = "harmony",
+    chunk_size = 50000
+  )
+
+  current_params <- list(
+    threshold = threshold,
+    reductionType = reductionType,
+    chunk_size = chunk_size
+  )
+
+  params_to_log <- list()
+  for (param_name in names(current_params)) {
+      if (!identical(current_params[[param_name]], default_params[[param_name]])) {
+        params_to_log[[param_name]] <- current_params[[param_name]]
+      }
+    }
+  params_to_log
+
+  log_file <- "log_file.txt"
+  params_to_log
+
+  if (length(params_to_log) > 0 && length(models_to_log)>0) {
+    log_parameters_scGate(log_file, models_to_log,params_to_log)
+  } else {
+    log_parameters_scGate(log_file)
+  }
+
+
+
+
+#### adding in the models -----
   sc <- file
   len.obj <- dim(sc@meta.data)[1]
   threshold_scGate <- threshold
@@ -128,10 +259,32 @@ scGate_annotating <- function (file = file,
         sc_chunk <- apply_scGate_to_chunk(sc_chunk, models_list, threshold_scGate, reductionType)
         sc_chunk@meta.data$Tcellfunction <- sc_chunk@meta.data$scGate_multi
 
+        sc_chunk@meta.data$majorTCF <-ifelse(grepl("CD4",sc_chunk@meta.data$Tcellfunction),"CD4",
+                                             ifelse(grepl("CD8ab",sc_chunk@meta.data$Tcellfunction),"CD8ab",
+                                                    ifelse(grepl("CD8aa",sc_chunk@meta.data$Tcellfunction),"CD8ab",
+                                                           ifelse(grepl("DN",sc_chunk@meta.data$Tcellfunction),"DN","other"
+                                                           ))))
+
         tcell_function_table <- table(sc_chunk@meta.data$Tcellfunction)
         save_table(tcell_function_table, paste0(output_dir,"/", "Tcellfunction_table_chunk_", i, ".txt"))
 
 
+      }
+      if (SimpleFunction) {
+        models_list <- custom_db_scGATE(system.file("scGATE", "human/simple_functions", package = "STEGO.R"))
+        sc_chunk <- apply_scGate_to_chunk(sc_chunk, models_list, threshold_scGate, reductionType)
+        sc_chunk@meta.data$TSimpleFunction <- sc_chunk@meta.data$scGate_multi
+        sc_chunk@meta.data$majorSTF <-ifelse(grepl("CD8[.]CD4",sc_chunk@meta.data$TSimpleFunction),"DP",
+                                             ifelse(grepl("CD4",sc_chunk@meta.data$TSimpleFunction),"CD4",
+                                                    ifelse(grepl("Th",sc_chunk@meta.data$TSimpleFunction),"CD4",
+                                                           ifelse(grepl("Treg",sc_chunk@meta.data$TSimpleFunction),"CD4",
+                                                                  ifelse(grepl("CD8",sc_chunk@meta.data$TSimpleFunction),"CD8",
+                                                                         ifelse(grepl("CD8",sc_chunk@meta.data$TSimpleFunction),"CD8",
+                                                                                ifelse(grepl("DN",sc_chunk@meta.data$TSimpleFunction),"DN","other"
+                                                                                )))))))
+
+        tcell_function_table <- table(sc_chunk@meta.data$majorSTF)
+        save_table(tcell_function_table, paste0(output_dir,"/", "TSimpleFunction_table_chunk_", i, ".txt"))
       }
       if (immune_checkpoint) {
         models_list <- custom_db_scGATE(system.file("scGATE", "human/immune_checkpoint", package = "STEGO.R"))
