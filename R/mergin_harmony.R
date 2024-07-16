@@ -51,7 +51,7 @@ merging_ClusTCR2 <- function (directory = "1_ClusTCR",chain = "AG", output_dir =
   df <- df[!duplicated(df$junction_aa), ]
   print(head(df))
 
-  log_file <- "method_file.txt"
+  log_file <- "log_file.txt"
   con <- file(log_file,open = "a")
   writeLines("\n", con)
   message_samples <- (paste0("The ",chain," has ",length(df$junction_aa)," unique seqeunces for assessing sequence similarity."))
@@ -219,7 +219,7 @@ merging_multi_SeuratRDS <- function(seurat_files = "3_SCobj/3a",
     message(paste(total_merged, "files were merged into 1. The merged object is ", round(sl[1]/1000^3, 2), "Gb"))
 
     # logging parameters
-log_file <- "method_file.txt"
+log_file <- "log_file.txt"
   con <- file(log_file,open = "a")
   writeLines("\n", con)
   message_samples <- paste(total_merged, "files were merged into 1. The merged object is ", round(sl[1]/1000^3, 2), "Gb")
@@ -259,7 +259,7 @@ harmony_batch_correction_1_variableFeatures <- function(file = sc, feature_total
     paste("There are more than",feature_total,"Therefore, setting total Features to",num_featureTotal)
   }
 
-  log_file <- "method_file.txt"
+  log_file <- "log_file.txt"
   con <- file(log_file,open = "a")
   writeLines("\n", con)
   message_samples <- paste("There are",length(sc@meta.data$Sample_Name), "cells with",feature_total_limit, "maximum variable features.")
@@ -353,7 +353,7 @@ harmony_batch_correction_3_PC <- function(file = sc) {
 
 harmony_batch_correction_4_Harmony <- function(file = sc,selected_column_for_reduction = "orig.ident", Maximum_PC_to_use = 30, resolution_of_clusters = 0.5) {
 
-  log_file <- "method_file.txt"
+  log_file <- "log_file.txt"
   con <- file(log_file,open = "a")
   writeLines("\n", con)
   message_samples <- paste0("For the harmony batch correct was based on ", selected_column_for_reduction, " with a cluster resolution of ", resolution_of_clusters," and 1:",Maximum_PC_to_use, "principle components")
