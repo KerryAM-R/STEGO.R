@@ -38,7 +38,7 @@
 #' @import shiny
 #' @import shinyBS
 #' @import shinybusy
-#' @importFrom shinyjs hide useShinyjs
+#' @importFrom shinyjs hide useShinyjs runjs
 #' @import shinyWidgets
 #' @importFrom stringr str_wrap str_to_title str_detect str_replace
 #' @import tibble
