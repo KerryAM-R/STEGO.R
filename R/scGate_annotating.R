@@ -41,7 +41,7 @@ log_parameters_scGate <- function(log_file, model_to_log = NULL, params_to_log =
     models_used_str <- ""
   }
 
-  message <- sprintf("The merged object underwent annotating using the semi-supervised process with scGate (version %s)[ref]. The annotation models created in STEGO.R included %s. Additionally, the following scGate parameters were changed from the default values: %s. from the detu", scGate_version, models_used_str, non_default_params_str)
+  message <- sprintf("The merged object underwent annotating using the semi-supervised process with scGate (version %s)[ref]. The annotation models created in STEGO.R included %s. Additionally, the following scGate parameters were changed from the default values: %s.", scGate_version, models_used_str, non_default_params_str)
 
   if (grepl("chunk_size", message)) {
     message <- gsub("chunk_size", "number of cells per chunk ", message)
@@ -119,7 +119,7 @@ scGate_annotating <- function (
     Th1_cytokines = FALSE,
     TCRseq = FALSE
   )
-  models <- list(
+  model <- list(
     TcellFunction = TcellFunction,
     SimpleFunction = SimpleFunction,
     immune_checkpoint = immune_checkpoint,
@@ -129,7 +129,7 @@ scGate_annotating <- function (
     Th1_cytokines = Th1_cytokines,
     TCRseq = TCRseq
   )
-print(models)
+  print(unlist(model))
 
   models_to_log <- list()
   for (param_name in names(model)) {
