@@ -165,7 +165,7 @@ scGate_annotating <- function (
   if (length(params_to_log) > 0 && length(models_to_log)>0) {
     log_parameters_scGate(log_file, models_to_log,params_to_log)
   } else {
-    log_parameters_scGate(log_file)
+    log_parameters_scGate(log_file,models_to_log)
   }
 
 
@@ -406,15 +406,17 @@ scGate_annotating <- function (
     } else {
       if (Version == "V4" |Version == "Python") {
         join_sc <- merged_sc
+        message("reordering and adding back in the umap & harmony data")
+        barcode_order <- rownames(join_sc@meta.data)
+        umap_reordered <- umap[match(barcode_order, rownames(umap)), ]
+        harmony_reordered <- umap[match(barcode_order, rownames(harmony)),]
 
-        # join_sc@reductions$umap <- CreateDimReducObject(embeddings = umap_reordered, key = 'UMAP_', assay = 'RNA')
-        # join_sc@reductions$harmony <- CreateDimReducObject(embeddings = harmony_reordered, key = 'harmony_', assay = 'RNA')
+        join_sc@reductions$umap <- CreateDimReducObject(embeddings = umap_reordered, key = 'UMAP_', assay = 'RNA')
+        join_sc@reductions$harmony <- CreateDimReducObject(embeddings = harmony_reordered, key = 'harmony_', assay = 'RNA')
         join_sc@assays$RNA@scale.data  <- file@assays$RNA@scale.data
         join_sc@assays$RNA@var.features <- file@assays$RNA@var.features
 
       } else {
-        message("Joining layers")
-        join_sc <- JoinLayers(merged_sc)
         message("reordering and adding back in the umap & harmony data")
         barcode_order <- rownames(join_sc@meta.data)
         umap_reordered <- umap[match(barcode_order, rownames(umap)), ]
