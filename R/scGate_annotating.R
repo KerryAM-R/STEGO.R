@@ -73,6 +73,7 @@ log_parameters_scGate <- function(log_file, model_to_log = NULL, params_to_log =
 #' @param immune_checkpoint Logical; include T cell-based stress models of exhaustion.
 #' @param senescence Logical; include T cell-based stress models of senescence.
 #' @param Th1_cytokines Logical; include T cell-based stress models of IFNG and TNF.
+#' @param cytotoxic logical; cytotoxic markers GZMB, GNLY and PFR1 associated combinations of expression.
 #' @param cycling Logical; include models using TOP2A and MKI67.
 #' @param TCRseq Logical; uses the metadata from TCR-seq to call MAIT, iNKT, potential CD1-restricted, gd T cells, and ab T cells.
 #' @param reductionType Character; type of dimensional reduction to use. Default is "harmony".
@@ -94,6 +95,7 @@ scGate_annotating <- function (
                                TcellFunction = FALSE,
                                SimpleFunction = FALSE,
                                immune_checkpoint = FALSE,
+                               cytotoxic = FALSE,
                                senescence = FALSE,
                                cycling = FALSE,
                                Th1_cytokines = FALSE,
@@ -108,18 +110,20 @@ scGate_annotating <- function (
   source(system.file("scGATE", "custom_df_scGATE.R", package = "STEGO.R"))
 
   default_models <- list(
-    TcellFunction = F,
-    SimpleFunction = F,
-    immune_checkpoint = F,
-    senescence = F,
+    TcellFunction = FALSE,
+    SimpleFunction = FALSE,
+    immune_checkpoint = FALSE,
+    cytotoxic = FALSE,
+    senescence = FALSE,
     cycling = FALSE,
-    Th1_cytokines = F,
-    TCRseq = F
+    Th1_cytokines = FALSE,
+    TCRseq = FALSE
   )
   models <- list(
     TcellFunction = TcellFunction,
     SimpleFunction = SimpleFunction,
     immune_checkpoint = immune_checkpoint,
+    cytotoxic = cytotoxic,
     senescence = senescence,
     cycling = cycling,
     Th1_cytokines = Th1_cytokines,
@@ -296,6 +300,16 @@ print(models)
         save_table(tcell_function_table, paste0(output_dir,"/", "exhausted_table_chunk_", i, ".txt"))
 
       }
+      if (cytotoxic) {
+        models_list <- custom_db_scGATE(system.file("scGATE", "human/cytotoxic", package = "STEGO.R"))
+        sc_chunk <- apply_scGate_to_chunk(sc_chunk, models_list, threshold_scGate, reductionType)
+        sc_chunk@meta.data$cytotoxic <- sc_chunk@meta.data$scGate_multi
+
+        tcell_function_table <- table(sc_chunk@meta.data$immune_checkpoint)
+        # print(tcell_function_table)
+        save_table(tcell_function_table, paste0(output_dir,"/", "cytotoxic_table_chunk_", i, ".txt"))
+
+      }
       if (senescence) {
         models_list <- custom_db_scGATE(system.file("scGATE", "human/senescence", package = "STEGO.R"))
         sc_chunk <- apply_scGate_to_chunk(sc_chunk, models_list, threshold_scGate, reductionType)
@@ -393,8 +407,8 @@ print(models)
       if (Version == "V4" |Version == "Python") {
         join_sc <- merged_sc
 
-        join_sc@reductions$umap <- CreateDimReducObject(embeddings = umap_reordered, key = 'UMAP_', assay = 'RNA')
-        join_sc@reductions$harmony <- CreateDimReducObject(embeddings = harmony_reordered, key = 'harmony_', assay = 'RNA')
+        # join_sc@reductions$umap <- CreateDimReducObject(embeddings = umap_reordered, key = 'UMAP_', assay = 'RNA')
+        # join_sc@reductions$harmony <- CreateDimReducObject(embeddings = harmony_reordered, key = 'harmony_', assay = 'RNA')
         join_sc@assays$RNA@scale.data  <- file@assays$RNA@scale.data
         join_sc@assays$RNA@var.features <- file@assays$RNA@var.features
 
