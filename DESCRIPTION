@@ -1,5 +1,5 @@
 Package: STEGO.R
-Title: Analysis of single cell RNA-seq with paired T cell receptor repertiore datasets
+Title: Single-Cell T-cell Receptor and Expression Grouped Ontologies
 Version: 2.0.2.07
 Authors@R: 
     person("Kerry", "Mullan", , "Kerry.Mullan@uantwerpen.be", role = c("aut", "cre"),
