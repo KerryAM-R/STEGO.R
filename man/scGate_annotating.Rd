@@ -12,6 +12,7 @@ scGate_annotating(
   TcellFunction = FALSE,
   SimpleFunction = FALSE,
   immune_checkpoint = FALSE,
+  cytotoxic = FALSE,
   senescence = FALSE,
   cycling = FALSE,
   Th1_cytokines = FALSE,
@@ -34,6 +35,8 @@ scGate_annotating(
 \item{TcellFunction}{Logical; set to TRUE if you want to include the current T cell model.}
 
 \item{immune_checkpoint}{Logical; include T cell-based stress models of exhaustion.}
+
+\item{cytotoxic}{logical; cytotoxic markers GZMB, GNLY and PFR1 associated combinations of expression.}
 
 \item{senescence}{Logical; include T cell-based stress models of senescence.}
 
