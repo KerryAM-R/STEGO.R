@@ -3,13 +3,17 @@
 #' @description
 #' This function is to automate step 3a. We highly recommend that you check your base parameters in the interface and then apply them to all of the data. The default parameters are set for human 10x
 #' @param log_file Name of the log file which will always be
+#' @param params_to_log Parameters that differ from the default
+#' @importFrom utils packageVersion
+#' @return text in the log_file.txt file
+#' @export
 
 log_parameters_SeuratQC <- function(log_file, params_to_log = NULL) {
   # Open the log_file in append mode
   con <- file(log_file,open = "a")
   # Get the versions of Seurat and STEGO.R
-  seurat_version <- packageVersion("Seurat")
-  stego_version <- packageVersion("STEGO.R")
+  seurat_version <- utils::packageVersion("Seurat")
+  stego_version <- utils::packageVersion("STEGO.R")
   # Start with a newline
   writeLines("\n", con)
 

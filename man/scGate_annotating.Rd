@@ -34,6 +34,8 @@ scGate_annotating(
 
 \item{TcellFunction}{Logical; set to TRUE if you want to include the current T cell model.}
 
+\item{SimpleFunction}{Logical; a simpler annotation model to the TcellFunction. This model does not have as indepth T cell subsets, but does include some memory markers for the CD8 population. Additionally, it includes the CD4.CD8 DP population. However, due to the CD4 marker issue, the cells that are CD8A or CD8B negative are classified into the CD4 subsets. There is potential the CD4.other contain DN cells, but it could not be accurately determined.}
+
 \item{immune_checkpoint}{Logical; include T cell-based stress models of exhaustion.}
 
 \item{cytotoxic}{logical; cytotoxic markers GZMB, GNLY and PFR1 associated combinations of expression.}

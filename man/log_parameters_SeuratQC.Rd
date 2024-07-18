@@ -8,6 +8,11 @@ log_parameters_SeuratQC(log_file, params_to_log = NULL)
 }
 \arguments{
 \item{log_file}{Name of the log file which will always be}
+
+\item{params_to_log}{Parameters that differ from the default}
+}
+\value{
+text in the log_file.txt file
 }
 \description{
 This function is to automate step 3a. We highly recommend that you check your base parameters in the interface and then apply them to all of the data. The default parameters are set for human 10x

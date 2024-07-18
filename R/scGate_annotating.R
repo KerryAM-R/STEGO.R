@@ -6,10 +6,9 @@
 #' @param log_file name of the log file called "method_file.txt". It will save in the project directory.
 #' @param model_to_log annotation models used
 #' @param params_to_log Other scGate parameters that were changed from the default.
-#'
-#' @export
-#'
+#' @importFrom utils packageVersion
 #' @return saves the log of the scGate prameters for the methods section.
+#' @export
 #'
 
 log_parameters_scGate <- function(log_file, model_to_log = NULL, params_to_log = NULL) {
@@ -68,6 +67,7 @@ log_parameters_scGate <- function(log_file, model_to_log = NULL, params_to_log =
 #' @param TcellFunction Logical; set to TRUE if you want to include the current T cell model.
 #' @param file Seurat object file. This requires the file to have the scaled data available for annotation purposes.
 #' @param Threshold_test Logical; testing the scGate threshold for identifying the sub-populations. Recommended to use with BD Rhapsody immune panel.
+#' @param SimpleFunction Logical; a simpler annotation model to the TcellFunction. This model does not have as indepth T cell subsets, but does include some memory markers for the CD8 population. Additionally, it includes the CD4.CD8 DP population. However, due to the CD4 marker issue, the cells that are CD8A or CD8B negative are classified into the CD4 subsets. There is potential the CD4.other contain DN cells, but it could not be accurately determined.
 #' @param signature_for_testing Character vector; signature for testing purposes. Default is c("CD8A", "CD8B").
 #' @param threshold Numeric; set the scGate threshold. Default is 0.2 for full models and 0.55 for focused models from BD Rhapsody.
 #' @param immune_checkpoint Logical; include T cell-based stress models of exhaustion.

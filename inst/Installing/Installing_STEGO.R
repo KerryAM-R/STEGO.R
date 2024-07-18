@@ -1,5 +1,7 @@
 Sys.setenv("CXX" = "g++")
 
+install.packages("roxygen2")
+
 # installing STEGO.R
 if (!require("BiocManager", quietly = TRUE))
   install.packages("BiocManager")

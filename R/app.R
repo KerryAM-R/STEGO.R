@@ -47,6 +47,7 @@
 #' @import chisq.posthoc.test
 #' @import reticulate
 #' @importFrom utils installed.packages
+#' @import SeuratObject
 #' @return A shiny R application called STEGO.R
 #' @examples
 #' library(STEGO.R)
