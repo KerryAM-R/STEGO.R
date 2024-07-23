@@ -14,8 +14,8 @@ automated_sc_filtering(
   percent.rb = 5,
   dimension_sc = 15,
   resolution_sc = 1,
-  limit_to_TCR_GEx = F,
-  save_plots = T,
+  limit_to_TCR_GEx = FALSE,
+  save_plots = TRUE,
   output_dir = "3_SCobj/3a/"
 )
 }

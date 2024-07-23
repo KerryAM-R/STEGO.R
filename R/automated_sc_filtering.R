@@ -70,17 +70,17 @@ automated_sc_filtering <- function(folder = "1_SeuratQC",
                                    percent.rb = 5,
                                    dimension_sc = 15,
                                    resolution_sc= 1,
-                                   limit_to_TCR_GEx = F,
-                                   save_plots = T,
+                                   limit_to_TCR_GEx = FALSE,
+                                   save_plots = TRUE,
                                    output_dir = "3_SCobj/3a/"
 ) {
 
   main_directory <- folder
   # main_directory <- main_directory
-  main_folders <- list.files(paste(main_directory),full.names = T)
+  main_folders <- list.files(paste(main_directory),full.names = TRUE)
   samp_names <- main_folders[grepl("_count-matrix_10x.csv.gz", main_folders)]
   samp_names <- gsub("_count-matrix_10x.csv.gz","",samp_names)
-  main_folders2 <- list.files(paste(main_directory),full.names = F)
+  main_folders2 <- list.files(paste(main_directory),full.names = FALSE)
 
   samp_names2 <- main_folders2[grepl("_count-matrix_10x.csv.gz", main_folders2)]
   samp_names2 <- gsub("_count-matrix_10x.csv.gz","",samp_names2)

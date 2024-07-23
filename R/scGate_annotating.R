@@ -11,7 +11,8 @@
 #' @export
 #'
 
-log_parameters_scGate <- function(log_file, model_to_log = NULL, params_to_log = NULL) {
+log_parameters_scGate <- function(log_file = log_file,
+                                  model_to_log = NULL, params_to_log = NULL) {
   # Open the log_file in append mode
   con <- file(log_file, open = "a")
 
@@ -80,6 +81,7 @@ log_parameters_scGate <- function(log_file, model_to_log = NULL, params_to_log =
 #' @param Version Character; Seurat version. Either "V4", "V5", or "python". If converted from anndata to Seurat, use the python version.
 #' @param chunk_size Integer; total number of cells to perform the annotation model on. Default is 50,000 cells.
 #' @param output_dir Character; directory to store the outputs of this process. If running multiple times, it's best to change the name.
+#' @param set_seed Setting the seed for the function
 #' @import Seurat
 #' @import scGate
 #' @export
@@ -103,10 +105,11 @@ scGate_annotating <- function (
                                reductionType = "harmony",
                                chunk_size = 50000,
                                output_dir = "output",
-                               Version = c("V5","V4","python")
+                               Version = c("V5","V4","python"),
+                               set_seed = 123
                                )
 {
-  set.seed(123) # Set a specific seed value, such as 123
+  set.seed(set_seed) # Set a specific seed value, such as 123
   source(system.file("scGATE", "custom_df_scGATE.R", package = "STEGO.R"))
 
   default_models <- list(
@@ -192,6 +195,7 @@ scGate_annotating <- function (
                        neg.thr = threshold_scGate,
                        nfeatures = ncol(sc_chunk),
                        reduction = reductionType,
+                       seed = set_seed,
                        min.cells = 1)
     sc_chunk@meta.data <- sc_chunk@meta.data[!grepl("_UCell", names(sc_chunk@meta.data))]
     sc_chunk@meta.data <- sc_chunk@meta.data[!grepl("is.pure_", names(sc_chunk@meta.data))]

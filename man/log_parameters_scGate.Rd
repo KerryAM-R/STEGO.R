@@ -4,7 +4,11 @@
 \alias{log_parameters_scGate}
 \title{log_parameters_scGate}
 \usage{
-log_parameters_scGate(log_file, model_to_log = NULL, params_to_log = NULL)
+log_parameters_scGate(
+  log_file = log_file,
+  model_to_log = NULL,
+  params_to_log = NULL
+)
 }
 \arguments{
 \item{log_file}{name of the log file called "method_file.txt". It will save in the project directory.}

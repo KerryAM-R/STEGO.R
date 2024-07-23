@@ -12,7 +12,7 @@ Authors@R: c(person("Kerry A.", "Mullan", role = c("aut","cre"),
               person("Pieter", "Meysman", role = c("aut","ctb"),
                      email = ""))
 Author: Kerry A. Mullan [aut, cre], My Ha [aut, ctb], Sebastiaan Valkiers [aut, ctb], Nicky de Vrij [aut, ctb], Benson Ogunjimi [aut, ctb], Kris Laukens [aut, ctb], Pieter Meysman [aut, ctb]
-Description: This is a 'shiny' R application designed to perform the dule analysis of single cell RNA-seq with scTCR-seq data. This program includes over 40 packages including 'ClusTCR2', 'ggplot2', 'harmony', 'Seurat' and 'scGate'. The program can input in 10x Genomics, BD Rhapsody data and array based. The process standardises the annotations of the T cell subsets using 'scGate'. The program includes both interface and command-line functions depending on the users skill level. For ease of using 'STEGO.R' in there is access to the project directory to help organise the files. 
+Description: This is a 'shiny' R application designed to perform the dual analysis of single cell RNA-seq with scTCR-seq data. This program includes over 40 packages including 'ClusTCR2', 'ggplot2', 'harmony', 'Seurat' and 'scGate'. The user can input in 10x Genomics, BD Rhapsody data and array based from single cell states. We also include a standardised annotation process for sorted CD3+ cells or T cell using 'scGate'. Depending on the users skill level and preferences, there are both interface and command-line functions. Kerry A. Mullan, My Ha, Sebastiaan Valkiers, Nicky de Vrij, Benson Ogunjimi, Kris Laukens, Pieter Meysman (2023) <doi:10.1101/2023.09.27.559702>.
 Maintainer: Kerry A. Mullan <Kerry.Mullan@uantwerpen.be>
 License: GPL (>= 3)
 Encoding: UTF-8

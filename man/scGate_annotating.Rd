@@ -20,7 +20,8 @@ scGate_annotating(
   reductionType = "harmony",
   chunk_size = 50000,
   output_dir = "output",
-  Version = c("V5", "V4", "python")
+  Version = c("V5", "V4", "python"),
+  set_seed = 123
 )
 }
 \arguments{
@@ -55,6 +56,8 @@ scGate_annotating(
 \item{output_dir}{Character; directory to store the outputs of this process. If running multiple times, it's best to change the name.}
 
 \item{Version}{Character; Seurat version. Either "V4", "V5", or "python". If converted from anndata to Seurat, use the python version.}
+
+\item{set_seed}{Setting the seed for the function}
 }
 \value{
 Seurat object with annotations
