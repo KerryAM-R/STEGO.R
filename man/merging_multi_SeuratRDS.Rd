@@ -17,27 +17,27 @@ merging_multi_SeuratRDS(
 )
 }
 \arguments{
-\item{seurat_files}{set the path to the directory with the. Default = current working directory. The program will reset the directory to the original to not impact the function of STEGO.R project file. If you stop the script, you will need to manually reset the working directory with setwd("../"), to go back one directory.}
+\item{seurat_files}{Path to the directory with the .rds files. Default is the current working directory. The function will reset the directory to the original to avoid impacting the STEGO.R project file. If you stop the script, manually reset the working directory with setwd("../") to go back one directory.}
 
-\item{merge_RDS}{Set to TRUE once you have check the directory with the .rds file}
+\item{merge_RDS}{Set to TRUE once you have checked the directory with the .rds files.}
 
-\item{pattern_RDS}{uses the list.files function to identify the .rds objects for merging in the 2_scObj}
+\item{pattern_RDS}{Pattern to identify the .rds objects for merging.}
 
-\item{species}{Species: hs or mm, as the humans (hs) use upper case and the mouse (mm) gene use proper case.}
+\item{species}{Species: "hs" for human (uses uppercase) or "mm" for mouse (uses proper case).}
 
 \item{reduce_size}{Reduce the size of the matrix to the most variable TCR based on the 12 dataset.}
 
-\item{own_features}{If you want to reduce the file size to your own features change to TRUE}
+\item{own_features}{Set to TRUE if you want to reduce the file size to your own features.}
 
-\item{Seurat_Version}{Current version of Seurat V5 requires joining layers in the merging process.}
+\item{Seurat_Version}{Current version of Seurat. Seurat V5 requires joining layers in the merging process.}
 
-\item{max_features}{set the maximum number of features to keep per file.}
+\item{max_features}{Maximum number of features to keep per file.}
 
-\item{own_features_df}{Add in a data frame of the list of your features of one column only.}
+\item{own_features_df}{Data frame of the list of your features (one column only).}
 }
 \value{
 A merged Seurat RDS object.
 }
 \description{
-This function is to aid im merging multiple Seurat object, which will then need to undergo harmony merging after this step. We have included a loop that merges two Seurat objects at a time to ensure time efficiency  (exponentially gets smaller from the previous sequential merging process)
+This function helps in merging multiple Seurat objects, which will then need to undergo harmony merging. It includes a loop that merges two Seurat objects at a time for time efficiency (exponentially faster than previous sequential merging processes).
 }

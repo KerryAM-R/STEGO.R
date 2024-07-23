@@ -68,22 +68,21 @@ merging_ClusTCR2 <- function (directory = "1_ClusTCR",chain = "AG", output_dir =
 #' Merging RDS Seurat objects
 #' @name merging_multi_SeuratRDS
 #' @description
-#' This function is to aid im merging multiple Seurat object, which will then need to undergo harmony merging after this step. We have included a loop that merges two Seurat objects at a time to ensure time efficiency  (exponentially gets smaller from the previous sequential merging process)
+#' This function helps in merging multiple Seurat objects, which will then need to undergo harmony merging. It includes a loop that merges two Seurat objects at a time for time efficiency (exponentially faster than previous sequential merging processes).
 #'
-#' @param seurat_files set the path to the directory with the. Default = current working directory. The program will reset the directory to the original to not impact the function of STEGO.R project file. If you stop the script, you will need to manually reset the working directory with setwd("../"), to go back one directory.
-#' @param merge_RDS Set to TRUE once you have check the directory with the .rds file
-#' @param pattern_RDS uses the list.files function to identify the .rds objects for merging in the 2_scObj
-#' @param species Species: hs or mm, as the humans (hs) use upper case and the mouse (mm) gene use proper case.
+#' @param seurat_files Path to the directory with the .rds files. Default is the current working directory. The function will reset the directory to the original to avoid impacting the STEGO.R project file. If you stop the script, manually reset the working directory with setwd("../") to go back one directory.
+#' @param merge_RDS Set to TRUE once you have checked the directory with the .rds files.
+#' @param pattern_RDS Pattern to identify the .rds objects for merging.
+#' @param species Species: "hs" for human (uses uppercase) or "mm" for mouse (uses proper case).
 #' @param reduce_size Reduce the size of the matrix to the most variable TCR based on the 12 dataset.
-#' @param own_features If you want to reduce the file size to your own features change to TRUE
-#' @param own_features_df Add in a data frame of the list of your features of one column only.
-#' @param Seurat_Version Current version of Seurat V5 requires joining layers in the merging process.
-#' @param max_features set the maximum number of features to keep per file.
+#' @param own_features Set to TRUE if you want to reduce the file size to your own features.
+#' @param own_features_df Data frame of the list of your features (one column only).
+#' @param Seurat_Version Current version of Seurat. Seurat V5 requires joining layers in the merging process.
+#' @param max_features Maximum number of features to keep per file.
 #' @import Seurat
 #' @importFrom purrr reduce
 #' @return A merged Seurat RDS object.
 #' @export
-
 merging_multi_SeuratRDS <- function(seurat_files = "3_SCobj/3a",
                                     merge_RDS = FALSE,
                                     pattern_RDS = ".rds$",
@@ -93,7 +92,7 @@ merging_multi_SeuratRDS <- function(seurat_files = "3_SCobj/3a",
                                     Seurat_Version = "V5",
                                     max_features = 10000,
                                     own_features_df = own_features_df
-                                    )  {
+)  {
 
   main_directory <- seurat_files
   main_folders <- list.files(paste(main_directory), full.names = T)
@@ -113,38 +112,38 @@ merging_multi_SeuratRDS <- function(seurat_files = "3_SCobj/3a",
       message("Reading in file ", i, " of ", len.temp, ": ", model.name)
       list.sc[[model.name]] <- readRDS(temp[i])
       if (reduce_size) {
-      message("Reducing file size ", model.name)
+        message("Reducing file size ", model.name)
 
-      if (species == "hs") {
-        list.sc[[model.name]] <- FindVariableFeatures(list.sc[[model.name]], selection.method = "vst", nfeatures = max_features)
-        var.feat <- VariableFeatures(list.sc[[model.name]])
-        var.feat <- as.data.frame(var.feat)
-        names(var.feat) <- "V1"
+        if (species == "hs") {
+          list.sc[[model.name]] <- FindVariableFeatures(list.sc[[model.name]], selection.method = "vst", nfeatures = max_features)
+          var.feat <- VariableFeatures(list.sc[[model.name]])
+          var.feat <- as.data.frame(var.feat)
+          names(var.feat) <- "V1"
 
-        anno.features <- read.csv(system.file("Kmean", "Kmeans.requires.annotation.csv", package = "STEGO.R"))
-        names(anno.features) <- "V1"
-        anno.features2 <- merge(var.feat,anno.features,by = "V1",all.x = T)
+          anno.features <- read.csv(system.file("Kmean", "Kmeans.requires.annotation.csv", package = "STEGO.R"))
+          names(anno.features) <- "V1"
+          anno.features2 <- merge(var.feat,anno.features,by = "V1",all.x = T)
 
-        if (own_features) {
-          ownfeatures <- as.data.frame(own_features_df)
-          names(ownfeatures) <- "V1"
+          if (own_features) {
+            ownfeatures <- as.data.frame(own_features_df)
+            names(ownfeatures) <- "V1"
 
-          features.var.needed <- merge(anno.features2,ownfeatures, by = "V1", all.x = T)
-        }
+            features.var.needed <- merge(anno.features2,ownfeatures, by = "V1", all.x = T)
+          }
 
-      } else {
-        features.var.needed <- read.csv(system.file("Kmean", "human.variable.features.csv", package = "STEGO.R"))
-        features.var.needed$V1 <- tools::toTitleCase(features.var.needed$V1)
-
-        if (own_features) {
-          features.var.needed <- own_features_df
+        } else {
+          features.var.needed <- read.csv(system.file("Kmean", "human.variable.features.csv", package = "STEGO.R"))
           features.var.needed$V1 <- tools::toTitleCase(features.var.needed$V1)
+
+          if (own_features) {
+            features.var.needed <- own_features_df
+            features.var.needed$V1 <- tools::toTitleCase(features.var.needed$V1)
+          }
         }
-      }
-      message("removing previous scaled data")
-      list.sc[[i]][["RNA"]]$scale.data <- NULL
-      message("selecting the variable features")
-      list.sc[[i]] <- subset(list.sc[[i]], features = features.var.needed$V1)
+        message("removing previous scaled data")
+        list.sc[[i]][["RNA"]]$scale.data <- NULL
+        message("selecting the variable features")
+        list.sc[[i]] <- subset(list.sc[[i]], features = features.var.needed$V1)
       }
 
       message("Adding project name")
@@ -219,13 +218,13 @@ merging_multi_SeuratRDS <- function(seurat_files = "3_SCobj/3a",
     message(paste(total_merged, "files were merged into 1. The merged object is ", round(sl[1]/1000^3, 2), "Gb"))
 
     # logging parameters
-log_file <- "log_file.txt"
-  con <- file(log_file,open = "a")
-  writeLines("\n", con)
-  message_samples <- paste(total_merged, "files were merged into 1. The merged object is ", round(sl[1]/1000^3, 2), "Gb")
-  writeLines(message_samples, con)
-  # Close the file connection
-  close(con)
+    log_file <- "log_file.txt"
+    con <- file(log_file,open = "a")
+    writeLines("\n", con)
+    message_samples <- paste(total_merged, "files were merged into 1. The merged object is ", round(sl[1]/1000^3, 2), "Gb")
+    writeLines(message_samples, con)
+    # Close the file connection
+    close(con)
 
     #reset the working directory to the project directory
     return(merged_object)
@@ -234,6 +233,7 @@ log_file <- "log_file.txt"
     # return(NULL)
   }
 }
+
 
 #' Find Variable features
 #' @name harmony_batch_correction_1_variableFeatures

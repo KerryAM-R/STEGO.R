@@ -6,7 +6,7 @@
 \usage{
 update_sc(
   sc = sc,
-  add_additional_lables = T,
+  add_additional_lables = TRUE,
   updateID = updateID,
   colName = "Sample_Name"
 )

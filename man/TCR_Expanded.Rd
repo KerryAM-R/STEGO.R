@@ -22,6 +22,8 @@ TCR_Expanded(
 }
 \value{
 A data frame summarizing TCR-seq data based on scRepertoire categories.
+
+Adding the expanded values to the meta-data and returns the seurat object
 }
 \description{
 This function summarizes TCR-seq data based on scRepertoire categories, providing counts, frequencies, and percentages of expanded clones.

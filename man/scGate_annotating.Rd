@@ -20,7 +20,8 @@ scGate_annotating(
   reductionType = "harmony",
   chunk_size = 50000,
   output_dir = "output",
-  Version = c("V5", "V4", "python")
+  Version = c("V5", "V4", "python"),
+  set_seed = 123
 )
 }
 \arguments{
@@ -33,6 +34,8 @@ scGate_annotating(
 \item{threshold}{Numeric; set the scGate threshold. Default is 0.2 for full models and 0.55 for focused models from BD Rhapsody.}
 
 \item{TcellFunction}{Logical; set to TRUE if you want to include the current T cell model.}
+
+\item{SimpleFunction}{Logical; a simpler annotation model to the TcellFunction. This model does not have as indepth T cell subsets, but does include some memory markers for the CD8 population. Additionally, it includes the CD4.CD8 DP population. However, due to the CD4 marker issue, the cells that are CD8A or CD8B negative are classified into the CD4 subsets. There is potential the CD4.other contain DN cells, but it could not be accurately determined.}
 
 \item{immune_checkpoint}{Logical; include T cell-based stress models of exhaustion.}
 
@@ -53,6 +56,8 @@ scGate_annotating(
 \item{output_dir}{Character; directory to store the outputs of this process. If running multiple times, it's best to change the name.}
 
 \item{Version}{Character; Seurat version. Either "V4", "V5", or "python". If converted from anndata to Seurat, use the python version.}
+
+\item{set_seed}{Setting the seed for the function}
 }
 \value{
 Seurat object with annotations

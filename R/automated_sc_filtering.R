@@ -3,13 +3,17 @@
 #' @description
 #' This function is to automate step 3a. We highly recommend that you check your base parameters in the interface and then apply them to all of the data. The default parameters are set for human 10x
 #' @param log_file Name of the log file which will always be
+#' @param params_to_log Parameters that differ from the default
+#' @importFrom utils packageVersion
+#' @return text in the log_file.txt file
+#' @export
 
 log_parameters_SeuratQC <- function(log_file, params_to_log = NULL) {
   # Open the log_file in append mode
   con <- file(log_file,open = "a")
   # Get the versions of Seurat and STEGO.R
-  seurat_version <- packageVersion("Seurat")
-  stego_version <- packageVersion("STEGO.R")
+  seurat_version <- utils::packageVersion("Seurat")
+  stego_version <- utils::packageVersion("STEGO.R")
   # Start with a newline
   writeLines("\n", con)
 
@@ -66,17 +70,17 @@ automated_sc_filtering <- function(folder = "1_SeuratQC",
                                    percent.rb = 5,
                                    dimension_sc = 15,
                                    resolution_sc= 1,
-                                   limit_to_TCR_GEx = F,
-                                   save_plots = T,
+                                   limit_to_TCR_GEx = FALSE,
+                                   save_plots = TRUE,
                                    output_dir = "3_SCobj/3a/"
 ) {
 
   main_directory <- folder
   # main_directory <- main_directory
-  main_folders <- list.files(paste(main_directory),full.names = T)
+  main_folders <- list.files(paste(main_directory),full.names = TRUE)
   samp_names <- main_folders[grepl("_count-matrix_10x.csv.gz", main_folders)]
   samp_names <- gsub("_count-matrix_10x.csv.gz","",samp_names)
-  main_folders2 <- list.files(paste(main_directory),full.names = F)
+  main_folders2 <- list.files(paste(main_directory),full.names = FALSE)
 
   samp_names2 <- main_folders2[grepl("_count-matrix_10x.csv.gz", main_folders2)]
   samp_names2 <- gsub("_count-matrix_10x.csv.gz","",samp_names2)

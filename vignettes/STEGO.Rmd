@@ -48,7 +48,6 @@ y
 If then prompted with all the bioconductor based packages to install from source on M1 or greater Mac chip
 y
 
-
 import all of the fonts to your system. Will only need to be done the first time.
 
 ```{r, echo=TRUE}
@@ -79,7 +78,7 @@ library(STEGO.R)
 # STEGO.R::runSTEGO() 
 ```
 
-There are several functions available in addition to the interface. These scripts are availabe in the folder_for_project. 
+There are several functions available in addition to the interface and are available in the folder_for_project. 
 
 Step 1. pre-processing
 
@@ -87,4 +86,3 @@ Step 2b. ClusTCR2_large.R
 
 Step 3a-c. filtering_merging_harmony_annotating.R
 
-See the scripts for details. 

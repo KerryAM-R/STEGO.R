@@ -6,13 +6,13 @@
 #' @param log_file name of the log file called "method_file.txt". It will save in the project directory.
 #' @param model_to_log annotation models used
 #' @param params_to_log Other scGate parameters that were changed from the default.
-#'
+#' @importFrom utils packageVersion
+#' @return saves the log of the scGate prameters for the methods section.
 #' @export
 #'
-#' @return saves the log of the scGate prameters for the methods section.
-#'
 
-log_parameters_scGate <- function(log_file, model_to_log = NULL, params_to_log = NULL) {
+log_parameters_scGate <- function(log_file = log_file,
+                                  model_to_log = NULL, params_to_log = NULL) {
   # Open the log_file in append mode
   con <- file(log_file, open = "a")
 
@@ -68,6 +68,7 @@ log_parameters_scGate <- function(log_file, model_to_log = NULL, params_to_log =
 #' @param TcellFunction Logical; set to TRUE if you want to include the current T cell model.
 #' @param file Seurat object file. This requires the file to have the scaled data available for annotation purposes.
 #' @param Threshold_test Logical; testing the scGate threshold for identifying the sub-populations. Recommended to use with BD Rhapsody immune panel.
+#' @param SimpleFunction Logical; a simpler annotation model to the TcellFunction. This model does not have as indepth T cell subsets, but does include some memory markers for the CD8 population. Additionally, it includes the CD4.CD8 DP population. However, due to the CD4 marker issue, the cells that are CD8A or CD8B negative are classified into the CD4 subsets. There is potential the CD4.other contain DN cells, but it could not be accurately determined.
 #' @param signature_for_testing Character vector; signature for testing purposes. Default is c("CD8A", "CD8B").
 #' @param threshold Numeric; set the scGate threshold. Default is 0.2 for full models and 0.55 for focused models from BD Rhapsody.
 #' @param immune_checkpoint Logical; include T cell-based stress models of exhaustion.
@@ -80,6 +81,7 @@ log_parameters_scGate <- function(log_file, model_to_log = NULL, params_to_log =
 #' @param Version Character; Seurat version. Either "V4", "V5", or "python". If converted from anndata to Seurat, use the python version.
 #' @param chunk_size Integer; total number of cells to perform the annotation model on. Default is 50,000 cells.
 #' @param output_dir Character; directory to store the outputs of this process. If running multiple times, it's best to change the name.
+#' @param set_seed Setting the seed for the function
 #' @import Seurat
 #' @import scGate
 #' @export
@@ -103,10 +105,11 @@ scGate_annotating <- function (
                                reductionType = "harmony",
                                chunk_size = 50000,
                                output_dir = "output",
-                               Version = c("V5","V4","python")
+                               Version = c("V5","V4","python"),
+                               set_seed = 123
                                )
 {
-  set.seed(123) # Set a specific seed value, such as 123
+  set.seed(set_seed) # Set a specific seed value, such as 123
   source(system.file("scGATE", "custom_df_scGATE.R", package = "STEGO.R"))
 
   default_models <- list(
@@ -165,7 +168,7 @@ scGate_annotating <- function (
   if (length(params_to_log) > 0 && length(models_to_log)>0) {
     log_parameters_scGate(log_file, models_to_log,params_to_log)
   } else {
-    log_parameters_scGate(log_file)
+    log_parameters_scGate(log_file,models_to_log)
   }
 
 
@@ -192,6 +195,7 @@ scGate_annotating <- function (
                        neg.thr = threshold_scGate,
                        nfeatures = ncol(sc_chunk),
                        reduction = reductionType,
+                       seed = set_seed,
                        min.cells = 1)
     sc_chunk@meta.data <- sc_chunk@meta.data[!grepl("_UCell", names(sc_chunk@meta.data))]
     sc_chunk@meta.data <- sc_chunk@meta.data[!grepl("is.pure_", names(sc_chunk@meta.data))]
@@ -406,15 +410,17 @@ scGate_annotating <- function (
     } else {
       if (Version == "V4" |Version == "Python") {
         join_sc <- merged_sc
+        message("reordering and adding back in the umap & harmony data")
+        barcode_order <- rownames(join_sc@meta.data)
+        umap_reordered <- umap[match(barcode_order, rownames(umap)), ]
+        harmony_reordered <- umap[match(barcode_order, rownames(harmony)),]
 
-        # join_sc@reductions$umap <- CreateDimReducObject(embeddings = umap_reordered, key = 'UMAP_', assay = 'RNA')
-        # join_sc@reductions$harmony <- CreateDimReducObject(embeddings = harmony_reordered, key = 'harmony_', assay = 'RNA')
+        join_sc@reductions$umap <- CreateDimReducObject(embeddings = umap_reordered, key = 'UMAP_', assay = 'RNA')
+        join_sc@reductions$harmony <- CreateDimReducObject(embeddings = harmony_reordered, key = 'harmony_', assay = 'RNA')
         join_sc@assays$RNA@scale.data  <- file@assays$RNA@scale.data
         join_sc@assays$RNA@var.features <- file@assays$RNA@var.features
 
       } else {
-        message("Joining layers")
-        join_sc <- JoinLayers(merged_sc)
         message("reordering and adding back in the umap & harmony data")
         barcode_order <- rownames(join_sc@meta.data)
         umap_reordered <- umap[match(barcode_order, rownames(umap)), ]

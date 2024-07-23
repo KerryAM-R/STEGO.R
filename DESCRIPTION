@@ -1,16 +1,26 @@
 Package: STEGO.R
-Title: Single-Cell T-cell Receptor and Expression Grouped Ontologies
-Version: 2.0.2.08
-Authors@R: 
-    person("Kerry", "Mullan", , "Kerry.Mullan@uantwerpen.be", role = c("aut", "cre"),
-           comment = c(ORCID = "0000-0003-4400-1198"))
-Description: This is a 'shiny' R application designed to perform the dule analysis of single cell RNA-seq with scTCR-seq data. This program includes over 40 packages including 'ClusTCR2', 'ggplot2', 'harmony', 'Seurat' and 'scGate'. The program can input in 10x Genomics, BD Rhapsody data and array based. The process standardises the annotations of the T cell subsets using 'scGate'. The program includes both interface and command-line functions depending on the users skill level. For ease of using 'STEGO.R' in there is access to the project directory to help organise the files. 
+Title: Single-Cell T-Cell Receptor and Expression Grouped Ontologies
+Version: 2.0.2.8
+Date: 2024-07-17
+Authors@R: c(person("Kerry A.", "Mullan", role = c("aut","cre"),
+                     email = "Kerry.Mullan@uantwerpen.be"),
+              person("My","Ha",role = c("aut","ctb")),
+              person("Sebastiaan", "Valkiers", role = c("aut","ctb")),
+              person("Nicky","de Vrij",role = c("aut","ctb")),
+              person("Benson","Ogunjimi",role = c("aut","ctb")),
+              person("Kris", "Laukens", role = c("aut","ctb")),
+              person("Pieter", "Meysman", role = c("aut","ctb"),
+                     email = ""))
+Author: Kerry A. Mullan [aut, cre], My Ha [aut, ctb], Sebastiaan Valkiers [aut, ctb], Nicky de Vrij [aut, ctb], Benson Ogunjimi [aut, ctb], Kris Laukens [aut, ctb], Pieter Meysman [aut, ctb]
+Description: This is a 'shiny' R application designed to perform the dual analysis of single cell RNA-seq with scTCR-seq data. This program includes over 40 packages including 'ClusTCR2', 'ggplot2', 'harmony', 'Seurat' and 'scGate'. The user can input in 10x Genomics, BD Rhapsody data and array based from single cell states. We also include a standardised annotation process for sorted CD3+ cells or T cell using 'scGate'. Depending on the users skill level and preferences, there are both interface and command-line functions. Kerry A. Mullan, My Ha, Sebastiaan Valkiers, Nicky de Vrij, Benson Ogunjimi, Kris Laukens, Pieter Meysman (2023) <doi:10.1101/2023.09.27.559702>.
+Maintainer: Kerry A. Mullan <Kerry.Mullan@uantwerpen.be>
 License: GPL (>= 3)
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.3.2
 Imports: 
     Seurat,
+    SeuratObject,
     bslib,
     circlize,
     ClusTCR2,

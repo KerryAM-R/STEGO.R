@@ -2,16 +2,17 @@
 % Please edit documentation in R/preprocessing.R
 \name{preprocessing_bd_rap}
 \alias{preprocessing_bd_rap}
-\title{Automated preprocessing}
+\title{Automated preprocessing for the BD Rhapsody dataset. The input includes the unfiltered contig file and the 10x like formatting.}
 \usage{
 preprocessing_bd_rap(
-  downloadSeurat = F,
-  downloadTCRex = F,
-  downloadClusTCR = F,
-  downloadTCR_Explore = F,
+  downloadSeurat = FALSE,
+  downloadTCRex = FALSE,
+  downloadClusTCR = FALSE,
+  downloadTCR_Explore = FALSE,
   csv_contig_file = "csv",
   main_directory = "0_RAW_files/",
-  create_sample_tag_file = F
+  create_sample_tag_file = FALSE,
+  shiny_server = FALSE
 )
 }
 \arguments{
@@ -29,7 +30,9 @@ preprocessing_bd_rap(
 
 \item{create_sample_tag_file}{If not multiplexed, this will create the sample tag file.}
 }
+\value{
+Saves all of the processed files to the respective folders in the directory_for_project
+}
 \description{
-This function performs the pre-processing equivalent to STEP 1. This requires the user to name their folders indiv_group. Please use the _ to separate the values, this particularly important for the TCR_Explore as it will separate out the indiv from the group column.
-Each folder should contain one of each that have the following words: barcode, features, matrix, Sample Tag and contig
+This function performs the pre-processing equivalent to STEP 1. This requires the user to name their folders indiv_group. However, the Sample_Name comes from the Sample_Tag file unlike the folder name. This folder name is used for the orig.ident column later in the process. Each folder should contain one of each that have the following words: barcode, features, matrix, Sample Tag and contig.
 }
