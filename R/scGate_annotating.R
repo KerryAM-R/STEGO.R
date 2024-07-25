@@ -421,7 +421,6 @@ scGate_annotating <- function (
         barcode_order <- rownames(join_sc@meta.data)
         umap_reordered <- umap[match(barcode_order, rownames(umap)), ]
         harmony_reordered <- umap[match(barcode_order, rownames(harmony)),]
-
         join_sc@reductions$umap <- CreateDimReducObject(embeddings = umap_reordered, key = 'UMAP_', assay = 'RNA')
         join_sc@reductions$harmony <- CreateDimReducObject(embeddings = harmony_reordered, key = 'harmony_', assay = 'RNA')
         join_sc@assays$RNA@scale.data  <- file@assays$RNA@scale.data
@@ -433,18 +432,11 @@ scGate_annotating <- function (
         barcode_order <- rownames(join_sc@meta.data)
         umap_reordered <- umap[match(barcode_order, rownames(umap)), ]
         harmony_reordered <- umap[match(barcode_order, rownames(harmony)),]
-
         join_sc@reductions$umap <- CreateDimReducObject(embeddings = umap_reordered, key = 'UMAP_', assay = 'RNA')
         join_sc@reductions$harmony <- CreateDimReducObject(embeddings = harmony_reordered, key = 'harmony_', assay = 'RNA')
-
-        message("Adding in seurat_clusters to the Idents column")
-        join_sc@meta.data$seurat_clusters <- factor(join_sc@meta.data$seurat_clusters,levels = 0:100)
-        message(paste(join_sc,sep = " "))
-        Idents(join_sc) <- join_sc@meta.data$seurat_clusters
-        # join_sc_list <- list(sc = join_sc, umap = umap, harmony = harmony)
       }
     }
-    join_sc
     return(join_sc)
+    join_sc
   }
 }
