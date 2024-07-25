@@ -372,7 +372,7 @@ scGate_annotating <- function (
       # Store result in list
       merged_sc_list[[length(merged_sc_list) + 1]] <- sc_chunk
     }
-    meassage(names(merged_sc_list))
+    generate_and_display_message(merged_sc_list)
     merged_sc_list2 <- merged_sc_list
     names(merged_sc_list2) <-  paste0(rep("List_obj_name",num_chunks),1:num_chunks)
 
@@ -439,7 +439,7 @@ scGate_annotating <- function (
 
         message("Adding in seurat_clusters to the Idents column")
         join_sc@meta.data$seurat_clusters <- factor(join_sc@meta.data$seurat_clusters,levels = 0:100)
-        print(join_sc)
+        message(paste(join_sc,sep = " "))
         Idents(join_sc) <- join_sc@meta.data$seurat_clusters
         # join_sc_list <- list(sc = join_sc, umap = umap, harmony = harmony)
       }
