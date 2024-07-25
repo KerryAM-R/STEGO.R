@@ -2,4 +2,4 @@ levels	use_as	name	signature
 level1	positive	CD8	
 level2	negative	CD4	
 level3	positive	Trm	
-level4	negative	cyto	
+level4	negative	EN	
