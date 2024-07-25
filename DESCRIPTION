@@ -1,6 +1,6 @@
 Package: STEGO.R
 Title: Single-Cell T-Cell Receptor and Expression Grouped Ontologies
-Version: 2.0.2.8
+Version: 2.0.2.9
 Date: 2024-07-17
 Authors@R: c(person("Kerry A.", "Mullan", role = c("aut","cre"),
                      email = "Kerry.Mullan@uantwerpen.be"),

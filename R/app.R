@@ -2236,112 +2236,117 @@ runSTEGO <- function(){
             conditionalPanel(
               condition = "input.PriorTBMods == 'PriorRepertoireTB' || input.check_up_files == 'TCR_and_GEX_tb' ",
 
-
+              # condition = "input.check_up_files == 'TCR_and_GEX_tb' ",
 
 
               p("TCR -> GEx analysis",class = "name-header5"),
               #####
               # abundance variables
               ####
-              p("Parameters for specific sections",class = "name-header4"),
+
               conditionalPanel(
-                condition = "input.Panel_TCRUMAP == 'top_clone'",
-                bsCollapse(
-                  id = "collapse_clonal_abundance", open = NULL, multiple = TRUE,
-                  bsCollapsePanel("Clonal Abundance",style = "primary custom-panel",
-
-                                  fluidRow(
-                                    column(12,selectInput("comparison_abundance",p("Compare to:",class = "name-header_functions"),choices = c("Background","Singlets","Clones"))),
-
-                                    column(
-                                      6, conditionalPanel(
-                                        condition = "input.Panel_TCRUMAP=='top_clone'",
-                                        div(class = "select-input-container",
-                                            checkboxInput("limit_to_top_clones",p("Filter table?",class = "name-header3"),value = T)
-                                        )
-                                      ),
-                                    ),
-                                    conditionalPanel(condition = "input.Panel_TCRUMAP=='top_clone' && input.limit_to_top_clones",
-                                                     column(6, numericInput("max_top_clone_limit", p("Max number of clones:",class = "name-header_functions"), value = 50)),
-                                                     column(6, numericInput("singlets_filter",p("Filter TCR lists \u2264:",class = "name-header_functions"),value = 2)),
-                                    ),
-                                  ),
-
-                                  fluidRow(
-                                    column(3,""),
-                                    column(6,actionButton("run_stats_abudance","Run stats (abudance)")),
-                                  )
-
-                  )
-                )
-              ),
-
-              # expansion specific side panel  --------
-              conditionalPanel(
-                condition = "input.check_up_files == 'Prior' || input.check_up_files == 'TCR_and_GEX_tb' ",
+                condition = "input.check_up_files == 'TCR_and_GEX_tb' ",
+                p("Parameters for specific sections",class = "name-header4"),
                 conditionalPanel(
-                  condition = "input.Panel_TCRUMAP == 'Expanded'",
+                  condition = "input.Panel_TCRUMAP == 'top_clone'",
+                  bsCollapse(
+                    id = "collapse_clonal_abundance", open = NULL, multiple = TRUE,
+                    bsCollapsePanel("Clonal Abundance",style = "primary custom-panel",
 
-                  bsCollapsePanel("Expanded analysis",style = "primary custom-panel",
-                                  fluidRow(
-                                    column(6, div(class = "select-input-container",
-                                                  numericInput("cutoff.expanded", p("Cut off greater than",class = "name-header_functions"), value = 0.5, step = 0.01, min = 0, max = 0.99),
-                                                  div(class = "hint-icon",
-                                                      icon("circle-question", lib = "font-awesome")),
-                                                  div(class = "hint-text2", "This is to calculate the number of clone cut-off that is deemed to be expanded. e.g., >0.5 == 50% or more of the repertoire that is used to calculate the count cut-off for what is deemed to be expanded"),
-                                    )),
-                                    column(6,
-                                           uiOutput("cut.off_expanded2"),
+                                    fluidRow(
+                                      column(12,selectInput("comparison_abundance",p("Compare to:",class = "name-header_functions"),choices = c("Background","Singlets","Clones"))),
 
+                                      column(
+                                        6, conditionalPanel(
+                                          condition = "input.Panel_TCRUMAP=='top_clone'",
+                                          div(class = "select-input-container",
+                                              checkboxInput("limit_to_top_clones",p("Filter table?",class = "name-header3"),value = T)
+                                          )
+                                        ),
+                                      ),
+                                      conditionalPanel(condition = "input.Panel_TCRUMAP=='top_clone' && input.limit_to_top_clones",
+                                                       column(6, numericInput("max_top_clone_limit", p("Max number of clones:",class = "name-header_functions"), value = 50)),
+
+                                      ),
+                                      column(6, numericInput("singlets_filter",p("Filter TCR lists \u2264:",class = "name-header_functions"),value = 2)),
+                                    ),
+
+                                    fluidRow(
+                                      column(3,""),
+                                      column(6,actionButton("run_stats_abudance","Run stats (abudance)")),
                                     )
-                                  ),
 
-                                  # p("Expansion Dot plot",class = "name-header4"),
-                                  fluidRow(
-                                    column(6, uiOutput("classification_to_add2")),
-                                  ),
-                                  fluidRow(
-                                    column(12, selectizeInput("selected_Indiv_Ex_1", p("Samp 1", class = "name-header_functions2"),choices = "", multiple = T)),
-                                    column(12, selectizeInput("selected_Indiv_Ex_2", p("Samp 2", class = "name-header_functions2"),choices = "", multiple = T)),
-                                    column(3,),
-                                    column(6,  actionButton("caluclate_Exp","Calc Expansion Stats")),
-                                  )
+                    )
                   )
                 ),
-              ),
-              # Clustering specific side panel  --------
-              conditionalPanel(
-                condition = "input.PriorTBMods == 'PriorClustTB' ||input.Panel_TCRUMAP=='ClusTCR2'",
 
-                bsCollapsePanel("Clustering analysis",style = "primary custom-panel",
-                                selectInput("chain_TCR", p("Chain to display",class = "name-header_functions2"), choices = c("TRA","TRG","TRB","TRD", "IgH", "IgKL")),
+                # expansion specific side panel  --------
+                conditionalPanel(
+                  condition = "input.check_up_files == 'Prior' || input.check_up_files == 'TCR_and_GEX_tb' ",
+                  conditionalPanel(
+                    condition = "input.Panel_TCRUMAP == 'Expanded'",
 
-                                selectizeInput("Clusters_to_dis_PIE", p("Clusters to display",class = "name-header_functions2"), choices = "", multiple = F),
-                                fluidRow(
-                                  column(6,  actionButton("caluclate_clust","Calc Clustering Stats")),
-                                )
+                    bsCollapsePanel("Expanded analysis",style = "primary custom-panel",
+                                    fluidRow(
+                                      column(12, div(class = "select-input-container",
+                                                     numericInput("cutoff.expanded", p("Percent of repertiore (freq)",class = "name-header_functions"), value = 0.5, step = 0.01, min = 0, max = 0.99),
+                                                     div(class = "hint-icon",
+                                                         icon("circle-question", lib = "font-awesome")),
+                                                     div(class = "hint-text2", "This is to calculate the number of clone cut-off that is deemed to be expanded. e.g., >0.5 == 50% == D50 or more of the repertoire that is used to calculate the count cut-off for what is deemed to be expanded. T"),
+                                      )),
+                                      column(12,
+                                             uiOutput("cut.off_expanded2"),
 
-                )
-              ),
+                                      )
+                                    ),
 
-              # epitope -------
-              conditionalPanel(
-                condition = "input.Panel_TCRUMAP=='Epitope'",
+                                    # p("Expansion Dot plot",class = "name-header4"),
+                                    fluidRow(
+                                      column(6, uiOutput("classification_to_add2")),
+                                    ),
+                                    fluidRow(
+                                      column(12, selectizeInput("selected_Indiv_Ex_1", p("Samp 1", class = "name-header_functions2"),choices = "", multiple = T)),
+                                      column(12, selectizeInput("selected_Indiv_Ex_2", p("Samp 2", class = "name-header_functions2"),choices = "", multiple = T)),
+                                      column(3,),
+                                      column(6,  actionButton("caluclate_Exp","Calc Expansion Stats")),
+                                    )
+                    )
+                  ),
+                ),
+                # Clustering specific side panel  --------
+                conditionalPanel(
+                  condition = "input.PriorTBMods == 'PriorClustTB' ||input.Panel_TCRUMAP=='ClusTCR2'",
 
-                bsCollapsePanel("Epitope analysis",style = "primary custom-panel",
-                                fluidRow(
-                                  column(6, uiOutput("classification_to_add_epitope")),
-                                  column(6, uiOutput("classification_to_add_epitope2"))
-                                ),
-                                fluidRow(
-                                  column(6, actionButton("Update_epi", "Add in Epitope list")),
-                                  column(6, selectInput("Epi_of_interest", p("Epitope of interest",class = "name-header_functions"), "")),
+                  bsCollapsePanel("Clustering analysis",style = "primary custom-panel",
+                                  selectInput("chain_TCR", p("Chain to display",class = "name-header_functions2"), choices = c("TRA","TRG","TRB","TRD", "IgH", "IgKL")),
 
-                                ),
-                                fluidRow(
-                                  column(3,""),
-                                  column(9,  actionButton("caluclate_Epi","Calc Epitope Stats")),
-                                )
+                                  selectizeInput("Clusters_to_dis_PIE", p("Clusters to display",class = "name-header_functions2"), choices = "", multiple = F),
+                                  fluidRow(
+                                    column(6,  actionButton("caluclate_clust","Calc Clustering Stats")),
+                                  )
+
+                  )
+                ),
+
+                # epitope -------
+                conditionalPanel(
+                  condition = "input.Panel_TCRUMAP=='Epitope'",
+
+                  bsCollapsePanel("Epitope analysis",style = "primary custom-panel",
+                                  fluidRow(
+                                    column(6, uiOutput("classification_to_add_epitope")),
+                                    column(6, uiOutput("classification_to_add_epitope2"))
+                                  ),
+                                  fluidRow(
+                                    column(6, actionButton("Update_epi", "Add in Epitope list")),
+                                    column(6, selectInput("Epi_of_interest", p("Epitope of interest",class = "name-header_functions"), "")),
+
+                                  ),
+                                  fluidRow(
+                                    column(3,""),
+                                    column(9,  actionButton("caluclate_Epi","Calc Epitope Stats")),
+                                  )
+                  )
                 )
               ),
 
@@ -2373,13 +2378,7 @@ runSTEGO <- function(){
                                   column(6, numericInput("min_point_", p("Min point cut off",class = "name-header_functions2"), value = 0.25)),
                                   column(6, numericInput("LogFC_", p("Min LogFC cut off",class = "name-header_functions2"), value = 0.25)),
                                   column(12, numericInput("pval.ex.filter", p("adj.p-val cut-off",class = "name-header_functions2"), value = 0.1)),
-                                  column(12,
-                                         div(class = "select-input-container",
-                                             numericInput("sequence_breaks_dotplot",p("Bins for ptc.exp",class = "name-header_functions2"),value = 10),
-                                             div(class = "hint-icon",
-                                                 icon("circle-question", lib = "font-awesome")),
-                                             div(class = "hint-text2", "This value selects bins for the average number of cells expressing the selected transcript. The default for the DotPlot() function from Seurat was 25, and here we over-ride the value with 10 increments, as to better represent the spread of cellular expression"),
-                                         )),
+
                                   column(12, div(class = "select-input-container",
                                                  checkboxInput("logFC_pval_findmarker",p("Positive only?",class = "name-header3"),value = T),
                                                  div(class = "hint-icon",
@@ -2400,7 +2399,14 @@ runSTEGO <- function(){
                                   column(4, colourInput("middle.dotplot", p("Middle color:",class = "name-header_functions2"), "white")),
                                   column(4, colourInput("high.dotplot", p("High color:",class = "name-header_functions2"), "#00008B")),
                                   column(12, checkboxInput("restrict.dotplot", p("Restrict sig. transcripts?",class = "name-header3"), value = T)),
-                                  column(12, numericInput("restrict.dotplot.num", p("Total genes to display:",class = "name-header_functions2"), value = 30))
+                                  column(12, numericInput("restrict.dotplot.num", p("Total genes to display:",class = "name-header_functions2"), value = 30)),
+                                  column(12,
+                                         div(class = "select-input-container",
+                                             numericInput("sequence_breaks_dotplot",p("Bins for ptc.exp",class = "name-header_functions2"),value = 10),
+                                             div(class = "hint-icon",
+                                                 icon("circle-question", lib = "font-awesome")),
+                                             div(class = "hint-text2", "This value selects bins for the average number of cells expressing the selected transcript. The default for the DotPlot() function from Seurat was 25, and here we over-ride the value with 10 increments, as to better represent the spread of cellular expression"),
+                                         )),
                                 )
                 )),
               bsCollapse(
@@ -2857,8 +2863,8 @@ runSTEGO <- function(){
                                     ),
                                   ),
                                   fluidRow(
-                                    column(6,textInput("name_clonotype_selected",p("Ident.1",class = "name-header_functions"), "", width = "600px")),
-                                    column(6,textInput("name_clonotype_selected2",p("Ident.2",class = "name-header_functions"), "", width = "600px")),
+                                    column(6,textInput("name_clonotype_selected",p("Ident.1 (name)",class = "name-header_functions"), "", width = "600px")),
+                                    column(6,textInput("name_clonotype_selected2",p("Ident.2 (name)",class = "name-header_functions"), "", width = "600px")),
                                   ),
                                   tabsetPanel(id = "clonal_abudance_tabs",
                                               tabPanel(
@@ -3820,7 +3826,7 @@ runSTEGO <- function(){
     # collapse_clonal_abundance
 
 
-    observeEvent(c(input$clonal_abudance_tabs, input$ExPan, input$epitope_tabpanel, input$ClusTCR2_panel_tabs, input$Panel_TCRUMAP), {
+    observeEvent(c(input$clonal_abudance_tabs, input$ExPan, input$epitope_tabpanel, input$PriorTBModsinput$ClusTCR2_panel_tabs, input$Panel_TCRUMAP), {
       if (input$clonal_abudance_tabs == "clonal_abud_stats" && input$Panel_TCRUMAP == "top_clone") {
         runjs("$('#collapseExampleStats .panel-collapse').collapse('show');")
       } else if (input$ClusTCR2_panel_tabs == "ClusPan_stat" && input$Panel_TCRUMAP == "ClusTCR2") {
@@ -3829,14 +3835,14 @@ runSTEGO <- function(){
         runjs("$('#collapseExampleStats .panel-collapse').collapse('show');")
       } else if (input$Panel_TCRUMAP == "Epitope" && input$epitope_tabpanel == "Epitope_stats_table") {
         runjs("$('#collapseExampleStats .panel-collapse').collapse('show');")
+      } else if (input$PriorTBMods == "PriorRepertoireTB") {
+        runjs("$('#collapseExampleStats .panel-collapse').collapse('show');")
       } else {
         # if (input$clonal_abudance_tabs != "TopHeat" || input$ClusTCR2_panel_tabs != "ClustHeat") {
         runjs("$('#collapseExampleStats .panel-collapse').collapse('hide');")
         # } else
       }
     })
-
-
 
     observeEvent(c(input$clonal_abudance_tabs, input$ExPan, input$epitope_tabpanel, input$ClusTCR2_panel_tabs, input$Panel_TCRUMAP), {
       if (input$clonal_abudance_tabs == "clonal_abud_dot" && input$Panel_TCRUMAP == "top_clone") {
@@ -14123,6 +14129,32 @@ runSTEGO <- function(){
     #   pie_ag_bd_table()
     # })
 
+    bar_chart_alpha_gamma <- reactive({
+      df.col <- unlist(colors_cols_Top_pie_clonotype())
+
+      total.group.condition <- pie_ag_bd_table()
+
+      total.group.condition$Selected_function <- gsub("_", " ", total.group.condition$Selected_function)
+      total.group.condition$Selected_function <- gsub("[.]", " ", total.group.condition$Selected_function)
+
+      ggplot(total.group.condition, aes(x = Selected_group, y = n, fill = Selected_function)) +
+        geom_bar(stat = "identity",width = 0.9) +
+        theme_bw() +
+        theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) +
+        coord_cartesian(ylim = c(0, 1)) +  # Adjust multiplier as needed
+        scale_fill_manual(labels = ~ stringr::str_wrap(.x, width = 10), values = df.col, na.value = input$NA_col_analysis) +
+        theme(
+          axis.title.y = element_blank(),
+          axis.text.y = element_text(colour = "black", family = input$font_type, size = input$text_size),
+          axis.text.x = element_text(colour = "black", family = input$font_type, size = input$text_size, angle = 90),
+          axis.title.x = element_blank(),
+          legend.text = element_text(colour = "black", size = input$Legend_size, family = input$font_type),
+          legend.position = input$legend_position,
+          legend.title = element_blank()
+        )
+
+    })
+
     Pie_chart_alpha_gamma <- reactive({
       df.col <- unlist(colors_cols_Top_pie_clonotype())
 
@@ -14131,43 +14163,24 @@ runSTEGO <- function(){
       total.group.condition$Selected_function <- gsub("_", " ", total.group.condition$Selected_function)
       total.group.condition$Selected_function <- gsub("[.]", " ", total.group.condition$Selected_function)
 
-      if (input$Plot_type_selected == "pie") {
-        ggplot(total.group.condition, aes(x = "", y = n, fill = as.character(Selected_function), group = as.character(Selected_group), label = Selected_function)) +
-          geom_bar(stat = "identity", width = 1) +
-          coord_polar("y", start = 0) +
-          theme_void(20) +
-          facet_wrap(~Selected_group, nrow = input$wrap_row) +
-          theme(
-            legend.key.size = unit(1, "cm"),
-            legend.title = element_blank()
-          ) +
-          scale_fill_manual(labels = ~ stringr::str_wrap(.x, width = 10), values = df.col, na.value = input$NA_col_analysis) +
-          theme(
-            strip.text = element_text(size = input$Strip_text_size, family = input$font_type),
-            legend.text = element_text(colour = "black", size = input$Legend_size, family = input$font_type),
-            legend.position = input$legend_position,
-            legend.title = element_blank()
-          )
-      } else {
-        ggplot(total.group.condition, aes(x = Selected_group, y = n, fill = Selected_function)) +
-          geom_bar(stat = "identity",width = 0.9) +
-          theme_bw() +
-          theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) +
-          coord_cartesian(ylim = c(0, 1)) +  # Adjust multiplier as needed
-          scale_fill_manual(labels = ~ stringr::str_wrap(.x, width = 10), values = df.col, na.value = input$NA_col_analysis) +
-          theme(
-            axis.title.y = element_blank(),
-            axis.text.y = element_text(colour = "black", family = input$font_type, size = input$text_size),
-            axis.text.x = element_text(colour = "black", family = input$font_type, size = input$text_size, angle = 90),
-            axis.title.x = element_blank(),
-            legend.text = element_text(colour = "black", size = input$Legend_size, family = input$font_type),
-            legend.position = input$legend_position,
-            legend.title = element_blank()
-          )
-      }
 
+      ggplot(total.group.condition, aes(x = "", y = n, fill = as.character(Selected_function), group = as.character(Selected_group), label = Selected_function)) +
+        geom_bar(stat = "identity", width = 1) +
+        coord_polar("y", start = 0) +
+        theme_void(20) +
+        facet_wrap(~Selected_group, nrow = input$wrap_row) +
+        theme(
+          legend.key.size = unit(1, "cm"),
+          legend.title = element_blank()
+        ) +
+        scale_fill_manual(labels = ~ stringr::str_wrap(.x, width = 10), values = df.col, na.value = input$NA_col_analysis) +
+        theme(
+          strip.text = element_text(size = input$Strip_text_size, family = input$font_type),
+          legend.text = element_text(colour = "black", size = input$Legend_size, family = input$font_type),
+          legend.position = input$legend_position,
+          legend.title = element_blank()
+        )
     })
-
 
 
     #### top  UMAP -----
@@ -14212,9 +14225,11 @@ runSTEGO <- function(){
     })
 
     output$top_clonotype_pie <- renderPlot({
-      if (input$Plot_type_selected == "pie" |input$Plot_type_selected == "bar" ) {
+      if (input$Plot_type_selected == "pie") {
         Pie_chart_alpha_gamma()
-      } else {
+      } else if (input$Plot_type_selected == "bar") {
+        bar_chart_alpha_gamma()
+      }  else {
         UMAP_chart_alpha_gamma()
       }
     })
@@ -14255,8 +14270,6 @@ runSTEGO <- function(){
 
       draw(ht, padding = unit(c(5, 5, 5, 5), "mm"))
     })
-
-
 
     output$heatmap_topclone_plot <- renderPlot({
       # Pie_chart_ClusTCR2()
@@ -14303,7 +14316,9 @@ runSTEGO <- function(){
         pdf(file, width = input$width_top_clonotype_pie, height = input$height_top_clonotype_pie, onefile = FALSE) # open the pdf device
         if (input$Plot_type_selected == "pie") {
           plot(Pie_chart_alpha_gamma())
-        } else {
+        } else if (input$Plot_type_selected == "bar") {
+          plot(bar_chart_alpha_gamma())
+        }  else {
           plot(UMAP_chart_alpha_gamma())
         }
         dev.off()
@@ -14324,7 +14339,9 @@ runSTEGO <- function(){
 
         if (input$Plot_type_selected == "pie") {
           plot(Pie_chart_alpha_gamma())
-        } else {
+        } else if (input$Plot_type_selected == "bar") {
+          plot(bar_chart_alpha_gamma())
+        }  else {
           plot(UMAP_chart_alpha_gamma())
         }
 
@@ -20998,7 +21015,7 @@ runSTEGO <- function(){
 
           message(paste0("Downloading Dom stats files and dot plot...", name.clone))
 
-          sc@meta.data$Gene_select <- ifelse(sc@meta.data$Vgene %in% name.clone, name.clone, "other")
+          sc@meta.data$Gene_select <- ifelse(sc@meta.data$Vgene %in% name.clone, name.clone, "BG")
           sc@meta.data
           Idents(object = sc) <- sc@meta.data$Gene_select
 
@@ -21060,93 +21077,93 @@ runSTEGO <- function(){
 
             ##### download the OverRep ------
 
-            df <- sc@meta.data
-
-
-            geneSet <- read.csv(system.file("OverRep", "GeneSets.csv", package = "STEGO.R"), header = T)
-
-            background.genes.name <- as.data.frame(rownames(sc@assays$RNA$scale.data))
-            names(background.genes.name) <- "V1"
-            background.genes <- length(rownames(sc@assays$RNA$scale.data))
-
-
-            geneSet$background.genes <- background.genes
-
-            DEx.genes <- as.data.frame(rownames(markers.fm.list2))
-            names(DEx.genes) <- "V1"
-
-            total.sig <- length(DEx.genes$V1)
-            geneSet$total.sig <- length(DEx.genes$V1)
-
-            geneSet$background.geneset <- NA
-            geneSet$background.geneset.name <- NA
-            geneSet$in.geneset <- NA
-            geneSet$in.geneset.name <- NA
-
-            if (input$datasource == "BD_Rhapsody_Paired" || input$datasource == "BD_Rhapsody_AIRR") { # selectInput("datasource", "Data source",choices=c("10x_Genomics","BD_Rhapsody_Paired","BD_Rhapsody_AIRR")),
-              geneSet$GeneSet <- gsub("-", ".", geneSet$GeneSet)
-            }
-
-            if (input$species_analysis == "mm") { # selectInput("datasource", "Data source",choices=c("10x_Genomics","BD_Rhapsody_Paired","BD_Rhapsody_AIRR")),
-
-              geneSet$GeneSet <- str_to_title(geneSet$GeneSet)
-            }
-
-            for (j in 1:dim(geneSet)[1]) {
-              # listed GeneSet
-              message(paste("GeneSet: ", j))
-              Gene.set.testing <- as.data.frame(strsplit(geneSet$GeneSet, ";")[j])
-              names(Gene.set.testing) <- "V1"
-              Gene.set.testing2 <- as.data.frame(unique(Gene.set.testing$V1))
-              names(Gene.set.testing2) <- "V1"
-              background.overlap <- merge(Gene.set.testing2, background.genes.name, by = "V1")
-              geneSet$background.geneset[j] <- length(background.overlap$V1)
-              geneSet$background.geneset.name[j] <- as.character(paste(unlist(background.overlap[1]), collapse = ";"))
-              # in sig gene list
-              overlap <- merge(background.overlap, DEx.genes, by = "V1")
-
-              geneSet$in.geneset[j] <- length(overlap$V1)
-              geneSet$in.geneset.name[j] <- as.character(paste(unlist(overlap[1]), collapse = ";"))
-            }
-
-            geneSet2 <- subset(geneSet, geneSet$in.geneset > 0)
-            message(paste(i, "has", length(geneSet2$in.geneset), "GeneSets in ImmunoDom"))
-
-            if (length(geneSet2$in.geneset) > 0) {
-              for (k in 1:dim(geneSet2)[1]) {
-                tota.gene.set <- geneSet2$background.geneset[k] # genes that are identified in background
-                tota.gene.set
-                in.geneset <- geneSet2$in.geneset[k] # DEx in geneset
-
-                background.genes
-                not.in.total <- background.genes - tota.gene.set
-                not.in.geneset.sig <- total.sig - in.geneset
-                d <- data.frame(gene.in.interest = c(in.geneset, not.in.geneset.sig), gene.not.interest = c(tota.gene.set, not.in.total))
-                row.names(d) <- c("In_category", "not_in_category")
-
-                if (in.geneset > 0) {
-                  geneSet2$p.val[k] <- unlist(fisher.test(d, alternative = "greater")$p.value)[1]
-                  geneSet2$lowerCI[k] <- unlist(fisher.test(d, alternative = "greater")$conf.int)[1]
-                  geneSet2$upperCI[k] <- unlist(fisher.test(d)$conf.int)[2]
-                  geneSet2$OR[k] <- round(unlist(fisher.test(d, alternative = "greater")$estimate)[1], 3)
-                } else {
-                  geneSet2$p.value[k] <- "-"
-                  geneSet2$lowerCI[k] <- "-"
-                  geneSet2$upperCI[k] <- "-"
-                  geneSet2$OR[k] <- "-"
-                }
-              }
-
-              geneSet2 <- geneSet2[order(geneSet2$p.val, decreasing = F), ]
-              geneSet2 <- subset(geneSet2, geneSet2$in.geneset >= input$in.geneset.cutoff_top)
-              geneSet2 <- subset(geneSet2, geneSet2$p.val <= input$p.val_cutoff_top)
-              geneSet2$FDR <- p.adjust(geneSet2$p.val, method = "fdr")
-              geneSet2$Bonferroni <- p.adjust(geneSet2$p.val, method = "bonferroni")
-
-              file.name.clone <- paste("prioritization/ImmunoDom/", i, "_", gsub("[/]", "", gsub("&", "", name.clone)), "_dotplot_plot", "_", today(), ".png", sep = "")
-              top.name.overrep <- paste("prioritization/ImmunoDom/", i, "_", gsub("[/]", "", gsub("&", "", name.clone)), "_OverRep", "_", today(), ".csv", sep = "")
-              write.csv(geneSet2, top.name.overrep, row.names = F)
-            }
+            # df <- sc@meta.data
+            #
+            #
+            # geneSet <- read.csv(system.file("OverRep", "GeneSets.csv", package = "STEGO.R"), header = T)
+            #
+            # background.genes.name <- as.data.frame(rownames(sc@assays$RNA$scale.data))
+            # names(background.genes.name) <- "V1"
+            # background.genes <- length(rownames(sc@assays$RNA$scale.data))
+            #
+            #
+            # geneSet$background.genes <- background.genes
+            #
+            # DEx.genes <- as.data.frame(rownames(markers.fm.list2))
+            # names(DEx.genes) <- "V1"
+            #
+            # total.sig <- length(DEx.genes$V1)
+            # geneSet$total.sig <- length(DEx.genes$V1)
+            #
+            # geneSet$background.geneset <- NA
+            # geneSet$background.geneset.name <- NA
+            # geneSet$in.geneset <- NA
+            # geneSet$in.geneset.name <- NA
+            #
+            # if (input$datasource == "BD_Rhapsody_Paired" || input$datasource == "BD_Rhapsody_AIRR") { # selectInput("datasource", "Data source",choices=c("10x_Genomics","BD_Rhapsody_Paired","BD_Rhapsody_AIRR")),
+            #   geneSet$GeneSet <- gsub("-", ".", geneSet$GeneSet)
+            # }
+            #
+            # if (input$species_analysis == "mm") { # selectInput("datasource", "Data source",choices=c("10x_Genomics","BD_Rhapsody_Paired","BD_Rhapsody_AIRR")),
+            #
+            #   geneSet$GeneSet <- str_to_title(geneSet$GeneSet)
+            # }
+            #
+            # for (j in 1:dim(geneSet)[1]) {
+            #   # listed GeneSet
+            #   message(paste("GeneSet: ", j))
+            #   Gene.set.testing <- as.data.frame(strsplit(geneSet$GeneSet, ";")[j])
+            #   names(Gene.set.testing) <- "V1"
+            #   Gene.set.testing2 <- as.data.frame(unique(Gene.set.testing$V1))
+            #   names(Gene.set.testing2) <- "V1"
+            #   background.overlap <- merge(Gene.set.testing2, background.genes.name, by = "V1")
+            #   geneSet$background.geneset[j] <- length(background.overlap$V1)
+            #   geneSet$background.geneset.name[j] <- as.character(paste(unlist(background.overlap[1]), collapse = ";"))
+            #   # in sig gene list
+            #   overlap <- merge(background.overlap, DEx.genes, by = "V1")
+            #
+            #   geneSet$in.geneset[j] <- length(overlap$V1)
+            #   geneSet$in.geneset.name[j] <- as.character(paste(unlist(overlap[1]), collapse = ";"))
+            # }
+            #
+            # geneSet2 <- subset(geneSet, geneSet$in.geneset > 0)
+            # message(paste(i, "has", length(geneSet2$in.geneset), "GeneSets in ImmunoDom"))
+            #
+            # if (length(geneSet2$in.geneset) > 0) {
+            #   for (k in 1:dim(geneSet2)[1]) {
+            #     tota.gene.set <- geneSet2$background.geneset[k] # genes that are identified in background
+            #     tota.gene.set
+            #     in.geneset <- geneSet2$in.geneset[k] # DEx in geneset
+            #
+            #     background.genes
+            #     not.in.total <- background.genes - tota.gene.set
+            #     not.in.geneset.sig <- total.sig - in.geneset
+            #     d <- data.frame(gene.in.interest = c(in.geneset, not.in.geneset.sig), gene.not.interest = c(tota.gene.set, not.in.total))
+            #     row.names(d) <- c("In_category", "not_in_category")
+            #
+            #     if (in.geneset > 0) {
+            #       geneSet2$p.val[k] <- unlist(fisher.test(d, alternative = "greater")$p.value)[1]
+            #       geneSet2$lowerCI[k] <- unlist(fisher.test(d, alternative = "greater")$conf.int)[1]
+            #       geneSet2$upperCI[k] <- unlist(fisher.test(d)$conf.int)[2]
+            #       geneSet2$OR[k] <- round(unlist(fisher.test(d, alternative = "greater")$estimate)[1], 3)
+            #     } else {
+            #       geneSet2$p.value[k] <- "-"
+            #       geneSet2$lowerCI[k] <- "-"
+            #       geneSet2$upperCI[k] <- "-"
+            #       geneSet2$OR[k] <- "-"
+            #     }
+            #   }
+            #
+            #   geneSet2 <- geneSet2[order(geneSet2$p.val, decreasing = F), ]
+            #   geneSet2 <- subset(geneSet2, geneSet2$in.geneset >= input$in.geneset.cutoff_top)
+            #   geneSet2 <- subset(geneSet2, geneSet2$p.val <= input$p.val_cutoff_top)
+            #   geneSet2$FDR <- p.adjust(geneSet2$p.val, method = "fdr")
+            #   geneSet2$Bonferroni <- p.adjust(geneSet2$p.val, method = "bonferroni")
+            #
+            #   file.name.clone <- paste("prioritization/ImmunoDom/", i, "_", gsub("[/]", "", gsub("&", "", name.clone)), "_dotplot_plot", "_", today(), ".png", sep = "")
+            #   top.name.overrep <- paste("prioritization/ImmunoDom/", i, "_", gsub("[/]", "", gsub("&", "", name.clone)), "_OverRep", "_", today(), ".csv", sep = "")
+            #   write.csv(geneSet2, top.name.overrep, row.names = F)
+            # }
           }
         }
       })
@@ -21507,7 +21524,7 @@ runSTEGO <- function(){
 
             message(paste0("Downloading Dom stats files and dot plot...", name.clone))
 
-            sc@meta.data$Gene_select <- ifelse(sc@meta.data$Vgene %in% name.clone, name.clone, "other")
+            sc@meta.data$Gene_select <- ifelse(sc@meta.data$Vgene %in% name.clone, name.clone, "BG")
             sc@meta.data
             Idents(object = sc) <- sc@meta.data$Gene_select
 
@@ -21566,90 +21583,7 @@ runSTEGO <- function(){
               dev.off()
 
 
-              ##### download the OverRep ------
-              geneSet <- read.csv(system.file("OverRep", "GeneSets.csv", package = "STEGO.R"), header = T)
 
-              background.genes.name <- as.data.frame(rownames(sc@assays$RNA$scale.data))
-              names(background.genes.name) <- "V1"
-              background.genes <- length(rownames(sc@assays$RNA$scale.data))
-
-
-              geneSet$background.genes <- background.genes
-
-              DEx.genes <- as.data.frame(rownames(markers.fm.list2))
-              names(DEx.genes) <- "V1"
-
-              total.sig <- length(DEx.genes$V1)
-              geneSet$total.sig <- length(DEx.genes$V1)
-
-              geneSet$background.geneset <- NA
-              geneSet$background.geneset.name <- NA
-              geneSet$in.geneset <- NA
-              geneSet$in.geneset.name <- NA
-
-              if (input$datasource == "BD_Rhapsody_Paired" || input$datasource == "BD_Rhapsody_AIRR") { # selectInput("datasource", "Data source",choices=c("10x_Genomics","BD_Rhapsody_Paired","BD_Rhapsody_AIRR")),
-                geneSet$GeneSet <- gsub("-", ".", geneSet$GeneSet)
-              }
-
-              if (input$species_analysis == "mm") { # selectInput("datasource", "Data source",choices=c("10x_Genomics","BD_Rhapsody_Paired","BD_Rhapsody_AIRR")),
-
-                geneSet$GeneSet <- str_to_title(geneSet$GeneSet)
-              }
-              message(paste(i, "Performing Over rep analysis"))
-              for (j in 1:dim(geneSet)[1]) {
-                # listed GeneSet
-
-                Gene.set.testing <- as.data.frame(strsplit(geneSet$GeneSet, ";")[j])
-                names(Gene.set.testing) <- "V1"
-                Gene.set.testing2 <- as.data.frame(unique(Gene.set.testing$V1))
-                names(Gene.set.testing2) <- "V1"
-                background.overlap <- merge(Gene.set.testing2, background.genes.name, by = "V1")
-                geneSet$background.geneset[j] <- length(background.overlap$V1)
-                geneSet$background.geneset.name[j] <- as.character(paste(unlist(background.overlap[1]), collapse = ";"))
-                # in sig gene list
-                overlap <- merge(background.overlap, DEx.genes, by = "V1")
-
-                geneSet$in.geneset[j] <- length(overlap$V1)
-                geneSet$in.geneset.name[j] <- as.character(paste(unlist(overlap[1]), collapse = ";"))
-              }
-
-              geneSet2 <- subset(geneSet, geneSet$in.geneset > 0)
-              message(paste(i, "has", length(geneSet2$in.geneset), "GeneSets in Multi"))
-
-              if (length(geneSet2$in.geneset) > 0) {
-                for (k in 1:dim(geneSet2)[1]) {
-                  tota.gene.set <- geneSet2$background.geneset[k] # genes that are identified in background
-                  tota.gene.set
-                  in.geneset <- geneSet2$in.geneset[k] # DEx in geneset
-
-                  background.genes
-                  not.in.total <- background.genes - tota.gene.set
-                  not.in.geneset.sig <- total.sig - in.geneset
-                  d <- data.frame(gene.in.interest = c(in.geneset, not.in.geneset.sig), gene.not.interest = c(tota.gene.set, not.in.total))
-                  row.names(d) <- c("In_category", "not_in_category")
-
-                  if (in.geneset > 0) {
-                    geneSet2$p.val[k] <- unlist(fisher.test(d, alternative = "greater")$p.value)[1]
-                    geneSet2$lowerCI[k] <- unlist(fisher.test(d, alternative = "greater")$conf.int)[1]
-                    geneSet2$upperCI[k] <- unlist(fisher.test(d)$conf.int)[2]
-                    geneSet2$OR[k] <- round(unlist(fisher.test(d, alternative = "greater")$estimate)[1], 3)
-                  } else {
-                    geneSet2$p.value[k] <- "-"
-                    geneSet2$lowerCI[k] <- "-"
-                    geneSet2$upperCI[k] <- "-"
-                    geneSet2$OR[k] <- "-"
-                  }
-                }
-
-                geneSet2 <- geneSet2[order(geneSet2$p.val, decreasing = F), ]
-                geneSet2 <- subset(geneSet2, geneSet2$in.geneset >= input$in.geneset.cutoff_top)
-                geneSet2 <- subset(geneSet2, geneSet2$p.val <= input$p.val_cutoff_top)
-                geneSet2$FDR <- p.adjust(geneSet2$p.val, method = "fdr")
-                geneSet2$Bonferroni <- p.adjust(geneSet2$p.val, method = "bonferroni")
-
-                top.name.overrep <- paste("prioritization/Multi/PublicLike/", i, "_", gsub("[/]", "", gsub("&", "", name.clone)), "_OverRep", "_", today(), ".csv", sep = "")
-                write.csv(geneSet2, top.name.overrep, row.names = F)
-              }
             }
           }
         })
@@ -21689,14 +21623,14 @@ runSTEGO <- function(){
       BD_sum$obs <- 1
       observations <- sum(BD_sum$obs)
 
-      withProgress(message = "Performing Multi Analysis (FindMarkers, Dotplot, OverRep)", value = 0, {
+      withProgress(message = "Performing Multi Analysis (FindMarkers, Dotplot)", value = 0, {
         for (i in 1:observations) {
           incProgress(1 / observations, detail = paste("Clone", i, "of", observations))
           name.clone <- BD_sum$cluster_name[i]
 
           message(paste0("Downloading Dom stats files and dot plot...", name.clone))
           ###### Stats table ------
-          sc@meta.data$Gene_select <- ifelse(sc@meta.data$Vgene %in% name.clone, name.clone, "other")
+          sc@meta.data$Gene_select <- ifelse(sc@meta.data$Vgene %in% name.clone, name.clone, "BG")
           sc@meta.data
           Idents(object = sc) <- sc@meta.data$Gene_select
 
@@ -21706,7 +21640,13 @@ runSTEGO <- function(){
 
           cluster.names <- unique(Idents(sc))[order(unique(Idents(sc)))]
           # print(paste0("calculating markers for cluster ",name.clone,". Total: ",length(cluster.names)," clusters"))
-          markers.fm.list <- FindMarkers(sc, ident.1 = name.clone, min.pct = min.pct.expression, logfc.threshold = min.logfc, only.pos = TRUE)
+          if(input$logFC_pval_findmarker) {
+            markers.fm.list <- FindMarkers(sc, ident.1 = name.clone, min.pct = min.pct.expression, logfc.threshold = min.logfc, only.pos = TRUE)
+            markers.fm.list
+          } else {
+            markers.fm.list <- FindMarkers(sc, ident.1 = name.clone, min.pct = min.pct.expression, logfc.threshold = min.logfc)
+            markers.fm.list
+          }
           markers.fm.list2 <- subset(markers.fm.list, markers.fm.list$p_val_adj < input$pval.ex.filter)
           x <- today()
 
@@ -21756,93 +21696,6 @@ runSTEGO <- function(){
             png(file.name.clone, width = input$width_png_all_expression_dotplot_top, height = input$height_png_all_expression_dotplot_top, res = input$resolution_PNG_all_expression_dotplot_top)
             plot(plotdotplot)
             dev.off()
-
-
-            ##### download the OverRep ------
-            geneSet <- read.csv(system.file("OverRep", "GeneSets.csv", package = "STEGO.R"), header = T)
-
-            background.genes.name <- as.data.frame(rownames(sc@assays$RNA$scale.data))
-            names(background.genes.name) <- "V1"
-            background.genes <- length(rownames(sc@assays$RNA$scale.data))
-
-
-            geneSet$background.genes <- background.genes
-
-            DEx.genes <- as.data.frame(rownames(markers.fm.list2))
-            names(DEx.genes) <- "V1"
-
-            total.sig <- length(DEx.genes$V1)
-            geneSet$total.sig <- length(DEx.genes$V1)
-
-            geneSet$background.geneset <- NA
-            geneSet$background.geneset.name <- NA
-            geneSet$in.geneset <- NA
-            geneSet$in.geneset.name <- NA
-
-            if (input$datasource == "BD_Rhapsody_Paired" || input$datasource == "BD_Rhapsody_AIRR") { # selectInput("datasource", "Data source",choices=c("10x_Genomics","BD_Rhapsody_Paired","BD_Rhapsody_AIRR")),
-              geneSet$GeneSet <- gsub("-", ".", geneSet$GeneSet)
-            }
-
-            if (input$species_analysis == "mm") { # selectInput("datasource", "Data source",choices=c("10x_Genomics","BD_Rhapsody_Paired","BD_Rhapsody_AIRR")),
-
-              geneSet$GeneSet <- str_to_title(geneSet$GeneSet)
-            }
-            message(paste(i, "Performing Over rep analysis"))
-            for (j in 1:dim(geneSet)[1]) {
-              # listed GeneSet
-
-              Gene.set.testing <- as.data.frame(strsplit(geneSet$GeneSet, ";")[j])
-              names(Gene.set.testing) <- "V1"
-              Gene.set.testing2 <- as.data.frame(unique(Gene.set.testing$V1))
-              names(Gene.set.testing2) <- "V1"
-              background.overlap <- merge(Gene.set.testing2, background.genes.name, by = "V1")
-              geneSet$background.geneset[j] <- length(background.overlap$V1)
-              geneSet$background.geneset.name[j] <- as.character(paste(unlist(background.overlap[1]), collapse = ";"))
-              # in sig gene list
-              overlap <- merge(background.overlap, DEx.genes, by = "V1")
-
-              geneSet$in.geneset[j] <- length(overlap$V1)
-              geneSet$in.geneset.name[j] <- as.character(paste(unlist(overlap[1]), collapse = ";"))
-            }
-
-            geneSet2 <- subset(geneSet, geneSet$in.geneset > 0)
-
-            message(paste(i, "has", length(geneSet2$in.geneset), "GeneSets in Unique (private)"))
-
-            if (length(geneSet2$in.geneset) > 0) {
-              for (k in 1:dim(geneSet2)[1]) {
-                tota.gene.set <- geneSet2$background.geneset[k] # genes that are identified in background
-                tota.gene.set
-                in.geneset <- geneSet2$in.geneset[k] # DEx in geneset
-
-                background.genes
-                not.in.total <- background.genes - tota.gene.set
-                not.in.geneset.sig <- total.sig - in.geneset
-                d <- data.frame(gene.in.interest = c(in.geneset, not.in.geneset.sig), gene.not.interest = c(tota.gene.set, not.in.total))
-                row.names(d) <- c("In_category", "not_in_category")
-
-                if (in.geneset > 0) {
-                  geneSet2$p.val[k] <- unlist(fisher.test(d, alternative = "greater")$p.value)[1]
-                  geneSet2$lowerCI[k] <- unlist(fisher.test(d, alternative = "greater")$conf.int)[1]
-                  geneSet2$upperCI[k] <- unlist(fisher.test(d)$conf.int)[2]
-                  geneSet2$OR[k] <- round(unlist(fisher.test(d, alternative = "greater")$estimate)[1], 3)
-                } else {
-                  geneSet2$p.value[k] <- "-"
-                  geneSet2$lowerCI[k] <- "-"
-                  geneSet2$upperCI[k] <- "-"
-                  geneSet2$OR[k] <- "-"
-                }
-              }
-
-              geneSet2 <- geneSet2[order(geneSet2$p.val, decreasing = F), ]
-              geneSet2 <- subset(geneSet2, geneSet2$in.geneset >= input$in.geneset.cutoff_top)
-              geneSet2 <- subset(geneSet2, geneSet2$p.val <= input$p.val_cutoff_top)
-              geneSet2$FDR <- p.adjust(geneSet2$p.val, method = "fdr")
-              geneSet2$Bonferroni <- p.adjust(geneSet2$p.val, method = "bonferroni")
-
-              top.name.overrep <- paste("prioritization/Multi/Unique/", i, "_", gsub("[/]", "", gsub("&", "", name.clone)), "_OverRep", "_", today(), ".csv", sep = "")
-              write.csv(geneSet2, top.name.overrep, row.names = F)
-            }
           }
         }
       })
@@ -21899,11 +21752,11 @@ runSTEGO <- function(){
       }
 
       if (input$Download_private_overlapping) {
-        message("Downloading Private Marker and OverRep analysis summary table ...")
+        message("Downloading Private Marker  analysis summary table ...")
         top.name.clonotypes <- paste("prioritization/Multi/Unique_Table_", x, ".csv", sep = "")
         write.csv(Top_clonotypes_Private(), top.name.clonotypes, row.names = T)
 
-        message("Downloading Private Marker and OverRep analysis ")
+        message("Downloading Private FIndMarker stats...")
         top_clone_FindMaker_looped_Private()
       }
 
