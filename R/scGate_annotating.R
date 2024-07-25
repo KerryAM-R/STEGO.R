@@ -12,7 +12,9 @@
 #'
 
 log_parameters_scGate <- function(log_file = log_file,
-                                  model_to_log = NULL, params_to_log = NULL) {
+                                  model_to_log = NULL,
+                                  params_to_log = NULL
+                                  ) {
   # Open the log_file in append mode
   con <- file(log_file, open = "a")
 
@@ -109,6 +111,18 @@ scGate_annotating <- function (
                                set_seed = 123
                                )
 {
+
+  generate_and_display_message <- function(merged_sc_list) {
+    # Get the names
+    names_list <- names(merged_sc_list)
+
+    # Combine the names into a single string with spaces
+    message_text <- paste(names_list, collapse = " ")
+
+    # Display the message
+    message(message_text)
+  }
+
   set.seed(set_seed) # Set a specific seed value, such as 123
   source(system.file("scGATE", "custom_df_scGATE.R", package = "STEGO.R"))
 
@@ -132,7 +146,7 @@ scGate_annotating <- function (
     Th1_cytokines = Th1_cytokines,
     TCRseq = TCRseq
   )
-  print(unlist(model))
+  generate_and_display_message(unlist(model))
 
   models_to_log <- list()
   for (param_name in names(model)) {
@@ -235,8 +249,8 @@ scGate_annotating <- function (
     num_chunks <- ceiling(total_cells / chunk_size)
 
     # Print total number of cells and number of chunks
-    cat("Total number of cells:", total_cells, "\n")
-    cat("Number of chunks:", num_chunks, "\n")
+    message(paste("Total number of cells:", total_cells))
+    message(paste("Number of chunks:", num_chunks))
 
     # Loop over chunks
     for (i in 1:num_chunks) {
@@ -245,21 +259,18 @@ scGate_annotating <- function (
       if (i == num_chunks) {
         # Last chunk, use the remaining cells
         sc_chunk = sc
-        print(sc_chunk)
+        message("Last chunk is processing")
       } else {
         current_chunk_size <- chunk_size
         sampled_idx <- sample(1:total_cells, current_chunk_size)
         # Extract chunk of data
         sc_chunk <- subset(sc, cells = sampled_idx)
-        print(sc_chunk)
-
         # Remove sampled cells from the original object
         sc <- subset(sc, cells = -sampled_idx)
-        print(ncol(sc))
       }
 
       # Print number of cells in the chunk
-      cat("Chunk", i,"of", num_chunks, "- Number of cells:", ncol(sc_chunk), "\n")
+      message(paste0("Chunk", i,"of", num_chunks, "- Number of cells:", ncol(sc_chunk), "\n"))
 
       # Apply scGate based on selected options
       if (TcellFunction) {
@@ -361,11 +372,7 @@ scGate_annotating <- function (
       # Store result in list
       merged_sc_list[[length(merged_sc_list) + 1]] <- sc_chunk
     }
-
-    # saveRDS(merged_sc_list,"Annotation_chunks_obj.rds")
-    # saveRDS(umap,"umap.rds")
-    # saveRDS(harmony,"harmony.rds")
-    print(names(merged_sc_list))
+    meassage(names(merged_sc_list))
     merged_sc_list2 <- merged_sc_list
     names(merged_sc_list2) <-  paste0(rep("List_obj_name",num_chunks),1:num_chunks)
 
@@ -403,7 +410,7 @@ scGate_annotating <- function (
 
     # Extract the merged Seurat object
     merged_sc <- merged_sc_list2[[1]]
-
+    # saveRDS(merged_sc,"me")
     message("Adding back in the UMAP and Harmony data")
     if (num_chunks == 1) {
       join_sc <- merged_sc
@@ -422,6 +429,7 @@ scGate_annotating <- function (
 
       } else {
         message("reordering and adding back in the umap & harmony data")
+        join_sc <- merged_sc
         barcode_order <- rownames(join_sc@meta.data)
         umap_reordered <- umap[match(barcode_order, rownames(umap)), ]
         harmony_reordered <- umap[match(barcode_order, rownames(harmony)),]
