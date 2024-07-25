@@ -3895,7 +3895,7 @@ runSTEGO <- function(){
         )
       )
       df <- Convert_to_RDS()
-      print(df)
+      df
     })
 
     output$downloaddf_SeruatObj_Convert_to_RDS <- downloadHandler(
@@ -4326,7 +4326,6 @@ runSTEGO <- function(){
       TCR_unfiltered <- contigs
       TCR_unfiltered$seq_issue <- ifelse(grepl("[*]", TCR_unfiltered$sequence_alignment_aa), "stop-codon", "productive")
       TCR_unfiltered_prod <- subset(TCR_unfiltered, TCR_unfiltered$seq_issue == "productive")
-      # print(names(TCR_unfiltered_prod))
 
       if(length(TCR_unfiltered_prod$cdr3_length)>0) {
       } else {
@@ -4615,7 +4614,7 @@ runSTEGO <- function(){
       } else {
         contig_paired <- merge(contig_AG, contig_BD, by = c("Cell_Index", "Sample_Name"), all = T)
       }
-      print("merged AG and BD")
+      message("Merged AG and BD")
 
 
       if (input$filtered_list == "Unfiltered") {
@@ -4636,9 +4635,8 @@ runSTEGO <- function(){
                                                )
                                         )
         )
-        # print(table(contig_paired$pairing))
         contig_paired$pairing[is.na(contig_paired$pairing)] <- "OTHER"
-        # print(table(contig_paired$pairing))
+
       }
 
       contig_paired_only <- contig_paired
@@ -4650,7 +4648,6 @@ runSTEGO <- function(){
       if (input$filtering_TCR == T) {
         contig_paired_only <- subset(contig_paired_only, contig_paired_only$junction_AG != "None")
         contig_paired_only <- subset(contig_paired_only, contig_paired_only$junction_BD != "None")
-        print(dim(contig_paired_only))
       }
 
       contig_paired_only$vj_gene_AG <- paste(contig_paired_only$v_gene_AG, contig_paired_only$j_gene_AG, sep = ".")
@@ -4732,7 +4729,6 @@ runSTEGO <- function(){
       TCR_unfiltered <- contigs
       TCR_unfiltered$seq_issue <- ifelse(grepl("[*]", TCR_unfiltered$sequence_alignment_aa), "stop-codon", "productive")
       TCR_unfiltered_prod <- subset(TCR_unfiltered, TCR_unfiltered$seq_issue == "productive")
-      # print(names(TCR_unfiltered_prod))
 
       if(length(TCR_unfiltered_prod$cdr3_length)>0) {
       } else {
@@ -4884,17 +4880,16 @@ runSTEGO <- function(){
       } else {
         contig_paired <- merge(contig_IgH, contig_IgLK, by = c("Cell_Index", "Sample_Name"), all = T)
       }
-      print("merged IgH and IgLK")
+      message("Merged IgH and IgLK")
 
       contig_paired_only <- contig_paired
       contig_paired_only[is.na(contig_paired_only)] <- "None"
       contig_paired_only[contig_paired_only == ""] <- "None"
       contig_paired_only$d_gene_IgH[contig_paired_only$d_gene_IgH == "None"] <- "_"
-      # print(names(contig_paired_only))
+
       if (input$filtering_TCR == T) {
         contig_paired_only <- subset(contig_paired_only, contig_paired_only$junction_IgH != "None")
         contig_paired_only <- subset(contig_paired_only, contig_paired_only$junction_IgLK != "None")
-        # print(dim(contig_paired_only))
       }
 
 
@@ -4907,21 +4902,20 @@ runSTEGO <- function(){
       contig_paired_only$vj_gene_IgH <- gsub(".NA.", ".", contig_paired_only$vj_gene_IgH)
       contig_paired_only$vj_gene_IgH <- gsub("[.]None[.]", ".", contig_paired_only$vj_gene_IgH)
       contig_paired_only$vj_gene_IgH <- gsub("None.None", "", contig_paired_only$vj_gene_IgH)
-      # print(names(contig_paired_only))
+
       contig_paired_only$vj_gene_cdr3_IgH <- paste(contig_paired_only$vj_gene_IgH, contig_paired_only$junction_aa_IgH, sep = "_")
       contig_paired_only$vj_gene_cdr3_IgH <- gsub("_None", "", contig_paired_only$vj_gene_cdr3_IgH)
-      # print(names(contig_paired_only))
+
       contig_paired_only$vdj_gene_IgH <- paste(contig_paired_only$v_gene_IgH,contig_paired_only$d_gene_IgH, contig_paired_only$j_gene_IgH, sep = ".")
       contig_paired_only$vdj_gene_IgH <- gsub(".NA.", ".", contig_paired_only$vdj_gene_IgH)
       contig_paired_only$vdj_gene_IgH <- gsub("[.]None[.]", ".", contig_paired_only$vdj_gene_IgH)
       contig_paired_only$vdj_gene_IgH <- gsub("None.None", "", contig_paired_only$vdj_gene_IgH)
-      # print(names(contig_paired_only))
+
       contig_paired_only$vdj_gene_cdr3_IgH <- paste(contig_paired_only$vdj_gene_IgH, contig_paired_only$junction_aa_IgH, sep = "_")
       contig_paired_only$vdj_gene_cdr3_IgH <- gsub("_None", "", contig_paired_only$vdj_gene_cdr3_IgH)
 
-      print(names(contig_paired_only))
+      message(paste(names(contig_paired_only),sep = " "))
       # light and kappa
-
 
       contig_paired_only$vj_gene_IgLK <- paste(contig_paired_only$v_gene_IgLK, contig_paired_only$j_gene_IgLK, sep = ".")
       if (length(gsub("None.None", "", contig_paired_only$vj_gene_IgLK))>0) {
@@ -4951,7 +4945,6 @@ runSTEGO <- function(){
       contig_paired_only$vdj_gene_cdr3_IgH_IgLK <- gsub(" & $", "", contig_paired_only$vdj_gene_cdr3_IgH_IgLK)
 
       names(contig_paired_only)[names(contig_paired_only) %in% "cell_id"] <- "Cell_Index"
-      # print(names(contig_paired_only))
 
       contig_paired_only <- contig_paired_only[!duplicated(contig_paired_only$Cell_Index), ] # remove duplicates
 
@@ -5982,10 +5975,6 @@ runSTEGO <- function(){
                                   )
       )
 
-
-
-
-      # print(names(contigs_lim))
       names(contigs_lim) <- gsub("junction", "cdr3_nt", names(contigs_lim))
 
       contig_AG <- subset(contigs_lim, contigs_lim$chain == "TRA" | contigs_lim$chain == "TRG")
@@ -5995,7 +5984,6 @@ runSTEGO <- function(){
         names(contig_AG[grep("cdr3", names(contig_AG))]),
         "chain"
       )])
-      name.list
 
       contig_AG <- contig_AG %>%
         select(all_of(name.list), everything())
@@ -6083,8 +6071,6 @@ runSTEGO <- function(){
           "Upload file"
         )
       )
-
-      print(head(contigs))
 
       contigs_lim <- contigs[!names(contigs) %in% c("is_cell", "contig_id", "high_confidence", "raw_consensus_id", "exact_subclonotype_id", "umis", "reads", "length", names(contigs[grep("fwr", names(contigs))]), names(contigs[grep("cdr1", names(contigs))]), names(contigs[grep("cdr2", names(contigs))]))]
       contigs_lim
@@ -7128,7 +7114,6 @@ runSTEGO <- function(){
       )
 
       sc <- input.data_ClusTCR2_extracting()
-      print(sc)
       md <- as.data.frame(sc@meta.data)
       md <- md %>%
         select(c(input$junction_aa_extracting,input$v_gene_extracting), everything())
@@ -7145,8 +7130,6 @@ runSTEGO <- function(){
       if (nrow(df[-c(grep("None", df$CDR3_beta)), ] > 0)) {
         df <- df[-c(grep("None", df$CDR3_beta)), ]
       }
-
-      print(head(df))
 
       df[!duplicated(df$junction_aa), ]
     })
@@ -8015,7 +7998,7 @@ runSTEGO <- function(){
     observeEvent( input$run_auto_Seurat,{
 
       if(grepl("10x",input$df_seruatobj_type)) {
-        print("10x dataset")
+        message("10x dataset")
         automated_sc_filtering(dataset_type = "10x",
                                features.min = input$features.min,
                                features.max = input$features.max,
@@ -8063,20 +8046,18 @@ runSTEGO <- function(){
 
         if(input$reduce_file_size) {
           if (input$sample.type.source_merging == "hs") {
-
-
             if (length(data_user_genes())>0 & input$include_additional_genes) {
               list.sc[[File_order]] <- FindVariableFeatures(list.sc[[File_order]], selection.method = "vst", nfeatures = 10000)
               feature_list <- as.data.frame(VariableFeatures(list.sc[[File_order]]))
 
               names(feature_list) <- "V1"
-              # print(head(feature_list))
+
               features.var.needed <- read.csv(system.file("Kmean", "human.variable.features.csv", package = "STEGO.R"))
               user_required_genes <- data_user_genes()
               names(user_required_genes) <- "V1"
 
               features.var.needed <- merge(features.var.needed,user_required_genes,by = "V1",all = T)
-              print(dim(features.var.needed))
+
             } else {
 
               features.var.needed <- read.csv(system.file("Kmean", "human.variable.features.csv", package = "STEGO.R"))
@@ -8115,7 +8096,7 @@ runSTEGO <- function(){
         )
       )
       df <- getData()
-      print(df)
+      df
 
     })
 
@@ -8133,7 +8114,7 @@ runSTEGO <- function(){
       if(input$different_tech) {
         File_order <- paste0("File_",1)
         message(File_order, " extracting overlapping features with all datasets")
-        print(list.sc[[File_order]])
+        message(paste(list.sc[[File_order]],sep = " "))
         list.sc[[File_order]] <- FindVariableFeatures(list.sc[[File_order]], selection.method = "vst", nfeatures = 10000)
         feature_list <- as.data.frame(VariableFeatures(list.sc[[File_order]]))
 
@@ -8153,8 +8134,7 @@ runSTEGO <- function(){
           list.sc[[File_order]] <- subset(list.sc[[File_order]], features = feature_list$V1)
 
         }
-        print(dim(feature_list))
-        print(list.sc)
+        list.sc
       }
     })
 
@@ -8168,7 +8148,7 @@ runSTEGO <- function(){
         )
       )
       df <- getData_same()
-      print(df)
+      df
     })
 
 
@@ -8200,7 +8180,7 @@ runSTEGO <- function(){
       # Calculate the number of loops required
       num_objects <- length(list.sc)
       num_loops <- ceiling(log2(num_objects))
-      print(names(list.sc))
+      message(paste(names(list.sc),sep = " "))
       # Print the estimated number of loops required
       message("Estimated number of loops required: ", num_loops)
 
@@ -8779,7 +8759,7 @@ runSTEGO <- function(){
         )
       )
       sc2 <- Filtered_samp_to_remove_process()
-      print(sc2)
+      sc2
     })
 
     # output$downloaddf_SeruatObj_annotated_SampToKeep <- downloadHandler(
@@ -8823,8 +8803,7 @@ runSTEGO <- function(){
         )
       )
       df <- getData_2()
-
-      print(df)
+      df
     })
 
     observe({
@@ -8950,57 +8929,6 @@ runSTEGO <- function(){
 
 
     # Human annotations -------
-    # scGATE_anno_generic <- reactive({
-    #   sc <- getData_2()
-    #   validate(
-    #     need(
-    #       nrow(sc) > 0,
-    #       "Upload file for annotation"
-    #     )
-    #   )
-    #   req(input$threshold_scGate)
-    #
-    #   len <- length(rownames(sc@assays$RNA$scale.data))
-    #
-    #   if (input$hs_generic_scGATE) {
-    #     scGate_models_DB <- custom_db_scGATE(system.file("scGATE", "human/generic", package = "STEGO.R"))
-    #     models.list <- scGate_models_DB
-    #
-    #     sc <- scGate(sc,
-    #                  model = models.list,
-    #                  pos.thr = input$threshold_scGate,
-    #                  neg.thr = input$threshold_scGate,
-    #                  nfeatures = len,
-    #                  reduction = input$reduction_anno,
-    #                  ncores = 8, min.cells = 1
-    #     )
-    #
-    #     sc@meta.data$generic <- sc@meta.data$scGate_multi
-    #     sc@meta.data <- sc@meta.data[!grepl("_UCell", names(sc@meta.data))]
-    #     sc@meta.data <- sc@meta.data[!grepl("is.pure_", names(sc@meta.data))]
-    #     sc@meta.data <- sc@meta.data[!grepl("scGate_multi", names(sc@meta.data))]
-    #     sc
-    #   } else {
-    #     sc
-    #   }
-    #   sc
-    # })
-
-    # output$scGATE_verbatum_generic2 <- renderPrint({
-    #   FN <- tempfile()
-    #   zz <- file(FN, open = "wt")
-    #   sink(zz, type = "output")
-    #   sink(zz, type = "message")
-    #   if (input$hs_generic_scGATE) {
-    #     scGATE_anno_generic()
-    #   } else {
-    #     print("Generic not run")
-    #   }
-    #   sink(type = "message")
-    #   sink(type = "output")
-    #   cat(readLines(FN), sep = "\n")
-    # })
-
     scGATE_anno_immune_checkpoint <- reactive({
       sc <- getData_2()
       validate(
@@ -9045,7 +8973,7 @@ runSTEGO <- function(){
       if (input$hs_IC_scGATE) {
         scGATE_anno_immune_checkpoint()
       } else {
-        print("immune checkpoint not run")
+        cat("immune checkpoint not run")
       }
       sink(type = "message")
       sink(type = "output")
@@ -9097,7 +9025,7 @@ runSTEGO <- function(){
       if (input$hs_cytotoxic_scGATE) {
         scGATE_anno_cytotoxic()
       } else {
-        print("Cytotoxic not run")
+        cat("Cytotoxic not run")
       }
       sink(type = "message")
       sink(type = "output")
@@ -9150,7 +9078,7 @@ runSTEGO <- function(){
       if (input$hs_senescence_scGATE) {
         scGATE_anno_senescence()
       } else {
-        print("senescence not run")
+        cat("senescence not run")
       }
       sink(type = "message")
       sink(type = "output")
@@ -9240,7 +9168,7 @@ runSTEGO <- function(){
         sc <- scGATE_anno_function()
         table(sc@meta.data$Tcellfunction)
       } else {
-        print("Function not run")
+        cat("Function not run")
       }
     })
 
@@ -9250,7 +9178,7 @@ runSTEGO <- function(){
         sc <- scGATE_anno_simplefunction()
         table(sc@meta.data$TSimpleFunction)
       } else {
-        print("Simple Function not run")
+        cat("Simple Function not run")
       }
     })
 
@@ -9272,7 +9200,7 @@ runSTEGO <- function(){
         scGate_models_DB <- custom_db_scGATE(system.file("scGATE", "human/cycling", package = "STEGO.R"))
 
         models.list <- scGate_models_DB
-        print(models.list)
+
         sc <- scGate(sc,
                      model = models.list,
                      pos.thr = input$threshold_scGate,
@@ -9300,7 +9228,7 @@ runSTEGO <- function(){
       if (input$hs_cycling_scGATE) {
         scGATE_anno_cycling()
       } else {
-        print("cycling not run")
+        cat("Prolif. not run")
       }
       sink(type = "message")
       sink(type = "output")
@@ -9317,7 +9245,7 @@ runSTEGO <- function(){
       )
       if (input$hs_TCRseq_scGATE) {
         if (input$sample.type.source.markers == "hs") {
-          print(head(sc@meta.data$TCRseq))
+
           sc@meta.data$TCRseq <- ifelse(sc@meta.data$vj_gene_AG == "TRAV1-2.TRAJ33", "MAIT",
                                         ifelse(sc@meta.data$vj_gene_AG == "TRAV1-2.TRAJ12", "MAIT",
                                                ifelse(sc@meta.data$vj_gene_AG == "TRAV1-2.TRAJ23", "MAIT",
@@ -9336,8 +9264,6 @@ runSTEGO <- function(){
                                                )
                                         )
           )
-
-          print(table(sc@meta.data$TCRseq))
           sc
         } else {
         }
@@ -9349,7 +9275,7 @@ runSTEGO <- function(){
         sc <- scGATE_anno_TCRseq()
         table(sc@meta.data$TCRseq)
       } else {
-        print("TCR-seq not run")
+        cat("TCR-seq not run")
       }
     })
 
@@ -9400,7 +9326,7 @@ runSTEGO <- function(){
       if (input$BDrhapsody_scGATE.MM.Tcell == T) {
         scGATE_anno_BD_MM.FP_T.cell()
       } else {
-        print("MM T cell not run")
+        cat("MM T cell not run")
       }
       sink(type = "message")
       sink(type = "output")
@@ -9462,7 +9388,7 @@ runSTEGO <- function(){
       if (input$BDrhapsody_scGATE.MM.Memory == T) {
         scGATE_anno_BD_MM.FP_Memory()
       } else {
-        print("MM memory not run")
+        cat("MM memory not run")
       }
       sink(type = "message")
       sink(type = "output")
@@ -9525,7 +9451,7 @@ runSTEGO <- function(){
       if (input$BDrhapsody_scGATE.MM.signatures == T) {
         scGATE_anno_BD_MM.FP_signatures()
       } else {
-        print("MM signatures not run")
+        cat("MM signatures not run")
       }
       sink(type = "message")
       sink(type = "output")
@@ -9588,7 +9514,7 @@ runSTEGO <- function(){
       if (input$BDrhapsody_scGATE.MM.Innate.NK == T) {
         scGATE_anno_BD_MM.FP_Innate.NK()
       } else {
-        print("MM Innate.NK not run")
+        cat("MM Innate.NK not run")
       }
       sink(type = "message")
       sink(type = "output")
@@ -9644,7 +9570,7 @@ runSTEGO <- function(){
       if (input$BDrhapsody_scGATE.MM.TNF.IFNg == T) {
         scGATE_anno_BD_MM.FP_TNF.IFNg()
       } else {
-        print("MM TNF.IFNg not run")
+        cat("MM TNF.IFNg not run")
       }
       sink(type = "message")
       sink(type = "output")
@@ -9716,7 +9642,7 @@ runSTEGO <- function(){
       if (input$BDrhapsody_scGATE.MM.subtypes == T) {
         scGATE_anno_BD_MM.FP_subtypes()
       } else {
-        print("MM subtypes not run")
+        cat("MM subtypes not run")
       }
       sink(type = "message")
       sink(type = "output")
@@ -9770,7 +9696,7 @@ runSTEGO <- function(){
       if (input$BDrhapsody_scGATE.MM.other == T) {
         scGATE_anno_BD_MM.FP_other()
       } else {
-        print("MM other not run")
+        cat("MM other not run")
       }
       sink(type = "message")
       sink(type = "output")
@@ -9847,7 +9773,7 @@ runSTEGO <- function(){
       if (input$GeneSet1_scGate) {
         scGate_anno_GeneSet1()
       } else {
-        print("Geneset1 not annotated yet")
+        cat("Geneset1 not annotated yet")
       }
       sink(type = "message")
       sink(type = "output")
@@ -9913,7 +9839,7 @@ runSTEGO <- function(){
       if (input$GeneSet2_scGate) {
         scGate_anno_GeneSet2()
       } else {
-        print("Geneset2 not annotated yet")
+        cat("Geneset2 not annotated yet")
       }
       sink(type = "message")
       sink(type = "output")
@@ -9981,7 +9907,7 @@ runSTEGO <- function(){
       if (input$GeneSet3_scGate) {
         scGate_anno_GeneSet3()
       } else {
-        print("Geneset3 not annotated yet")
+        cat("Geneset3 not annotated yet")
       }
       sink(type = "message")
       sink(type = "output")
@@ -10045,7 +9971,7 @@ runSTEGO <- function(){
       if (input$GeneSet4_scGate) {
         scGate_anno_GeneSet4()
       } else {
-        print("Geneset4 not annotated yet")
+        cat("Geneset4 not annotated yet")
       }
       sink(type = "message")
       sink(type = "output")
@@ -10111,7 +10037,7 @@ runSTEGO <- function(){
       if (input$GeneSet5_scGate) {
         scGate_anno_GeneSet5()
       } else {
-        print("Geneset5 not annotated yet")
+        cat("Geneset5 not annotated yet")
       }
       sink(type = "message")
       sink(type = "output")
@@ -10176,7 +10102,7 @@ runSTEGO <- function(){
       if (input$GeneSet6_scGate) {
         scGate_anno_GeneSet6()
       } else {
-        print("Geneset6 not annotated yet")
+        cat("Geneset6 not annotated yet")
       }
       sink(type = "message")
       sink(type = "output")
@@ -10236,7 +10162,7 @@ runSTEGO <- function(){
       if (input$GeneSet7_scGate) {
         scGate_anno_GeneSet7()
       } else {
-        print("Geneset7 not annotated yet")
+        cat("Geneset7 not annotated yet")
       }
       sink(type = "message")
       sink(type = "output")
@@ -10295,7 +10221,7 @@ runSTEGO <- function(){
       if (input$GeneSet8_scGate) {
         scGate_anno_GeneSet8()
       } else {
-        print("Geneset8 not annotated yet")
+        cat("Geneset8 not annotated yet")
       }
       sink(type = "message")
       sink(type = "output")
@@ -10355,7 +10281,7 @@ runSTEGO <- function(){
       if (input$GeneSet9_scGate) {
         scGate_anno_GeneSet9()
       } else {
-        print("Geneset9 not annotated yet")
+        cat("Geneset9 not annotated yet")
       }
       sink(type = "message")
       sink(type = "output")
@@ -11108,7 +11034,6 @@ runSTEGO <- function(){
         df_ <- t(as.data.frame(strsplit(list_df, "[;]")))
         df <- as.data.frame(strsplit(df_[,1], "[.]"))
         df <-  as.data.frame(t(df))
-        print(head(df))
       } else {
 
         list_df <- sc@meta.data[,names(sc@meta.data) %in% input$TCR_alpha_gamma_cdr3_reformatting]
@@ -11118,7 +11043,6 @@ runSTEGO <- function(){
       }
 
       names(df) <- c("v_gene_AG","j_gene_AG","c_gene_AG")
-      print(head(df))
 
       sc@meta.data$v_gene_AG <- df$v_gene_AG
       sc@meta.data$j_gene_AG <- df$j_gene_AG
@@ -11127,18 +11051,12 @@ runSTEGO <- function(){
       if(TRUE %in% grepl("[;]",sc@meta.data[,names(sc@meta.data) %in% input$TCR_alpha_gamma_cdr3_reformatting2])) {
         list_df2 <- sc@meta.data[,names(sc@meta.data) %in% input$TCR_alpha_gamma_cdr3_reformatting2]
         df2_ <- t(as.data.frame(strsplit(list_df2, "[;]")))
-        print(head(df2_))
         df2 <- as.data.frame(strsplit(df_[,1], "[.]"))
         df2 <- as.data.frame(t(df2))
-        print(head(df2))
       } else {
-
         list_df2 <- sc@meta.data[,names(sc@meta.data) %in% input$TCR_alpha_gamma_cdr3_reformatting2]
         df2 <- as.data.frame(strsplit(list_df2, "[.]"))
-        # df <- as.data.frame(strsplit(df_[,1], "[.]"))
         df2 <- as.data.frame(t(df2))
-        print(head(df2))
-        print(table(grepl("TRBV",df$V1)))
       }
 
       names(df2) <- c("v_gene_BD","d_gene_BD","j_gene_BD","c_gene_BD")
@@ -11179,7 +11097,6 @@ runSTEGO <- function(){
       sc@meta.data$vdj_gene_AG_BD <- paste(sc@meta.data$vj_gene_AG, sc@meta.data$vdj_gene_BD, sep = " & ")
       sc@meta.data$vdj_gene_AG_BD <- gsub("^ & ", "", sc@meta.data$vdj_gene_AG_BD)
       sc@meta.data$vdj_gene_AG_BD <- gsub(" & $", "", sc@meta.data$vdj_gene_AG_BD)
-      print(head(sc@meta.data))
 
       # #updating names to be consistent....
       sc@meta.data$vj_gene_cdr3_AG_BD <- paste(sc@meta.data$vj_gene_cdr3_AG, sc@meta.data$vj_gene_cdr3_BD, sep = " & ")
@@ -11447,18 +11364,12 @@ runSTEGO <- function(){
           error_message_val_UMAP
         )
       )
-
-      print(sc)
-
       if (input$add_additional_lables == "yes") {
         req(input$Samp_col2, input$datasource, input$species_analysis, input$V_gene_sc)
       } else {
 
         req(input$datasource, input$species_analysis, input$V_gene_sc)
       }
-
-
-
       sc@meta.data$Cell_Index_old <- sc@meta.data$Cell_Index
       sc@meta.data$Cell_Index <- rownames(sc@meta.data)
       sc@meta.data$order <- 1:dim(sc@meta.data)[1]
@@ -11670,27 +11581,23 @@ runSTEGO <- function(){
       TCR$ID_Column <- TCR[,names(TCR) %in% input$Samp_col]
 
       select_cols <- c(input$V_gene_sc, input$other_selected_summary_columns, "ID_Column")
-      print(select_cols)
+
       TCR_input <- TCR[, names(TCR) %in% c("cloneCount",select_cols)]
       TCR_input <- TCR_input %>%
         select("cloneCount","ID_Column", everything())
-      # print( head(TCR_input))
 
       TCR_total <- as.data.frame(ddply(TCR_input,c(input$V_gene_sc),numcolwise(sum)))
       meta2.names <- names(TCR_input)
 
       total.condition <- as.data.frame(ddply(TCR_input, "ID_Column", numcolwise(sum)))
-      # print(head(total.condition))
+
       emtpy <- matrix(nrow = dim(TCR_input)[1], ncol = dim(total.condition)[1])
-      # print(dim(emtpy))
 
       for (i in 1:dim(TCR_input)[1]) {
         emtpy[i, ] <- ifelse(TCR_input$ID_Column[i] == total.condition$ID_Column[1:dim(total.condition)[1]],
                              total.condition[total.condition$ID_Column == total.condition$ID_Column[1:dim(total.condition)[1]], 2], F
         )
       }
-      # as.data.frame(emtpy)
-      # print(rowSums(emtpy))
       TCR_input$row_sum <- rowSums(emtpy)
 
       TCR_input$frequency <- TCR_input$cloneCount / TCR_input$row_sum
@@ -12047,7 +11954,6 @@ runSTEGO <- function(){
 
       top10 <- top10[order(top10$frequency, decreasing = F), ]
       unique.top <- unique(top10$v_gene_selected)
-      print(unique.top)
       top10$v_gene_selected <- factor(top10$v_gene_selected,
                                       levels = unique.top
       )
@@ -12592,7 +12498,6 @@ runSTEGO <- function(){
 
     Topclonotypes <- reactive({
       UMAP.wt.clonality2 <- For_col_top()
-      print(names(UMAP.wt.clonality2))
       UMAP.wt.clonality2 <- UMAP.wt.clonality2[UMAP.wt.clonality2$ID_Column %in% input$ID_Column_factor, ]
       UMAP.wt.clonality2$ID_Column <- factor(UMAP.wt.clonality2$ID_Column, levels = input$ID_Column_factor)
 
@@ -12941,7 +12846,6 @@ runSTEGO <- function(){
       as.matrix(t(tab) / colSums(tab) * 100)
     })
 
-    # output$Percent_tab <- renderPrint(escape = FALSE, filter = list(position = 'top', clear = FALSE), options = list(autoWidth = FALSE, lengthMenu = c(2,5,10,20,50,100), pageLength = 10, scrollX = TRUE),{
     output$Percent_tab <- renderPrint({
       sc <- UMAP_metadata_with_labs()
       validate(
@@ -13322,8 +13226,6 @@ runSTEGO <- function(){
       top_BD_cluster <- top_BD_cluster[top_BD_cluster$ID_Column %in% input$ID_Column_factor,]
       top_BD_cluster$ID_Column <- factor(top_BD_cluster$ID_Column,levels = input$ID_Column_factor)
 
-      # names(top_BD_cluster)[names(top_BD_cluster) %in% input$Samp_col] <- "ID_Column"
-
       if (input$by_indiv_pie_epi == "yes") {
         req(input$selected_Indiv)
         top_BD_cluster <- top_BD_cluster[top_BD_cluster$ID_Column %in% input$selected_Indiv, ]
@@ -13331,17 +13233,14 @@ runSTEGO <- function(){
 
       meta_all <- top_BD_cluster
       meta_all$cloneCount <- 1
-      # print(head(meta_all))
+
       meta_all$Selected_function <- ifelse(meta_all$Selected_function == "Neg",NA,meta_all$Selected_function)
-      # print(head(meta_all))
+
       meta <- meta_all[,names(meta_all) %in% c("ID_Column","Selected_function","cloneCount")]
-      # print(head(meta))
 
       meta$ID_Column <- as.character(meta$ID_Colum)
       total.condition <- as.data.frame(ddply(meta, "ID_Column", numcolwise(sum)))
-      # print(total.condition)
       total_condition_function <- as.data.frame(ddply(meta, c("ID_Column","Selected_function"), numcolwise(sum)))
-      # print(total_condition_function)
 
       emtpy_mat <- matrix(nrow = dim(total_condition_function)[1], ncol = dim(total.condition)[1])
 
@@ -13351,7 +13250,7 @@ runSTEGO <- function(){
         }
       }
       total_condition_function$freq <- total_condition_function$cloneCount / rowSums(emtpy_mat)
-      # print(total_condition_function)
+
       if (input$chart_overview == "pie") {
         ggplot(total_condition_function, aes(x = "", y = freq, fill = as.character(Selected_function), group = ID_Column)) +
           geom_bar(stat = "identity", width = 1) +
@@ -13822,7 +13721,6 @@ runSTEGO <- function(){
         message("singlet analysis")
         top_BD_clonotype <- df3.meta[df3.meta$cluster_name %in% c(input$Selected_clonotype,unique(df$cluster_name)), ]
         top_BD_clonotype$cluster_name <- ifelse(top_BD_clonotype$cluster_name %in% input$Selected_clonotype,input$Selected_clonotype,"singlet")
-        print(table(top_BD_clonotype$cluster_name))
       } else {
         top_BD_clonotype <- df3.meta[df3.meta$cluster_name %in% c(input$Selected_clonotype,input$Selected_clonotype2), ]
       }
@@ -13899,7 +13797,6 @@ runSTEGO <- function(){
       } else {
         dtop_clonotype_bar_code$Selected_chain <- dtop_clonotype_bar_code$cluster_name
         dtop_clonotype_bar_code$Selected_chain <- factor(dtop_clonotype_bar_code$Selected_chain,levels = c(input$Selected_clonotype,"singlet"))
-        print(table(dtop_clonotype_bar_code$Selected_chain))
       }
       num <- as.data.frame(unique(dtop_clonotype_bar_code$Selected_chain))
       num <- as.data.frame(num[complete.cases(num) == T, ])
@@ -14396,9 +14293,7 @@ runSTEGO <- function(){
 
       if(input$comparison_abundance == "Background") {
         name.clone <- input$Selected_clonotype
-
         sc@meta.data$Gene_select <- ifelse(sc@meta.data$Vgene %in% name.clone, name.clone, "BG")
-        # print(table(sc@meta.data$Gene_select))
         len_name.clone <- as.data.frame(sc@meta.data$Gene_select)
         len_name.clone <- as.data.frame(table(len_name.clone))
         names(len_name.clone) <- c("var1","freq")
@@ -14418,15 +14313,12 @@ runSTEGO <- function(){
                                            ifelse(sc@meta.data$Vgene %in% singlet.list,"singlet", "other"))
 
         message("processing singlets")
-        print(table(sc@meta.data$Gene_select))
-
         len_name.clone <- as.data.frame(sc@meta.data$Gene_select)
         len_name.clone <- as.data.frame(table(len_name.clone))
         names(len_name.clone) <- c("var1","freq")
 
         len_name.clone_selected1 <- len_name.clone[len_name.clone$var1 %in% name.clone,]
         len_name.clone_selected1 <- as.data.frame(len_name.clone_selected1)
-        print(len_name.clone_selected1)
 
       } else {
         name.clone <- input$Selected_clonotype
@@ -14466,7 +14358,6 @@ runSTEGO <- function(){
 
       } else if (input$comparison_abundance == "Singlets" && sum(len_name.clone_selected1$freq) > 2) {
         if(input$logFC_pval_findmarker) {
-          print(table(Idents(object = sc)))
           markers.fm.list <- FindMarkers(sc, ident.1 = name.clone, ident.2 = "singlet", min.pct = min.pct.expression, logfc.threshold = min.logfc, only.pos = TRUE)
           markers.fm.list
         } else {
@@ -14601,23 +14492,12 @@ runSTEGO <- function(){
       top_BD_cluster$Selected_function <- factor(top_BD_cluster$Selected_function, levels = input$Graph_split_order)
 
       df <-   merge(top_BD_cluster, gene_df, by = "Cell_Index")
-      # print(head(df))
       df
     })
 
     Ridge_chart_alpha_gamma_plot <- reactive({
       df <- Ridge_chart_alpha_gamma_df()
-
-      # df$expressed <- ifelse(df[, names(df) %in% input$string.data_Exp_top] > input$Gre_ex, "expressed", "Not expressed")
-
-      # if (input$restric_ex == T) {
-      #   df2 <- subset(df, df$expressed == "expressed")
-      # } else {
-      #   (
       df2 <- df
-      #   )
-      # }
-
       df2$Selected_function <- factor(df2$Selected_function, levels = input$Graph_split_order)
 
       ggplot(df2, aes(x = get(input$string.data_Exp_top), y = Selected_function, fill = Selected_function)) +
@@ -14625,7 +14505,6 @@ runSTEGO <- function(){
         theme_ridges() +
         theme(
           legend.text = element_text(colour = "black", size = input$Legend_size, family = input$font_type),
-          # legend.title = element_blank(),
           axis.title.x = element_blank(),
           axis.title.y = element_blank(),
           legend.position = "none"
@@ -14648,14 +14527,8 @@ runSTEGO <- function(){
 
       if(length(unique(df$Selected_function))>1) {
         message("multiple groups")
-        # print(head(df))
-
-        # print(aov(get(input$string.data_Exp_top) ~ get(input$Split_group_by_), data = df2))
 
         at <- TukeyHSD(aov(get(input$string.data_Exp_top) ~ get(input$Split_group_by_), data = df2))
-
-        # print(at)
-
         tab <- as.data.frame(at[1])
         names(tab) <- c("diff", "lwr", "upr", "p.adj")
         tab$stat <- ifelse(tab$p.adj < 0.0001, "****",
@@ -14719,21 +14592,9 @@ runSTEGO <- function(){
 
     Violin_chart_alpha_gamma_plot <- reactive({
       df <- Ridge_chart_alpha_gamma_df()
-      # df <- df[df$Selected_group %in% input$Graph_split_order,]
-      # top_BD_cluster$Selected_group <- factor(top_BD_cluster$Selected_group,levels = input$Graph_split_order)
-
-      # if (input$restric_ex == T) {
-      #   df$expressed <- ifelse(df[, names(df) %in% input$string.data_Exp_top] > input$Gre_ex, "expressed", "Not expressed")
-      #   print(head(df$expressed))
-      #   df2 <- subset(df, df$expressed == "expressed")
-      # } else {
       df2 <- df
 
-      # }
-
       df2$Selected_function <- factor(df2$Selected_function, levels = input$Graph_split_order)
-
-
 
       if(input$comparison_abundance == "Background") {
         if (input$jitter) {
@@ -14799,11 +14660,8 @@ runSTEGO <- function(){
           colorblind_vector <- rep(input$one.colour.default,dim(num)[1])
         }
 
-
-
-
         if (input$jitter) {
-          print(names(df2))
+
           plot <- ggplot(df2, aes(y = get(input$string.data_Exp_top), x = Selected_function)) +
             geom_jitter(height = 0, width = 0.1, aes(colour = df2$cluster_name)) +
             geom_violin(alpha = input$alpha_violin ,show.legend = F) +
@@ -14879,8 +14737,6 @@ runSTEGO <- function(){
       } else {
         df3.meta$selected_top_clonotype <- ifelse(df3.meta$cluster_name %in% input$Selected_clonotype, input$name_clonotype_selected,
                                                   ifelse(df3.meta$cluster_name %in% input$Selected_clonotype2, input$name_clonotype_selected2, "other"))
-
-        print(unique(df3.meta$selected_top_clonotype))
 
         df3.meta$selected_top_clonotype[is.na(df3.meta$selected_top_clonotype)] <- "other"
         df3.meta <- df3.meta[df3.meta$selected_top_clonotype != "other",]
@@ -15080,13 +14936,13 @@ runSTEGO <- function(){
 
       }
 
-      # print(unique(sc@meta.data$Gene_select))
+
       Idents(object = sc) <- sc@meta.data$Gene_select
-      if (input$restrict.dotplot == F) {
-        list.names <- rownames(compare.stat())
-      } else {
+      if (input$restrict.dotplot) {
         list.names <- rownames(compare.stat())
         list.names <- list.names[1:input$restrict.dotplot.num]
+      } else {
+        list.names <- rownames(compare.stat())
       }
 
       size_legend <- input$Legend_size - 2
@@ -15247,8 +15103,6 @@ runSTEGO <- function(){
           geneSet2$upperCI[i] <- "-"
           geneSet2$OR[i] <- "-"
         }
-        # message(print(d))
-        # message(print(round(prop.table(d),3)))
       }
 
       geneSet2
@@ -15628,19 +15482,13 @@ runSTEGO <- function(){
 
       md <- as.data.frame(sc@meta.data)
 
-      # print(md[, names(md) %in% input$Split_group_by_])
-
       md$ID_Column <- md[, names(md) %in% input$Split_group_by_]
-      # print(dim(md))
-      # print(names(md))
       ex.md <- Expansion_check_tb()
-      # print(dim(ex.md))
       ex.md2 <- ex.md[, names(ex.md) %in% c("Cell_Index", "expanded.singlets", "Selected_Status", "expansion.status")]
       md.ex <- merge(md, ex.md2, sort = F)
 
       rownames(md.ex) <- md.ex$Cell_Index
       sc@meta.data <- md.ex
-      # print(sc)
       sc
     })
 
@@ -15695,8 +15543,6 @@ runSTEGO <- function(){
         )
       )
       req(df2)
-      # print(unique(df2))
-
       df2 <- as.data.frame(df2)
       names(df2) <- "V1"
       df2 <- as.data.frame(df2[order(df2$V1), ])
@@ -15800,14 +15646,11 @@ runSTEGO <- function(){
           error_message_val_sc
         )
       )
-
-      print(stats)
-
-
-      if (input$restrict.dotplot == "yes") {
-        list.names <- rownames(stats)[1:input$restrict.dotplot.num]
+      if (input$restrict.dotplot) {
+        list.names <- rownames(Vals_expanded.stats())
+        list.names <- list.names[1:input$restrict.dotplot.num]
       } else {
-        list.names <- rownames(stats)
+        list.names <- rownames(Vals_expanded.stats())
       }
 
       sc <- compare.stat_Expanded()
@@ -15819,17 +15662,10 @@ runSTEGO <- function(){
       )
 
       message("printing compar.stat_expanded")
-      print(names(sc@meta.data))
-
-      # sc@meta.data$expansion.status <- factor(sc@meta.data$expansion.status, levels = input$Graph_split_order_EXP)
-      print(head(sc@meta.data$expansion.status))
-      print(sc@meta.data$expansion.status %in% input$Graph_split_order_EXP)
 
       sc@meta.data$samps_desired <- ifelse(sc@meta.data$expansion.status %in% input$Graph_split_order_EXP, "keep","remove")
-      print(sc)
       sc <- subset(sc, subset = samps_desired == "keep")
-      print(sc)
-      Idents(object = sc) <- sc@meta.data$expansion.status
+      Idents(object = sc) <- factor(sc@meta.data$expansion.status, levels = c(input$Graph_split_order_EXP))
 
       size_legend <- input$Legend_size - 2
 
@@ -15949,7 +15785,6 @@ runSTEGO <- function(){
       gene <- as.data.frame(sc@assays$RNA$scale.data[rownames(sc@assays$RNA$scale.data)  %in% input$Ex_transcripts_of_interest,])
       names(gene) <- "V1"
       gene$Cell_Index <- rownames(gene)
-      # print(input$Graph_split_order_EXP)
       md_gene <- merge(top_BD_cluster,gene,by = "Cell_Index")
       md_gene
     })
@@ -16034,129 +15869,8 @@ runSTEGO <- function(){
 
     })
 
-    # Over representation analysis for Expanded  -----
-
-    Over_rep_Exp_old <- reactive({
-      sc <- UMAP_metadata_with_labs()
-
-      validate(
-        need(
-          nrow(sc) > 0,
-          error_message_val_sc
-        )
-      )
-
-      req(input$datasource, input$in.geneset.cutoff_Exp)
-
-      geneSet <- read.csv(system.file("OverRep", "GeneSets.csv", package = "STEGO.R"), header = T)
-
-      background.genes.name <- as.data.frame(rownames(sc@assays$RNA$scale.data))
-      names(background.genes.name) <- "V1"
-      background.genes <- length(rownames(sc@assays$RNA$scale.data))
 
 
-      geneSet$background.genes <- background.genes
-      markers.fm.list <- Vals_expanded.stats() # needs to match the Exp stat
-      DEx.genes <- as.data.frame(rownames(markers.fm.list))
-      names(DEx.genes) <- "V1"
-      total.sig <- length(DEx.genes$V1)
-      geneSet$total.sig <- length(DEx.genes$V1)
-
-      geneSet$background.geneset <- NA
-      geneSet$background.geneset.name <- NA
-      geneSet$in.geneset <- NA
-      geneSet$in.geneset.name <- NA
-
-      if (input$datasource == "BD_Rhapsody_Paired" || input$datasource == "BD_Rhapsody_AIRR") { # selectInput("datasource", "Data source",choices=c("10x_Genomics","BD_Rhapsody_Paired","BD_Rhapsody_AIRR")),
-        geneSet$GeneSet <- gsub("-", ".", geneSet$GeneSet)
-      }
-
-      if (input$species_analysis == "mm") { # selectInput("datasource", "Data source",choices=c("10x_Genomics","BD_Rhapsody_Paired","BD_Rhapsody_AIRR")),
-
-        geneSet$GeneSet <- str_to_title(geneSet$GeneSet)
-      }
-
-      for (i in 1:dim(geneSet)[1]) {
-        # listed GeneSet
-        message(paste("GeneSet: ", i))
-        Gene.set.testing <- as.data.frame(strsplit(geneSet$GeneSet, ";")[i])
-        names(Gene.set.testing) <- "V1"
-        Gene.set.testing2 <- as.data.frame(unique(Gene.set.testing$V1))
-        names(Gene.set.testing2) <- "V1"
-        background.overlap <- merge(Gene.set.testing2, background.genes.name, by = "V1")
-        # message(paste(dim(background.overlap)[1],"in Background"))
-        geneSet$background.geneset[i] <- length(background.overlap$V1)
-        geneSet$background.geneset.name[i] <- as.character(paste(unlist(background.overlap[1]), collapse = ";"))
-        # in sig gene list
-        overlap <- merge(background.overlap, DEx.genes, by = "V1")
-        # message(paste(dim(overlap)[1],"# Sig genes"))
-        geneSet$in.geneset[i] <- length(overlap$V1)
-        geneSet$in.geneset.name[i] <- as.character(paste(unlist(overlap[1]), collapse = ";"))
-      }
-
-      geneSet2 <- subset(geneSet, geneSet$in.geneset > 0)
-
-      for (i in 1:dim(geneSet2)[1]) {
-        tota.gene.set <- geneSet2$background.geneset[i] # genes that are identified in background
-        tota.gene.set
-        in.geneset <- geneSet2$in.geneset[i] # DEx in geneset
-
-        background.genes
-        not.in.total <- background.genes - tota.gene.set
-        not.in.geneset.sig <- total.sig - in.geneset
-        d <- data.frame(gene.in.interest = c(in.geneset, not.in.geneset.sig), gene.not.interest = c(tota.gene.set, not.in.total))
-        row.names(d) <- c("In_category", "not_in_category")
-
-        if (in.geneset > 0) {
-          geneSet2$p.val[i] <- unlist(fisher.test(d, alternative = "greater")$p.value)[1]
-          geneSet2$lowerCI[i] <- unlist(fisher.test(d, alternative = "greater")$conf.int)[1]
-          geneSet2$upperCI[i] <- unlist(fisher.test(d)$conf.int)[2]
-          geneSet2$OR[i] <- round(unlist(fisher.test(d, alternative = "greater")$estimate)[1], 3)
-        } else {
-          geneSet2$p.value[i] <- "-"
-          geneSet2$lowerCI[i] <- "-"
-          geneSet2$upperCI[i] <- "-"
-          geneSet2$OR[i] <- "-"
-        }
-        # message(print(d))
-        # message(print(round(prop.table(d),3)))
-      }
-
-      geneSet2
-    })
-
-    Over_rep_Exp <- reactive({
-      geneSet2 <- Over_rep_Exp_old()
-
-      validate(
-        need(
-          nrow(geneSet2) > 0,
-          error_message_val_sc
-        )
-      )
-
-      req(input$datasource, input$in.geneset.cutoff_Exp)
-
-      geneSet2 <- geneSet2[order(geneSet2$p.val, decreasing = F), ]
-      geneSet2 <- subset(geneSet2, geneSet2$in.geneset >= input$in.geneset.cutoff_Exp)
-      geneSet2$FDR <- p.adjust(geneSet2$p.val, method = "fdr")
-      geneSet2$Bonferroni <- p.adjust(geneSet2$p.val, method = "bonferroni")
-      geneSet2 <- subset(geneSet2, geneSet2$p.val <= input$p.val_cutoff_Exp)
-      geneSet2
-    })
-    output$Over_rep_Exp_Tab <- DT::renderDT(escape = FALSE, filter = list(position = "top", clear = FALSE), options = list(autoWidth = FALSE, lengthMenu = c(1, 2, 5, 10, 20, 50, 100), pageLength = 20, scrollX = TRUE), {
-      Over_rep_Exp()
-    })
-
-    output$downloadtb_over.rep_Exp <- downloadHandler(
-      filename = function() {
-        paste0(input$Selected_clonotype, "_", today(), "_over_rep.csv")
-      },
-      content = function(file) {
-        df <- as.data.frame(Over_rep_Exp())
-        write.csv(df, file, row.names = F)
-      }
-    )
     #### Epitope upload -----
     df_tcrex <- reactive({
       epi <- data_sc_TCRex()
@@ -16903,11 +16617,11 @@ runSTEGO <- function(){
         )
       )
 
-      if (input$restrict.dotplot == F) {
-        list.names <- rownames(compare.stat_Epi())
-      } else {
+      if (input$restrict.dotplot) {
         list.names <- rownames(compare.stat_Epi())
         list.names <- list.names[1:input$restrict.dotplot.num]
+      } else {
+        list.names <- rownames(compare.stat_Epi())
       }
 
       size_legend <- input$Legend_size - 2
@@ -17131,8 +16845,6 @@ runSTEGO <- function(){
           geneSet2$upperCI[i] <- "-"
           geneSet2$OR[i] <- "-"
         }
-        # message(print(d))
-        # message(print(round(prop.table(d),3)))
       }
       geneSet2
     })
@@ -17254,7 +16966,7 @@ runSTEGO <- function(){
       )
       req(sc)
       md <- sc@meta.data
-      print(names(md))
+
       req(clust, md, input)
       if (input$datasource == "BD_Rhapsody_Paired" || input$datasource == "BD_Rhapsody_AIRR") {
         names(md)[names(md) %in% "v_gene_AG"] <- "Selected_V_AG"
@@ -17267,10 +16979,8 @@ runSTEGO <- function(){
 
       if(input$chain_TCR == "TRA") {
         md <- md[grepl("TRA",md$Selected_V_AG),]
-        print(unique(md$Selected_V_AG))
       } else if (input$chain_TCR == "TRG") {
         md <- md[grepl("TRG",md$Selected_V_AG),]
-        print(unique(md$Selected_V_AG))
       } else {
         md
       }
@@ -17349,10 +17059,8 @@ runSTEGO <- function(){
 
       if(input$chain_TCR == "TRB") {
         md <- md[grepl("TRB",md$Selected_V_BD),]
-        print(unique(md$Selected_V_BD))
       } else if (input$chain_TCR == "TRD") {
         md <- md[grepl("TRD",md$Selected_V_BD),]
-        print(unique(md$Selected_V_BD))
       } else {
         md
       }
@@ -17630,8 +17338,6 @@ runSTEGO <- function(){
       cluster <- cluster[cluster$Updated_order %in% input$Clusters_to_dis_PIE, ]
 
       num <- num[num$ID %in% unique(cluster$colour), ]
-      print(num)
-
       cluster$colour <- factor(cluster$colour, levels = num$ID)
 
 
@@ -18184,11 +17890,11 @@ runSTEGO <- function(){
       sc@meta.data <- md.checking
       Idents(object = sc) <- sc@meta.data$Clust_selected
 
-      if (input$restrict.dotplot == F) {
-        list.names <- rownames(compare.stat_Cluster())
-      } else {
+      if (input$restrict.dotplot) {
         list.names <- rownames(compare.stat_Cluster())
         list.names <- list.names[1:input$restrict.dotplot.num]
+      } else {
+        list.names <- rownames(compare.stat_Cluster())
       }
 
       size_legend <- input$Legend_size - 2
@@ -18304,9 +18010,9 @@ runSTEGO <- function(){
       gene <- as.data.frame(sc@assays$RNA$scale.data[rownames(sc@assays$RNA$scale.data)  %in% input$Clust_transcripts_of_interest,])
       names(gene) <- "V1"
       gene$Cell_Index <- rownames(gene)
-      # print(input$Graph_split_order_EXP)
+
       md_gene <- merge(md,gene,by = "Cell_Index")
-      print(head(md_gene))
+
       md_gene
     })
 
@@ -18508,8 +18214,6 @@ runSTEGO <- function(){
           geneSet2$upperCI[i] <- "-"
           geneSet2$OR[i] <- "-"
         }
-        # message(print(d))
-        # message(print(round(prop.table(d),3)))
       }
       geneSet2
     })
@@ -18564,14 +18268,10 @@ runSTEGO <- function(){
         select(c(input$Samp_col, input$V_gene_sc), everything())
 
       unique.df <- unique(df[, names(df) %in% c(input$Samp_col, input$V_gene_sc)])
-      print(head(unique.df))
       names(unique.df) <- c("group", "chain")
       unique.df <- unique.df[unique.df$group %in% input$ID_Column_factor, ]
-      print(head(unique.df))
       unique.df <- subset(unique.df, unique.df$chain != "NA")
       unique.df <- subset(unique.df, unique.df$group != "NA")
-
-      print(unique(unique.df$group))
 
       unique.df$cloneCount <- 1
       mat <- acast(unique.df, chain ~ group, value.var = "cloneCount")
@@ -18643,13 +18343,9 @@ runSTEGO <- function(){
       df <- as.data.frame(df)
       name_obj <- input$Samp_col
       unique.df <- unique(df[, names(df) %in% c(input$Samp_col, input$V_gene_sc)])
-      print(head(unique.df))
       unique.df <- unique.df %>%
         select(name_obj, everything())
-      print(head(unique.df))
       names(unique.df) <- c("group", "chain")
-
-
       unique.df <- subset(unique.df, unique.df$chain != "NA")
 
       unique.df <- subset(unique.df, unique.df$group != "NA")
@@ -18664,8 +18360,6 @@ runSTEGO <- function(){
 
       unique.df <- unique.df %>%
         select(name_obj, everything())
-
-      print(head(unique.df))
 
       names(unique.df) <- c("group", "chain")
       unique.df <- subset(unique.df, unique.df$chain != "NA")
@@ -18721,7 +18415,6 @@ runSTEGO <- function(){
       # Get the group names from the column names
       group_names <- unique(gsub(input$separator_input,"", colnames(original_data)))
       group_names <- group_names[!(group_names %in% c("Background","background", "TotalSamps", "CloneTotal"))]
-      print(group_names)
       group_names
 
     })
@@ -18736,7 +18429,6 @@ runSTEGO <- function(){
       } else if (input$comparison_operator == ">=") {
         original_data <- subset(clones, TotalSamps >= input$cutoff_upset)
       }
-      print(dim(original_data))
       # Get the group names from the column names
       group_names <- unique(gsub(input$separator_input,"", colnames(original_data)))  # Assuming first two columns are not part of the groups
 
@@ -18757,7 +18449,6 @@ runSTEGO <- function(){
           }
 
           len_group_data <- dim(group_data)[2]
-          print(len_group_data)
           # Calculate row sums
           group_data$CloneTotal <- rowSums(group_data)
           group_data <- subset(group_data,group_data$CloneTotal >= input$Total_count_Cutoff )
@@ -18775,27 +18466,20 @@ runSTEGO <- function(){
 
           # Remove the CloneTotal column
           top_5_group <- top_5_group[, !grepl("^CloneTotal", colnames(top_5_group))]
-          print(top_5_group)
           # Store the top 5 data for the current group in the list object
           top_5_data_list[[group_names[i]]] <- top_5_group
 
         }
 
       } else {
-        # print(names(original_data))
-        # print(check_sep())
         group_data <- original_data[,!names(original_data) %in% c("background", "TotalSamps", "CloneTotal")]
-        # print(head(group_data))
         group_data$CloneTotal <- rowSums(group_data)
-        # print(head(group_data))
         group_data <- subset(group_data,group_data$CloneTotal >= input$Total_count_Cutoff)
         group_data <- group_data[order(-group_data$CloneTotal), ]
         top_5_group <- group_data %>%
           slice_max(CloneTotal, n = input$max_number_lines_to)
         top_5_group <- top_5_group[, !grepl("^CloneTotal", colnames(top_5_group))]
-        # print(top_5_group)
         top_5_data_list <- top_5_group
-        print(top_5_data_list)
       }
 
       top_5_data_list
@@ -18830,7 +18514,6 @@ runSTEGO <- function(){
 
       list.df <- select_top_five()
       message("for line graph")
-      print(list.df)
 
       if(input$is_a_time_series) {
         df <- as.data.frame(list.df[[input$Group_for_line_graph]])
@@ -18850,7 +18533,6 @@ runSTEGO <- function(){
       content = function(file) {
         list.df <- select_top_five()
         message("for line graph")
-        print(list.df)
 
         if(input$is_a_time_series) {
           df <- as.data.frame(list.df[[input$Group_for_line_graph]])
@@ -18866,10 +18548,7 @@ runSTEGO <- function(){
 
     output$Line_graph_table2 <- DT::renderDT(escape = FALSE, filter = list(position = "top", clear = FALSE), options = list(autoWidth = FALSE, lengthMenu = c(1, 2, 5, 10, 20, 50, 100), pageLength = 20, scrollX = TRUE), {
       top_5_data_list <- select_top_five()
-      print(top_5_data_list)
       if(input$is_a_time_series) {
-
-        print(top_5_data_list)
         req(top_5_data_list)
         # Remove empty data frames from top_5_data_list
         top_5_data_list <- top_5_data_list[sapply(top_5_data_list, function(x) nrow(x) > 0)]
@@ -18879,7 +18558,6 @@ runSTEGO <- function(){
       }
       # Find the maximum count value across all datasets
       max_count <- max(sapply(top_5_data_list, function(df) max(df)))
-      print(max_count)
       # Round the maximum count value to the nearest 5 and then add 5
       max_count <- ceiling(max_count / 5) * 5
 
@@ -18887,8 +18565,6 @@ runSTEGO <- function(){
         # Create an empty list to store plots
         plot_list <- list()
         year <- input$Group_for_line_graph
-        print(year)
-
         # Transpose the data frame and convert to data.frame
         top_5_data <- top_5_data_list[[year]]
         top_5_transposed <- as.data.frame(t(top_5_data), stringsAsFactors = FALSE)
@@ -18900,7 +18576,6 @@ runSTEGO <- function(){
         top_5_transposed$Sample_ID <- rownames(top_5_transposed)
 
         # Split Sample_ID into separate columns for Group and Time
-        print(top_5_transposed$Sample_ID)
         separator_input2 <- input$separator_input2
 
         # Split the strings
@@ -18925,7 +18600,7 @@ runSTEGO <- function(){
         top_5_transposed <- cbind(top_5_transposed, split_df)
 
         # Print the resulting data frame to verify the output
-        print(top_5_transposed)
+        top_5_transposed
 
         # Rest of your code for further processing and plotting
       }
@@ -18936,10 +18611,8 @@ runSTEGO <- function(){
     Line_graph_for_tracing <- reactive({
 
       top_5_data_list <- select_top_five()
-      print(top_5_data_list)
-      if(input$is_a_time_series) {
 
-        print(top_5_data_list)
+      if(input$is_a_time_series) {
         req(top_5_data_list)
         # Remove empty data frames from top_5_data_list
         top_5_data_list <- top_5_data_list[sapply(top_5_data_list, function(x) nrow(x) > 0)]
@@ -18949,7 +18622,6 @@ runSTEGO <- function(){
       }
       # Find the maximum count value across all datasets
       max_count <- max(sapply(top_5_data_list, function(df) max(df)))
-      print(max_count)
       # Round the maximum count value to the nearest 5 and then add 5
       max_count <- ceiling(max_count / 5) * 5
 
@@ -18957,7 +18629,7 @@ runSTEGO <- function(){
         # Create an empty list to store plots
         plot_list <- list()
         year <- input$Group_for_line_graph
-        print(year)
+
 
         # Transpose the data frame and convert to data.frame
         top_5_data <- top_5_data_list[[year]]
@@ -18970,7 +18642,6 @@ runSTEGO <- function(){
         top_5_transposed$Sample_ID <- rownames(top_5_transposed)
 
         # Split Sample_ID into separate columns for Group and Time
-        print(top_5_transposed$Sample_ID)
         separator_input2 <- input$separator_input2
 
         # Split the strings
@@ -18993,26 +18664,14 @@ runSTEGO <- function(){
 
         # Combine with the original transposed data frame
         top_5_transposed <- cbind(top_5_transposed, split_df)
-
-        # Print the resulting data frame to verify the output
-        print(top_5_transposed)
-
         # Rest of your code for further processing and plotting
-
-
-        print(head(top_5_transposed))
         all_names <- names(top_5_transposed)
-        print(all_names)
         v_gene_names <- all_names[grep("TRAV|TRBV|TRGV|TRDV", all_names)]
-        print(v_gene_names)
-
         # Reshape the data into long format
         data_long <- pivot_longer(top_5_transposed,
                                   cols = v_gene_names,   # Exclude the Sample_ID, Group, and Time columns
                                   names_to = "VDJ",  # New column name for time points
                                   values_to = "Count")     # New column name for values
-        # data_long
-        print(data_long)
         # Replace underscores with spaces in the VDJ variable
         data_long$VDJ <- gsub("_", " ", data_long$VDJ)
         data_long$VDJ <- gsub(" & ", " ", data_long$VDJ)
@@ -19058,19 +18717,13 @@ runSTEGO <- function(){
         plot_list[[year]] <- p
 
       } else {
-        top_5_transposed <- as.data.frame(t(top_5_data_list), stringsAsFactors = FALSE)
-        print(top_5_transposed)
 
         # Convert row names into a regular column
         top_5_transposed$Sample_ID <- rownames(top_5_transposed)
         # Split Sample_ID into separate columns for Group and Time
-
-        print(head(top_5_transposed))
         all_names <- names(top_5_transposed)
-        print(all_names)
         # Find the maximum count value across all datasets
         max_count <- max(sapply(top_5_data_list, function(df) max(df)))
-        print(max_count)
         # Round the maximum count value to the nearest 5 and then add 5
         max_count <- ceiling(max_count / 5) * 5
         top_5_transposed <- as.data.frame(t(top_5_data_list), stringsAsFactors = FALSE)
@@ -19079,7 +18732,6 @@ runSTEGO <- function(){
         top_5_transposed
         # Split Sample_ID into separate columns for Group and Time
         all_names <- names(top_5_transposed)
-        print(all_names)
         v_gene_names <- all_names[grep("TRAV|TRBV|TRGV|TRDV", all_names)]
         v_gene_names
 
@@ -19099,12 +18751,8 @@ runSTEGO <- function(){
         #   #   # Determine unique levels of VDJ
         unique_vdj <- as.data.frame(unique(data_long$VDJ))
         names(unique_vdj) <- "unique_vdj"
-        unique_vdj
-        set.seed(200)
         unique_vdj$shape <- sample(1:25, nrow(unique_vdj))
-        print(data_long)
-        #
-        #
+
         plot_list <- ggplot(data_long, aes(x = Sample_ID, y = Count, color = VDJ, shape = VDJ)) +
           geom_point(size = 7) +  # Increased point size
           geom_line(aes(group = paste(VDJ)), linewidth = 1.25) +
@@ -19139,12 +18787,8 @@ runSTEGO <- function(){
 
 
       if(input$is_a_time_series) {
-        print(names(plot_list))
         plot_list[[input$Group_for_line_graph]]
-
       } else {
-        print(plot_list)
-
         plot_list
       }
     })
@@ -19166,12 +18810,9 @@ runSTEGO <- function(){
 
 
       if(input$is_a_time_series) {
-        print(names(plot_list))
         plot_list[[input$Group_for_line_graph]]
 
       } else {
-        print(plot_list)
-
         plot_list
       }
 
@@ -19236,7 +18877,6 @@ runSTEGO <- function(){
       Upset_plot_overlap_top <- subset(Upset_plot_overlap, Upset_plot_overlap$sum > 1)
       Upset_plot_overlap_top$chain <- rownames(Upset_plot_overlap_top)
       umap.meta.overlap <- merge(Upset_plot_overlap_top, umap.meta, by = c("chain",map.meta$ID_Column))
-      print(names(umap.meta.overlap))
       umap.meta.overlap
     })
 
@@ -19399,8 +19039,6 @@ runSTEGO <- function(){
           geneSet2$upperCI[i] <- "-"
           geneSet2$OR[i] <- "-"
         }
-        # message(print(d))
-        # message(print(round(prop.table(d),3)))
       }
       geneSet2 <- geneSet2[order(geneSet2$p.val, decreasing = F), ]
       geneSet2 <- geneSet2[order(geneSet2$p.val, decreasing = F), ]
@@ -20615,7 +20253,6 @@ runSTEGO <- function(){
     #   observations <- sum(TCR_Expanded_Df2$obs)
     #   percentage <- sum(TCR_Expanded_Df2$percent)
     #   length.samp.ID <- length(unique(TCR_Expanded_Df$ID_Column))
-    #   # print(length.samp.ID)
     #   mat <- mat_sum(sc, input$Samp_col, input$V_gene_sc)
     #
     #   if (observations > 0) {
@@ -20664,10 +20301,9 @@ runSTEGO <- function(){
       TCR_Expanded_Df <- TCR_Expanded_fun(sc, (input$Samp_col), (input$V_gene_sc))
       TCR_Expanded_Df$obs <- 1
       length.samp.ID <- length(unique(TCR_Expanded_Df$ID_Column))
-      # print(length.samp.ID)
       mat <- mat_sum(sc, input$Samp_col, input$V_gene_sc)
       if (max(mat$TotalSamps) == 1 && length.samp.ID == 1) {
-        print("one individual and one sample")
+        message("one individual and one sample")
 
         TCR_Expanded_Df <- TCR_Expanded_fun(sc, (input$Samp_col), (input$V_gene_sc))
         TCR_Expanded_Df$obs <- 1
@@ -20675,21 +20311,15 @@ runSTEGO <- function(){
         observations <- sum(TCR_Expanded_Df2$obs)
         percentage <- sum(TCR_Expanded_Df2$percent)
         if (observations > 0) {
-          print("ImmunoDom")
-          # observations <-  Frequency_expanded_df$obs[Frequency_expanded_df$percent>10 & Frequency_expanded_df$Frequency_expanded %in% "5. Gigantic (0.1 > X <= 0.5)"]
-          # percent <-  Frequency_expanded_df$percent[Frequency_expanded_df$percent>10 & Frequency_expanded_df$Frequency_expanded %in% "5. Gigantic (0.1 > X <= 0.5)"]
-
-          print(paste0("There are ", print(observations), " immuno dominant clonotype(s) that account for ", round(percentage, 2), "% of the repertoire"))
-          # print(paste0("This process will download (1) UMAP count and top plots, bar plot of immunodominat (>10% of repertoire)"))
-
-          # cat("test")
+          message("ImmunoDom")
+          message(paste0("There are ",observations, " immuno dominant clonotype(s) that account for ", round(percentage, 2), "% of the repertoire"))
         } else {
-          print("Polyclonal")
+          message("Polyclonal")
         }
       } else if (max(mat$TotalSamps) > 1 || length.samp.ID > 1) {
-        print("multiple individuals or samples")
+        message("multiple individuals or samples")
       } else {
-        print("other")
+        message("other")
       }
     })
 
@@ -20708,12 +20338,11 @@ runSTEGO <- function(){
       TCR_Expanded_Df2 <- subset(TCR_Expanded_Df, TCR_Expanded_Df$percent > input$cut.off_percent_rep)
       observations <- sum(TCR_Expanded_Df2$obs)
       length.samp.ID <- length(unique(TCR_Expanded_Df$ID_Column))
-      print(length.samp.ID)
 
       mat <- mat_sum(sc, input$Samp_col, input$V_gene_sc)
 
       if (max(mat$TotalSamps) == 1 && length.samp.ID == 1) {
-        print("one individual and one sample")
+        message("one individual and one sample")
         if (observations > 0) {
           fluidRow(
             column(12, actionButton("ImmDom_download_buttonOneOne", "Download ImmunoDom (1 & 1) analysis"))
@@ -20733,7 +20362,6 @@ runSTEGO <- function(){
           column(12, actionButton("Multi_download_button", "Download multi analysis"))
         )
       } else {
-        # print("multiple individuals and multiple samples")
       }
     })
 
@@ -20918,12 +20546,7 @@ runSTEGO <- function(){
           message(BD_sum$cluster_name[i])
           name.clone <- BD_sum$cluster_name[i]
           top_BD_clonotype <- df3.meta[df3.meta$cluster_name %in% name.clone, ]
-          # print(top_BD_clonotype)
-
           dtop_clonotype_bar_code <- top_BD_clonotype
-
-          # req(input$Graph_split_order)
-
           dtop_clonotype_bar_code$Selected_group <- dtop_clonotype_bar_code[, names(dtop_clonotype_bar_code) %in% input$Split_group_by_]
           num <- 1
           # num <- as.data.frame(num[complete.cases(num)==T,])
@@ -21423,11 +21046,8 @@ runSTEGO <- function(){
             message(BD_sum$cluster_name[i])
             name.clone <- BD_sum$cluster_name[i]
             top_BD_clonotype <- df3.meta[df3.meta$cluster_name %in% name.clone, ]
-            # print(top_BD_clonotype)
-
             dtop_clonotype_bar_code <- top_BD_clonotype
             set.seed(input$seed_col)
-            # req(input$Graph_split_order)
 
             dtop_clonotype_bar_code$Selected_group <- dtop_clonotype_bar_code[, names(dtop_clonotype_bar_code) %in% input$Split_group_by_]
             num <- 1
@@ -21533,7 +21153,6 @@ runSTEGO <- function(){
             # p.val.cutoff <-  input$pval_top #(1/10^3) is standard, use (1/10^0) to ignore
 
             cluster.names <- unique(Idents(sc))[order(unique(Idents(sc)))]
-            # print(paste0("calculating markers for cluster ",name.clone,". Total: ",length(cluster.names)," clusters"))
             markers.fm.list <- FindMarkers(sc, ident.1 = name.clone, min.pct = min.pct.expression, logfc.threshold = min.logfc, only.pos = TRUE)
             markers.fm.list2 <- subset(markers.fm.list, markers.fm.list$p_val_adj < input$pval.ex.filter)
             message(paste(length(markers.fm.list2$p_val_adj), "total markers for cluster", i))
@@ -21639,7 +21258,6 @@ runSTEGO <- function(){
           # p.val.cutoff <-  input$pval_top #(1/10^3) is standard, use (1/10^0) to ignore
 
           cluster.names <- unique(Idents(sc))[order(unique(Idents(sc)))]
-          # print(paste0("calculating markers for cluster ",name.clone,". Total: ",length(cluster.names)," clusters"))
           if(input$logFC_pval_findmarker) {
             markers.fm.list <- FindMarkers(sc, ident.1 = name.clone, min.pct = min.pct.expression, logfc.threshold = min.logfc, only.pos = TRUE)
             markers.fm.list
@@ -21849,7 +21467,6 @@ runSTEGO <- function(){
       )
       req(sc)
       md <- sc@meta.data
-      print(names(md))
       req(clust, md, input)
       if (input$datasource == "BD_Rhapsody_Paired" || input$datasource == "BD_Rhapsody_AIRR") {
         names(md)[names(md) %in% "v_gene_AG"] <- "Selected_V_AG"
@@ -21860,7 +21477,6 @@ runSTEGO <- function(){
       }
 
       md <- md[grepl("TRA",md$Selected_V_AG),]
-      print(unique(md$Selected_V_AG))
 
       req(md$Selected_V_AG, md$AminoAcid_AG, input$Samp_col)
 
@@ -21924,7 +21540,6 @@ runSTEGO <- function(){
       )
       req(sc)
       md <- sc@meta.data
-      print(names(md))
       req(clust, md, input)
       if (input$datasource == "BD_Rhapsody_Paired" || input$datasource == "BD_Rhapsody_AIRR") {
         names(md)[names(md) %in% "v_gene_AG"] <- "Selected_V_AG"
@@ -21935,7 +21550,6 @@ runSTEGO <- function(){
       }
 
       md <- md[grepl("TRG",md$Selected_V_AG),]
-      print(unique(md$Selected_V_AG))
 
       req(md$Selected_V_AG, md$AminoAcid_AG, input$Samp_col)
 
@@ -22009,7 +21623,6 @@ runSTEGO <- function(){
       }
 
       md <- md[grepl("TRB",md$Selected_V_BD),]
-      print(unique(md$Selected_V_BD))
 
       req(md$Selected_V_BD, md$AminoAcid_BD, input$Samp_col)
       md$CDR3_Vgene <- paste(md$AminoAcid_BD, md$Selected_V_BD, sep = "_")
@@ -22080,7 +21693,6 @@ runSTEGO <- function(){
       }
 
       md <- md[grepl("TRD",md$Selected_V_BD),]
-      print(unique(md$Selected_V_BD))
 
       req(md$Selected_V_BD, md$AminoAcid_BD, input$Samp_col)
       md$CDR3_Vgene <- paste(md$AminoAcid_BD, md$Selected_V_BD, sep = "_")
@@ -22132,13 +21744,11 @@ runSTEGO <- function(){
 
     observeEvent(input$ClusterDownload_automated, {
       x <- today()
-      print(A_cluster())
       if (length(A_cluster()) > 0) {
         message("Downloading A cluster table...")
         Exp_stats_cutoff_count.name <- paste("prioritization/Clustering/Cluster_summary_table_A_", x, ".csv", sep = "")
         if (dim(G_cluster())[2]>0) {
           AG_cluster <- A_cluster()
-          print(dim(AG_cluster))
           write.csv(AG_cluster, Exp_stats_cutoff_count.name, row.names = F)
         } else {
           message("No Alpha clusters present")
@@ -22160,7 +21770,6 @@ runSTEGO <- function(){
 
         if (dim(G_cluster())[2]>0) {
           G_cluster <- G_cluster()
-          print(dim(G_cluster))
           write.csv(G_cluster, Exp_stats_cutoff_count.name, row.names = F)
         } else {
           message("No gamma clusters present")
@@ -24322,8 +23931,7 @@ runSTEGO <- function(){
       md <- sc@meta.data
       req(input$chain_type_olga)
       md2 <- md[,names(md) %in% c("junction_aa_BD","cdr3_BD","junction_aa_AG","cdr3_AG","chain_AG","chain_BD")]
-      print(names(md2))
-      print("cdr3_BD"  %in% names(md2))
+
       if("cdr3_BD"  %in% names(md2)) {
         if(input$chain_type_olga == "TRB") {
           md2 <- subset(md2,md2$chain_BD == "TRB")
@@ -24427,7 +24035,7 @@ runSTEGO <- function(){
         pgen_dat[i,1] <- split_substring[7]
         pgen_dat[i,2] <- as.numeric(split_substring[8])
         message(paste("Compeleted",i,"of",length(df)))
-        # print(pgen_dat[i,])
+
       }
 
       pgen_dat
@@ -24530,7 +24138,7 @@ runSTEGO <- function(){
 
       for (i in seq_along(selected_filters)) {
         selected_filter <- selected_filters[i]
-        print(paste0("filter_ui_", selected_filter))
+        message(paste0("filter_ui_", selected_filter))
 
         filter_inputs[[selected_filter]] <- tagList(
           column(
@@ -24564,7 +24172,7 @@ runSTEGO <- function(){
       # Use lapply to generate all output elements at once
       lapply(seq_along(selected_filters), function(i) {
         selected_filter <- selected_filters[i]
-        print(selected_filter)
+        message(selected_filter)
         output[[paste0("filter_ui_", selected_filter)]] <- renderUI({
           checkbox_value <- input[[paste0("all_none_", selected_filter)]]
           selectizeInput(
@@ -24588,7 +24196,6 @@ runSTEGO <- function(){
       req(data_filtered)
 
       selected_filters <- input$selected_filters
-      # print(selected_filters)
       # If no filters selected, return the original data
       if (length(selected_filters) == 0) {
         return(data_filtered)
@@ -24600,7 +24207,7 @@ runSTEGO <- function(){
         filter <- selected_filters[i]
         checkbox_value <- input[[paste0("all_none_", filter)]]
         selected_values <- input[[paste0("filter_", filter)]]
-        # print(selected_values)
+
         if (!checkbox_value && length(selected_values) > 0) {
           filtered_data <- filtered_data[filtered_data[[filter]] %in% selected_values, ]
         } else if (checkbox_value && length(selected_values) > 0) {
@@ -24693,7 +24300,6 @@ runSTEGO <- function(){
     output$download_button_summarising_data <- downloadHandler(
       filename = function() {
         list_of_ <- paste(input$columns_for_summary, collapse = " ")
-        # print(list_of_)
         paste("summary_",c(list_of_),"_",today(), ".csv", sep = "")
       },
       content = function(file) {
