@@ -14293,13 +14293,25 @@ runSTEGO <- function(){
 
       if(input$comparison_abundance == "Background") {
         name.clone <- input$Selected_clonotype
-        sc@meta.data$Gene_select <- ifelse(sc@meta.data$Vgene %in% name.clone, name.clone, "BG")
-        len_name.clone <- as.data.frame(sc@meta.data$Gene_select)
-        len_name.clone <- as.data.frame(table(len_name.clone))
-        names(len_name.clone) <- c("var1","freq")
+        if(length(name.clone) == 1){
 
-        len_name.clone_selected1 <- len_name.clone[len_name.clone$var1 %in% name.clone,]
-        len_name.clone_selected1 <- as.data.frame(len_name.clone_selected1)
+          sc@meta.data$Gene_select <- ifelse(sc@meta.data$Vgene %in% name.clone, name.clone, "BG")
+          len_name.clone <- as.data.frame(sc@meta.data$Gene_select)
+          len_name.clone <- as.data.frame(table(len_name.clone))
+          names(len_name.clone) <- c("var1","freq")
+          len_name.clone_selected1 <- len_name.clone[len_name.clone$var1 %in% name.clone,]
+          len_name.clone_selected1 <- as.data.frame(len_name.clone_selected1)
+        } else {
+          sc@meta.data$Gene_select <- ifelse(sc@meta.data$Vgene %in% name.clone, input$name_clonotype_selected, "BG")
+          len_name.clone <- as.data.frame(sc@meta.data$Gene_select)
+          len_name.clone <- as.data.frame(table(len_name.clone))
+          names(len_name.clone) <- c("var1","freq")
+          len_name.clone_selected1 <- len_name.clone[len_name.clone$var1 %in% input$name_clonotype_selected,]
+          len_name.clone_selected1 <- as.data.frame(len_name.clone_selected1)
+          name.clone <- input$name_clonotype_selected
+          print(name.clone)
+
+        }
 
       } else if (input$comparison_abundance == "Singlets") {
 
@@ -14309,46 +14321,131 @@ runSTEGO <- function(){
         singlet.list <- singlet$cluster_name
         name.clone <- input$Selected_clonotype
 
-        sc@meta.data$Gene_select <- ifelse(sc@meta.data$Vgene %in% name.clone, name.clone,
-                                           ifelse(sc@meta.data$Vgene %in% singlet.list,"singlet", "other"))
+        if(length(name.clone) == 1){
 
-        message("processing singlets")
-        len_name.clone <- as.data.frame(sc@meta.data$Gene_select)
-        len_name.clone <- as.data.frame(table(len_name.clone))
-        names(len_name.clone) <- c("var1","freq")
+          sc@meta.data$Gene_select <- ifelse(sc@meta.data$Vgene %in% name.clone, name.clone,
+                                             ifelse(sc@meta.data$Vgene %in% singlet.list,"singlet", "other"))
 
-        len_name.clone_selected1 <- len_name.clone[len_name.clone$var1 %in% name.clone,]
-        len_name.clone_selected1 <- as.data.frame(len_name.clone_selected1)
+          len_name.clone <- as.data.frame(sc@meta.data$Gene_select)
+          len_name.clone <- as.data.frame(table(len_name.clone))
+          names(len_name.clone) <- c("var1","freq")
+          len_name.clone_selected1 <- len_name.clone[len_name.clone$var1 %in% name.clone,]
+          len_name.clone_selected1 <- as.data.frame(len_name.clone_selected1)
+        } else {
 
-      } else {
+          sc@meta.data$Gene_select <- ifelse(sc@meta.data$Vgene %in% name.clone, input$name_clonotype_selected,
+                                             ifelse(sc@meta.data$Vgene %in% singlet.list,"singlet", "other"))
+
+          len_name.clone <- as.data.frame(sc@meta.data$Gene_select)
+          len_name.clone <- as.data.frame(table(len_name.clone))
+          names(len_name.clone) <- c("var1","freq")
+
+          len_name.clone_selected1 <- len_name.clone[len_name.clone$var1 %in% input$name_clonotype_selected,]
+          len_name.clone_selected1 <- as.data.frame(len_name.clone_selected1)
+
+          name.clone <- input$name_clonotype_selected
+
+          print(len_name.clone)
+
+        }
+
+
+
+
+      } else if (input$comparison_abundance == "Clones") {
         name.clone <- input$Selected_clonotype
+        print(name.clone)
         name.clone2 <- input$Selected_clonotype2
-        sc@meta.data$Gene_select <- ifelse(sc@meta.data$Vgene %in% name.clone, name.clone,
-                                           ifelse(sc@meta.data$Vgene %in% name.clone2, name.clone2, "BG"))
+        print(name.clone2)
+        print(length(name.clone))
+        print(length(name.clone2))
 
-        len_name.clone <- as.data.frame(sc@meta.data$Gene_select)
-        len_name.clone <- as.data.frame(table(len_name.clone))
-        names(len_name.clone) <- c("var1","freq")
+        if(length(name.clone) == 1 && length(name.clone2) ==1){
 
-        len_name.clone_selected1 <- len_name.clone[len_name.clone$var1 %in% name.clone,]
-        len_name.clone_selected1 <- as.data.frame(len_name.clone_selected1)
-        len_name.clone_selected2 <- len_name.clone[len_name.clone$var1 %in% name.clone2,]
-        len_name.clone_selected2 <- as.data.frame(len_name.clone_selected2)
+          sc@meta.data$Gene_select <- ifelse(sc@meta.data$Vgene %in% name.clone, name.clone,
+                                             ifelse(sc@meta.data$Vgene %in% name.clone2, name.clone2, "BG"))
 
+          len_name.clone <- as.data.frame(sc@meta.data$Gene_select)
+          len_name.clone <- as.data.frame(table(len_name.clone))
+          names(len_name.clone) <- c("var1","freq")
+          len_name.clone_selected1 <- len_name.clone[len_name.clone$var1 %in% name.clone,]
+          len_name.clone_selected1 <- as.data.frame(len_name.clone_selected1)
+          len_name.clone_selected2 <- len_name.clone[len_name.clone$var1 %in% name.clone2,]
+          len_name.clone_selected2 <- as.data.frame(len_name.clone_selected2)
+
+
+        } else if (length(name.clone) > 1 && length(name.clone2) ==1) {
+          message("Multiple clones in group 1")
+          sc@meta.data$Gene_select <- ifelse(sc@meta.data$Vgene %in% name.clone, input$name_clonotype_selected,
+                                             ifelse(sc@meta.data$Vgene %in% name.clone2, name.clone2, "BG"))
+
+
+          len_name.clone <- as.data.frame(sc@meta.data$Gene_select)
+          len_name.clone <- as.data.frame(table(len_name.clone))
+          names(len_name.clone) <- c("var1","freq")
+
+          len_name.clone_selected1 <- len_name.clone[len_name.clone$var1 %in% input$name_clonotype_selected,]
+          len_name.clone_selected1 <- as.data.frame(len_name.clone_selected1)
+          len_name.clone_selected2 <- len_name.clone[len_name.clone$var1 %in% name.clone2,]
+          len_name.clone_selected2 <- as.data.frame(len_name.clone_selected2)
+
+          name.clone <- input$name_clonotype_selected
+
+        } else if (length(name.clone) == 1 && length(name.clone2) >1) {
+          message("Multiple clones in group 2")
+          sc@meta.data$Gene_select <- ifelse(sc@meta.data$Vgene %in% name.clone, name.clone,
+                                             ifelse(sc@meta.data$Vgene %in% name.clone2,input$name_clonotype_selected2, "BG"))
+
+
+          len_name.clone <- as.data.frame(sc@meta.data$Gene_select)
+          len_name.clone <- as.data.frame(table(len_name.clone))
+          names(len_name.clone) <- c("var1","freq")
+
+          len_name.clone_selected1 <- len_name.clone[len_name.clone$var1 %in% name.clone,]
+          len_name.clone_selected1 <- as.data.frame(len_name.clone_selected1)
+          len_name.clone_selected2 <- len_name.clone[len_name.clone$var1 %in% input$name_clonotype_selected2,]
+          len_name.clone_selected2 <- as.data.frame(len_name.clone_selected2)
+
+          name.clone2 <- input$name_clonotype_selected2
+
+          print(len_name.clone)
+
+        } else {
+          message("Multiple clones in group 1 and 2")
+          sc@meta.data$Gene_select <- ifelse(sc@meta.data$Vgene %in% name.clone, input$name_clonotype_selected,
+                                             ifelse(sc@meta.data$Vgene %in%  name.clone2, input$name_clonotype_selected2, "BG"))
+
+          print(unique(sc@meta.data$Gene_select))
+          len_name.clone <- as.data.frame(sc@meta.data$Gene_select)
+          len_name.clone <- as.data.frame(table(len_name.clone))
+          names(len_name.clone) <- c("var1","freq")
+
+          len_name.clone_selected1 <- len_name.clone[len_name.clone$var1 %in% input$name_clonotype_selected,]
+          len_name.clone_selected1 <- as.data.frame(len_name.clone_selected1)
+          len_name.clone_selected2 <- len_name.clone[len_name.clone$var1 %in% input$name_clonotype_selected2,]
+          len_name.clone_selected2 <- as.data.frame(len_name.clone_selected2)
+
+          name.clone <- input$name_clonotype_selected
+          name.clone2 <- input$name_clonotype_selected2
+
+        }
       }
 
 
       sc@meta.data
-      unique(sc@meta.data$Gene_select)
+      # unique(sc@meta.data$Gene_select)
       Idents(object = sc) <- sc@meta.data$Gene_select
-      as.data.frame(Idents(object = sc))
+      print(unique(sc@meta.data$Gene_select))
+      # as.data.frame(Idents(object = sc))
       min.pct.expression <- input$min_point_ # standard setting: 0.25
       min.logfc <- input$LogFC_ # 0.25 is standard
       p.val.cutoff <- input$pval_top # (1/10^3) is standard, use (1/10^0) to ignore
 
+      print(sum(len_name.clone_selected1$freq))
 
       if (input$comparison_abundance == "Background" && sum(len_name.clone_selected1$freq) > 2) {
         if(input$logFC_pval_findmarker) {
+          print(name.clone)
           markers.fm.list <- FindMarkers(sc, ident.1 = name.clone, min.pct = min.pct.expression, logfc.threshold = min.logfc, only.pos = TRUE)
           markers.fm.list
         } else {
