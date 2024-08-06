@@ -2409,6 +2409,15 @@ runSTEGO <- function(){
                                          )),
                                 )
                 )),
+
+
+
+
+            ),
+
+            conditionalPanel(
+              condition = "input.check_up_files == 'Prior' || input.check_up_files == 'TCR_and_GEX_tb' ||input.check_up_files == 'GEx_TCR'",
+
               bsCollapse(
                 id = "collapseExampleViolin", open = NULL, multiple = TRUE,
                 bsCollapsePanel(title = "Violin plot", style = "primary custom-panel",
@@ -2425,14 +2434,9 @@ runSTEGO <- function(){
 
                 )
 
-              ),
-
-
+              )
 
             ),
-
-
-
 
             #####
 
@@ -3466,94 +3470,84 @@ runSTEGO <- function(){
                                ),
                                # conditionalPanel(condition="input.Marker_Panel =='Marker_Panel_plot_stats'",
                                fluidRow(
-                                 column(3, selectInput("Analysis_marker_stats_type",p("Analysis type",class = "name-header_functions"),
-                                                       choices = c("Population", "Expanded"))),
-                                 column(3, selectInput("Help_marer",p("Definitions",class = "name-header_functions"),
-                                                       choices = c("No", "Yes"))),
                                  column(3, numericInput("cutoff_marker_gt", p("Marker +ve cut-off (>)",class = "name-header_functions"), value = 0, step = 0.1)),
                                  column(3, numericInput("pos_expanded_cut_off",p("clone count (>) for +ve",class = "name-header_functions"), value = 2, min = 1)),
                                ),
-                               conditionalPanel(
-                                 condition = "input.Help_marer == 'Yes'",
-                                 # p(strong("1. Total."), "Refers to the marker of interest compared to all negative cells"),
-                                 p(strong("1. Population"), "Refers to the the restricted UMAP selected population and compared the +ve to -ve marker population."),
-                                 p(strong("2. Expanded"), "Compares the clonal expaned (min 3) vs non-expanded population for all cells +ve for the marker in the restricted UMAP space."),
-                               ),
-                               tabsetPanel(
-                                 tabPanel("Table",
-                                          value = "Marker_Panel_table",
-                                          div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
-                                          div(DT::DTOutput("marker_selected_tab")),
-                                 ),
-                                 tabPanel("UMAP plot",
-                                          value = "Marker_Panel_plot_UMAP",
-                                          h4("Select area of the plot to keep for the specific marker"),
-                                          h6("Recommended to filter to broad populations based on UMAP e.g., CD4, CD8 or other"),
-                                          div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
-                                          numericInput("max_scale", "MAX scale", value = ""),
-                                          plotOutput("marker_selected_UMAP_plot", height = "600px"),
-                                          fluidRow(
-                                            column(2, numericInput("width_marker_selected_UMAP_plot",p("Width (PDF)",class = "name-header_functions"), value = 10)),
-                                            column(2, numericInput("height_marker_selected_UMAP_plot",p("Height (PDF)",class = "name-header_functions"), value = 8)),
-                                            column(1, style = "margin-top: 20px;", downloadButton("downloadPlot_marker_selected_UMAP_plot", "PDF")),
-                                            column(2, numericInput("width_png_marker_selected_UMAP_plot",p("Width (PNG)",class = "name-header_functions"), value = 1200)),
-                                            column(2, numericInput("height_png_marker_selected_UMAP_plot",p("Height (PNG)",class = "name-header_functions"), value = 1000)),
-                                            column(2, numericInput("resolution_PNG_marker_selected_UMAP_plot",p("Resolution (PNG)",class = "name-header_functions"), value = 144)),
-                                            column(1, style = "margin-top: 20px;", downloadButton("downloadPlotPNG_marker_selected_UMAP_plot", "PNG"))
-                                          )
-                                 ),
-                                 tabPanel("Violin/Ridge plot",
-                                          value = "Marker_Panel_plot_VR",
-                                          h4("Filter marker of interest based on threshold"),
-                                          fluidRow(
-                                            column(3, selectInput("select_plot_vio.ridge",p("Plot type",class = "name-header_functions"), choices = c("Violin", "Ridge"))),
-                                            column(3, style = "margin-top: 20px;",checkboxInput("show_cutoff_line",p("Show cut-off line?",class = "name-header2"), value = F))
-                                          ),
-                                          div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
-                                          plotOutput("marker_selected_VioRidge_plot", height = "600px"),
+                               tabsetPanel(id = "single_marker_panel2",
+                                           tabPanel("Table",
+                                                    value = "Marker_Panel_table",
+                                                    div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
+                                                    div(DT::DTOutput("marker_selected_tab")),
+                                           ),
+                                           tabPanel("UMAP plot",
+                                                    value = "Marker_Panel_plot_UMAP",
+                                                    h4("Select area of the plot to keep for the specific marker"),
+                                                    h6("Recommended to filter to broad populations based on UMAP e.g., CD4, CD8 or other"),
+                                                    div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
+                                                    numericInput("max_scale", "MAX scale", value = ""),
+                                                    plotOutput("marker_selected_UMAP_plot", height = "600px"),
+                                                    fluidRow(
+                                                      column(2, numericInput("width_marker_selected_UMAP_plot",p("Width (PDF)",class = "name-header_functions"), value = 10)),
+                                                      column(2, numericInput("height_marker_selected_UMAP_plot",p("Height (PDF)",class = "name-header_functions"), value = 8)),
+                                                      column(1, style = "margin-top: 20px;", downloadButton("downloadPlot_marker_selected_UMAP_plot", "PDF")),
+                                                      column(2, numericInput("width_png_marker_selected_UMAP_plot",p("Width (PNG)",class = "name-header_functions"), value = 1200)),
+                                                      column(2, numericInput("height_png_marker_selected_UMAP_plot",p("Height (PNG)",class = "name-header_functions"), value = 1000)),
+                                                      column(2, numericInput("resolution_PNG_marker_selected_UMAP_plot",p("Resolution (PNG)",class = "name-header_functions"), value = 144)),
+                                                      column(1, style = "margin-top: 20px;", downloadButton("downloadPlotPNG_marker_selected_UMAP_plot", "PNG"))
+                                                    )
+                                           ),
+                                           tabPanel("Violin/Ridge plot",
+                                                    value = "Marker_Panel_plot_VR",
+                                                    h4("Filter marker of interest based on threshold"),
+                                                    fluidRow(
+                                                      column(3, selectInput("select_plot_vio.ridge",p("Plot type",class = "name-header_functions"), choices = c("Violin", "Ridge"))),
+                                                      column(3, style = "margin-top: 20px;",checkboxInput("show_cutoff_line",p("Show cut-off line?",class = "name-header2"), value = F))
+                                                    ),
+                                                    div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
+                                                    plotOutput("marker_selected_VioRidge_plot", height = "600px"),
 
-                                          fluidRow(
-                                            column(2, numericInput("width_marker_selected_VioRidge_plot",p("Width (PDF)",class = "name-header_functions"), value = 10)),
-                                            column(2, numericInput("height_marker_selected_VioRidge_plot",p("Height (PDF)",class = "name-header_functions"), value = 8)),
-                                            column(1, style = "margin-top: 20px;", downloadButton("downloadPlot_marker_selected_VioRidge_plot", "PDF")),
-                                            column(2, numericInput("width_png_marker_selected_VioRidge_plot",p("Width (PNG)",class = "name-header_functions"), value = 1200)),
-                                            column(2, numericInput("height_png_marker_selected_VioRidge_plot",p("Height (PNG)",class = "name-header_functions"), value = 1000)),
-                                            column(2, numericInput("resolution_marker_selected_VioRidge_plot",p("Resolution (PNG)",class = "name-header_functions"), value = 144)),
-                                            column(1, style = "margin-top: 20px;", downloadButton("downloadPlotPNG_marker_selected_VioRidge_plot", "PNG"))
-                                          ),
+                                                    fluidRow(
+                                                      column(2, numericInput("width_marker_selected_VioRidge_plot",p("Width (PDF)",class = "name-header_functions"), value = 10)),
+                                                      column(2, numericInput("height_marker_selected_VioRidge_plot",p("Height (PDF)",class = "name-header_functions"), value = 8)),
+                                                      column(1, style = "margin-top: 20px;", downloadButton("downloadPlot_marker_selected_VioRidge_plot", "PDF")),
+                                                      column(2, numericInput("width_png_marker_selected_VioRidge_plot",p("Width (PNG)",class = "name-header_functions"), value = 1200)),
+                                                      column(2, numericInput("height_png_marker_selected_VioRidge_plot",p("Height (PNG)",class = "name-header_functions"), value = 1000)),
+                                                      column(2, numericInput("resolution_marker_selected_VioRidge_plot",p("Resolution (PNG)",class = "name-header_functions"), value = 144)),
+                                                      column(1, style = "margin-top: 20px;", downloadButton("downloadPlotPNG_marker_selected_VioRidge_plot", "PNG"))
+                                                    ),
 
-                                 ),
-                                 # tabPanel("UMAP"),
-                                 tabPanel("TCR/BCR mapped",
-                                          value = "Marker_Panel_plot_TCR",
-                                          h4("TCR and/or BCR seqeunces that are positive for that marker"),
-                                          div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
-                                          fluidRow(
-                                            column(6, div(DT::DTOutput("TCR_marker_positive_count"))),
-                                            column(6, div(DT::DTOutput("TCR_marker_neg_count")))
-                                          ),
-                                          div(DT::DTOutput("merged_marker_hist_table")),
-                                          downloadButton("downloaddf_clonotype_distribution", "Download table"),
-                                          div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
-                                          plotOutput("marker_selected_histogram_plot", height = "600px")
-                                 ),
-                                 tabPanel("Stats",
-                                          value = "MP_plot_stats",
-                                          div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
-                                          div(DT::DTOutput("Compare.stat_marker")),
-                                          downloadButton("downloaddf_Marker_stats", "Download table")
+                                           ),
+                                           # tabPanel("UMAP"),
+                                           tabPanel("TCR/BCR mapped",
+                                                    value = "Marker_Panel_plot_TCR",
+                                                    h4("TCR and/or BCR seqeunces that are positive for that marker"),
+                                                    div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
+                                                    # fluidRow(
+                                                    #   column(6, div(DT::DTOutput("TCR_marker_positive_count"))),
+                                                    #   column(6, div(DT::DTOutput("TCR_marker_neg_count")))
+                                                    # ),
+                                                    div(DT::DTOutput("merged_marker_hist_table")),
+                                                    downloadButton("downloaddf_clonotype_distribution", "Download table"),
+                                                    # div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
+                                                    # plotOutput("marker_selected_histogram_plot", height = "600px")
+                                           ),
+                                           tabPanel("Stats",
+                                                    value = "MP_plot_stats",
+                                                    div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
+                                                    div(DT::DTOutput("Compare.stat_marker")),
+                                                    downloadButton("downloaddf_Marker_stats", "Download table")
 
-                                          # filtered on marker of interest, broad population
-                                          # determine if
-                                          # segregated into expanded vs non-expaned  expanded clonotypes?
-                                 ),
-                                 # tabPanel("Dotplot",
-                                 #
-                                 #
-                                 # ),
-                                 # tabPanel("Over-representation",
-                                 #
-                                 # ),
+                                                    # filtered on marker of interest, broad population
+                                                    # determine if
+                                                    # segregated into expanded vs non-expaned  expanded clonotypes?
+                                           ),
+                                           # tabPanel("Dotplot",
+                                           #
+                                           #
+                                           # ),
+                                           # tabPanel("Over-representation",
+                                           #
+                                           # ),
                                ),
                                # cut-off 1,
                                # umap filtering?
@@ -3566,8 +3560,10 @@ runSTEGO <- function(){
                                  column(2, numericInput("Filter_dual_UMAP1_marker", p("UMAP_1 >",class = "name-header_functions"), value = -20)),
                                  column(2, numericInput("Filter_dual_UMAP1_marker2",p("UMAP_1 <",class = "name-header_functions"), value = 20)),
                                  column(2, numericInput("Filter_dual_UMAP2_marker",p("UMAP_2 >",class = "name-header_functions"), value = -20)),
-                                 column(2, numericInput("Filter_dual_UMAP2_marker2",p("UMAP_2 <",class = "name-header_functions"), value = 20)),
-                                 # column(2),
+                                 column(2, numericInput("Filter_dual_UMAP2_marker2",p("UMAP_2 <",class = "name-header_functions"), value = 20))
+                               ),
+
+                               fluidRow(
                                  column(2, numericInput("X_axis_dot_dual",p("X-axis line",class = "name-header_functions"),
                                                         value = 0, step = 0.1)),
                                  column(2, numericInput("Y_axis_dot_dual",p("Y-axis line",class = "name-header_functions"),
@@ -3860,7 +3856,7 @@ runSTEGO <- function(){
       }
     })
 
-    observeEvent(c(input$clonal_abudance_tabs, input$ExPan, input$epitope_tabpanel, input$ClusTCR2_panel_tabs, input$Panel_TCRUMAP), {
+    observeEvent(c(input$clonal_abudance_tabs, input$ExPan, input$epitope_tabpanel, input$ClusTCR2_panel_tabs, input$Panel_TCRUMAP,input$Marker_Panel,input$single_marker_panel2), {
       if (input$clonal_abudance_tabs == "clonal_abud_violin" && input$Panel_TCRUMAP == "top_clone") {
         runjs("$('#collapseExampleViolin .panel-collapse').collapse('show');")
       } else if (input$ClusTCR2_panel_tabs == "ClusPan_violin" && input$Panel_TCRUMAP == "ClusTCR2") {
@@ -3868,6 +3864,8 @@ runSTEGO <- function(){
       } else if (input$Panel_TCRUMAP == "Expanded" && input$ExPan == "expan_violinplot") {
         runjs("$('#collapseExampleViolin .panel-collapse').collapse('show');")
       } else if (input$Panel_TCRUMAP == "Epitope" && input$epitope_tabpanel == "EpiPan_dot") {
+        runjs("$('#collapseExampleViolin .panel-collapse').collapse('show');")
+      } else if (input$Marker_Panel == "single_marker_panel" && input$single_marker_panel2 == "Marker_Panel_plot_VR") {
         runjs("$('#collapseExampleViolin .panel-collapse').collapse('show');")
       } else {
         # if (input$clonal_abudance_tabs != "TopHeat" || input$ClusTCR2_panel_tabs != "ClustHeat") {
@@ -19249,7 +19247,7 @@ runSTEGO <- function(){
       md <- merge(md, selected_gene(), by = "Cell_Index")
       md$log2.count <- log2(as.numeric(md[, names(md) %in% input$Var_to_col_marker]))
       md$log2.count[is.na(md$log2.count)] <- "-Inf"
-      md
+
       md <- subset(md, md$UMAP_1 > input$Filter_lower_UMAP1_marker)
       md <- subset(md, md$UMAP_1 < input$Filter_lower_UMAP1_marker2)
 
@@ -19302,6 +19300,8 @@ runSTEGO <- function(){
       req(input$Var_to_col_marker)
       md <- sc@meta.data
       md <- merge(md, selected_scale(), by = "Cell_Index")
+
+      print(summary(selected_scale()))
       md$scale <- as.numeric(md[, names(md) %in% input$Var_to_col_marker])
 
       md <- subset(md, md$UMAP_1 > input$Filter_lower_UMAP1_marker)
@@ -19312,7 +19312,7 @@ runSTEGO <- function(){
 
       md$ID_Column <- md[,names(md) %in% input$Samp_col]
 
-      subset(md, md$v_gene_AG != "NA")
+      md
     })
 
 
@@ -19406,13 +19406,15 @@ runSTEGO <- function(){
     # scale violin plot ----
     marker_selected_Violine.ridge <- reactive({
       # umap.meta <- meta_data_for_features_scale()
-      umap.meta <- meta_data_for_features()
+      umap.meta <- meta_data_for_features2()
       validate(
         need(
           nrow(umap.meta) > 0,
           "Upload File"
         )
       )
+
+      req(input$Var_to_col_marker)
 
       umap.meta <- meta_data_for_features_scale()
       umap.meta$ID <- umap.meta[,names(umap.meta) %in% input$Samp_col]
@@ -19518,18 +19520,40 @@ runSTEGO <- function(){
 
     ######
 
+    meta_data_for_features2 <- reactive({
+      sc <- UMAP_metadata_with_labs()
+      validate(
+        need(
+          nrow(sc) > 0,
+          "Upload File"
+        )
+      )
+
+      req(input$Var_to_col_marker,)
+
+      md <- sc@meta.data
+      md <- as.data.frame(merge(md, selected_scale(), by = "Cell_Index"))
+      md$log2.count <- (as.numeric(md[, names(md) %in% input$Var_to_col_marker]))
+
+      md <- subset(md, md$UMAP_1 > input$Filter_lower_UMAP1_marker)
+      md <- subset(md, md$UMAP_1 < input$Filter_lower_UMAP1_marker2)
+
+      md <- subset(md, md$UMAP_2 > input$Filter_lower_UMAP2_marker)
+      md <- subset(md, md$UMAP_2 < input$Filter_lower_UMAP2_marker2)
+      md
+
+    })
+
     filtered_positive_marker_TCRsum <- reactive({
       # umap.meta <- meta_data_for_features_scale()
-      umap.meta <- meta_data_for_features()
+      umap.meta <- meta_data_for_features2()
       validate(
         need(
           nrow(umap.meta) > 0,
           "Upload File"
         )
       )
-
-      umap.meta$log2.count <- ifelse(umap.meta$log2.count == "-Inf", -2, umap.meta$log2.count)
-      umap.meta$log2.count <- as.numeric(umap.meta$log2.count)
+      print(summary(umap.meta$log2.count))
 
       umap.meta_marker_pos <- subset(umap.meta, umap.meta$log2.count > input$cutoff_marker_gt)
       umap.meta_marker_pos$cloneCount <- 1
@@ -19542,16 +19566,13 @@ runSTEGO <- function(){
     })
 
     filtered_negative_marker_TCRsum <- reactive({
-      umap.meta <- meta_data_for_features()
+      umap.meta <- meta_data_for_features2()
       validate(
         need(
           nrow(umap.meta) > 0,
           "Upload File"
         )
       )
-
-      umap.meta$log2.count <- ifelse(umap.meta$log2.count == "-Inf", -2, umap.meta$log2.count)
-      umap.meta$log2.count <- as.numeric(umap.meta$log2.count)
 
       umap.meta_marker_neg <- subset(umap.meta, umap.meta$log2.count < input$cutoff_marker_gt)
       umap.meta_marker_neg$cloneCount <- 1
