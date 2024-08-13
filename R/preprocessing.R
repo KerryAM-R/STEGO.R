@@ -31,8 +31,6 @@ preprocessing_10x <- function (downloadTCRex = FALSE,
   main_directory = "0_RAW_files/"
   main_directory <- main_directory
   main_folders <- list.files(paste(main_directory))
-  print(main_folders)
-
   num <- length(main_folders)
 
   for (i in 1:num) {
@@ -61,7 +59,6 @@ preprocessing_10x <- function (downloadTCRex = FALSE,
 
       if (length(files)==2){
         possible_mat <- files[!grepl("contig",files)]
-        print(possible_mat)
         message("matrix file possibly already formatted")
 
       } else {
@@ -135,9 +132,7 @@ preprocessing_10x <- function (downloadTCRex = FALSE,
         if(!grepl("-1", colnames(full_mat)[1]) ) {
           colnames(full_mat) <- paste0(colnames(full_mat),"-1")
         }
-
         testexample <-  head(full_mat)[1:6]
-        print(testexample)
 
       } else {
         message("Check ", sub_directory, " for matrix and/or contig files are present")
@@ -369,10 +364,8 @@ preprocessing_10x <- function (downloadTCRex = FALSE,
                                         ifelse(contig_paired$chain_BD == "TRD" & contig_paired$chain_AG == "TRG", "gdTCR Paired", "unpaired"))
 
         contig_paired$pairing[is.na(contig_paired$pairing)] <- "unpaired"
-        print(table(contig_paired$pairing))
 
-        contig_paired <- contig_paired[!names(contig_paired) %in%
-                                         c("d_gene_AG")]
+        contig_paired <- contig_paired[!names(contig_paired) %in% c("d_gene_AG")]
 
         contig_paired_only <- contig_paired
 

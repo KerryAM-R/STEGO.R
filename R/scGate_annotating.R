@@ -1,3 +1,30 @@
+#' custom_db_scGATE
+#' @description
+#' The function to get the scGate local custom databases
+#'
+#' @param repo_path.v path to one custom scGATE structure.
+#' @export
+
+custom_db_scGATE <- function(repo_path.v) {
+  allfiles <- list.files(repo_path.v, recursive = TRUE,full.names = T)
+  modelfiles <- grep("scGate_Model.tsv", allfiles, value = TRUE)
+  master.table = read.table(paste0(repo_path.v,"/","master_table.tsv"),sep ="\t",header =T)
+  df.models.toimpute <- list()
+  files.to.impute <- list.files(file.path(repo_path.v),"_scGate_Model.tsv")
+
+  for(f in 1:length(files.to.impute)){
+    model.name <- strsplit(files.to.impute,"_scGate_Model.tsv")[[f]][1]
+    df.models.toimpute[[model.name]] <- suppressWarnings(read.table(paste0(repo_path.v,"/",files.to.impute[f]),sep ="\t",header =T))
+  }
+
+  for(f in 1:length(files.to.impute)){
+    model.name <- strsplit(files.to.impute,"_scGate_Model.tsv")[[f]][1]
+    message(model.name)
+    df.models.toimpute[[model.name]] <- merge(df.models.toimpute[[model.name]][1:3],master.table,by=c("name"),sort = F)
+  }
+  df.models.toimpute
+}
+
 #' log_parameters_scGate
 #'
 #' @description
@@ -43,20 +70,20 @@ log_parameters_scGate <- function(log_file = log_file,
     models_used_str <- ""
   }
 
-  message <- sprintf("The merged object underwent annotating using the semi-supervised process with scGate (version %s)[ref]. The annotation models created in STEGO.R included %s. Additionally, the following scGate parameters were changed from the default values: %s.", scGate_version, models_used_str, non_default_params_str)
+  message_text <- sprintf("The merged object underwent annotating using the semi-supervised process with scGate (version %s)[ref]. The annotation models created in STEGO.R included %s. Additionally, the following scGate parameters were changed from the default values: %s.", scGate_version, models_used_str, non_default_params_str)
 
-  if (grepl("chunk_size", message)) {
-    message <- gsub("chunk_size", "number of cells per chunk ", message)
+  if (grepl("chunk_size", message_text)) {
+    message_text <- gsub("chunk_size", "number of cells per chunk ", message_text)
   }
 
   if (length(unique(names(params_to_log))) == 1) {
-    message <- gsub("parameters", "parameter", message)
+    message_text <- gsub("parameters", "parameter", message_text)
   }
 
-  print(message)
+  print(message_text)
 
   # Write the message to the log file
-  writeLines(message, con)
+  writeLines(message_text, con)
 
   # Close the file connection
   close(con)
@@ -293,14 +320,13 @@ scGate_annotating <- function (
         models_list <- custom_db_scGATE(system.file("scGATE", "human/simple_functions", package = "STEGO.R"))
         sc_chunk <- apply_scGate_to_chunk(sc_chunk, models_list, threshold_scGate, reductionType)
         sc_chunk@meta.data$TSimpleFunction <- sc_chunk@meta.data$scGate_multi
-        sc_chunk@meta.data$majorSTF <-ifelse(grepl("CD8[.]CD4",sc_chunk@meta.data$TSimpleFunction),"DP",
+        sc_chunk@meta.data$majorSTF <-ifelse(grepl("DP",sc_chunk@meta.data$TSimpleFunction),"DP",
                                              ifelse(grepl("CD4",sc_chunk@meta.data$TSimpleFunction),"CD4",
                                                     ifelse(grepl("Th",sc_chunk@meta.data$TSimpleFunction),"CD4",
                                                            ifelse(grepl("Treg",sc_chunk@meta.data$TSimpleFunction),"CD4",
                                                                   ifelse(grepl("CD8",sc_chunk@meta.data$TSimpleFunction),"CD8",
-                                                                         ifelse(grepl("CD8",sc_chunk@meta.data$TSimpleFunction),"CD8",
                                                                                 ifelse(grepl("DN",sc_chunk@meta.data$TSimpleFunction),"DN","other"
-                                                                                )))))))
+                                                                                ))))))
 
         tcell_function_table <- table(sc_chunk@meta.data$majorSTF)
         save_table(tcell_function_table, paste0(output_dir,"/", "TSimpleFunction_table_chunk_", i, ".txt"))
@@ -311,7 +337,7 @@ scGate_annotating <- function (
         sc_chunk@meta.data$immune_checkpoint <- sc_chunk@meta.data$scGate_multi
 
         tcell_function_table <- table(sc_chunk@meta.data$immune_checkpoint)
-        # print(tcell_function_table)
+
         save_table(tcell_function_table, paste0(output_dir,"/", "exhausted_table_chunk_", i, ".txt"))
 
       }
@@ -368,6 +394,14 @@ scGate_annotating <- function (
         save_table(tcell_function_table, paste0(output_dir,"/", "TCRseq_table_chunk_", i, ".txt"))
 
       }
+      if (GeneSet1) {
+        scGate_models_DB_geneset1 <- suppressMessages(suppressWarnings(custom_db_scGATE("custom_db/GeneSet1")))
+        sc_chunk <- apply_scGate_to_chunk(sc_chunk, scGate_models_DB_geneset1, threshold_scGate, reductionType)
+        sc_chunk@meta.data$GeneSet1 <- sc_chunk@meta.data$scGate_multi
+
+      }
+
+
       sc_chunk@meta.data <- sc_chunk@meta.data[!grepl("scGate_multi", names(sc_chunk@meta.data))]
       # Store result in list
       merged_sc_list[[length(merged_sc_list) + 1]] <- sc_chunk

@@ -49,7 +49,6 @@ merging_ClusTCR2 <- function (directory = "1_ClusTCR",chain = "AG", output_dir =
   }
 
   df <- df[!duplicated(df$junction_aa), ]
-  print(head(df))
 
   log_file <- "log_file.txt"
   con <- file(log_file,open = "a")
@@ -150,12 +149,10 @@ merging_multi_SeuratRDS <- function(seurat_files = "3_SCobj/3a",
       list.sc[[i]]@project.name <- model.name
       message("Updating cell Index ID")
       list.sc[[i]]@meta.data$Cell_Index_old <- list.sc[[i]]@meta.data$Cell_Index
-      print(list.sc[[i]])
       sl <- object.size(list.sc[[i]])
       message("Stored object is ", round(sl[1]/1000^3, 3), " Gb")
     }
 
-    print(length(list.sc))
     sl <- object.size(list.sc)
     message("stored object is ", round(sl[1]/1000^3, 3), " Gb")
 
@@ -205,7 +202,6 @@ merging_multi_SeuratRDS <- function(seurat_files = "3_SCobj/3a",
           temp_list[[names(list.sc)[i]]] <- list.sc[[i]]
         }
       }
-      print(temp_list)
       list.sc <- temp_list
     }
     # Calculate total number of files merged
@@ -290,11 +286,9 @@ harmony_batch_correction_2_Scaling <- function(file = sc,  Seruat_version = "V4"
   kmeans <- read.csv(system.file("Kmean","Kmeans.requires.annotation.csv",package = "STEGO.R"))
   if(Seruat_version=="V4") {
     var.genes <- as.data.frame(sc@assays$RNA@var.features)
-    print(head(var.genes))
   } else {
     var.genes <- sc@assays$RNA@meta.data$var.features
     var.genes <- as.data.frame(var.genes[!is.na(var.genes)])
-    print(head(var.genes))
   }
 
   names(var.genes) <- "V1"
@@ -307,10 +301,8 @@ harmony_batch_correction_2_Scaling <- function(file = sc,  Seruat_version = "V4"
   }
   Gene_to_scale <- unique(rbind(var.genes,kmeans2))
   names(Gene_to_scale) <- "V1"
-  print(head(Gene_to_scale))
-  print(dim(Gene_to_scale))
-
   sc <- ScaleData(sc, features = Gene_to_scale$V1)
+  return(sc)
   sc
 }
 
@@ -326,6 +318,7 @@ harmony_batch_correction_2_Scaling <- function(file = sc,  Seruat_version = "V4"
 
 harmony_batch_correction_3_PC <- function(file = sc) {
   sc <- RunPCA(file)
+  return(sc)
   sc
 }
 
@@ -370,5 +363,6 @@ harmony_batch_correction_4_Harmony <- function(file = sc,selected_column_for_red
     FindNeighbors(reduction = "harmony", dims = 1:Maximum_PC_to_use) %>%
     FindClusters(resolution = resolution_of_clusters) %>%
     identity()
+  return(sc)
   sc
 }

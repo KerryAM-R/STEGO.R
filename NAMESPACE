@@ -3,6 +3,7 @@
 export(TCR_Expanded)
 export(TCR_Expanded_fun)
 export(automated_sc_filtering)
+export(custom_db_scGATE)
 export(gg_fill_hue)
 export(harmony_batch_correction_1_variableFeatures)
 export(harmony_batch_correction_2_Scaling)
