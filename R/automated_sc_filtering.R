@@ -31,7 +31,6 @@ log_parameters_SeuratQC <- function(log_file, params_to_log = NULL) {
     message <- ifelse(length(unique(names(params_to_log)))==1,gsub("parameters","parameter",message),message)
     message
   }
-  print(message)
   # Write the message to the log file
   writeLines(message, con)
 
@@ -140,9 +139,9 @@ automated_sc_filtering <- function(folder = "1_SeuratQC",
     project_name <- samp_names[i]
     project_name
     project_name2 <- samp_names2[i]
-    print(project_name2)
-    sc_processed <- paste0(output_dir, project_name2, "_md_added",
-                           ".rds")
+
+    sc_processed <- paste0(output_dir, project_name2, "_md_added",".rds")
+
     if (file.exists(sc_processed)) {
       message(sc_processed, " already exists")
       next
@@ -158,10 +157,8 @@ automated_sc_filtering <- function(folder = "1_SeuratQC",
         samp_names
 
         md <- read.csv(paste0(samp_names[i], "_metadata_10x.csv"))
-        print(dim(md))
-        md <- md[!duplicated(md$Cell_Index), ]
 
-        print(dim(md))
+        md <- md[!duplicated(md$Cell_Index), ]
 
         md_gd_name <- paste0(samp_names[i], "-gdTCR_metadata_10x.csv")
 
@@ -174,9 +171,6 @@ automated_sc_filtering <- function(folder = "1_SeuratQC",
           md[duplicated(md2$Cell_Index), ]
 
           md <- md2[!duplicated(md2$Cell_Index), ]
-
-          print(dim(md))
-
         }
 
       } else if (dataset_type == "BD_rap") {
@@ -241,8 +235,7 @@ automated_sc_filtering <- function(folder = "1_SeuratQC",
       else {
         message("Please choose either 10x or BD_rap as well as define hs or mm")
       }
-      print(sc)
-      print(head(sc@meta.data))
+
       if (save_plots) {
         dir.create(paste0("Figures.Tables/QC_Figures/",
                           project_name2))
@@ -370,9 +363,7 @@ automated_sc_filtering <- function(folder = "1_SeuratQC",
       ]
 
       if (limit_to_TCR_GEx) {
-        head(sc)
         sc <- subset(sc, subset = chain_AG == "TRA" | chain_AG == "TRG" | chain_AG == "TRD")
-        print(sc)
       }
       sc_processed <- paste0(output_dir, project_name2,
                              "_md_added", ".rds")

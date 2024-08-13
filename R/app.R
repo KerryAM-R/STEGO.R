@@ -14307,7 +14307,7 @@ runSTEGO <- function(){
           len_name.clone_selected1 <- len_name.clone[len_name.clone$var1 %in% input$name_clonotype_selected,]
           len_name.clone_selected1 <- as.data.frame(len_name.clone_selected1)
           name.clone <- input$name_clonotype_selected
-          print(name.clone)
+          name.clone
 
         }
 
