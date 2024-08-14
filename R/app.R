@@ -2226,6 +2226,8 @@ runSTEGO <- function(){
                 condition = "input.QC_panel == 'TCR'",
 
                 fluidRow(column(12, selectInput("Graph_type_bar", p("Type of graph",class = "name-header_functions"), choices = c("Number_expanded", "Frequency_expanded", "Top_clonotypes")))),
+
+
                 conditionalPanel(
                   condition = "input.Graph_type_bar == 'Top_clonotypes'",
                   fluidRow(
@@ -2708,7 +2710,7 @@ runSTEGO <- function(){
                                       div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
                                       fluidRow(
                                         conditionalPanel(
-                                          condition = "input.Graph_type_bar=='Number_expanded' || input.Graph_type_bar=='Frequency_expanded'",
+                                          condition = "input.Graph_type_bar=='Number_expanded' | input.Graph_type_bar=='Frequency_expanded'",
                                           fluidRow(
                                             column(
                                               3,
@@ -11834,7 +11836,7 @@ runSTEGO <- function(){
         input[[paste("col.clonotype", i, sep = "_")]]
       })
     })
-    clonal_plot <- reactive({
+    clonal_plot_count <- reactive({
       df4 <- TCR_Expanded()
       df4$ID_Column <- df4[, names(df4) %in% input$Samp_col]
       message("Added ID")
@@ -11845,6 +11847,33 @@ runSTEGO <- function(){
       req(df4, input$Samp_col)
 
       ggplot(df4, aes(x = ID_Column, y = frequency, fill = get(input$Graph_type_bar), colour = get(input$Graph_type_bar), label = get(input$Graph_type_bar))) +
+        geom_bar(stat = "identity") +
+        theme_bw() +
+        scale_fill_manual(labels = ~ stringr::str_wrap(.x, width = 50), values = alpha(df.col.1, 1), na.value = input$NA_col_analysis) +
+        scale_color_manual(labels = ~ stringr::str_wrap(.x, width = 50), values = alpha(df.col.1, 1)) +
+        theme(
+          axis.title.y = element_text(colour = "black", family = input$font_type, size = input$title.text.sizer2),
+          axis.text.y = element_text(colour = "black", family = input$font_type, size = input$text_size),
+          axis.text.x = element_text(colour = "black", family = input$font_type, size = input$text_size, angle = 90),
+          axis.title.x = element_blank(),
+          legend.text = element_text(colour = "black", size = input$Legend_size, family = input$font_type),
+          legend.title = element_blank(),
+          legend.position = input$legend_position,
+        )
+    })
+
+    clonal_plot_freq <- reactive({
+      df4 <- TCR_Expanded()
+      df4$ID_Column <- df4[, names(df4) %in% input$Samp_col]
+      message("Added ID")
+      df4 <- df4[df4$ID_Column %in% input$ID_Column_factor, ]
+      df4$ID_Column <- as.character(df4$ID_Column)
+      df4$ID_Column <- factor(df4$ID_Column, levels = input$ID_Column_factor)
+      df.col.1 <- unlist(colors_clonal_plot())
+
+      req(df4, input$Samp_col)
+
+      ggplot(df4, aes(x = ID_Column, y = frequency, fill = Frequency_expanded, colour = Frequency_expanded, label = get(input$Graph_type_bar))) +
         geom_bar(stat = "identity") +
         theme_bw() +
         scale_fill_manual(labels = ~ stringr::str_wrap(.x, width = 50), values = alpha(df.col.1, 1), na.value = input$NA_col_analysis) +
@@ -11981,26 +12010,19 @@ runSTEGO <- function(){
       #   scale_fill_manual(values=alpha(df.col.1, 1)) +
       #   scale_colour_manual(values = "black",guide = "none")
     })
-
+    ############
     output$clonality.bar.graph <- renderPlot({
-      if (input$Graph_type_bar == "Frequency_expanded") {
-        clonal_plot()
-      } else if (input$Graph_type_bar == "Number_expanded") {
-        clonal_plot()
+      if (input$Graph_type_bar == "Number_expanded" ) {
+        plot2 <- clonal_plot_count()
+      } else if (input$Graph_type_bar == "Frequency_expanded") {
+        plot2 <- clonal_plot_freq()
+
       } else {
-        top_clonal_plot()
+        plot2 <- top_clonal_plot()
       }
+      plot2
     })
 
-    output$clonality.bar.graph2 <- renderPlot({
-      if (input$Graph_type_bar == "Frequency_expanded") {
-        clonal_plot()
-      } else if (input$Graph_type_bar == "Number_expanded") {
-        clonal_plot()
-      } else {
-        top_clonal_plot()
-      }
-    })
     # Downloading the bar plot -------
     output$downloadPlot_clonaity.bar.graph <- downloadHandler(
       filename = function() {
@@ -12009,13 +12031,15 @@ runSTEGO <- function(){
       },
       content = function(file) {
         pdf(file, width = input$width_clonality.bar.graph, height = input$height_clonality.bar.graph, onefile = FALSE) # open the pdf device
-        if (input$Graph_type_bar == "Frequency_expanded") {
-          plot(clonal_plot())
-        } else if (input$Graph_type_bar == "Number_expanded") {
-          plot(clonal_plot())
+        if (input$Graph_type_bar == "Number_expanded" ) {
+          plot2 <- clonal_plot_count()
+        } else if (input$Graph_type_bar == "Frequency_expanded") {
+          plot2 <- clonal_plot_freq()
+
         } else {
-          plot(top_clonal_plot())
+          plot2 <- top_clonal_plot()
         }
+        plot(plot2)
         dev.off()
       }, contentType = "application/pdf"
     )
@@ -12031,13 +12055,15 @@ runSTEGO <- function(){
             height = input$height_png_clonality.bar.graph,
             res = input$resolution_PNG_clonality.bar.graph
         )
-        if (input$Graph_type_bar == "Clonality") {
-          plot(clonal_plot())
+        if (input$Graph_type_bar == "Frequency_expanded" ) {
+          plot2 <- clonal_plot_count()
         } else if (input$Graph_type_bar == "Number_expanded") {
-          plot(clonal_plot())
+          plot2 <- clonal_plot_freq()
+
         } else {
-          plot(top_clonal_plot())
+          plot2 <- top_clonal_plot()
         }
+        plot(plot2)
         dev.off()
       }, contentType = "application/png" # MIME type of the image
     )
@@ -12091,8 +12117,6 @@ runSTEGO <- function(){
       UMAP.TCRclonalit()
     })
 
-
-
     cols_UMAP_clonal_plot2 <- reactive({
       UMAP.wt.clonality <- UMAP.TCRclonalit()
       UMAP.wt.clonality <- UMAP.wt.clonality[order(UMAP.wt.clonality$TYPE.clonality), ]
@@ -12142,7 +12166,6 @@ runSTEGO <- function(){
         })
       } # one colour
     })
-
 
     output$cols_UMAP_clonal_plot <- renderUI({
       cols_UMAP_clonal_plot2()
@@ -14307,7 +14330,7 @@ runSTEGO <- function(){
           len_name.clone_selected1 <- len_name.clone[len_name.clone$var1 %in% input$name_clonotype_selected,]
           len_name.clone_selected1 <- as.data.frame(len_name.clone_selected1)
           name.clone <- input$name_clonotype_selected
-          name.clone
+          print(name.clone)
 
         }
 
