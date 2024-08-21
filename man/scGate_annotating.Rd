@@ -17,6 +17,7 @@ scGate_annotating(
   cycling = FALSE,
   Th1_cytokines = FALSE,
   TCRseq = FALSE,
+  GeneSet1 = FALSE,
   reductionType = "harmony",
   chunk_size = 50000,
   output_dir = "output",
@@ -48,6 +49,8 @@ scGate_annotating(
 \item{Th1_cytokines}{Logical; include T cell-based stress models of IFNG and TNF.}
 
 \item{TCRseq}{Logical; uses the metadata from TCR-seq to call MAIT, iNKT, potential CD1-restricted, gd T cells, and ab T cells.}
+
+\item{GeneSet1}{logical; add in one custom GeneSet1 from project director custom_db/GeneSet1 folder}
 
 \item{reductionType}{Character; type of dimensional reduction to use. Default is "harmony".}
 

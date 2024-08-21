@@ -2671,11 +2671,18 @@ runSTEGO <- function(){
                                           condition = "input.is_a_time_series",
                                           selectizeInput("Group_for_line_graph",p("Display multi-sample clones for: ",class = "name-header_functions"),""))),
                                       ),
+                                      fluidRow(
+
+
+                                        column(2,checkboxInput("Require_TCR_filter","Require TCR filter?",value = F)),
+                                        column(10,conditionalPanel(condition = "input.Require_TCR_filter",
+                                                                   selectInput("Secondary_Filter_if_needed","Additional filter", choices ="", multiple = T, width = "1000px"))),
+                                      ),
 
                                       tabsetPanel(
                                         tabPanel("Table",
-                                                 downloadButton("download_line_graph_table", "Download table"),
                                                  div(DT::DTOutput("Line_graph_table")),
+                                                 downloadButton("download_line_graph_table", "Download table"),
                                                  # div(DT::DTOutput("Line_graph_table2")),
                                         ),
                                         tabPanel("Line graph",
@@ -14330,7 +14337,7 @@ runSTEGO <- function(){
           len_name.clone_selected1 <- len_name.clone[len_name.clone$var1 %in% input$name_clonotype_selected,]
           len_name.clone_selected1 <- as.data.frame(len_name.clone_selected1)
           name.clone <- input$name_clonotype_selected
-          print(name.clone)
+
 
         }
 
@@ -14366,7 +14373,7 @@ runSTEGO <- function(){
 
           name.clone <- input$name_clonotype_selected
 
-          print(len_name.clone)
+          len_name.clone
 
         }
 
@@ -14375,11 +14382,7 @@ runSTEGO <- function(){
 
       } else if (input$comparison_abundance == "Clones") {
         name.clone <- input$Selected_clonotype
-        print(name.clone)
         name.clone2 <- input$Selected_clonotype2
-        print(name.clone2)
-        print(length(name.clone))
-        print(length(name.clone2))
 
         if(length(name.clone) == 1 && length(name.clone2) ==1){
 
@@ -14429,14 +14432,11 @@ runSTEGO <- function(){
 
           name.clone2 <- input$name_clonotype_selected2
 
-          print(len_name.clone)
-
         } else {
           message("Multiple clones in group 1 and 2")
           sc@meta.data$Gene_select <- ifelse(sc@meta.data$Vgene %in% name.clone, input$name_clonotype_selected,
                                              ifelse(sc@meta.data$Vgene %in%  name.clone2, input$name_clonotype_selected2, "BG"))
 
-          print(unique(sc@meta.data$Gene_select))
           len_name.clone <- as.data.frame(sc@meta.data$Gene_select)
           len_name.clone <- as.data.frame(table(len_name.clone))
           names(len_name.clone) <- c("var1","freq")
@@ -14456,17 +14456,14 @@ runSTEGO <- function(){
       sc@meta.data
       # unique(sc@meta.data$Gene_select)
       Idents(object = sc) <- sc@meta.data$Gene_select
-      print(unique(sc@meta.data$Gene_select))
       # as.data.frame(Idents(object = sc))
       min.pct.expression <- input$min_point_ # standard setting: 0.25
       min.logfc <- input$LogFC_ # 0.25 is standard
       p.val.cutoff <- input$pval_top # (1/10^3) is standard, use (1/10^0) to ignore
 
-      print(sum(len_name.clone_selected1$freq))
-
       if (input$comparison_abundance == "Background" && sum(len_name.clone_selected1$freq) > 2) {
         if(input$logFC_pval_findmarker) {
-          print(name.clone)
+          message(name.clone)
           markers.fm.list <- FindMarkers(sc, ident.1 = name.clone, min.pct = min.pct.expression, logfc.threshold = min.logfc, only.pos = TRUE)
           markers.fm.list
         } else {
@@ -18457,6 +18454,7 @@ runSTEGO <- function(){
         )
       )
 
+      req(input$Samp_col, input$V_gene_sc, input$Graph_type_bar)
       df <- sc@meta.data
       df <- as.data.frame(df)
       name_obj <- input$Samp_col
@@ -18490,7 +18488,21 @@ runSTEGO <- function(){
       mat <- as.data.frame(mat)
       mat$TotalSamps <- Count_data$V1
       mat$CloneTotal <- sum_data$V1
-      mat
+
+      if(input$Graph_type_bar == "Number_expanded") {
+        mat
+      } else if (input$Graph_type_bar == "Frequency_expanded") {
+        len <- length(colnames( mat))
+        len <- len - 2
+        sums_col <- colSums(mat)
+        for (i in 1:len) {
+          mat[,i] <- mat[,i]/sums_col[i]
+        }
+
+        mat
+      }
+
+
     })
 
     output$Upset_plot_overlap_Tb <- DT::renderDT(escape = FALSE, filter = list(position = "top", clear = FALSE), options = list(autoWidth = FALSE, lengthMenu = c(2, 5, 10, 20, 50, 100), pageLength = 5, scrollX = TRUE), {
@@ -18522,13 +18534,19 @@ runSTEGO <- function(){
       clones <- Upset_plot_overlap_table()
       req(clones)
 
+      # if(input$Graph_type_bar == "Number_expanded") {
       if (input$comparison_operator == "==") {
         original_data <- subset(clones, TotalSamps == input$cutoff_upset)
       } else if (input$comparison_operator == ">=") {
         original_data <- subset(clones, TotalSamps >= input$cutoff_upset)
       }
-
-      original_data[1:6,1:6]
+      # } else if (input$Graph_type_bar == "Frequency_expanded") {
+      #   if (input$comparison_operator == "==") {
+      #     original_data <- subset(clones, TotalSamps == input$cutoff_upset_freq)
+      #   } else if (input$comparison_operator == ">=") {
+      #     original_data <- subset(clones, TotalSamps >= input$cutoff_upset_freq)
+      #   }
+      # }
 
       # Get the group names from the column names
       group_names <- unique(gsub(input$separator_input,"", colnames(original_data)))
@@ -18562,7 +18580,7 @@ runSTEGO <- function(){
 
           # Check if group_data is empty or not a data frame
           if (!is.data.frame(group_data) || nrow(group_data) == 0) {
-            cat("Group data for", group_names[i], "is empty or not a data frame. Skipping.\n")
+            message(paste0("Group data for ", group_names[i], " is empty or not a data frame. Skipping.\n"))
             next  # Skip to the next iteration if group_data is empty or not a data frame
           }
 
@@ -18592,7 +18610,10 @@ runSTEGO <- function(){
       } else {
         group_data <- original_data[,!names(original_data) %in% c("background", "TotalSamps", "CloneTotal")]
         group_data$CloneTotal <- rowSums(group_data)
+
         group_data <- subset(group_data,group_data$CloneTotal >= input$Total_count_Cutoff)
+
+
         group_data <- group_data[order(-group_data$CloneTotal), ]
         top_5_group <- group_data %>%
           slice_max(CloneTotal, n = input$max_number_lines_to)
@@ -18631,14 +18652,69 @@ runSTEGO <- function(){
     output$Line_graph_table <- DT::renderDT(escape = FALSE, filter = list(position = "top", clear = FALSE), options = list(autoWidth = FALSE, lengthMenu = c(1, 2, 5, 10, 20, 50, 100), pageLength = 20, scrollX = TRUE), {
 
       list.df <- select_top_five()
-      message("for line graph")
 
       if(input$is_a_time_series) {
         df <- as.data.frame(list.df[[input$Group_for_line_graph]])
-        df } else {
+        df
 
-          select_top_five()
+        if(input$Require_TCR_filter) {
+          df$clones <- rownames(df)
+          df <- df[df$clones %in% input$Secondary_Filter_if_needed,]
+          df <- df[,!names(df) %in% "clones"]
         }
+
+      } else {
+
+        df <-  select_top_five()
+      }
+
+      df
+    })
+
+    # observeEvent(input$require_TCR_filter,{
+    observe({
+
+      sc <- UMAP_metadata_with_labs()
+      validate(
+        need(
+          nrow(sc) > 0,
+          "upload file"
+        )
+      )
+      clones <- Upset_plot_overlap_table()
+      req(clones)
+
+      list.df <- select_top_five()
+
+      req(list.df)
+      print(head(list.df))
+      message("Observe event is working")
+
+      if(input$is_a_time_series) {
+
+        req(input$Group_for_line_graph)
+
+        df <- as.data.frame(list.df[[input$Group_for_line_graph]])
+
+        df$clones <- rownames(df)
+
+      } else {
+
+        df <- select_top_five()
+        df$clones <- rownames(df)
+      }
+      print(head(df))
+      req(df)
+
+      updateSelectInput(
+        session,
+        "Secondary_Filter_if_needed",
+        choices = df$clones,
+        selected = df$clones
+
+      )
+
+
     })
 
 
@@ -18654,13 +18730,22 @@ runSTEGO <- function(){
 
         if(input$is_a_time_series) {
           df <- as.data.frame(list.df[[input$Group_for_line_graph]])
-          df } else {
+          df
 
-            df <-  select_top_five()
+          if(input$Require_TCR_filter) {
+            df$clones <- rownames(df)
+            df <- df[df$clones %in% input$Secondary_Filter_if_needed,]
+            df <- df[,!names(df) %in% "clones"]
           }
 
+
+        } else {
+
+          df <-  select_top_five()
+        }
+
         df <- as.data.frame(df)
-        write.csv(df, file, row.names = F)
+        write.csv(df, file, row.names = T)
       }
     )
 
@@ -18676,8 +18761,16 @@ runSTEGO <- function(){
       }
       # Find the maximum count value across all datasets
       max_count <- max(sapply(top_5_data_list, function(df) max(df)))
+
+
+
       # Round the maximum count value to the nearest 5 and then add 5
-      max_count <- ceiling(max_count / 5) * 5
+      if(input$Graph_type_bar == "Number_expanded") {
+        max_count <- ceiling(max_count / 5) * 5
+      } else if (input$Graph_type_bar == "Frequency_expanded"){
+        max_count <- round(max_count, digits = 2) + 0.01
+
+      }
 
       if(input$is_a_time_series) {
         # Create an empty list to store plots
@@ -18685,6 +18778,13 @@ runSTEGO <- function(){
         year <- input$Group_for_line_graph
         # Transpose the data frame and convert to data.frame
         top_5_data <- top_5_data_list[[year]]
+
+        if(input$Require_TCR_filter) {
+          top_5_data$clones <- rownames(top_5_data)
+          top_5_data <- top_5_data[top_5_data$clones %in% input$Secondary_Filter_if_needed,]
+          top_5_data <- top_5_data[,!names(top_5_data) %in% "clones"]
+        }
+
         top_5_transposed <- as.data.frame(t(top_5_data), stringsAsFactors = FALSE)
 
         # Add Year column
@@ -18735,13 +18835,24 @@ runSTEGO <- function(){
         # Remove empty data frames from top_5_data_list
         top_5_data_list <- top_5_data_list[sapply(top_5_data_list, function(x) nrow(x) > 0)]
 
+
+
+
+
       } else {
         top_5_data_list <- select_top_five()
       }
       # Find the maximum count value across all datasets
       max_count <- max(sapply(top_5_data_list, function(df) max(df)))
+
       # Round the maximum count value to the nearest 5 and then add 5
-      max_count <- ceiling(max_count / 5) * 5
+      if(input$Graph_type_bar == "Number_expanded") {
+        max_count <- ceiling(max_count / 5) * 5
+
+      } else if (input$Graph_type_bar == "Frequency_expanded"){
+        max_count <- round(max_count, digits = 2) + 0.01
+
+      }
 
       if(input$is_a_time_series) {
         # Create an empty list to store plots
@@ -18751,6 +18862,14 @@ runSTEGO <- function(){
 
         # Transpose the data frame and convert to data.frame
         top_5_data <- top_5_data_list[[year]]
+
+        if(input$Require_TCR_filter) {
+          message("Filtering TCR")
+          top_5_data$clones <- rownames(top_5_data)
+          top_5_data <- top_5_data[top_5_data$clones %in% input$Secondary_Filter_if_needed,]
+          top_5_data <- top_5_data[,!names(top_5_data) %in% "clones"]
+        }
+
         top_5_transposed <- as.data.frame(t(top_5_data), stringsAsFactors = FALSE)
 
         # Add Year column
@@ -19324,7 +19443,6 @@ runSTEGO <- function(){
       md <- sc@meta.data
       md <- merge(md, selected_scale(), by = "Cell_Index")
 
-      print(summary(selected_scale()))
       md$scale <- as.numeric(md[, names(md) %in% input$Var_to_col_marker])
 
       md <- subset(md, md$UMAP_1 > input$Filter_lower_UMAP1_marker)
@@ -19552,7 +19670,7 @@ runSTEGO <- function(){
         )
       )
 
-      req(input$Var_to_col_marker,)
+      req(input$Var_to_col_marker)
 
       md <- sc@meta.data
       md <- as.data.frame(merge(md, selected_scale(), by = "Cell_Index"))
@@ -19576,7 +19694,6 @@ runSTEGO <- function(){
           "Upload File"
         )
       )
-      print(summary(umap.meta$log2.count))
 
       umap.meta_marker_pos <- subset(umap.meta, umap.meta$log2.count > input$cutoff_marker_gt)
       umap.meta_marker_pos$cloneCount <- 1
@@ -24301,6 +24418,11 @@ runSTEGO <- function(){
 
       # Wrap the list of selectizeInput and checkbox widgets in a tagList
       tagList(filter_inputs)
+    })
+
+    output$filter_input <- renderUI({
+
+
     })
 
     # Update the server logic to dynamically generate selectizeInput based on checkbox value
