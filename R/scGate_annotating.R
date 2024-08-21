@@ -104,6 +104,7 @@ log_parameters_scGate <- function(log_file = log_file,
 #' @param senescence Logical; include T cell-based stress models of senescence.
 #' @param Th1_cytokines Logical; include T cell-based stress models of IFNG and TNF.
 #' @param cytotoxic logical; cytotoxic markers GZMB, GNLY and PFR1 associated combinations of expression.
+#' @param GeneSet1 logical; add in one custom GeneSet1 from project director custom_db/GeneSet1 folder
 #' @param cycling Logical; include models using TOP2A and MKI67.
 #' @param TCRseq Logical; uses the metadata from TCR-seq to call MAIT, iNKT, potential CD1-restricted, gd T cells, and ab T cells.
 #' @param reductionType Character; type of dimensional reduction to use. Default is "harmony".
@@ -131,6 +132,7 @@ scGate_annotating <- function (
                                cycling = FALSE,
                                Th1_cytokines = FALSE,
                                TCRseq = FALSE,
+                               GeneSet1 = FALSE,
                                reductionType = "harmony",
                                chunk_size = 50000,
                                output_dir = "output",
@@ -163,6 +165,7 @@ scGate_annotating <- function (
     Th1_cytokines = FALSE,
     TCRseq = FALSE
   )
+
   model <- list(
     TcellFunction = TcellFunction,
     SimpleFunction = SimpleFunction,
@@ -173,61 +176,9 @@ scGate_annotating <- function (
     Th1_cytokines = Th1_cytokines,
     TCRseq = TCRseq
   )
-  generate_and_display_message(unlist(model))
+
 
   models_to_log <- list()
-  for (param_name in names(model)) {
-    if (!identical(model[[param_name]], default_models[[param_name]])) {
-      models_to_log[[param_name]] <- model[[param_name]]
-    }
-  }
-  models_to_log
-
-  default_params <- list(
-    threshold = 0.25,
-    reductionType = "harmony",
-    chunk_size = 50000
-  )
-
-  current_params <- list(
-    threshold = threshold,
-    reductionType = reductionType,
-    chunk_size = chunk_size
-  )
-
-  params_to_log <- list()
-  for (param_name in names(current_params)) {
-      if (!identical(current_params[[param_name]], default_params[[param_name]])) {
-        params_to_log[[param_name]] <- current_params[[param_name]]
-      }
-    }
-  params_to_log
-
-  log_file <- "log_file.txt"
-  params_to_log
-
-  if (length(params_to_log) > 0 && length(models_to_log)>0) {
-    log_parameters_scGate(log_file, models_to_log,params_to_log)
-  } else {
-    log_parameters_scGate(log_file,models_to_log)
-  }
-
-
-
-
-#### adding in the models -----
-  sc <- file
-  len.obj <- dim(sc@meta.data)[1]
-  threshold_scGate <- threshold
-  output_dir = output_dir
-  if (!dir.exists(output_dir)) {
-    dir.create(output_dir)
-  }
-
-  # Function to save table to a text file
-  save_table <- function(table_data, output_file) {
-    write.table(table_data, file = output_file, sep = "\t", row.names = TRUE, col.names = TRUE)
-  }
 
   # Define function to apply scGate to a chunk of data
   apply_scGate_to_chunk <- function(sc_chunk, models_list, threshold_scGate, reductionType) {
@@ -264,6 +215,60 @@ scGate_annotating <- function (
 
     DimPlot(sc) | FeaturePlot(sc, features = signature_for_testing)
   } else {
+
+
+    for (param_name in names(model)) {
+      if (!identical(model[[param_name]], default_models[[param_name]])) {
+        models_to_log[[param_name]] <- model[[param_name]]
+      }
+    }
+    models_to_log
+
+    default_params <- list(
+      threshold = 0.25,
+      reductionType = "harmony",
+      chunk_size = 50000
+    )
+
+    current_params <- list(
+      threshold = threshold,
+      reductionType = reductionType,
+      chunk_size = chunk_size
+    )
+
+    params_to_log <- list()
+
+    for (param_name in names(current_params)) {
+      if (!identical(current_params[[param_name]], default_params[[param_name]])) {
+        params_to_log[[param_name]] <- current_params[[param_name]]
+      }
+    }
+    params_to_log
+
+    log_file <- "log_file.txt"
+    params_to_log
+
+    if (length(params_to_log) > 0 && length(models_to_log)>0) {
+      log_parameters_scGate(log_file, models_to_log,params_to_log)
+    } else {
+      log_parameters_scGate(log_file,models_to_log)
+    }
+
+    #### adding in the models -----
+    sc <- file
+    len.obj <- dim(sc@meta.data)[1]
+    threshold_scGate <- threshold
+    output_dir = output_dir
+    if (!dir.exists(output_dir)) {
+      dir.create(output_dir)
+    }
+
+    # Function to save table to a text file
+    save_table <- function(table_data, output_file) {
+      write.table(table_data, file = output_file, sep = "\t", row.names = TRUE, col.names = TRUE)
+    }
+
+    generate_and_display_message(unlist(model))
     # Store UMAP and scaling
     umap <- Embeddings(sc, reduction = "umap")
     harmony <- Embeddings(sc, reduction = "harmony")
