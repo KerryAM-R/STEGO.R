@@ -2031,7 +2031,7 @@ runSTEGO <- function(){
           sidebarPanel(
 
             id = "tPanel4", style = "overflow-y:scroll; max-height: 1000px; position:relative;", width = 3,
-            #####
+            ##### uploading the files
 
             conditionalPanel(
               condition = "input.check_up_files== 'up'",
@@ -2108,6 +2108,16 @@ runSTEGO <- function(){
                       icon("circle-question", lib = "font-awesome")),
                   div(class = "hint-text", "The user will upload the .tsv file created from the TCRex website. This is usually has tcrex_unique-string.tsv"),
               ),
+
+              div(class = "select-input-container",
+                  fileInput("upload_IMW_file", p("Upload IMW (.tsv)",class = "name-header_functions"),
+                            accept = c("tsv", ".tsv"), width = "600px"
+                  ),
+                  div(class = "hint-icon",
+                      icon("circle-question", lib = "font-awesome")),
+                  div(class = "hint-text", "The user will upload the .tsv file created from the IMW program."),
+              ),
+
 
               div(class = "select-input-container",
                   selectInput("datasource", p("Data source",class = "name-header_functions"),
@@ -2286,70 +2296,94 @@ runSTEGO <- function(){
                 conditionalPanel(
                   condition = "input.check_up_files == 'Prior' || input.check_up_files == 'TCR_and_GEX_tb' ",
                   conditionalPanel(
+
                     condition = "input.Panel_TCRUMAP == 'Expanded'",
+                    bsCollapse(
+                      id = "collapse_expanded", open = NULL, multiple = TRUE,
+                      bsCollapsePanel("Expanded analysis",style = "primary custom-panel",
+                                      fluidRow(
+                                        column(12, div(class = "select-input-container",
+                                                       numericInput("cutoff.expanded", p("Percent of repertiore (freq)",class = "name-header_functions"), value = 0.5, step = 0.01, min = 0, max = 0.99),
+                                                       div(class = "hint-icon",
+                                                           icon("circle-question", lib = "font-awesome")),
+                                                       div(class = "hint-text2", "This is to calculate the number of clone cut-off that is deemed to be expanded. e.g., >0.5 == 50% == D50 or more of the repertoire that is used to calculate the count cut-off for what is deemed to be expanded. T"),
+                                        )),
+                                        column(12,
+                                               uiOutput("cut.off_expanded2"),
 
-                    bsCollapsePanel("Expanded analysis",style = "primary custom-panel",
-                                    fluidRow(
-                                      column(12, div(class = "select-input-container",
-                                                     numericInput("cutoff.expanded", p("Percent of repertiore (freq)",class = "name-header_functions"), value = 0.5, step = 0.01, min = 0, max = 0.99),
-                                                     div(class = "hint-icon",
-                                                         icon("circle-question", lib = "font-awesome")),
-                                                     div(class = "hint-text2", "This is to calculate the number of clone cut-off that is deemed to be expanded. e.g., >0.5 == 50% == D50 or more of the repertoire that is used to calculate the count cut-off for what is deemed to be expanded. T"),
-                                      )),
-                                      column(12,
-                                             uiOutput("cut.off_expanded2"),
+                                        )
+                                      ),
 
+                                      # p("Expansion Dot plot",class = "name-header4"),
+                                      fluidRow(
+                                        column(6, uiOutput("classification_to_add2")),
+                                      ),
+                                      fluidRow(
+                                        column(12, selectizeInput("selected_Indiv_Ex_1", p("Samp 1", class = "name-header_functions2"),choices = "", multiple = T)),
+                                        column(12, selectizeInput("selected_Indiv_Ex_2", p("Samp 2", class = "name-header_functions2"),choices = "", multiple = T)),
+                                        column(3,),
+                                        column(6,  actionButton("caluclate_Exp","Calc Expansion Stats")),
                                       )
-                                    ),
-
-                                    # p("Expansion Dot plot",class = "name-header4"),
-                                    fluidRow(
-                                      column(6, uiOutput("classification_to_add2")),
-                                    ),
-                                    fluidRow(
-                                      column(12, selectizeInput("selected_Indiv_Ex_1", p("Samp 1", class = "name-header_functions2"),choices = "", multiple = T)),
-                                      column(12, selectizeInput("selected_Indiv_Ex_2", p("Samp 2", class = "name-header_functions2"),choices = "", multiple = T)),
-                                      column(3,),
-                                      column(6,  actionButton("caluclate_Exp","Calc Expansion Stats")),
-                                    )
-                    )
+                      )
+                    ),
                   ),
                 ),
                 # Clustering specific side panel  --------
                 conditionalPanel(
                   condition = "input.PriorTBMods == 'PriorClustTB' ||input.Panel_TCRUMAP=='ClusTCR2'",
+                  bsCollapse(
+                    id = "collapse_clustering", open = NULL, multiple = TRUE,
+                    bsCollapsePanel("Clustering analysis",style = "primary custom-panel",
+                                    selectInput("chain_TCR", p("Chain to display",class = "name-header_functions2"), choices = c("TRA","TRG","TRB","TRD", "IgH", "IgKL")),
 
-                  bsCollapsePanel("Clustering analysis",style = "primary custom-panel",
-                                  selectInput("chain_TCR", p("Chain to display",class = "name-header_functions2"), choices = c("TRA","TRG","TRB","TRD", "IgH", "IgKL")),
+                                    selectizeInput("Clusters_to_dis_PIE", p("Clusters to display",class = "name-header_functions2"), choices = "", multiple = F),
+                                    fluidRow(
+                                      column(6,  actionButton("caluclate_clust","Calc Clustering Stats")),
+                                    )
 
-                                  selectizeInput("Clusters_to_dis_PIE", p("Clusters to display",class = "name-header_functions2"), choices = "", multiple = F),
-                                  fluidRow(
-                                    column(6,  actionButton("caluclate_clust","Calc Clustering Stats")),
-                                  )
-
+                    )
                   )
                 ),
 
                 # epitope -------
                 conditionalPanel(
                   condition = "input.Panel_TCRUMAP=='Epitope'",
+                  bsCollapse(
+                    id = "collapse_EpiTCRex", open = NULL, multiple = TRUE,
+                    bsCollapsePanel("Epitope analysis",style = "primary custom-panel",
+                                    fluidRow(
+                                      column(6, uiOutput("classification_to_add_epitope")),
+                                      column(6, uiOutput("classification_to_add_epitope2"))
+                                    ),
+                                    fluidRow(
+                                      column(6, actionButton("Update_epi", "Add in Epitope list")),
+                                      column(6, selectInput("Epi_of_interest", p("Epitope of interest",class = "name-header_functions"), "")),
 
-                  bsCollapsePanel("Epitope analysis",style = "primary custom-panel",
-                                  fluidRow(
-                                    column(6, uiOutput("classification_to_add_epitope")),
-                                    column(6, uiOutput("classification_to_add_epitope2"))
-                                  ),
-                                  fluidRow(
-                                    column(6, actionButton("Update_epi", "Add in Epitope list")),
-                                    column(6, selectInput("Epi_of_interest", p("Epitope of interest",class = "name-header_functions"), "")),
+                                    ),
+                                    fluidRow(
+                                      column(3,""),
+                                      column(9,  actionButton("caluclate_Epi","Calc Epitope Stats")),
+                                    )
+                    )
+                  )
+                ),
 
-                                  ),
-                                  fluidRow(
-                                    column(3,""),
-                                    column(9,  actionButton("caluclate_Epi","Calc Epitope Stats")),
-                                  )
+                conditionalPanel(
+                  condition = "input.Panel_TCRUMAP=='Epitope_IMW'",
+                  bsCollapse(
+                    id = "collapse_EpiIMW", open = NULL, multiple = TRUE,
+                    bsCollapsePanel("Epitope analysis",style = "primary custom-panel",
+                                    selectInput("imw_column_for_epitope","IMW column:",choices = ""),
+                                    selectInput("epi_imw_of_interest","Epitope/species to examine", choices = ""),
+                                    fluidRow(
+                                      column(3,""),
+                                      column(9,  actionButton("caluclate_Epi_imw","Calc Epitope Stats")),
+                                    )
+                    )
                   )
                 )
+
+
               ),
 
               p("Parameters for all sections",class = "name-header4"),
@@ -2510,7 +2544,8 @@ runSTEGO <- function(){
                        fluidRow(
                          column(12, div(DT::DTOutput("meta.data_check_upload",height = "200px"))),
                          column(12, div(DT::DTOutput("Tb_ClusTCR_test",height = "200px"))),
-                         column(12, div(DT::DTOutput("Tb_tcrex_test",height = "200px")))
+                         column(12, div(DT::DTOutput("Tb_tcrex_test",height = "200px"))),
+                         column(12, div(DT::DTOutput("Tb_IMW_test",height = "200px")))
                        ),
               ),
 
@@ -2678,7 +2713,6 @@ runSTEGO <- function(){
                                         column(10,conditionalPanel(condition = "input.Require_TCR_filter",
                                                                    selectInput("Secondary_Filter_if_needed","Additional filter", choices ="", multiple = T, width = "1000px"))),
                                       ),
-
                                       tabsetPanel(
                                         tabPanel("Table",
                                                  div(DT::DTOutput("Line_graph_table")),
@@ -3347,9 +3381,6 @@ runSTEGO <- function(){
                                                column(1, style = "margin-top: 20px;", downloadButton("downloadPlotPNG_all_expression_dotplot_epi", "PNG"))
                                              ),
                                     ),
-
-
-
                                     tabPanel("Over-representation",
                                              value = "EpiPan_OvRep",
                                              p("Download the stats filtered table here, and the transcripts used for the background."),
@@ -3367,6 +3398,76 @@ runSTEGO <- function(){
                                     )
                                   ),
                          ),
+                         # eptope analysis IMW ------
+                         tabPanel("Epitope (IMW)", value = "Epitope_IMW",
+                                  tabsetPanel(id = "Tabs_for_IMW",
+                                              tabPanel("Summary Table",value = "epit_imw_sumtab",
+                                                       div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
+                                                       div(DT::DTOutput("Epitope_imw_dt")),
+                                                       downloadButton("downloaddf_Pie_Epitope_dt", "Download table")),
+                                              # tabPanel("Heatmap"),
+                                              tabPanel("Plots",
+                                                       plotOutput("render_bar_plot_imw_epi", height = "400px"),
+
+                                              ),
+                                              tabPanel("Stats",
+                                                       div(DT::DTOutput("Epi_imw_of_interest_DF")),
+                                                       div(DT::DTOutput("compare.stat_Epi_imw_DT")),
+
+                                                       fluidRow(
+                                                         column(4,downloadButton("downloadtb_epi_imw_summary_table", "Download Epi summary") ),
+                                                         column(3, downloadButton("downloadtb_compare.stat_Epi_imw", "Download Epi Stats"))
+                                                       ),
+
+                                              ),
+                                              tabPanel("dotplot",
+                                                       plotOutput("all_expression_dotplot_epi_imw", height = "400px"),
+                                                       fluidRow(
+                                                         column(2, numericInput("width_all_expression_dotplot_epi_imw",p("Width (PDF)",class = "name-header_functions"), value = 20)),
+                                                         column(2, numericInput("height_all_expression_dotplot_epi_imw",p("Height (PDF)",class = "name-header_functions"), value = 4)),
+                                                         column(1, style = "margin-top: 20px;", downloadButton("downloadPlot_all_expression_dotplot_epi_imw", "PDF")),
+                                                         column(2, numericInput("width_png_all_expression_dotplot_epi_imw",p("Width (PNG)",class = "name-header_functions"), value = 2400)),
+                                                         column(2, numericInput("height_png_all_expression_dotplot_epi_imw",p("Height (PNG)",class = "name-header_functions"), value = 700)),
+                                                         column(2, numericInput("resolution_PNG_all_expression_dotplot_epi_imw",p("Resolution (PNG)",class = "name-header_functions"), value = 144)),
+                                                         column(1, style = "margin-top: 20px;", downloadButton("downloadPlotPNG_all_expression_dotplot_epi_imw", "PNG"))
+                                                       ),
+                                              ),
+                                              tabPanel("Violin",
+                                                       selectInput("imw_epit_stats_genes","Genes for violin", choice = ""),
+                                                       plotOutput("Violin_epi_imw_sig", height = "600px"),
+
+                                                       fluidRow(
+                                                         column(2, numericInput("width_all_expression_violin_epi_imw",p("Width (PDF)",class = "name-header_functions"), value = 20)),
+                                                         column(2, numericInput("height_all_expression_violin_epi_imw",p("Height (PDF)",class = "name-header_functions"), value = 4)),
+                                                         column(1, style = "margin-top: 20px;", downloadButton("downloadPlot_all_expression_violin_epi_imw", "PDF")),
+                                                         column(2, numericInput("width_png_all_expression_violin_epi_imw",p("Width (PNG)",class = "name-header_functions"), value = 2400)),
+                                                         column(2, numericInput("height_png_all_expression_violin_epi_imw",p("Height (PNG)",class = "name-header_functions"), value = 700)),
+                                                         column(2, numericInput("resolution_PNG_all_expression_violin_epi_imw",p("Resolution (PNG)",class = "name-header_functions"), value = 144)),
+                                                         column(1, style = "margin-top: 20px;", downloadButton("downloadPlotPNG_all_expression_violin_epi_imw", "PNG"))
+                                                       ),
+
+                                              ),
+                                              tabPanel("Over-representation",
+                                                       value = "EpiIMW_OvRep",
+                                                       p("Download the stats filtered table here, and the transcripts used for the background."),
+                                                       tags$br(), # Add a line break
+                                                       p("The p-value filter is located in the side-bar under FindMarker section"),
+                                                       tags$br(), # Add a line break
+                                                       p("Also, if you wish to use the expressed transcripts to for the enrichment, the table can be downloaded from FindMarker section."),
+                                                       tags$br(), # Add a line break
+                                                       p("Use either the below sites or of your choosing to identifed the enrichment."),
+                                                       tags$br(), # Add a line break
+                                                       p("This ",tags$a(href = "https://geneontology.org/", target = "_blank", "Gene Ontology")," website, can perform gene ontology with the biological pathways (BP), molecular pathways (MP) or cellular components (CC)"),
+
+                                                       p("the following site",tags$a(href = "https://biit.cs.ut.ee/gprofiler/gost", target = "_blank", "gProfiler")," has the Gene Ontology (BP,MP and CC), biological pathways (KEGG, REACTOME, WP), regulatory motifs in DNA, protein databases and Human phenotype ontology database searches."),
+
+                                              )
+
+                                  )
+
+                         )
+
+
                          ## add here
                        ),
               ),
@@ -3782,6 +3883,24 @@ runSTEGO <- function(){
                  )
 
         ),
+        #### IMW extraction ------
+        tabPanel("ImmuneWatch", value = "IMW",
+                 sidebarLayout(
+                   sidebarPanel(
+                     fileInput("file1_MD_for_IMW",
+                               p("Upload .csv file",class = "name-header_functions"),
+                               multiple = F,
+                               accept = c(".csv", "csv","csv.gz",".gz")
+                     ),
+                     textInput("file_names_IMW",p("Name for IMW file ",class = "name-header_functions"), "", width = "600px"),
+
+                     div(downloadButton("downloadtb_Reformatting_data_sc_IMW", "Download IMW (.tsv)"),style = "padding-top: 25px;"),
+                   ),
+                   mainPanel(
+                     div(DT::DTOutput("IMW_reformated_tb")),
+                   )
+                 )
+        )
 
         #####
 
@@ -3826,6 +3945,52 @@ runSTEGO <- function(){
         # } else
       }
     })
+
+
+
+
+    observeEvent(input$Panel_TCRUMAP, {
+      if (input$Panel_TCRUMAP == "Expanded") {
+        runjs("$('#collapse_expanded .panel-collapse').collapse('show');")
+      } else {
+        # if (input$clonal_abudance_tabs != "TopHeat" || input$ClusTCR2_panel_tabs != "ClustHeat") {
+        runjs("$('#collapse_expanded .panel-collapse').collapse('hide');")
+        # } else
+      }
+    })
+
+    observeEvent(input$Panel_TCRUMAP, {
+      if (input$Panel_TCRUMAP == "ClusTCR2") {
+        runjs("$('#collapse_clustering .panel-collapse').collapse('show');")
+      } else {
+        # if (input$clonal_abudance_tabs != "TopHeat" || input$ClusTCR2_panel_tabs != "ClustHeat") {
+        runjs("$('#collapse_clustering .panel-collapse').collapse('hide');")
+        # } else
+      }
+    })
+
+    observeEvent(input$Panel_TCRUMAP, {
+      if (input$Panel_TCRUMAP == "Epitope") {
+        runjs("$('#collapse_EpiTCRex .panel-collapse').collapse('show');")
+      } else {
+        # if (input$clonal_abudance_tabs != "TopHeat" || input$ClusTCR2_panel_tabs != "ClustHeat") {
+        runjs("$('#collapse_EpiTCRex .panel-collapse').collapse('hide');")
+        # } else
+      }
+    })
+
+    observeEvent(input$Panel_TCRUMAP, {
+      if (input$Panel_TCRUMAP == "Epitope_IMW") {
+        runjs("$('#collapse_EpiIMW .panel-collapse').collapse('show');")
+      } else {
+        # if (input$clonal_abudance_tabs != "TopHeat" || input$ClusTCR2_panel_tabs != "ClustHeat") {
+        runjs("$('#collapse_EpiIMW .panel-collapse').collapse('hide');")
+        # } else
+      }
+    })
+
+
+
 
 
     # collapse_clonal_abundance
@@ -11466,7 +11631,17 @@ runSTEGO <- function(){
       }
     })
 
-    ## uploaded clusTCR table -----
+    # upload IMW file ----
+    data_sc_IMW <- reactive({
+      inupload_IMW_file <- input$upload_IMW_file
+      if (is.null(inupload_IMW_file)) {
+        return(NULL)
+      } else {
+        dataframe <- read.table(inupload_IMW_file$datapath, header = T, sep = "\t")
+      }
+    })
+
+    ## uploaded clusTCR, TCRex, IMW table -----
     output$Tb_ClusTCR_test <- DT::renderDT(escape = FALSE, options = list(autoWidth = FALSE, lengthMenu = c(2, 5, 10, 20, 50, 100), pageLength = 2, scrollX = TRUE), {
       AG_calls <- data_sc_clusTCR_AG()
       BD_calls <- data_sc_clusTCR_BD()
@@ -11495,6 +11670,17 @@ runSTEGO <- function(){
 
     output$Tb_tcrex_test <- DT::renderDT(escape = FALSE, options = list(autoWidth = FALSE, lengthMenu = c(2, 5, 10, 20, 50, 100), pageLength = 2, scrollX = TRUE), {
       calls <- data_sc_TCRex()
+      validate(
+        need(
+          nrow(calls) > 0,
+          "Upload TCRex table"
+        )
+      )
+      calls
+    })
+
+    output$Tb_IMW_test <- DT::renderDT(escape = FALSE, options = list(autoWidth = FALSE, lengthMenu = c(2, 5, 10, 20, 50, 100), pageLength = 2, scrollX = TRUE), {
+      calls <- data_sc_IMW()
       validate(
         need(
           nrow(calls) > 0,
@@ -14562,20 +14748,6 @@ runSTEGO <- function(){
     })
 
 
-    output$test.table_ridge <- DT::renderDT(escape = FALSE, options = list(autoWidth = FALSE, lengthMenu = c(2, 5, 10, 20, 50, 100), pageLength = 10, scrollX = TRUE), {
-      sc <- UMAP_metadata_with_labs()
-
-      validate(
-        need(
-          nrow(sc) > 0,
-          "Upload file for annotation"
-        )
-      )
-
-      df <- as.data.frame(sc@assays$RNA$scale.data)
-      req(df)
-      as.data.frame(df)[1:6]
-    })
 
     # ridge plot ------
     Ridge_chart_alpha_gamma_df <- reactive({
@@ -16193,7 +16365,6 @@ runSTEGO <- function(){
         input[[paste("col.cols_epitope", i, sep = "_")]]
       })
     })
-
     UMAP_Epitope <- reactive({
       sc <- UMAP_metadata_with_labs()
       epi <- data_sc_TCRex()
@@ -16244,8 +16415,6 @@ runSTEGO <- function(){
       }
       df
     })
-
-
     output$UMAP_Epitope_plot <- renderPlot({
       UMAP_Epitope()
     })
@@ -16680,7 +16849,7 @@ runSTEGO <- function(){
       }
     )
 
-    # Epitope dotplot ----
+    # Epitope IMW dotplot ----
     all_expression_plot_epi <- reactive({
       sc <- UMAP_metadata_with_labs()
       epi <- data_sc_TCRex()
@@ -16847,6 +17016,7 @@ runSTEGO <- function(){
         dev.off()
       }, contentType = "application/png" # MIME type of the image
     )
+
     # Over representation analysis for Epitope  -----
     Over_rep_Epi_old <- reactive({
       sc <- UMAP_metadata_with_labs()
@@ -17064,6 +17234,573 @@ runSTEGO <- function(){
         df <- as.data.frame(Pie_Epitope_dt_process())
         write.csv(df, file, row.names = F)
       }
+    )
+
+
+
+
+
+
+
+
+    #### Epitope analysis with IMW ------
+
+    epitope_imw_dt_process <- reactive({
+      sc <- UMAP_metadata_with_labs()
+      IMW <- data_sc_IMW()
+      validate(
+        need(
+          nrow(sc) > 0 & nrow(IMW) > 0,
+          "Upload Files"
+        )
+      )
+      md <- sc@meta.data
+
+      message("reducing to significant IMW scores >0.02")
+      IMW <- subset(IMW,IMW$Score>0.2)
+
+      message("relabelling IMW to match STEGO.R formatting")
+      IMW <- IMW[,!names(IMW) %in% c("Reference.TCRs","clone_id","is_cell")]
+      names(IMW) <- gsub("barcode","Cell_Index",names(IMW))
+
+      TRA <- subset(IMW,IMW$chain == "TRA")
+      TRB <- subset(IMW,IMW$chain == "TRB")
+
+      names(TRA) <- gsub("call","gene_AG",names(TRA))
+      names(TRA) <- gsub("chain","chain_AG",names(TRA))
+      names(TRA) <- gsub("junction_aa","cdr3_AG",names(TRA))
+
+      names(TRB) <- gsub("call","gene_BD",names(TRB))
+      names(TRB) <- gsub("chain","chain_BD",names(TRB))
+      names(TRB) <- gsub("junction_aa","cdr3_BD",names(TRB))
+
+      message("merging alpha and beta")
+      TCR_IMW <- merge(TRA,TRB,by = c("Cell_Index","Epitope","Score","Antigen","Species"))
+
+      message("merging imw with meta data")
+      md_TCR_IMW <- merge(md,TCR_IMW,by = c("Cell_Index","v_gene_AG","j_gene_AG","cdr3_AG","v_gene_BD","j_gene_BD","cdr3_BD","chain_AG","chain_BD"),all.x = T)
+
+      rownames(md_TCR_IMW) <- md_TCR_IMW$Cell_Index
+
+      barcode_order <- md$Cell_Index
+      message("Re-ordering")
+      md_TCR_IMW <- md_TCR_IMW[match(barcode_order, rownames(md_TCR_IMW)), ]
+
+      sc@meta.data <- md_TCR_IMW
+      sc@meta.data$SpeciesSimple <- sc@meta.data$Species
+      sc@meta.data$SpeciesSimple <- gsub("Hepatitis C virus,Synthetic","HCV",sc@meta.data$SpeciesSimple)
+      sc@meta.data$SpeciesSimple <- gsub("Influenza A virus","FluA",sc@meta.data$SpeciesSimple)
+      sc@meta.data$SpeciesSimple <- gsub("Influenza B virus","FluB",sc@meta.data$SpeciesSimple)
+      sc@meta.data$SpeciesSimple <- gsub("Human gammaherpesvirus 4","EBV",sc@meta.data$SpeciesSimple)
+      sc@meta.data$SpeciesSimple <- gsub("Human betaherpesvirus 5","CMV",sc@meta.data$SpeciesSimple)
+      sc@meta.data$SpeciesSimple <- gsub("Yellow fever virus","YFV",sc@meta.data$SpeciesSimple)
+      sc@meta.data$SpeciesSimple <- gsub("Human mastadenovirus C","HAdV-C",sc@meta.data$SpeciesSimple)
+      sc@meta.data$SpeciesSimple <- gsub("Homo sapiens,Synthetic","homo_sapiens",sc@meta.data$SpeciesSimple)
+      sc@meta.data$SpeciesSimple <- gsub("Homo sapiens","homo_sapiens",sc@meta.data$SpeciesSimple)
+      sc@meta.data$SpeciesSimple <- gsub("SARS-CoV-2,SARS-CoV","SARS-CoV-1/2",sc@meta.data$SpeciesSimple)
+      sc@meta.data$SpeciesSimple <- unlist(sc@meta.data$SpeciesSimple)
+      print(unique(sc@meta.data$SpeciesSimple))
+      sc
+    })
+
+    output$Epitope_imw_dt <- DT::renderDT(escape = FALSE, options = list(autoWidth = FALSE, lengthMenu = c(2, 5, 10, 20, 50, 100), pageLength = 5, scrollX = TRUE), {
+      sc <- UMAP_metadata_with_labs()
+      IMW <- data_sc_IMW()
+      validate(
+        need(
+          nrow(sc) > 0 & nrow(IMW) > 0,
+          "Upload IMW file"
+        )
+      )
+      sc <- epitope_imw_dt_process()
+      sc@meta.data
+    })
+
+
+
+    ### visulisation of epitopes -------
+
+    #UMAP, Pie, heatmap
+
+    # bar plot ------
+    bar_plot_imw_epi_dt <- reactive({
+      sc <- epitope_imw_dt_process()
+      req(sc)
+
+      sc@meta.data$keep <- ifelse(is.na(sc@meta.data$SpeciesSimple),"remove","keep")
+      sc_epitopes <- subset(sc,subset = keep== "keep")
+      sc_epitopes
+
+    })
+
+
+    bar_plot_imw_epi <- reactive({
+      sc_epitopes <- bar_plot_imw_epi_dt()
+      req(sc_epitopes)
+      sc_epitopes@meta.data$Selected_group <- sc_epitopes@meta.data[,names(sc_epitopes@meta.data) %in% input$Samp_col]
+      print(names(sc_epitopes@meta.data))
+
+      sc_epitopes_percent <- sc_epitopes@meta.data %>%
+        dplyr::group_by(Selected_group) %>%
+        dplyr::count(SpeciesSimple) %>%
+        dplyr::mutate(Percent = n / sum(n) * 100)
+      #
+      # Calculate total counts per Source
+      source_totals <- sc_epitopes@meta.data %>%
+        dplyr::group_by(Selected_group) %>%
+        dplyr::summarise(Total = n())
+
+      print(source_totals)
+      source_totals$Total <- paste0("n=",source_totals$Total)
+      # Create a custom palette with 19 distinct colors
+      custom_palette <- c(brewer.pal(8, "Set2"),
+                          brewer.pal(8, "Dark2"),
+                          brewer.pal(3, "Paired")[1:3]) # Combine palettes to reach 19 colors
+      # Merge the percentage data with the total counts
+      sc_epitopes_percent <- merge(sc_epitopes_percent, source_totals, by = "Selected_group")
+      print(head(sc_epitopes_percent))
+      require(ggtext)
+
+      # Plotting with viridis color palette and total counts on top of each bar
+      plot_gg <- ggplot() +
+        geom_bar(data = sc_epitopes_percent, aes(x = Selected_group, y = Percent, fill = SpeciesSimple),stat = "identity") +
+        ylab("Percentage") +
+        theme_bw() +
+        scale_y_continuous(labels = scales::percent_format(scale = 1), limits = c(0, 110), expand = c(0, 0)) +
+        scale_fill_manual(values = custom_palette) + # Use the custom color palette
+        geom_text(data = source_totals, aes(x = Selected_group, y = 101, label = Total),
+                  position = position_dodge(width = 0.9),  # Prevent overlap
+                  vjust = -0.5, size = 3.5, fontface = "plain",
+                  family = "Times New Roman") + # Regular text without bold
+        theme(
+          legend.title = element_blank(),
+          axis.title.x = element_blank(),
+          text = element_text(size = 16, family = "Times New Roman", face = "plain"),
+          axis.text.x = element_text(angle = 90, hjust = 1)
+        )
+
+      plot_gg
+
+    })
+
+    output$render_bar_plot_imw_epi <- renderPlot({
+      bar_plot_imw_epi()
+    })
+
+
+
+
+    ### Stats IMW -----
+    Epitope_imw_of_interest <- reactive({
+
+      vsc <- UMAP_metadata_with_labs()
+      IMW <- data_sc_IMW()
+      validate(
+        need(
+          nrow(vsc) > 0 & nrow(IMW) > 0,
+          "Upload IMW file"
+        )
+      )
+
+      sc <- epitope_imw_dt_process()
+      req(sc)
+
+      md <- sc@meta.data
+      checking2 <- md[, names(md) %in% c("Epitope","Antigen","Species", "SpeciesSimple")]
+      names.check <- names(checking2)
+      checking2$cloneCount <- 1
+      sum.check2 <- ddply(checking2, names.check, numcolwise(sum))
+      sum.check2 <- sum.check2[order(sum.check2$cloneCount, decreasing = T), ]
+      sum.check2$Species[is.na(sum.check2$Species)] <- "no_pred"
+      subset(sum.check2,sum.check2$Species != "no_pred")
+
+      # sum.check2_Morethan2
+    })
+    output$Epi_imw_of_interest_DF <- DT::renderDT(escape = FALSE, options = list(autoWidth = FALSE, lengthMenu = c(2, 5, 10, 20, 50, 100), pageLength = 5, scrollX = TRUE), {
+      vsc <- UMAP_metadata_with_labs()
+      IMW <- data_sc_IMW()
+      validate(
+        need(
+          nrow(vsc) > 0 & nrow(IMW) > 0,
+          "Upload IMW file"
+        )
+      )
+      as.data.frame(Epitope_imw_of_interest())
+    })
+    output$downloadtb_epi_imw_summary_table <- downloadHandler(
+      filename = function() {
+        paste("Epi_summary_table_", input$Epi_of_interest,".csv", sep = "")
+      },
+      content = function(file) {
+        df <- as.data.frame(Epitope_imw_of_interest())
+        write.csv(df, file, row.names = T)
+      }
+    )
+
+    observe({
+      df <- Epitope_imw_of_interest()
+      req(df)
+      updateSelectInput(
+        session,
+        "imw_column_for_epitope",
+        choices = names(df),
+        selected = names(df)[1]
+      )
+    })
+
+    observe({
+      vsc <- UMAP_metadata_with_labs()
+      IMW <- data_sc_IMW()
+      validate(
+        need(
+          nrow(vsc) > 0 & nrow(IMW) > 0,
+          "Upload IMW file"
+        )
+      )
+
+      sum.check2_Morethan2 <- as.data.frame(Epitope_imw_of_interest())
+
+      req(sum.check2_Morethan2,input$imw_column_for_epitope)
+
+      list_epi <- sum.check2_Morethan2[,names(sum.check2_Morethan2) %in% input$imw_column_for_epitope]
+      list_epi <- as.data.frame(list_epi)
+      names(list_epi) <- "V1"
+
+      list_epi <- list_epi[order(list_epi$V1),]
+
+      print(list_epi)
+
+      updateSelectInput(
+        session,
+        "epi_imw_of_interest",
+        choices = list_epi,
+        selected = list_epi[1]
+      )
+    })
+
+    Vals_expanded.stats_epi_imw <- reactiveValues(output_epi_imw=NULL)
+
+    observeEvent(c(input$logFC_pval_findmarker, input$epi_imw_of_interest, input$imw_column_for_epitope), {
+      Vals_expanded.stats_epi_imw$output_epi_imw <- NULL
+    })
+
+    observeEvent(input$caluclate_Epi_imw,{
+      sc <- epitope_imw_dt_process()
+      req(sc)
+      sc@meta.data$column_for_epi <- sc@meta.data[,names(sc@meta.data) %in% input$imw_column_for_epitope]
+      sc@meta.data$column_for_epi[is.na(sc@meta.data$column_for_epi)] <- "no_pred"
+      epitope_of_interest <- input$epi_imw_of_interest
+      sc@meta.data$epi_selected <- ifelse(sc@meta.data$column_for_epi == epitope_of_interest, epitope_of_interest, "not selected")
+
+      df <- as.data.frame(table(sc@meta.data$epi_selected))
+      df <- subset(df, df$Var1 != "not selected")
+
+      message(ifelse(df$Freq >3, "proceed","Too few cells to caluclate stats"))
+
+      if(df$Freq >3) {
+        Idents(object = sc) <- sc@meta.data$epi_selected
+
+        min.pct.expression <- input$min_point_ # standard setting: 0.25
+        min.logfc <- input$LogFC_ # 0.25 is standard
+
+        cluster.names <- unique(Idents(sc))[order(unique(Idents(sc)))]
+
+        if (input$logFC_pval_findmarker) {
+          markers.fm.list <- FindMarkers(sc, ident.1 = epitope_of_interest, min.pct = min.pct.expression, logfc.threshold = min.logfc, only.pos = TRUE)
+          markers.fm.list2 <- subset(markers.fm.list, markers.fm.list$p_val_adj < input$pval.ex.filter)
+          as.data.frame(markers.fm.list2)
+        } else {
+          markers.fm.list <- FindMarkers(sc, ident.1 = epitope_of_interest, min.pct = min.pct.expression, logfc.threshold = min.logfc)
+          markers.fm.list2 <- subset(markers.fm.list, markers.fm.list$p_val_adj < input$pval.ex.filter)
+          as.data.frame(markers.fm.list2)
+        }
+
+        Vals_expanded.stats_epi_imw$output_epi_imw <- markers.fm.list2
+      } else {
+        Vals_expanded.stats_epi_imw$output_epi_imw <- as.data.frame("Too few cells to caluclate stats")
+      }
+
+    })
+
+    compare.stat_Epi_imw <- reactive({
+      Vals_expanded.stats_epi_imw$output_epi_imw
+    })
+
+    output$compare.stat_Epi_imw_DT <- DT::renderDT(escape = FALSE, options = list(autoWidth = FALSE, lengthMenu = c(2, 5, 10, 20, 50, 100), pageLength = 10, scrollX = TRUE), {
+      sc <- UMAP_metadata_with_labs()
+      validate(
+        need(
+          nrow(sc) > 0,
+          error_message_val_sc
+        )
+      )
+
+      df <- compare.stat_Epi_imw()
+      validate(
+        need(
+          nrow(df) > 0,
+          "Calc Epitope stats"
+        )
+      )
+
+      df
+
+    })
+
+    output$downloadtb_compare.stat_Epi_imw <- downloadHandler(
+      filename = function() {
+        paste("Stats_table_for_", input$epi_imw_of_interest,".csv", sep = "")
+      },
+      content = function(file) {
+        df <- as.data.frame(compare.stat_Epi_imw())
+        write.csv(df, file, row.names = T)
+      }
+    )
+
+    # Epitope IMW dotplot ----
+    all_expression_plot_epi_imw <- reactive({
+      sc <- epitope_imw_dt_process()
+      req(sc)
+      sc@meta.data$column_for_epi <- sc@meta.data[,names(sc@meta.data) %in% input$imw_column_for_epitope]
+      sc@meta.data$column_for_epi[is.na(sc@meta.data$column_for_epi)] <- "no_pred"
+      epitope_of_interest <- input$epi_imw_of_interest
+
+      sc@meta.data$epi_selected <- ifelse(sc@meta.data$column_for_epi == epitope_of_interest, epitope_of_interest, "BG")
+
+      Idents(object = sc) <- sc@meta.data$epi_selected
+
+      epi_stats <- as.data.frame(compare.stat_Epi_imw())
+      print(epi_stats)
+
+      print(rownames(epi_stats))
+
+      validate(
+        need(
+          nrow(epi_stats) > 0,
+          "Calc Epitope Stats located in the side bar"
+        )
+      )
+
+      df <- as.data.frame(table(sc@meta.data$epi_selected))
+      df <- subset(df, df$Var1 == epitope_of_interest)
+      print(df)
+      # message(ifelse(df$Freq >3, "proceed","Too few cells to calc stats"))
+
+      if(df$Freq >3) {
+
+        if (input$restrict.dotplot) {
+
+          list.names <- rownames(epi_stats)
+
+          list.names <- list.names[1:input$restrict.dotplot.num]
+          print(list.names)
+        } else {
+          print(epi_stats)
+          list.names <- rownames(epi_stats)
+        }
+
+        size_legend <- input$Legend_size - 2
+
+        DotPlot(sc, features = list.names) +
+          RotatedAxis() +
+          theme(
+            axis.title.y = element_blank(),
+            axis.text.y = element_text(colour = "black", family = input$font_type, size = input$text_size),
+            axis.text.x = element_text(colour = "black", family = input$font_type, size = input$text_size, angle = 90),
+            axis.title.x = element_blank(),
+            legend.title = element_text(colour = "black", size = input$Legend_size, family = input$font_type),
+            legend.text = element_text(colour = "black", size = size_legend, family = input$font_type),
+            legend.position = input$legend_position,
+          ) +
+          scale_colour_gradient2(low = input$low.dotplot, mid = input$middle.dotplot, high = input$high.dotplot) +
+          scale_size_continuous(breaks = seq(0, 100, by = input$sequence_breaks_dotplot)) + # Adjust the breaks as needed
+          scale_x_discrete(labels = label_wrap(20)) +
+          scale_y_discrete(labels = label_wrap(20)) +
+          guides(
+            colour = guide_colorbar(order = 1),
+            size = guide_legend(order = 2)
+          ) +
+          guides(size=guide_legend(ncol=input$legend_columns))
+
+      }
+    })
+
+    output$all_expression_dotplot_epi_imw <- renderPlot({
+      all_expression_plot_epi_imw()
+    })
+
+    output$downloadPlot_all_expression_dotplot_epi_imw <- downloadHandler(
+      filename = function() {
+        paste(input$epi_imw_of_interest, "_dotplot", "_", today(), ".pdf", sep = "")
+      },
+      content = function(file) {
+        pdf(file,
+            width = input$width_all_expression_dotplot_epi_imw,
+            height = input$height_all_expression_dotplot_epi_imw,
+            onefile = FALSE) # open the pdf device
+        df <- all_expression_plot_epi_imw()
+        plot(df)
+        dev.off()
+      }, contentType = "application/pdf"
+    )
+
+    output$downloadPlotPNG_all_expression_dotplot_epi_imw <- downloadHandler(
+      filename = function() {
+        paste(input$epi_imw_of_interest, "_dotplot", "_", today(), ".png", sep = "")
+      },
+      content = function(file) {
+        png(file,
+            width = input$width_png_all_expression_dotplot_epi_imw,
+            height = input$height_png_all_expression_dotplot_epi_imw,
+            res = input$resolution_PNG_all_expression_dotplot_epi_imw
+        )
+        df <- all_expression_plot_epi_imw()
+
+        plot(df)
+        dev.off()
+      }, contentType = "application/png" # MIME type of the image
+    )
+
+
+    ### IMW Violin plot -----
+
+    observe({
+      stats_imw_epi <- compare.stat_Epi_imw()
+
+      validate(
+        need(
+          nrow(stats_imw_epi) > 0,
+          "Run imw stats"
+        )
+      )
+
+      req(stats_imw_epi)
+      # cluster <- cluster[cluster$Clust_size_order %in% input$lower_cluster:input$upper_cluster,]
+      updateSelectizeInput(
+        session,
+        "imw_epit_stats_genes",
+        choices = rownames(stats_imw_epi),
+        selected = rownames(stats_imw_epi)[1]
+      )
+
+
+    })
+
+    imw_epi_with_gene <- reactive({
+      sc <- UMAP_metadata_with_labs()
+      validate(
+        need(
+          nrow(sc) > 0,
+          error_message_val1
+        )
+      )
+
+      sc <- epitope_imw_dt_process()
+      md <- sc@meta.data
+      gene <- as.data.frame(sc@assays$RNA$scale.data[rownames(sc@assays$RNA$scale.data)  %in% input$imw_epit_stats_genes,])
+      names(gene) <- "V1"
+      gene$Cell_Index <- rownames(gene)
+      md$Cell_Index <- rownames(md)
+
+      md_gene <- merge(md,gene,by = "Cell_Index")
+      md_gene$selected <- md_gene[,names(md_gene) %in% input$imw_column_for_epitope]
+      md_gene$selected <- ifelse(md_gene$selected == input$epi_imw_of_interest, input$epi_imw_of_interest,"other")
+      md_gene$selected[is.na(md_gene$selected)] <- "other"
+      md_gene
+    })
+
+
+    # output$tb_imw_epi_testing <- DT::renderDT(escape = FALSE, options = list(autoWidth = FALSE, lengthMenu = c(2, 5, 10, 20, 50, 100), pageLength = 5, scrollX = TRUE), {
+    #   imw_epi_with_gene()
+    # })
+
+
+
+    Violin_plot_epi_imw <- reactive({
+
+      md_gene <- imw_epi_with_gene()
+
+      if (input$jitter) {
+        ggplot(md_gene, aes(y = V1, x = selected, fill = selected)) +
+          geom_jitter(height = 0, width = 0.1) +
+          geom_violin(alpha = input$alpha_violin) +
+          theme_bw() +
+          theme(
+            axis.title.y = element_blank(),
+            axis.text.y = element_text(colour = "black", family = input$font_type, size = input$text_size),
+            axis.title.x = element_blank(),
+            axis.text.x = element_text(colour = "black", family = input$font_type, size = input$text_size, angle = 90),
+            title = element_blank(),
+            legend.text = element_text(colour = "black", size = input$Legend_size, family = input$font_type),
+            legend.title = element_blank(),
+            legend.position = input$legend_position,
+          ) +
+          guides(color=guide_legend(ncol=input$legend_columns))
+      } else {
+        ggplot(md_gene, aes(y = V1, x = selected, fill = selected)) +
+          geom_violin() +
+          theme_bw() +
+          theme(
+            axis.title.y = element_blank(),
+            axis.text.y = element_text(colour = "black", family = input$font_type, size = input$text_size),
+            axis.title.x = element_blank(),
+            axis.text.x = element_text(colour = "black", family = input$font_type, size = input$text_size, angle = 90),
+            title = element_blank(),
+            legend.text = element_text(colour = "black", size = input$Legend_size, family = input$font_type),
+            legend.title = element_blank(),
+            legend.position = input$legend_position,
+          ) +
+          guides(color=guide_legend(ncol=input$legend_columns))
+      }
+
+
+
+    })
+
+    output$Violin_epi_imw_sig <- renderPlot({
+      sc <- UMAP_metadata_with_labs()
+
+      validate(
+        need(
+          nrow(sc) > 0,
+          error_message_val_sc
+        )
+      )
+      Violin_plot_epi_imw()
+
+    })
+
+
+    output$downloadPlot_all_expression_violin_epi_imw <- downloadHandler(
+      filename = function() {
+        paste(input$epi_imw_of_interest,"_",input$epi_imw_of_interest, "_violin.pdf", sep = "")
+      },
+      content = function(file) {
+        pdf(file,
+            width = input$width_all_expression_violin_epi_imw,
+            height = input$height_all_expression_violin_epi_imw,
+            onefile = FALSE) # open the pdf device
+        df <- Violin_plot_epi_imw()
+        plot(df)
+        dev.off()
+      }, contentType = "application/pdf"
+    )
+
+    output$downloadPlotPNG_all_expression_violin_epi_imw <- downloadHandler(
+      filename = function() {
+        paste(input$epi_imw_of_interest,"_",input$epi_imw_of_interest, "_violin.png", sep = "")
+      },
+      content = function(file) {
+        png(file,
+            width = input$width_png_all_expression_violin_epi_imw,
+            height = input$height_png_all_expression_violin_epi_imw,
+            res = input$resolution_PNG_all_expression_violin_epi_imw
+        )
+        df <- Violin_plot_epi_imw()
+
+        plot(df)
+        dev.off()
+      }, contentType = "application/png" # MIME type of the image
     )
 
 
@@ -18687,7 +19424,7 @@ runSTEGO <- function(){
       list.df <- select_top_five()
 
       req(list.df)
-      print(head(list.df))
+
       message("Observe event is working")
 
       if(input$is_a_time_series) {
@@ -18703,7 +19440,7 @@ runSTEGO <- function(){
         df <- select_top_five()
         df$clones <- rownames(df)
       }
-      print(head(df))
+
       req(df)
 
       updateSelectInput(
@@ -24570,6 +25307,75 @@ runSTEGO <- function(){
         write.csv(df, file, row.names = F)
       }
     )
+
+    #### extracting IMW from md ------
+    data_file1_MD_for_IMW <- reactive({
+      inupload_file1_MD_for_IMW <- input$file1_MD_for_IMW
+      if (is.null(inupload_file1_MD_for_IMW)) {
+        return(NULL)
+      } else {
+        dataframe <- read.csv(inupload_file1_MD_for_IMW$datapath, header = T)
+      }
+    })
+
+    Reformatting_data_sc_IMW <- reactive({
+      req(data_file1_MD_for_IMW())
+      md <- data_file1_MD_for_IMW()
+      md_TCR_AG <- md[,names(md) %in% c("Cell_Index","v_gene_AG","j_gene_AG","chain_AG","cdr3_AG")]
+      md_TCR_BD <- md[,names(md) %in% c("Cell_Index","v_gene_BD","j_gene_BD","chain_BD","cdr3_BD")]
+
+      generate_clone_names <- function(total_clones) {
+        # Calculate the required width based on the total number of clones
+        width <- nchar(as.character(total_clones))
+
+        # Generate the sequence with leading zeros
+        clone_numbers <- sprintf(paste0("%0", width, "d"), 1:total_clones)
+
+        # Combine the prefix with the formatted numbers
+        clone_names <- paste0("clone", clone_numbers)
+
+        return(clone_names)
+      }
+      clone_names <- generate_clone_names(length(md_TCR_AG$Cell_Index))
+      md_TCR_AG$clone_id <- clone_names
+      md_TCR_BD$clone_id <- clone_names
+
+      names(md_TCR_AG) <- c("barcode","v_call","j_call","junction_aa","chain","clone_id")
+      names(md_TCR_BD) <- c("barcode","v_call","j_call","junction_aa","chain","clone_id")
+
+      md_TCR <- rbind(md_TCR_AG,md_TCR_BD)
+      head(md_TCR)
+
+      md_TCR <- md_TCR[order(md_TCR$clone_id,decreasing = F),]
+      md_TCR <- md_TCR %>%
+        dplyr::select(dplyr::all_of(c("clone_id","barcode","v_call","j_call","chain")), dplyr::everything())
+
+      md_TCR$is_cell <- 1
+      md_TCR
+
+    })
+
+    output$IMW_reformated_tb <- DT::renderDT(escape = FALSE, options = list(autoWidth = FALSE, lengthMenu = c(2, 5, 10, 20, 50, 100), pageLength = 10, scrollX = TRUE), {
+      calls <- data_file1_MD_for_IMW()
+      validate(
+        need(
+          nrow(calls) > 0,
+          "Upload meta data that was extracted from the .rds object in post analysis section"
+        )
+      )
+      Reformatting_data_sc_IMW()
+    })
+
+    output$downloadtb_Reformatting_data_sc_IMW <- downloadHandler(
+      filename = function() {
+        paste0(input$file_names_IMW, "_IMW_input.tsv")
+      },
+      content = function(file) {
+        df <- as.data.frame(Reformatting_data_sc_IMW())
+        write.table(df, file, row.names = F, sep = "\t")
+      }
+    )
+
     # extract meta data from filtered object -----
 
     # extracting parameters and replacing defaults ------
