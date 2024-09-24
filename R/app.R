@@ -220,17 +220,70 @@ runSTEGO <- function(){
 
   # olga -----
 
-  olgafunction_BD <- function(y) {
+  olgafunction_CDR3_BD_testing <- function(CDR3) {
+    message("Running olga-compute_pgen for CDR3: ", CDR3)
+
+    result <- tryCatch({
+      olga <- system2('olga-compute_pgen', args = c("--humanTRB", CDR3),
+                      wait = TRUE, stdout = TRUE)
+      message("Command executed successfully.")
+      return(olga)  # Return output if successful
+      message("Result: ", result)
+      # return(result)
+
+    }, error = function(e) {
+      message("An error occurred: ", e)
+      return("Install")
+      "Install"
+    })
+
+  }
+
+  olgafunction_CDR3_VDJ_BD <- function(CDR3,V,J) {
     olga <- system2('olga-compute_pgen', args=c("--humanTRB ",
-                                                y),
+                                                CDR3,"--v_mask ",V,"--j_mask",J),
                     wait=TRUE, stdout=TRUE)
     olga
 
   }
 
-  olgafunction_AG <- function(y) {
+  olgafunction_CDR3_BD <- function(CDR3) {
+    message("Running olga-compute_pgen for CDR3: ", CDR3)
+
+    result <- tryCatch({
+      olga <- system2('olga-compute_pgen', args = c("--humanTRB", CDR3),
+                      wait = TRUE, stdout = TRUE)
+      message("Command executed successfully.")
+      return(olga)  # Return output if successful
+      message("Result: ", result)
+      return(result)
+
+    }, error = function(e) {
+      message("An error occurred: ", e)
+      return("Install")
+    })
+
+
+  }
+
+  olgafunction_CDR3_AG <- function(y) {
     olga <- system2('olga-compute_pgen', args=c("--humanTRA ",
                                                 y),
+                    wait=TRUE, stdout=TRUE)
+    olga
+  }
+
+  olgafunction_BD_mouse <- function(CDR3,V,J) {
+    olga <- system2('olga-compute_pgen', args=c("--mouseTRB ",
+                                                CDR3,"--v_mask ",V,"--j_mask",J),
+                    wait=TRUE, stdout=TRUE)
+    olga
+
+  }
+
+  olgafunction_AG_mouse <- function(CDR3,V,J) {
+    olga <- system2('olga-compute_pgen', args=c("--mouseTRA ",
+                                                CDR3,"--v_mask ",V,"--j_mask",J),
                     wait=TRUE, stdout=TRUE)
     olga
   }
@@ -3818,6 +3871,46 @@ runSTEGO <- function(){
                  )
         ),
 
+        # extract data for TCRdist ------
+        tabPanel("TCRdist", id = "TCRdist_main_tab",
+                 value = "",
+                 sidebarLayout(
+                   sidebarPanel(width = 3,
+                                fileInput("file1_meta_data_for_tcrdist",
+                                          p("Upload meta data .csv file",class = "name-header_functions"),
+                                          multiple = F,
+                                          accept = c(".csv", "csv","csv.gz",".gz")
+                                ),
+                                fileInput("file1_AIRR_file_for_TCRdist",
+                                          p("Upload filtered or unfiltered AIRR file",class = "name-header_functions"),
+                                          multiple = F,
+                                          accept = c(".tsv", "tsv","tsv.gz",".gz")
+                                ),
+                                selectInput("input_tcrdist_output","Type:",choices = c("tcrdist","tcrdist3","clustcrdist")),
+                                downloadButton("download_button_TCRdist", "Download TCRdist Data"),
+                                downloadButton("download_button_TCRdist3", "Download TCRdist3 Data"),
+                                downloadButton("download_button_clustcrdist", "Download clusTCRdist Data"),
+                   ),
+                   mainPanel(
+                     width = 9,
+                     tabsetPanel(
+                       tabPanel("uploaded files",
+                                div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
+                                div(DT::DTOutput("input_meta_data_file_dt")),
+                                div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
+                                div(DT::DTOutput("input_AIRR_file_dt")),
+
+
+
+                       ),
+                       tabPanel("formatted files",
+                                div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
+                                div(DT::DTOutput("TCRdist_AIRR_dt")),
+                       )
+                     )
+                   )
+                 )
+        ),
         # post analysis OLGA ------
         tabPanel("OLGA",
                  fluidRow(
@@ -3837,20 +3930,18 @@ runSTEGO <- function(){
                    sidebarLayout(
                      sidebarPanel(width = 3,
                                   conditionalPanel(
-
                                     condition = "input.OLGA_analysis != 'summary_histograms_olga'",
-
                                     fileInput("file1_rds_OLGA",
                                               "Choose .rds files from merging",
                                               multiple = FALSE,
                                               accept = c("rds", ".rds")
                                     ),
                                     selectInput("chain_type_olga","Chain type: ",choices = c("TRB","TRA")),
+                                    # selectInput("chain_v_gene","V gene",choices = c("TRB","TRA")),
                                     selectInput("species_olga","Species: ",choices = c("human","mouse")),
                                     downloadButton("downloaddf_pgen_dt", "Download Table (.csv)"))
 
                      ),
-
                      mainPanel(
                        width = 9,
                        tabsetPanel(
@@ -3874,10 +3965,11 @@ runSTEGO <- function(){
                  conditionalPanel(
                    condition = "input.Olga_installed == 'Unavailable' && input.load_olga",
                    tabPanel("Instructions",
-
                             p("Require the user to install python and olga from the command line"),
                             p("Install OLGA via the following website"),
-                            p("https://github.com/statbiophys/OLGA")
+                            p("https://github.com/statbiophys/OLGA"),
+                            p("or use this following command:"),
+                            p('system2("python", args = c("-m", "pip", "install", "olga"))')
 
                    ),
                  )
@@ -24861,9 +24953,10 @@ runSTEGO <- function(){
     ### pgen -----
 
     observeEvent(input$load_olga,{
-      reticulate::py_module_available("olga")
 
-      if(py_module_available("olga")) {
+      df <- olgafunction_CDR3_BD_testing("CASSLGRDGGHEQYF")
+
+      if(length(df)>1) {
         message("OLGA is installed")
 
         updateSelectInput(
@@ -24872,16 +24965,17 @@ runSTEGO <- function(){
           choices = "installed"
         )
 
-      } else {
+      } else if (length(df) == 1 ){
         message("Please Install OLGA, if you want to do the post analysis section")
         updateSelectInput(
           session,
           "Olga_installed",
           choices = "Unavailable"
         )
-
+      } else {
 
       }
+
       shinyjs::hide(id = "load_olga")
       shinyjs::hide(id = "Olga_installed")
 
@@ -25007,10 +25101,10 @@ runSTEGO <- function(){
         if(input$species_olga == "human") {
           if(input$chain_type_olga == "TRB") {
             dfoutput <- foreach(dfrow=iter(df[i], by='row'), .combine=rbind) %do%
-              olgafunction_BD(dfrow)
+              olgafunction_CDR3_BD(dfrow)
           } else {
             dfoutput <- foreach(dfrow=iter(df[i], by='row'), .combine=rbind) %do%
-              olgafunction_AG(dfrow)
+              olgafunction_CDR3_AG(dfrow)
           }
         } else {
           if(input$chain_type_olga == "TRB") {
@@ -25436,6 +25530,100 @@ runSTEGO <- function(){
       }
     })
 
+    # AIRR md for TCRdist ----
+    meta_data_for_tcrdist <- reactive({
+      inFile_meta_data_for_tcrdist <- input$file1_meta_data_for_tcrdist
+      if (is.null(inFile_meta_data_for_tcrdist)) {
+        return(NULL)
+      }
+
+      read.csv(inFile_meta_data_for_tcrdist$datapath, header = T)
+    })
+
+    output$input_meta_data_file_dt <- DT::renderDT(escape = FALSE, options = list(autoWidth = FALSE, lengthMenu = c(2, 5, 10, 20, 50, 100), pageLength = 5, scrollX = TRUE), {
+      sc <- meta_data_for_tcrdist()
+      validate(
+        need(
+          nrow(sc) > 0,
+          "Upload .RDS file"
+        )
+      )
+      meta_data_for_tcrdist()
+
+    })
+
+    AIRR_file_for_tcrdist <- reactive({
+      inFile_AIRR_file_for_tcrdist <- input$file1_AIRR_file_for_TCRdist
+      if (is.null(inFile_AIRR_file_for_tcrdist)) {
+        return(NULL)
+      }
+
+      read.table(inFile_AIRR_file_for_tcrdist$datapath,sep = "\t",header = T)
+    })
+
+    output$input_AIRR_file_dt <- DT::renderDT(escape = FALSE, options = list(autoWidth = FALSE, lengthMenu = c(2, 5, 10, 20, 50, 100), pageLength = 5, scrollX = TRUE), {
+      sc <- AIRR_file_for_tcrdist()
+      validate(
+        need(
+          nrow(sc) > 0,
+          "Upload .RDS file"
+        )
+      )
+
+      message("rendering AIRR file")
+
+      AIRR_file_for_tcrdist()
+
+    })
+
+    # formatting for TCRdist
+    TCRdist_AIRR <- reactive({
+      AIRR <- AIRR_file_for_tcrdist()
+
+      md <- meta_data_for_tcrdist()
+
+      md_id <- md[,names(md) %in% c("Cell_Index","orig.ident","Sample_Name")]
+
+      AIRR_2 <- merge(AIRR,md_id,by.x = "cell_id",by.y = "Cell_Index")
+
+      alpha <- AIRR_2[AIRR_2$cdr3_aa %in% md$cdr3_aa_AG,]
+      alpha <- alpha[,names(alpha) %in% c("cell_id","sequence_alignment","Sample_Name")]
+
+      names(alpha) <- c("id","a_nucseq","subject")
+
+      beta <- AIRR_2[AIRR_2$cdr3_aa %in% md$cdr3_aa_BD,]
+      beta <- beta[,names(beta) %in% c("cell_id","sequence_alignment","Sample_Name")]
+
+      names(beta) <- c("id","b_nucseq","subject")
+
+      alpha_beta <- merge(alpha,beta,by = c("id","subject"))
+
+      alpha_beta$epitope <- "epi_for_tcrdist"
+      alpha_beta$a_quals <- ""
+      alpha_beta$b_quals <- ""
+
+      alpha_beta <- alpha_beta %>%
+        select(all_of(c("id","epitope","subject","a_nucseq","b_nucseq")), everything())
+    })
+
+    output$TCRdist_AIRR_dt <- DT::renderDT(escape = FALSE, options = list(autoWidth = FALSE, lengthMenu = c(2, 5, 10, 20, 50, 100), pageLength = 10, scrollX = TRUE), {
+      TCRdist_AIRR <- TCRdist_AIRR()
+
+      req(TCRdist_AIRR)
+
+      TCRdist_AIRR
+
+    })
+
+    output$download_button_TCRdist <- downloadHandler(
+      filename = function() {
+        paste("tcrdist_formatted.tsv", sep = "")
+      },
+      content = function(file) {
+        df <- as.data.frame(TCRdist_AIRR())
+        write.table(df, file, row.names = F, sep = "\t")
+      }
+    )
   }
 
   ########
