@@ -3992,6 +3992,51 @@ runSTEGO <- function(){
                      div(DT::DTOutput("IMW_reformated_tb")),
                    )
                  )
+        ),
+        tabPanel("Constructs",
+                 sidebarLayout(
+                   sidebarPanel(
+
+                     # fluidRow(
+                     div(class = "select-input-container",
+                         h4('Info for this section'),
+
+                         div(class = "hint-icon",
+                             icon("circle-question", lib = "font-awesome")),
+                         div(class = "hint-text", "This section is to help design TCR constructs. The user needs to upload a csv file with a list of TCR based on the vj_cdr3_AG_BD column. Additionally, the user uploads the AIRR file, as this has the full length sequences. We add in the constant alpha and beta chain for humans at this stage."),
+                     ),
+                     # ),
+                     fileInput("file1_desired_constructs",
+                               p("Upload .csv file (vj_cdr3_AG_BD)",class = "name-header_functions"),
+                               multiple = F,
+                               accept = c(".csv", "csv","csv.gz",".gz")
+
+                     ),
+                     fileInput("file1_AIRR_file_for_constructs",
+                               p("Upload AIRR file",class = "name-header_functions"),
+                               multiple = F,
+                               accept = c(".tsv", "tsv","tsv.gz",".gz")
+                     ),
+
+                     # textInput("file_names_IMW",p("Name for IMW file ",class = "name-header_functions"), "", width = "600px"),
+                     div(downloadButton("download_button_ab_paired_constructs", "Download AB paired file (.csv)"),style = "padding-top: 25px;"),
+                   ),
+                   mainPanel(
+                     tabsetPanel(
+                       tabPanel("uploaded",
+                                div(DT::DTOutput("input_desired_constructs")),
+                                div(DT::DTOutput("input_AIRR_file_for_constructs_dt")),
+                       ),
+                       tabPanel("Formatted",
+                                div(DT::DTOutput("input_reformatted_to_make_constructs")),
+                       )
+                     )
+
+
+
+                   )
+                 )
+
         )
 
         #####
@@ -17430,7 +17475,6 @@ runSTEGO <- function(){
       sc_epitopes <- bar_plot_imw_epi_dt()
       req(sc_epitopes)
       sc_epitopes@meta.data$Selected_group <- sc_epitopes@meta.data[,names(sc_epitopes@meta.data) %in% input$Samp_col]
-      print(names(sc_epitopes@meta.data))
 
       sc_epitopes_percent <- sc_epitopes@meta.data %>%
         dplyr::group_by(Selected_group) %>%
@@ -25576,7 +25620,7 @@ runSTEGO <- function(){
 
     })
 
-    # formatting for TCRdist
+    # formatting for TCRdist ======
     TCRdist_AIRR <- reactive({
       AIRR <- AIRR_file_for_tcrdist()
 
@@ -25624,8 +25668,129 @@ runSTEGO <- function(){
         write.table(df, file, row.names = F, sep = "\t")
       }
     )
-  }
 
+    # TCR constructs -----
+
+    desired_constructs <- reactive({
+      inFile_desired_constructs <- input$file1_desired_constructs
+      if (is.null(inFile_desired_constructs)) {
+        return(NULL)
+      }
+
+      read.csv(inFile_desired_constructs$datapath, header = T)
+    })
+
+    output$input_desired_constructs <- DT::renderDT(escape = FALSE, options = list(autoWidth = FALSE, lengthMenu = c(2, 5, 10, 20, 50, 100), pageLength = 5, scrollX = TRUE), {
+      req(desired_constructs())
+
+      as.data.frame(desired_constructs())
+
+    })
+
+
+    AIRR_data_for_constructs <- reactive({
+      inFile_AIRR_file_for_constructs <- input$file1_AIRR_file_for_constructs
+      if (is.null(inFile_AIRR_file_for_constructs)) {
+        return(NULL)
+      }
+
+      read.table(inFile_AIRR_file_for_constructs$datapath, header = T,sep = "\t")
+    })
+
+    output$input_AIRR_file_for_constructs_dt <- DT::renderDT(escape = FALSE, options = list(autoWidth = FALSE, lengthMenu = c(2, 5, 10, 20, 50, 100), pageLength = 5, scrollX = TRUE), {
+
+      AIRR_data_for_constructs()
+
+    })
+
+    selected_full_sequences_airr <- reactive({
+      AIRR_file <- AIRR_data_for_constructs()
+      vj_list <- desired_constructs()
+
+      # Example data frame
+      df <- data.frame(sequences = unlist(vj_list))
+
+      df$sequences <- gsub(" & ","&",df$sequences)
+      # Split the sequences column by ., _, and &
+      split_results <- strsplit(df$sequences, "[._& ]")
+
+      # Convert the list to a data frame with separate columns
+      split_df <- do.call(rbind, lapply(split_results, function(x) {
+        # Ensure each split has the same length (use NA for missing values)
+        length(x) <- max(sapply(split_results, length))
+        return(x)
+      }))
+
+      # Add the split columns to the original data frame
+      df <- cbind(df, split_df)
+      print(df)
+      # Rename the columns
+      colnames(df)[-1] <- paste0("Split_", seq_len(ncol(split_df)))
+
+
+      AIRR <- AIRR_file
+      AIRR_A <- subset(AIRR,AIRR$junction_aa %in% df$Split_3)
+
+      TRAC <- "ATATCCAGAACCCTGACCCTGCCGTGTACCAGCTGAGAGACTCTAAATCCAGTGACAAGTCTGTCTGCCTATTCACCGATTTTGATTCTCAAACAAATGTGTCACAAAGTAAGGATTCTGATGTGTATATCACAGACAAAACTGTGCTAGACATGAGGTCTATGGACTTCAAGAGCAACAGTGCTGTGGCCTGGAGCAACAAATCTGACTTTGCATGTGCAAACGCCTTCAACAACAGCATTATTCCAGAAGACACCTTCTTCCCCAGCCCAGAAAGTTCCTGTGATGTCAAGCTGGTCGAGAAAAGCTTTGAAACAGATACGAACCTAAACTTTCAAAACCTGTCAGTGATTGGGTTCCGAATCCTCCTCCTGAAAGTGGCCGGGTTTAATCTGCTCATGACGCTGCGGCTGTGGTCCAGCTGA"
+
+      for (z in 1:length(AIRR_A$is_cell)) {
+        string <- AIRR_A$sequence[z]
+
+        v_start = AIRR_A$v_sequence_start[z]
+        c_start = AIRR_A$c_sequence_start[z] -1
+
+        AIRR_A$full_sequence[z] <- paste0(substring(string, v_start,c_start),TRAC)
+        AIRR_A$full_sequence_len[z] <- nchar(AIRR_A$full_sequence[z])/3
+      }
+
+      AIRR_A <- AIRR_A[,names(AIRR_A) %in% c("cell_id","productive","v_call","j_call","c_call","junction","junction_aa","full_sequence","full_sequence_len")]
+
+      # --- beta chains
+
+      AIRR_B <- subset(AIRR,AIRR$junction_aa %in% df$Split_6)
+
+      TRBC <- "GAGGACCTGAAAAACGTGTTCCCACCCGAGGTCGCTGTGTTTGAGCCATCAGAAGCAGAGATCTCCCACACCCAAAAGGCCACACTGGTGTGCCTGGCCACAGGCTTCTACCCCGACCACGTGGAGCTGAGCTGGTGGGTGAATGGGAAGGAGGTGCACAGTGGGGTCAGCACAGACCCGCAGCCCCTCAAGGAGCAGCCCGCCCTCAATGACTCCAGATACTGCCTGAGCAGCCGCCTGAGGGTCTCGGCCACCTTCTGGCAGAACCCCCGCAACCACTTCCGCTGTCAAGTCCAGTTCTACGGGCTCTCGGAGAATGACGAGTGGACCCAGGATAGGGCCAAACCTGTCACCCAGATCGTCAGCGCCGAGGCCTGGGGTAGAGCAGACTGTGGCTTCACCTCCGAGTCTTACCAGCAAGGGGTCCTGTCTGCCACCATCCTCTATGAGATCTTGCTAGGGAAGGCCACCTTGTATGCCGTGCTGGTCAGTGCCCTCGTGCTGATGGCCATGGTCAAGAGAAAGGATTCCAGAGGCTGA"
+
+      for (z in 1:length(AIRR_B$is_cell)) {
+        string <- AIRR_B$sequence[z]
+
+        v_start = AIRR_B$v_sequence_start[z]
+        c_start = AIRR_B$c_sequence_start[z]-2
+
+        AIRR_B$full_sequence[z] <- paste0(substring(string, v_start,c_start),TRBC)
+        AIRR_B$full_sequence_len[z] <- nchar(AIRR_B$full_sequence[z])/3
+      }
+
+      AIRR_B <- AIRR_B[,names(AIRR_B) %in% c("cell_id","productive","v_call","j_call","c_call","junction","junction_aa","full_sequence","full_sequence_len")]
+
+      names(AIRR_B)[3:9] <- paste0(names(AIRR_B)[3:9],"_B")
+      names(AIRR_A)[3:9] <- paste0(names(AIRR_A)[3:9],"_A")
+
+      AIRR_selected <- merge(AIRR_A,AIRR_B,by = c("cell_id","productive"))
+      AIRR_selected$full_sequence_AB <- paste0(AIRR_selected$full_sequence_A,AIRR_selected$full_sequence_B)
+      AIRR_selected <- as.data.frame(AIRR_selected)
+      AIRR_selected[order(AIRR_selected$full_sequence_A),]
+    })
+
+    output$input_reformatted_to_make_constructs <- DT::renderDT(escape = FALSE, options = list(autoWidth = FALSE, lengthMenu = c(2, 5, 10, 20, 50, 100), pageLength = 5, scrollX = TRUE), {
+      req(desired_constructs(),AIRR_data_for_constructs())
+
+      selected_full_sequences_airr()
+
+    })
+
+
+    output$download_button_ab_paired_constructs <- downloadHandler(
+      filename = function() {
+        paste("alpha_beta_paired_constructs.csv", sep = "")
+      },
+      content = function(file) {
+        df <- as.data.frame(selected_full_sequences_airr())
+        write.csv(df, file, row.names = F)
+      }
+    )
+
+  }
   ########
   # run the app in browser -----
   shinyApp(ui = ui, server = server, options = list(launch.browser = TRUE))
