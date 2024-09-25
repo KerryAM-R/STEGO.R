@@ -4044,19 +4044,56 @@ runSTEGO <- function(){
       ),
 
       navbarMenu("Info",
-                 tabPanel("Helpful resources"),
-                 tabPanel("Citing STEGO.R",
-                          # add a notebook with STEGO.R preprint and the other articles
-
+                 tabPanel("Helpful resources",
+                          # Embed the documentation using an iframe
+                          tags$iframe(
+                            src = "https://stegor.readthedocs.io/en/latest/",  # URL to the documentation
+                            width = "100%",  # Make iframe responsive to screen width
+                            height = "800px",  # Set a suitable height for the iframe
+                            style = "border:none;"  # Optional: remove iframe borders
+                          )
                  ),
-                 tabPanel("Session Information")
+                 tabPanel("Citing STEGO.R",
+                          # mainPanel(
+                          h3("Citation for STEGO.R:"),
+                          verbatimTextOutput("citation_stegor"),
+                          h3("Citation for Seurat:"),
+                          verbatimTextOutput("citation_seurat"),
+                          h3("Citation for scGate:"),
+                          verbatimTextOutput("citation_scgate"),
+                 ),
+                 tabPanel("Session Information",
+                          titlePanel("Shiny App with Session Info"),
+                          # mainPanel(
+                          verbatimTextOutput("session_info")  # Use verbatimTextOutput for a better display
+                 )
       ),
     ), # nav page
   )
 
   ########
   # server ------
-  server <- function(input, output, session) {  # tool tips in server ----
+  server <- function(input, output, session) {
+    output$session_info <- renderPrint({
+      print(sessionInfo())
+    })
+
+    # citation ------
+
+    # Get the citation
+    output$citation_stegor <- renderPrint({
+      citation("STEGO.R")
+
+    })
+    output$citation_seurat <- renderPrint({
+      citation("Seurat")
+    })
+
+    output$citation_scgate <- renderPrint({
+      citation("scGate")
+    })
+
+    # tool tips in server ----
 
     # collapse -------
     observeEvent(c(input$clonal_abudance_tabs, input$epitope_tabpanel, input$ClusTCR2_panel_tabs, input$Panel_TCRUMAP), {
@@ -25791,6 +25828,7 @@ runSTEGO <- function(){
     )
 
   }
+
   ########
   # run the app in browser -----
   shinyApp(ui = ui, server = server, options = list(launch.browser = TRUE))
