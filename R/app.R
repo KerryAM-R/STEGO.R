@@ -3876,20 +3876,35 @@ runSTEGO <- function(){
                  value = "",
                  sidebarLayout(
                    sidebarPanel(width = 3,
+                                selectInput("input_tcrdist_output","Type:",choices = c("tcrdist","tcrdist3","clustcrdist")),
                                 fileInput("file1_meta_data_for_tcrdist",
                                           p("Upload meta data .csv file",class = "name-header_functions"),
                                           multiple = F,
                                           accept = c(".csv", "csv","csv.gz",".gz")
                                 ),
-                                fileInput("file1_AIRR_file_for_TCRdist",
-                                          p("Upload filtered or unfiltered AIRR file",class = "name-header_functions"),
-                                          multiple = F,
-                                          accept = c(".tsv", "tsv","tsv.gz",".gz")
+
+                                conditionalPanel(
+                                  condition = "input.input_tcrdist_output == 'tcrdist'",
+                                  fileInput("file1_AIRR_file_for_TCRdist",
+                                            p("Upload filtered or unfiltered AIRR file",class = "name-header_functions"),
+                                            multiple = F,
+                                            accept = c(".tsv", "tsv","tsv.gz",".gz")
+                                  ),
                                 ),
-                                selectInput("input_tcrdist_output","Type:",choices = c("tcrdist","tcrdist3","clustcrdist")),
-                                downloadButton("download_button_TCRdist", "Download TCRdist Data"),
-                                downloadButton("download_button_TCRdist3", "Download TCRdist3 Data"),
-                                downloadButton("download_button_clustcrdist", "Download clusTCRdist Data"),
+                                conditionalPanel(
+                                  condition = "input.input_tcrdist_output == 'tcrdist'",
+                                  downloadButton("download_button_TCRdist", "Download TCRdist"),
+                                ),
+
+                                conditionalPanel(
+                                  condition = "input.input_tcrdist_output == 'tcrdist3'",
+                                  downloadButton("download_button_TCRdist3", "Download TCRdist3"),
+                                ),
+                                conditionalPanel(
+                                  condition = "input.input_tcrdist_output == 'clustcrdist'",
+                                  downloadButton("download_button_clustcrdist", "Download clusTCRdist"),
+                                ),
+
                    ),
                    mainPanel(
                      width = 9,
@@ -3905,7 +3920,24 @@ runSTEGO <- function(){
                        ),
                        tabPanel("formatted files",
                                 div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
-                                div(DT::DTOutput("TCRdist_AIRR_dt")),
+
+                                conditionalPanel(
+                                  condition = "input.input_tcrdist_output == 'tcrdist'",
+                                  div(DT::DTOutput("TCRdist_AIRR_dt")),
+                                ),
+                                conditionalPanel(
+                                  condition = "input.input_tcrdist_output == 'tcrdist3'",
+                                  div(DT::DTOutput("TCRdist3_dt")),
+                                ),
+                                conditionalPanel(
+                                  condition = "input.input_tcrdist_output == 'clustcrdist'",
+                                  div(DT::DTOutput("clustcrdist_dt")),
+                                ),
+
+
+
+
+
                        )
                      )
                    )
@@ -25660,9 +25692,9 @@ runSTEGO <- function(){
     # formatting for TCRdist ======
     TCRdist_AIRR <- reactive({
       AIRR <- AIRR_file_for_tcrdist()
-
+      req(AIRR)
       md <- meta_data_for_tcrdist()
-
+      req(md)
       md_id <- md[,names(md) %in% c("Cell_Index","orig.ident","Sample_Name")]
 
       AIRR_2 <- merge(AIRR,md_id,by.x = "cell_id",by.y = "Cell_Index")
@@ -25689,7 +25721,6 @@ runSTEGO <- function(){
 
     output$TCRdist_AIRR_dt <- DT::renderDT(escape = FALSE, options = list(autoWidth = FALSE, lengthMenu = c(2, 5, 10, 20, 50, 100), pageLength = 10, scrollX = TRUE), {
       TCRdist_AIRR <- TCRdist_AIRR()
-
       req(TCRdist_AIRR)
 
       TCRdist_AIRR
@@ -25705,6 +25736,117 @@ runSTEGO <- function(){
         write.table(df, file, row.names = F, sep = "\t")
       }
     )
+
+
+    # TCRdist3 -------
+
+    TCRdist3_output <- reactive({
+
+      md <- meta_data_for_tcrdist()
+      req(md)
+      md2 <- md[,names(md) %in% c("Sample_Name","v_gene_AG","v_gene_BD","j_gene_AG","j_gene_BD","junction_AG","junction_aa_AG","junction_BD","junction_aa_BD", "cdr3_AG","cdr3_nt_AG","cdr3_BD","cdr3_nt_BD")]
+      print(names(md2))
+      names(md2) <- gsub("Sample_Name","subject",names(md2))
+      names(md2) <- gsub("v_gene_AG","v_a_gene",names(md2))
+      names(md2) <- gsub("v_gene_BD","v_b_gene",names(md2))
+      names(md2) <- gsub("j_gene_AG","j_a_gene",names(md2))
+      names(md2) <- gsub("j_gene_BD","j_b_gene",names(md2))
+      names(md2) <- gsub("junction_AG","cdr3_a_nucseq",names(md2))
+      names(md2) <- gsub("junction_aa_AG","cdr3_a_aa",names(md2))
+      names(md2) <- gsub("junction_BD","cdr3_b_nucseq",names(md2))
+      names(md2) <- gsub("junction_aa_BD","cdr3_b_aa",names(md2))
+
+      names(md2) <- gsub("cdr3_nt_AG","cdr3_a_nucseq",names(md2))
+      names(md2) <- gsub("cdr3_AG","cdr3_a_aa",names(md2))
+      names(md2) <- gsub("cdr3_nt_BD","cdr3_b_nucseq",names(md2))
+      names(md2) <- gsub("cdr3_BD","cdr3_b_aa",names(md2))
+
+
+      md2$epitope <- "epitope_not_listed"
+      list_for_summ <- names(md2)
+      md2$count <- 1
+      md3 <- as.data.frame(ddply(md2, list_for_summ, numcolwise(sum)))
+
+      name.list <- c("subject","epitope","count","v_a_gene","j_a_gene","cdr3_a_aa","cdr3_a_nucseq","v_b_gene","j_b_gene","cdr3_b_aa","cdr3_b_nucseq")
+
+      md3 <- md3 %>%
+        select(all_of(name.list), everything())
+      md3
+
+    })
+
+    output$TCRdist3_dt <- DT::renderDT(escape = FALSE, options = list(autoWidth = FALSE, lengthMenu = c(2, 5, 10, 20, 50, 100), pageLength = 10, scrollX = TRUE), {
+      TCRdist_AIRR <- TCRdist3_output()
+
+      req(TCRdist_AIRR)
+
+      TCRdist_AIRR
+
+    })
+
+    output$download_button_TCRdist3 <- downloadHandler(
+      filename = function() {
+        paste("tcrdist3_formatted.tsv", sep = "")
+      },
+      content = function(file) {
+        df <- as.data.frame(TCRdist3_output())
+        write.table(df, file, row.names = F, sep = "\t")
+      }
+    )
+
+    # clustcrdist -------
+
+    clustcrdist_output <- reactive({
+      md <- meta_data_for_tcrdist()
+      req(md)
+      md2 <- md[,names(md) %in% c("Sample_Name","v_gene_AG","v_gene_BD","j_gene_AG","j_gene_BD","junction_AG","junction_aa_AG","junction_BD","junction_aa_BD", "cdr3_AG","cdr3_nt_AG","cdr3_BD","cdr3_nt_BD")]
+      print(names(md2))
+      names(md2) <- gsub("Sample_Name","subject",names(md2))
+      names(md2) <- gsub("v_gene_AG","va",names(md2))
+      names(md2) <- gsub("v_gene_BD","vb",names(md2))
+      names(md2) <- gsub("j_gene_AG","ja",names(md2))
+      names(md2) <- gsub("j_gene_BD","jb",names(md2))
+      names(md2) <- gsub("junction_AG","cdr3a_nucseq",names(md2))
+      names(md2) <- gsub("junction_aa_AG","cdr3a",names(md2))
+      names(md2) <- gsub("junction_BD","cdr3b_nucseq",names(md2))
+      names(md2) <- gsub("junction_aa_BD","cdr3b",names(md2))
+
+      names(md2) <- gsub("cdr3_nt_AG","cdr3a_nucseq",names(md2))
+      names(md2) <- gsub("cdr3_AG","cdr3a",names(md2))
+      names(md2) <- gsub("cdr3_nt_BD","cdr3b_nucseq",names(md2))
+      names(md2) <- gsub("cdr3_BD","cdr3b",names(md2))
+      list_for_summ <- names(md2)
+      md2$count <- 1
+      md3 <- as.data.frame(ddply(md2, list_for_summ, numcolwise(sum)))
+
+      name.list <- c("cdr3a","cdr3a_nucseq","va","ja","cdr3b","cdr3b_nucseq","vb","jb","subject")
+
+      md3 <- md3 %>%
+        select(all_of(name.list), everything())
+
+      md3
+
+    })
+
+    output$clustcrdist_dt <- DT::renderDT(escape = FALSE, options = list(autoWidth = FALSE, lengthMenu = c(2, 5, 10, 20, 50, 100), pageLength = 10, scrollX = TRUE), {
+      TCRdist_AIRR <- clustcrdist_output()
+
+      req(TCRdist_AIRR)
+
+      TCRdist_AIRR
+
+    })
+    output$download_button_clustcrdist <- downloadHandler(
+      filename = function() {
+        paste("clustcrdist_formatted.tsv", sep = "")
+      },
+      content = function(file) {
+        df <- as.data.frame(clustcrdist_output())
+        write.table(df, file, row.names = F, sep = "\t")
+      }
+    )
+
+
 
     # TCR constructs -----
 
