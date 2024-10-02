@@ -45,7 +45,6 @@
 #' @importFrom shinyjs useShinyjs toggle
 #' @importFrom colourpicker colourInput updateColourInput colourWidget
 #' @import chisq.posthoc.test
-#' @import reticulate
 #' @importFrom utils installed.packages
 #' @import SeuratObject
 #' @return A shiny R application called STEGO.R
