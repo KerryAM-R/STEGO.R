@@ -289,11 +289,34 @@ runSTEGO <- function(){
 
 
 
-  ###################
-
   # UI page -----
   ui <- fluidPage(
     useShinyjs(),  # Initialize shinyjs
+    #.centre alignment -----
+    tags$head(
+      tags$style(HTML("
+    #load_marker_genes_sig,
+    #load_marker_genes_dual,
+    #run_stats_abudance,
+    #caluclate_Exp,
+    #caluclate_Epi,
+    #caluclate_Epi_imw,
+    #download_button_gene_list_for_ontology,
+    #run_violin,
+    #run_metadata,
+    #clearDataBtn,
+    #downloaddf_SeruatObj,
+    #caluclate_marker1,
+    #caluclate_marker2_3,
+    #run_reduction {
+      display: block;
+      margin-left: auto;
+      margin-right: auto;
+    }
+  "))
+    ),
+
+
 
     # collapsing panel text -----
     tags$head(
@@ -309,6 +332,11 @@ runSTEGO <- function(){
       }
     "))
     ),
+    tags$head(tags$script(HTML("
+  document.addEventListener('DOMContentLoaded', function() {
+    document.querySelector('iframe').allow = 'fullscreen';
+  });
+"))),
     # add hint explanation -----
     tags$head(
       tags$style(HTML(
@@ -737,6 +765,7 @@ runSTEGO <- function(){
                   "TCRex",
                   div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
                   # fluidRow(
+
                   downloadButton("downloaddf_TCRex_10x", "Download table"),
                   div(DT::DTOutput("tb_TCRex_10x_df"),height = "200px"),
                   # )
@@ -761,6 +790,7 @@ runSTEGO <- function(){
                          tags$head(tags$style("#tb_10x_contigues1  {white-space: nowrap;  }")),
                          fluidRow(
                            column(3,selectInput("chain_clusTCR2_10x", p("Select to download",class = "name-header_functions"), choices = c("AG", "BD", "IgH", "IgLK")), ),
+                           tags$head(tags$style("#downloadtb_10x_contigues1  {white-space: normal;  }")),
                            column(3, downloadButton("downloadtb_10x_contigues1", "Download clusTCR"),style = "padding-top: 25px;")
                          ),
 
@@ -919,6 +949,8 @@ runSTEGO <- function(){
                 tabPanel(
                   "For Seurat",
                   tags$head(tags$style("#tb_count_matrix  {white-space: nowrap;  }")),
+                  tags$head(tags$style("#downloadtb_count_matrix  {white-space: normal;  }")),
+                  tags$head(tags$style("#downloadtb_metadata_sc  {white-space: normal;  }")),
                   fluidRow(
                     column(3, downloadButton("downloadtb_count_matrix", "Download count table")),
                     column(3, downloadButton("downloadtb_metadata_sc", "Download meta.data table")),
@@ -987,7 +1019,7 @@ runSTEGO <- function(){
                   "clusTCR",
                   div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
                   div(DT::DTOutput("test.files_ClusTCR2_array")),
-                  downloadButton("download_ClusTCR2_labs_array"),
+                  downloadButton("download_ClusTCR2_labs_array","Download clusTCR file"),
                 ),
                 tabPanel("TCRex"),
                 tabPanel(
@@ -1020,7 +1052,7 @@ runSTEGO <- function(){
                         accept = c(".h5Seurat", "h5Seurat")
               ),
               div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
-
+              tags$head(tags$style("#downloaddf_SeruatObj_Convert_to_RDS  {white-space: normal;  }")),
               downloadButton("downloaddf_SeruatObj_Convert_to_RDS", "Download converted .rds Seurat Obj")
             ),
             mainPanel(
@@ -1057,8 +1089,10 @@ runSTEGO <- function(){
                              div(class = "hint-text", "Upload the files in the 1_TCRex folder for Beta-chain epitope prediction"),
               )
               ),
+              tags$head(tags$style("#downloaddf_TCRexFiltered  {white-space: normal;  }")),
               downloadButton("downloaddf_TCRexFiltered", "Download TCRex merged table"),
             ),
+
             mainPanel(
               width = 9,
               tabsetPanel(
@@ -1068,6 +1102,11 @@ runSTEGO <- function(){
                          div(DT::DTOutput("DEx_TCRexFiltered")),
                          # downloadButton('downloaddf_multiple_ClusTCR2','Download table')
                 ),
+                tabPanel("TCRex website",
+                         tags$a(href = "https://tcrex.biodatamining.be",
+                                target = "_blank",
+                                "Open TCRex website")
+                )
               )
             )
           )
@@ -1099,6 +1138,7 @@ runSTEGO <- function(){
                 ),
                 selectInput("junction_aa_extracting",p("Junction (aa)",class = "name-header_functions"),choices = ""),
                 selectInput("v_gene_extracting",p("V gene",class = "name-header_functions"),choices = ""),
+                tags$head(tags$style("#downloaddf_RDS_extracted_clustcr2_file  {white-space: normal;  }")),
                 div(downloadButton("downloaddf_RDS_extracted_clustcr2_file", "Download extracted clusTCR2 table"),style = "padding-top: 25px;"),
               ),
               ######
@@ -1129,6 +1169,7 @@ runSTEGO <- function(){
                 condition = "input.clusTCR2_tabs2 != 'processing1'",
                 conditionalPanel(
                   condition = "input.run_ClusTCR2 > 0",
+                  tags$head(tags$style("#download_ClusTCR_labels  {white-space: normal;  }")),
                   div(downloadButton("download_ClusTCR_labels", "Download Cluster table"),style = "padding-top: 25px;")
                 ),
               ),
@@ -1255,27 +1296,52 @@ runSTEGO <- function(){
                          selectInput("stored_in_expression",p("Does the .h5 object has multiple part?",class = "name-header_functions"),
                                      choices = c("no", "yes")),
                          uiOutput("feature_input"),
+
+                         tags$head(tags$style("#run_violin  {white-space: normal;  }")),
                          actionButton('run_violin', 'Filter', onclick = "$(tab).removeClass('disabled-1')"),
                          conditionalPanel(
-                           condition = ("input.run_violin != 0"),
+                           condition = ("output.run_violin_triggered"),
                            fluidRow(
                              column(6, numericInput("dimension_sc",p("Max dimensions for clustering",class = "name-header_functions"), value = 15)),
                              column(6, numericInput("resolution",p("Resolution of clusters",class = "name-header_functions"), value = 1)),
                            ),
                            div(actionButton("run_reduction", "Run clustering", onclick = "$(tab).removeClass('disabled-2')"), style = "padding-top: 25px;"),
                            conditionalPanel(
-                             condition = ("input.run_reduction != 0"),
+                             condition = ("output.run_reduction_triggered"),
+                             tags$head(tags$style("#run_metadata  {white-space: normal;  }")),
                              div(actionButton("run_metadata", "Impute metadata after clustering", onclick = "$(tab).removeClass('disabled-3')"), style = "padding-top: 25px;"),
                            ),
                          ),
                          conditionalPanel(
-                           condition = ("input.run_metadata != 0"),
+                           condition = ("output.run_metadata_triggered"),
                            div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
-                           downloadButton("downloaddf_SeruatObj", "Download Seurat (.rds)"), style = "padding-top: 25px;"),
 
-                         div(actionButton("clearDataBtn", "Clear Data"), # Add clear data button here
+                           tags$head(tags$style("#downloaddf_SeruatObj  {white-space: normal;  }")),
+                           div(downloadButton("downloaddf_SeruatObj", "Download Seurat (.rds)"), style = "padding-top: 25px;")
+                         ),
+
+                         tags$head(tags$style("#clearDataBtn  {white-space: normal;  }")),
+                         div(actionButton("clearDataBtn", "Clear Data"), style = "padding-top: 25px;" # Add clear data button here
                          ),
                          tags$hr(),
+
+                         # Extend shinyjs with a custom function to reset inputs and buttons
+                         extendShinyjs(
+                           text = "
+                                  shinyjs.resetInputs = function() {
+                                    // Reset checkboxes
+                                    $('#abTCR_available').prop('checked', false);
+                                    $('#gdTCR_available').prop('checked', false);
+                                    $('#BCR_available').prop('checked', false);
+
+                                    // Notify Shiny about the changes
+                                    Shiny.setInputValue('abTCR_available', false);
+                                    Shiny.setInputValue('gdTCR_available', false);
+                                    Shiny.setInputValue('BCR_available', false);
+                                  }
+                                ",
+                           functions = c("resetInputs")
+                         )
             ),
             # QC main panel -----
             mainPanel(
@@ -1568,6 +1634,7 @@ runSTEGO <- function(){
                 ),
                 div(class = "select-input-container",
                     checkboxInput("different_tech",p("Remove genes that are not present in all runs",class = "name-header2"),value = F)),
+                tags$head(tags$style("#downloaddf_SeruatObj_merged2  {white-space: normal;  }")),
                 downloadButton("downloaddf_SeruatObj_merged2", "Download Merged Seurat")
               ),
               conditionalPanel(
@@ -1581,6 +1648,7 @@ runSTEGO <- function(){
                           multiple = F,
                           accept = c(".rds", "rds")
                 ),
+                tags$head(tags$style("#downloaddf_SeruatObj_merged  {white-space: normal;  }")),
                 downloadButton("downloaddf_SeruatObj_merged", "Download Batch corrected Seurat")
               )
             ),
@@ -1804,6 +1872,7 @@ runSTEGO <- function(){
               selectInput("Require_custom_geneset",p("Require custom genes?",class = "name-header_functions"),
                           choices = c("no", "yes")),
               uiOutput("scGate_cutoffs"),
+              tags$head(tags$style("#downloaddf_SeruatObj_annotated  {white-space: normal;  }")),
               downloadButton("downloaddf_SeruatObj_annotated", "Download Annotated Seurat"),
             ),
             mainPanel(
@@ -2014,6 +2083,7 @@ runSTEGO <- function(){
                         accept = c(".rds", "rds")
               ),
               selectInput("Samp_col_SampToRemove",p("Column name",class = "name-header_functions"), choices = ""),
+              tags$head(tags$style("#downloaddf_SeruatObj_annotated_SampToKeep  {white-space: normal;  }")),
               downloadButton("downloaddf_SeruatObj_annotated_SampToKeep", "Download .rds"),
             ),
             mainPanel(
@@ -2052,7 +2122,8 @@ runSTEGO <- function(){
                                accept = c(".rds", "rds")
                      ),
                      # selectInput("Type_of_source_formatting", "TCR_processing", choices = c("scRepertiore","manual")),
-                     downloadButton("downloaddf_SeruatObj_reformatted_md", "Download .rds"),
+                     tags$head(tags$style("#downloaddf_SeruatObj_reformatted_md  {white-space: normal;  }")),
+                     downloadButton("downloaddf_SeruatObj_reformatted_md", "Download re-formatted .rds"),
                    ),
                    mainPanel(
                      width = 9,
@@ -2187,7 +2258,7 @@ runSTEGO <- function(){
                         choices = ""),
             selectInput("Samp_col", p("Selected Sample",class = "name-header_functions"),
                         choices = ""),
-            # Overivew sbp --------
+            # Overview sbp --------
             conditionalPanel(
               condition = "input.check_up_files != 'up'",
 
@@ -2280,9 +2351,8 @@ runSTEGO <- function(){
                 )
               ),
             ),
-
             conditionalPanel(
-              condition = "input.check_up_files == 'up2' || input.check_up_files == 'Prior'",
+              condition = "input.check_up_files == 'up2'",
               p("Overview analysis",class = "name-header4"),
               conditionalPanel(
                 condition = "input.QC_panel == 'TCR'",
@@ -2299,10 +2369,6 @@ runSTEGO <- function(){
             ),
             conditionalPanel(
               condition = "input.PriorTBMods == 'PriorRepertoireTB' || input.check_up_files == 'TCR_and_GEX_tb' ",
-
-              # condition = "input.check_up_files == 'TCR_and_GEX_tb' ",
-
-
               p("TCR -> GEx analysis",class = "name-header5"),
               #####
               # abundance variables
@@ -2335,10 +2401,10 @@ runSTEGO <- function(){
                                       column(6, numericInput("singlets_filter",p("Filter TCR lists \u2264:",class = "name-header_functions"),value = 2)),
                                     ),
 
-                                    fluidRow(
-                                      column(3,""),
-                                      column(6,actionButton("run_stats_abudance","Run stats (abudance)")),
-                                    )
+                                    # fluidRow(
+                                    tags$head(tags$style("#run_stats_abudance  {white-space: normal;  }")),
+                                    actionButton("run_stats_abudance","Run stats (abudance)")
+                                    # )
 
                     )
                   )
@@ -2373,9 +2439,10 @@ runSTEGO <- function(){
                                       fluidRow(
                                         column(12, selectizeInput("selected_Indiv_Ex_1", p("Samp 1", class = "name-header_functions2"),choices = "", multiple = T)),
                                         column(12, selectizeInput("selected_Indiv_Ex_2", p("Samp 2", class = "name-header_functions2"),choices = "", multiple = T)),
-                                        column(3,),
-                                        column(6,  actionButton("caluclate_Exp","Calc Expansion Stats")),
-                                      )
+                                      ),
+                                      tags$head(tags$style("#caluclate_Exp  {white-space: normal;  }")),
+
+                                      actionButton("caluclate_Exp","Calc Expansion Stats")
                       )
                     ),
                   ),
@@ -2389,9 +2456,10 @@ runSTEGO <- function(){
                                     selectInput("chain_TCR", p("Chain to display",class = "name-header_functions2"), choices = c("TRA","TRG","TRB","TRD", "IgH", "IgKL")),
 
                                     selectizeInput("Clusters_to_dis_PIE", p("Clusters to display",class = "name-header_functions2"), choices = "", multiple = F),
-                                    fluidRow(
-                                      column(6,  actionButton("caluclate_clust","Calc Clustering Stats")),
-                                    )
+                                    # fluidRow(
+                                    tags$head(tags$style("#caluclate_clust  {white-space: normal;  }")),
+                                    actionButton("caluclate_clust","Calc Clustering Stats")
+                                    # )
 
                     )
                   )
@@ -2410,16 +2478,14 @@ runSTEGO <- function(){
                                     fluidRow(
                                       column(6, actionButton("Update_epi", "Add in Epitope list")),
                                       column(6, selectInput("Epi_of_interest", p("Epitope of interest",class = "name-header_functions"), "")),
-
                                     ),
-                                    fluidRow(
-                                      column(3,""),
-                                      column(9,  actionButton("caluclate_Epi","Calc Epitope Stats")),
-                                    )
+
+                                    tags$head(tags$style("#caluclate_Epi  {white-space: normal;  }")),
+                                    actionButton("caluclate_Epi","Calc Epitope Stats")
+
                     )
                   )
                 ),
-
                 conditionalPanel(
                   condition = "input.Panel_TCRUMAP=='Epitope_IMW'",
                   bsCollapse(
@@ -2427,19 +2493,60 @@ runSTEGO <- function(){
                     bsCollapsePanel("Epitope analysis",style = "primary custom-panel",
                                     selectInput("imw_column_for_epitope","IMW column:",choices = ""),
                                     selectInput("epi_imw_of_interest","Epitope/species to examine", choices = ""),
-                                    fluidRow(
-                                      column(3,""),
-                                      column(9,  actionButton("caluclate_Epi_imw","Calc Epitope Stats")),
-                                    )
+                                    tags$head(tags$style("#caluclate_Epi_imw  {white-space: normal;  }")),
+                                    actionButton("caluclate_Epi_imw","Calc Epitope Stats")
+
                     )
                   )
                 )
-
-
               ),
+            ),
+            ### marker ------
 
+            conditionalPanel(
+              condition = "input.check_up_files == 'GEx_TCR'",
+              p("Marker variables",class = "name-header4"),
+              conditionalPanel(
+                condition = "input.Marker_Panel == 'single_marker_panel'",
+                bsCollapse(
+                  id = "collapse_marker_single", open = 'Single marker', multiple = TRUE,
+                  bsCollapsePanel("Single marker",style = "primary custom-panel",
+                                  column(12, selectInput("col_marker_scale", p("Colour scale",class = "name-header_functions"), choices = col_markers, selected = col_markers[1])),
+
+                                  p("single panel variables",class = "name-header4"),
+                                  tags$head(tags$style("#load_marker_genes_sig  {white-space: normal;  }")),
+                                  actionButton("load_marker_genes_sig", "Load genes"),
+                                  fluidRow(
+                                    column(6, selectizeInput("Var_to_col_marker", p("Marker col",class = "name-header_functions"), "")),
+                                  ),
+                                  tags$head(tags$style("#caluclate_marker1  {white-space: normal;  }")),
+                                  actionButton("caluclate_marker1","Single marker stats")
+                  )
+                )
+              ),
+              conditionalPanel(
+                condition = "input.Marker_Panel == 'dual_marker_panel'",
+                bsCollapse(
+                  id = "collapse_marker_dual", open = "Dual marker", multiple = TRUE,
+                  bsCollapsePanel("Dual marker",style = "primary custom-panel",
+                                  actionButton("load_marker_genes_dual", "Load genes",width = "150px"),
+                                  fluidRow(
+
+                                    column(6, selectizeInput("Var_to_col_marker2", p("X-axis Marker",class = "name-header_functions"), "")),
+                                    column(6, selectizeInput("Var_to_col_marker3", p("Y-axis Marker",class = "name-header_functions"), ""))
+                                  ),
+                                  tags$head(tags$style("#caluclate_marker2_3  {white-space: normal;  }")),
+                                  actionButton("caluclate_marker2_3","Dual marker stats")
+                  )
+                )
+              )
+
+            ),
+            ## collapse all -----
+            conditionalPanel(
+              condition = "input.check_up_files == 'Prior' || input.check_up_files == 'TCR_and_GEX_tb' ||input.check_up_files == 'GEx_TCR'",
               p("Parameters for all sections",class = "name-header4"),
-              ## colapse all -----
+
               bsCollapse(
                 id = "collapseExampleHeat", open = NULL, multiple = TRUE,
                 bsCollapsePanel(
@@ -2465,7 +2572,8 @@ runSTEGO <- function(){
                                          )),
                                   column(6, numericInput("min_point_", p("Min point cut off",class = "name-header_functions2"), value = 0.25)),
                                   column(6, numericInput("LogFC_", p("Min LogFC cut off",class = "name-header_functions2"), value = 0.25)),
-                                  column(12, numericInput("pval.ex.filter", p("adj.p-val cut-off",class = "name-header_functions2"), value = 0.1)),
+                                  column(6, checkboxInput("pval_filter",p("P-val filter?",class = "name-header3"))),
+                                  column(6, numericInput("pval.ex.filter", p("adj.p-val cut-off",class = "name-header_functions2"), value = 0.1)),
 
                                   column(12, div(class = "select-input-container",
                                                  checkboxInput("logFC_pval_findmarker",p("Positive only?",class = "name-header3"),value = T),
@@ -2498,14 +2606,6 @@ runSTEGO <- function(){
                                 )
                 )),
 
-
-
-
-            ),
-
-            conditionalPanel(
-              condition = "input.check_up_files == 'Prior' || input.check_up_files == 'TCR_and_GEX_tb' ||input.check_up_files == 'GEx_TCR'",
-
               bsCollapse(
                 id = "collapseExampleViolin", open = NULL, multiple = TRUE,
                 bsCollapsePanel(title = "Violin plot", style = "primary custom-panel",
@@ -2526,52 +2626,22 @@ runSTEGO <- function(){
 
             ),
 
-            #####
-
-
-
-
-
-
-            ### marker ------
             conditionalPanel(
-              condition = "input.check_up_files == 'GEx_TCR'",
-              p("Marker variables",class = "name-header4"),
-              column(12, selectInput("col_marker_scale", p("Colour scale",class = "name-header_functions"), choices = col_markers, selected = col_markers[1])),
+              condition = "input.check_up_files == 'Prior' || input.check_up_files == 'TCR_and_GEX_tb' ||input.check_up_files == 'GEx_TCR'",
 
-              conditionalPanel(
-                condition = "input.Marker_Panel == 'single_marker_panel'",
-                p("single panel variables",class = "name-header4"),
+              bsCollapse(
+                id = "collapseExampleGeneList_for_ontology", open = NULL, multiple = TRUE,
+                bsCollapsePanel(title = "Gene list", style = "primary custom-panel",
+                                tags$head(tags$style("#download_button_gene_list_for_ontology  {white-space: normal;  }")),
 
-                fluidRow(
-                  column(3,""),
-                  column(6, actionButton("load_marker_genes_sig", "Load genes",width = "150px")),
-                  column(3,""),
+                                downloadButton("download_button_gene_list_for_ontology", "Background gene list")
 
-                  column(6, selectizeInput("Var_to_col_marker", p("Marker col",class = "name-header_functions"), "")),
                 )
-
-
-              ),
-              conditionalPanel(
-                condition = "input.Marker_Panel == 'dual_marker_panel'",
-
-                # marker 1 # cut-off 1
-                # marker 2 @ cut-off 2 (negative control)
-                fluidRow(
-                  column(3,""),
-                  column(6, actionButton("load_marker_genes_dual", "Load genes",width = "150px")),
-                  column(3,""),
-                  column(6, selectizeInput("Var_to_col_marker2", p("X-axis Marker",class = "name-header_functions"), "")),
-                  column(6, selectizeInput("Var_to_col_marker3", p("Y-axis Marker",class = "name-header_functions"), ""))
-                ),
               )
-
             ),
 
-            # prioritisation specific variables -----
+            # prioritization specific variables -----
             conditionalPanel(
-
               condition = "input.check_up_files == 'Prior'",
               p("Prioritization",class = "name-header4"),
               fluidRow(
@@ -3131,7 +3201,6 @@ runSTEGO <- function(){
                                   fluidRow(
                                     column(12, selectInput("Graph_split_order_EXP",p("Order of expanded",class = "name-header_functions"),
                                                            choices = "", width = "1200px", multiple = TRUE),),
-
                                   ),
                                   tabsetPanel(
                                     id = "ExPan",
@@ -3284,7 +3353,7 @@ runSTEGO <- function(){
                                                        value = "ClusPan_stat",
                                                        div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
                                                        div(DT::DTOutput("compare.stat_Cluster_DT")),
-                                                       downloadButton("downloadtb_compare.stat_Cluster", "Download table")
+                                                       downloadButton("downloaddf_FindMarker_Cluster", "Download table")
                                               ),
                                               tabPanel("Dotplot",
                                                        value = "ClusPan_dot",
@@ -3433,6 +3502,12 @@ runSTEGO <- function(){
                                                column(1, style = "margin-top: 20px;", downloadButton("downloadPlotPNG_all_expression_dotplot_epi", "PNG"))
                                              ),
                                     ),
+
+                                    tabPanel("Violin", value = "EpiPan_violin",
+
+
+                                    ),
+
                                     tabPanel("Over-representation",
                                              value = "EpiPan_OvRep",
                                              p("Download the stats filtered table here, and the transcripts used for the background."),
@@ -3450,7 +3525,7 @@ runSTEGO <- function(){
                                     )
                                   ),
                          ),
-                         # eptope analysis IMW ------
+                         # epitope analysis IMW ------
                          tabPanel("Epitope (IMW)", value = "Epitope_IMW",
                                   tabsetPanel(id = "Tabs_for_IMW",
                                               tabPanel("Summary Table",value = "epit_imw_sumtab",
@@ -3458,11 +3533,30 @@ runSTEGO <- function(){
                                                        div(DT::DTOutput("Epitope_imw_dt")),
                                                        downloadButton("downloaddf_Pie_Epitope_dt", "Download table")),
                                               # tabPanel("Heatmap"),
-                                              tabPanel("Plots",
-                                                       plotOutput("render_bar_plot_imw_epi", height = "400px"),
+                                              tabPanel("Plots",value = "imw_epi_plots",
+                                                       fluidRow(
+                                                         column(
+                                                           3,
+                                                           wellPanel(
+                                                             id = "tPanel24", style = "overflow-y:scroll; max-height: 600px",
+                                                             uiOutput("myPanel_cols_imw_epi_bar")
+                                                           )
+                                                         ),
+                                                         column(9, plotOutput("render_bar_plot_imw_epi", height = "400px"))
+                                                       ),
+
+                                                       fluidRow(
+                                                         column(2, numericInput("width_bar_plot_imw_epi",p("Width (PDF)",class = "name-header_functions"), value = 10)),
+                                                         column(2, numericInput("height_bar_plot_imw_epi",p("Height (PDF)",class = "name-header_functions"), value = 8)),
+                                                         column(1, style = "margin-top: 20px;", downloadButton("downloadPlot_bar_plot_imw_epi", "PDF")),
+                                                         column(2, numericInput("width_png_bar_plot_imw_epi",p("Width (PNG)",class = "name-header_functions"), value = 1200)),
+                                                         column(2, numericInput("height_png_bar_plot_imw_epi",p("Height (PNG)",class = "name-header_functions"), value = 1000)),
+                                                         column(2, numericInput("resolution_PNG_bar_plot_imw_epi",p("Resolution (PNG)",class = "name-header_functions"), value = 144)),
+                                                         column(1, style = "margin-top: 20px;", downloadButton("downloadPlotPNG_bar_plot_imw_epi", "PNG"))
+                                                       ),
 
                                               ),
-                                              tabPanel("Stats",
+                                              tabPanel("Stats",value = "imw_epi_stats",
                                                        div(DT::DTOutput("Epi_imw_of_interest_DF")),
                                                        div(DT::DTOutput("compare.stat_Epi_imw_DT")),
 
@@ -3472,7 +3566,7 @@ runSTEGO <- function(){
                                                        ),
 
                                               ),
-                                              tabPanel("dotplot",
+                                              tabPanel("dotplot", value = "imw_epi_dotplot",
                                                        plotOutput("all_expression_dotplot_epi_imw", height = "400px"),
                                                        fluidRow(
                                                          column(2, numericInput("width_all_expression_dotplot_epi_imw",p("Width (PDF)",class = "name-header_functions"), value = 20)),
@@ -3484,7 +3578,7 @@ runSTEGO <- function(){
                                                          column(1, style = "margin-top: 20px;", downloadButton("downloadPlotPNG_all_expression_dotplot_epi_imw", "PNG"))
                                                        ),
                                               ),
-                                              tabPanel("Violin",
+                                              tabPanel("Violin",value = "imw_epi_violin",
                                                        selectInput("imw_epit_stats_genes","Genes for violin", choice = ""),
                                                        plotOutput("Violin_epi_imw_sig", height = "600px"),
 
@@ -3703,10 +3797,21 @@ runSTEGO <- function(){
                                                     # determine if
                                                     # segregated into expanded vs non-expaned  expanded clonotypes?
                                            ),
-                                           # tabPanel("Dotplot",
-                                           #
-                                           #
-                                           # ),
+                                           tabPanel("Dotplot",value = "MP_plot_dotplot",
+
+                                                    plotOutput("dotplot_single_marker_plot", height = "400px"),
+
+                                                    fluidRow(
+                                                      column(2, numericInput("width_dotplot_single_marker",p("Width (PDF)",class = "name-header_functions"), value = 10)),
+                                                      column(2, numericInput("height_dotplot_single_marker",p("Height (PDF)",class = "name-header_functions"), value = 5)),
+                                                      column(1, style = "margin-top: 20px;", downloadButton("downloadPlot_dotplot_single_marker", "PDF")),
+                                                      column(2, numericInput("width_png_dotplot_single_marker",p("Width (PNG)",class = "name-header_functions"), value = 1600)),
+                                                      column(2, numericInput("height_png_dotplot_single_marker",p("Height (PNG)",class = "name-header_functions"), value = 800)),
+                                                      column(2, numericInput("resolution_PNG_dotplot_single_marker",p("Resolution (PNG)",class = "name-header_functions"), value = 144)),
+                                                      column(1, style = "margin-top: 20px;", downloadButton("downloadPlotPNG_dotplot_single_marker", "PNG")),
+                                                    ),
+
+                                           ),
                                            # tabPanel("Over-representation",
                                            #
                                            # ),
@@ -3717,69 +3822,85 @@ runSTEGO <- function(){
                              # dual marker analysis ------
                              tabPanel(
                                "Dual marker analysis", value = "dual_marker_panel",
-
                                fluidRow(
                                  column(2, numericInput("Filter_dual_UMAP1_marker", p("UMAP_1 >",class = "name-header_functions"), value = -20)),
                                  column(2, numericInput("Filter_dual_UMAP1_marker2",p("UMAP_1 <",class = "name-header_functions"), value = 20)),
                                  column(2, numericInput("Filter_dual_UMAP2_marker",p("UMAP_2 >",class = "name-header_functions"), value = -20)),
-                                 column(2, numericInput("Filter_dual_UMAP2_marker2",p("UMAP_2 <",class = "name-header_functions"), value = 20))
-                               ),
-
-                               fluidRow(
+                                 column(2, numericInput("Filter_dual_UMAP2_marker2",p("UMAP_2 <",class = "name-header_functions"), value = 20)),
                                  column(2, numericInput("X_axis_dot_dual",p("X-axis line",class = "name-header_functions"),
                                                         value = 0, step = 0.1)),
                                  column(2, numericInput("Y_axis_dot_dual",p("Y-axis line",class = "name-header_functions"),
                                                         value = 0, step = 0.1)),
                                ),
-                               tabsetPanel(
-                                 tabPanel(
-                                   "table",
-                                   div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
-                                   div(DT::DTOutput("meta_data_for_features_scale2_df")),
-                                 ),
-                                 tabPanel(
-                                   "Feature plots",
-                                   div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
-                                   fluidRow(
-                                     column(3, numericInput("max_scale2",p("MAX scale (left)",class = "name-header_functions"), value = "")),
-                                     column(3, numericInput("max_scale3",p("MAX scale (right)",class = "name-header_functions"), value = "")),
-                                   ),
-                                   div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
-                                   fluidRow(
-                                     column(6, plotOutput("marker_selected_UMAP_plot2", height = "600px")),
-                                     column(6, plotOutput("marker_selected_UMAP_plot3", height = "600px")),
-                                   )
-                                 ),
-                                 tabPanel(
-                                   "X by Y plot",
-                                   div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
-                                   plotOutput("df_dotplot_marker_plot", height = "600px"),
-                                   fluidRow(
-                                     column(2, numericInput("width_df_dotplot_marker_plot",p("Width (PDF)",class = "name-header_functions"), value = 10)),
-                                     column(2, numericInput("height_df_dotplot_marker_plot",p("Height (PDF)",class = "name-header_functions"), value = 8)),
-                                     column(1, style = "margin-top: 20px;", downloadButton("downloadPlot_df_dotplot_marker_plot", "PDF")),
-                                     column(2, numericInput("width_png_df_dotplot_marker_plot",p("Width (PNG)",class = "name-header_functions"), value = 1200)),
-                                     column(2, numericInput("height_png_df_dotplot_marker_plot",p("Height (PNG)",class = "name-header_functions"), value = 1000)),
-                                     column(2, numericInput("resolution_PNG_df_dotplot_marker_plot",p("Resolution (PNG)",class = "name-header_functions"), value = 144)),
-                                     column(1, style = "margin-top: 20px;", downloadButton("downloadPlotPNG_df_dotplot_marker_plot", "PNG")),
-                                   ),
-                                 ),
-                                 # tabPanel("Violin plot"),# will include splitting by T cell/B cell markers? Ig?
-                                 # tabPanel("UMAP"),
-                                 tabPanel(
-                                   "TCR table",
-                                   div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
-                                   div(DT::DTOutput("dual_maker_TCR_Sum_DT")),
-                                   downloadButton("Dule_marker_TCRsummary_DT", "Download table")
-                                 ),
-                                 tabPanel(
-                                   "Stats",
-                                   div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
-                                   selectInput("quad_dualmarker",p("Quadrant to compute",class = "name-header_functions"),
-                                               choices = c("Q1", "Q2", "Q3", "Q4")),
-                                   div(DT::DTOutput("dual_maker_TCR_statsTB")),
-                                   downloadButton("Dule_marker_statsTBDownload", "Download table")
-                                 ),
+                               selectInput("quad_dualmarker",p("Quadrant to compute",class = "name-header_functions"),
+                                           choices = c("Q1", "Q2", "Q3", "Q4")),
+                               tabsetPanel(id = "dual_marker_panel2",
+                                           tabPanel(
+                                             "table", value = "dual_marker_panel2_table",
+                                             div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
+                                             div(DT::DTOutput("meta_data_for_features_scale2_df")),
+                                           ),
+                                           tabPanel(
+                                             "Feature plots", value = "dual_marker_panel2_featureplot",
+                                             div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
+                                             fluidRow(
+                                               column(3, numericInput("max_scale2",p("MAX scale (left)",class = "name-header_functions"), value = "")),
+                                               column(3, numericInput("max_scale3",p("MAX scale (right)",class = "name-header_functions"), value = "")),
+                                             ),
+                                             div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
+                                             fluidRow(
+                                               column(6, plotOutput("marker_selected_UMAP_plot2", height = "600px")),
+                                               column(6, plotOutput("marker_selected_UMAP_plot3", height = "600px")),
+                                             )
+                                           ),
+                                           tabPanel(
+                                             "X by Y plot", value = "dual_marker_panel2_xyplot",
+                                             div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
+                                             plotOutput("df_dotplot_marker_plot", height = "600px"),
+                                             fluidRow(
+                                               column(2, numericInput("width_df_dotplot_marker_plot",p("Width (PDF)",class = "name-header_functions"), value = 10)),
+                                               column(2, numericInput("height_df_dotplot_marker_plot",p("Height (PDF)",class = "name-header_functions"), value = 8)),
+                                               column(1, style = "margin-top: 20px;", downloadButton("downloadPlot_df_dotplot_marker_plot", "PDF")),
+                                               column(2, numericInput("width_png_df_dotplot_marker_plot",p("Width (PNG)",class = "name-header_functions"), value = 1200)),
+                                               column(2, numericInput("height_png_df_dotplot_marker_plot",p("Height (PNG)",class = "name-header_functions"), value = 1000)),
+                                               column(2, numericInput("resolution_PNG_df_dotplot_marker_plot",p("Resolution (PNG)",class = "name-header_functions"), value = 144)),
+                                               column(1, style = "margin-top: 20px;", downloadButton("downloadPlotPNG_df_dotplot_marker_plot", "PNG")),
+                                             ),
+                                           ),
+                                           # tabPanel("Violin plot"),# will include splitting by T cell/B cell markers? Ig?
+                                           # tabPanel("UMAP"),
+                                           tabPanel(
+                                             "TCR table", value = "dual_marker_panel2_tcrtable",
+                                             div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
+                                             div(DT::DTOutput("dual_maker_TCR_Sum_DT")),
+                                             downloadButton("Dule_marker_TCRsummary_DT", "Download table")
+                                           ),
+                                           tabPanel(
+                                             "Stats",value = "dual_marker_panel2_stats",
+                                             div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
+
+                                             div(DT::DTOutput("dual_maker_TCR_statsTB")),
+                                             downloadButton("Dule_marker_statsTBDownload", "Download table"),
+
+                                             # )
+                                           ),
+
+                                           tabPanel("Dotplot",value = "DP_plot_dotplot",
+
+                                                    plotOutput("dotplot_dual_marker_plot", height = "400px"),
+
+                                                    # fluidRow(
+                                                    #   column(2, numericInput("width_dotplot_single_marker",p("Width (PDF)",class = "name-header_functions"), value = 10)),
+                                                    #   column(2, numericInput("height_dotplot_single_marker",p("Height (PDF)",class = "name-header_functions"), value = 5)),
+                                                    #   column(1, style = "margin-top: 20px;", downloadButton("downloadPlot_dotplot_single_marker", "PDF")),
+                                                    #   column(2, numericInput("width_png_dotplot_single_marker",p("Width (PNG)",class = "name-header_functions"), value = 1600)),
+                                                    #   column(2, numericInput("height_png_dotplot_single_marker",p("Height (PNG)",class = "name-header_functions"), value = 800)),
+                                                    #   column(2, numericInput("resolution_PNG_dotplot_single_marker",p("Resolution (PNG)",class = "name-header_functions"), value = 144)),
+                                                    #   column(1, style = "margin-top: 20px;", downloadButton("downloadPlotPNG_dotplot_single_marker", "PNG")),
+                                                    # ),
+
+                                           ),
+
                                )
                              )
                            )
@@ -3805,7 +3926,7 @@ runSTEGO <- function(){
                                           multiple = F,
                                           accept = c(".rds", "rds")
                                 ),
-
+                                tags$head(tags$style("#download_extracting_md_from_sc_tb  {white-space: normal;  }")),
                                 downloadButton("download_extracting_md_from_sc_tb","download meta data")
 
                    ),
@@ -3827,7 +3948,7 @@ runSTEGO <- function(){
                                           multiple = F,
                                           accept = c(".csv", "csv","csv.gz",".gz")
                                 ),
-
+                                tags$head(tags$style("#download_button_filtered_data_df  {white-space: normal;  }")),
                                 downloadButton("download_button_filtered_data_df", "Download Filtered Data"),
                                 uiOutput("filter_checkboxes"),
                    ),
@@ -3852,6 +3973,7 @@ runSTEGO <- function(){
                                           multiple = F,
                                           accept = c(".csv", "csv","csv.gz",".gz")
                                 ),
+                                tags$head(tags$style("#download_button_summarising_data  {white-space: normal;  }")),
                                 downloadButton("download_button_summarising_data", "Download summarised Data"),
                    ),
                    mainPanel(
@@ -3892,16 +4014,19 @@ runSTEGO <- function(){
                                 ),
                                 conditionalPanel(
                                   condition = "input.input_tcrdist_output == 'tcrdist'",
+                                  tags$head(tags$style("#download_button_TCRdist  {white-space: normal;  }")),
                                   downloadButton("download_button_TCRdist", "Download TCRdist"),
                                 ),
 
                                 conditionalPanel(
                                   condition = "input.input_tcrdist_output == 'tcrdist3'",
+                                  tags$head(tags$style("#download_button_TCRdist3  {white-space: normal;  }")),
                                   downloadButton("download_button_TCRdist3", "Download TCRdist3"),
                                 ),
                                 conditionalPanel(
                                   condition = "input.input_tcrdist_output == 'clustcrdist'",
-                                  downloadButton("download_button_clustcrdist", "Download clusTCRdist"),
+                                  tags$head(tags$style("#download_button_clustcrdist  {white-space: normal;  }")),
+                                  downloadButton("download_button_clustcrdist", "Download clustcrdist"),
                                 ),
 
                    ),
@@ -3970,6 +4095,7 @@ runSTEGO <- function(){
                                     selectInput("chain_type_olga","Chain type: ",choices = c("TRB","TRA")),
                                     # selectInput("chain_v_gene","V gene",choices = c("TRB","TRA")),
                                     selectInput("species_olga","Species: ",choices = c("human","mouse")),
+                                    tags$head(tags$style("#downloaddf_pgen_dt  {white-space: normal;  }")),
                                     downloadButton("downloaddf_pgen_dt", "Download Table (.csv)"))
 
                      ),
@@ -4010,13 +4136,14 @@ runSTEGO <- function(){
         tabPanel("ImmuneWatch", value = "IMW",
                  sidebarLayout(
                    sidebarPanel(
+                     id = "tPanel4", style = "overflow-y:scroll; max-height: 800px; position:relative;", width = 3,
                      fileInput("file1_MD_for_IMW",
                                p("Upload .csv file",class = "name-header_functions"),
                                multiple = F,
                                accept = c(".csv", "csv","csv.gz",".gz")
                      ),
                      textInput("file_names_IMW",p("Name for IMW file ",class = "name-header_functions"), "", width = "600px"),
-
+                     tags$head(tags$style("#downloadtb_Reformatting_data_sc_IMW  {white-space: normal;  }")),
                      div(downloadButton("downloadtb_Reformatting_data_sc_IMW", "Download IMW (.tsv)"),style = "padding-top: 25px;"),
                    ),
                    mainPanel(
@@ -4027,7 +4154,7 @@ runSTEGO <- function(){
         tabPanel("Constructs",
                  sidebarLayout(
                    sidebarPanel(
-
+                     id = "tPanel4", style = "overflow-y:scroll; max-height: 800px; position:relative;", width = 3,
                      # fluidRow(
                      div(class = "select-input-container",
                          h4('Info for this section'),
@@ -4049,7 +4176,7 @@ runSTEGO <- function(){
                                accept = c(".tsv", "tsv","tsv.gz",".gz")
                      ),
 
-                     # textInput("file_names_IMW",p("Name for IMW file ",class = "name-header_functions"), "", width = "600px"),
+                     tags$head(tags$style("#download_button_ab_paired_constructs  {white-space: normal;  }")),
                      div(downloadButton("download_button_ab_paired_constructs", "Download AB paired file (.csv)"),style = "padding-top: 25px;"),
                    ),
                    mainPanel(
@@ -4075,7 +4202,7 @@ runSTEGO <- function(){
       ),
 
       navbarMenu("Info",
-                 tabPanel("Helpful resources",
+                 tabPanel("Tutorial",
                           # Embed the documentation using an iframe
                           tags$iframe(
                             src = "https://stegor.readthedocs.io/en/latest/",  # URL to the documentation
@@ -4109,6 +4236,55 @@ runSTEGO <- function(){
       print(sessionInfo())
     })
 
+    # resetting the buttons ------
+    # Create reactive values to track action button state
+    rv <- reactiveValues(
+      run_violin_trigger = FALSE,
+      run_reduction_trigger = FALSE,
+      run_metadata_trigger = FALSE
+    )
+
+    # Observe the filter button and set the trigger to TRUE
+    observeEvent(input$run_violin, {
+      rv$run_violin_trigger <- TRUE
+    })
+
+    # Observe the clustering button and set the trigger to TRUE
+    observeEvent(input$run_reduction, {
+      rv$run_reduction_trigger <- TRUE
+    })
+
+    # Observe the metadata button and set the trigger to TRUE
+    observeEvent(input$run_metadata, {
+      rv$run_metadata_trigger <- TRUE
+    })
+
+    # Observe the clear button and reset the state
+    observeEvent(input$clearDataBtn, {
+      js$resetInputs()  # Reset inputs using shinyjs
+      rv$run_violin_trigger <- FALSE  # Reset the filter trigger
+      rv$run_reduction_trigger <- FALSE  # Reset the clustering trigger
+      rv$run_metadata_trigger <- FALSE  # Reset the metadata trigger
+    })
+
+    # Output a reactive value for the conditionalPanel of run_violin
+    output$run_violin_triggered <- reactive({
+      rv$run_violin_trigger
+    })
+    outputOptions(output, "run_violin_triggered", suspendWhenHidden = FALSE)
+
+    # Output a reactive value for the conditionalPanel of run_reduction
+    output$run_reduction_triggered <- reactive({
+      rv$run_reduction_trigger
+    })
+    outputOptions(output, "run_reduction_triggered", suspendWhenHidden = FALSE)
+
+    # Output a reactive value for the conditionalPanel of run_metadata
+    output$run_metadata_triggered <- reactive({
+      rv$run_metadata_trigger
+    })
+    outputOptions(output, "run_metadata_triggered", suspendWhenHidden = FALSE)
+
     # citation ------
 
     # Get the citation
@@ -4127,12 +4303,14 @@ runSTEGO <- function(){
     # tool tips in server ----
 
     # collapse -------
-    observeEvent(c(input$clonal_abudance_tabs, input$epitope_tabpanel, input$ClusTCR2_panel_tabs, input$Panel_TCRUMAP), {
-      if (input$clonal_abudance_tabs == "TopHeat" && input$Panel_TCRUMAP == "top_clone") {
+
+    # heatmap to collaps -----
+    observeEvent(c(input$clonal_abudance_tabs, input$epitope_tabpanel, input$ClusTCR2_panel_tabs, input$Panel_TCRUMAP, input$check_up_files), {
+      if (input$clonal_abudance_tabs == "TopHeat" && input$Panel_TCRUMAP == "top_clone" && input$check_up_files == "TCR_and_GEX_tb") {
         runjs("$('#collapseExampleHeat .panel-collapse').collapse('show');")
-      } else if (input$ClusTCR2_panel_tabs == "ClustHeat" && input$Panel_TCRUMAP == "ClusTCR2") {
+      } else if (input$ClusTCR2_panel_tabs == "ClustHeat" && input$Panel_TCRUMAP == "ClusTCR2" && input$check_up_files == "TCR_and_GEX_tb") {
         runjs("$('#collapseExampleHeat .panel-collapse').collapse('show');")
-      } else if (input$epitope_tabpanel == "Epitope_heatmap_tabs" && input$Panel_TCRUMAP == "Epitope") {
+      } else if (input$epitope_tabpanel == "Epitope_heatmap_tabs" && input$Panel_TCRUMAP == "Epitope" && input$check_up_files == "TCR_and_GEX_tb") {
         runjs("$('#collapseExampleHeat .panel-collapse').collapse('show');")
       } else {
         # if (input$clonal_abudance_tabs != "TopHeat" || input$ClusTCR2_panel_tabs != "ClustHeat") {
@@ -4150,9 +4328,6 @@ runSTEGO <- function(){
         # } else
       }
     })
-
-
-
 
     observeEvent(input$Panel_TCRUMAP, {
       if (input$Panel_TCRUMAP == "Expanded") {
@@ -4193,25 +4368,34 @@ runSTEGO <- function(){
         # } else
       }
     })
-
-
-
-
-
     # collapse_clonal_abundance
 
+    # collapsing the stats panel ---
+    observeEvent(c(input$clonal_abudance_tabs, input$ExPan, input$epitope_tabpanel, input$PriorTBMods, input$ClusTCR2_panel_tabs, input$Tabs_for_IMW, input$single_marker_panel2, input$dual_marker_panel2, input$Panel_TCRUMAP, input$Marker_Panel, input$check_up_files), {
+      if (input$clonal_abudance_tabs == "clonal_abud_stats" && input$Panel_TCRUMAP == "top_clone" && input$check_up_files == "TCR_and_GEX_tb") {
+        runjs("$('#collapseExampleStats .panel-collapse').collapse('show');")
 
-    observeEvent(c(input$clonal_abudance_tabs, input$ExPan, input$epitope_tabpanel, input$PriorTBModsinput$ClusTCR2_panel_tabs, input$Panel_TCRUMAP), {
-      if (input$clonal_abudance_tabs == "clonal_abud_stats" && input$Panel_TCRUMAP == "top_clone") {
+      } else if (input$ClusTCR2_panel_tabs == "ClusPan_stat" && input$Panel_TCRUMAP == "ClusTCR2" && input$check_up_files == "TCR_and_GEX_tb") {
         runjs("$('#collapseExampleStats .panel-collapse').collapse('show');")
-      } else if (input$ClusTCR2_panel_tabs == "ClusPan_stat" && input$Panel_TCRUMAP == "ClusTCR2") {
+
+      } else if (input$Panel_TCRUMAP == "Expanded" && input$ExPan == "ExPan_stat"&& input$check_up_files == "TCR_and_GEX_tb") {
         runjs("$('#collapseExampleStats .panel-collapse').collapse('show');")
-      } else if (input$Panel_TCRUMAP == "Expanded" && input$ExPan == "ExPan_stat") {
+
+      } else if (input$Panel_TCRUMAP == "Epitope" && input$epitope_tabpanel == "Epitope_stats_table" && input$check_up_files == "TCR_and_GEX_tb") {
         runjs("$('#collapseExampleStats .panel-collapse').collapse('show');")
-      } else if (input$Panel_TCRUMAP == "Epitope" && input$epitope_tabpanel == "Epitope_stats_table") {
+
+      } else if (input$Panel_TCRUMAP == "Epitope_IMW" && input$Tabs_for_IMW == "imw_epi_stats" && input$check_up_files == "TCR_and_GEX_tb") {
         runjs("$('#collapseExampleStats .panel-collapse').collapse('show');")
-      } else if (input$PriorTBMods == "PriorRepertoireTB") {
+
+      } else if (input$PriorTBMods == "PriorRepertoireTB" && input$check_up_files == "Prior") {
         runjs("$('#collapseExampleStats .panel-collapse').collapse('show');")
+
+      } else if (input$Marker_Panel == "single_marker_panel" && input$single_marker_panel2 == "MP_plot_stats" && input$check_up_files == "GEx_TCR") {
+        runjs("$('#collapseExampleStats .panel-collapse').collapse('show');")
+
+      } else if (input$Marker_Panel == "dual_marker_panel" && input$dual_marker_panel2 == "dual_marker_panel2_stats" && input$check_up_files == "GEx_TCR") {
+        runjs("$('#collapseExampleStats .panel-collapse').collapse('show');")
+
       } else {
         # if (input$clonal_abudance_tabs != "TopHeat" || input$ClusTCR2_panel_tabs != "ClustHeat") {
         runjs("$('#collapseExampleStats .panel-collapse').collapse('hide');")
@@ -4219,14 +4403,25 @@ runSTEGO <- function(){
       }
     })
 
-    observeEvent(c(input$clonal_abudance_tabs, input$ExPan, input$epitope_tabpanel, input$ClusTCR2_panel_tabs, input$Panel_TCRUMAP), {
-      if (input$clonal_abudance_tabs == "clonal_abud_dot" && input$Panel_TCRUMAP == "top_clone") {
+    # dotplots to collapse -----
+
+    observeEvent(c(input$clonal_abudance_tabs, input$ExPan, input$epitope_tabpanel, input$PriorTBMods, input$ClusTCR2_panel_tabs, input$Tabs_for_IMW, input$Panel_TCRUMAP, input$single_marker_panel2,input$Marker_Panel, input$dual_marker_panel2, input$check_up_files), {
+      if (input$clonal_abudance_tabs == "clonal_abud_dot" && input$Panel_TCRUMAP == "top_clone" && input$check_up_files == "TCR_and_GEX_tb") {
         runjs("$('#collapseExampleDot .panel-collapse').collapse('show');")
-      } else if (input$ClusTCR2_panel_tabs == "ClusPan_dot" && input$Panel_TCRUMAP == "ClusTCR2") {
+      } else if (input$ClusTCR2_panel_tabs == "ClusPan_dot" && input$Panel_TCRUMAP == "ClusTCR2"  && input$check_up_files == "TCR_and_GEX_tb") {
         runjs("$('#collapseExampleDot .panel-collapse').collapse('show');")
-      } else if (input$Panel_TCRUMAP == "Expanded" && input$ExPan == "ExPan_dot") {
+      } else if (input$Panel_TCRUMAP == "Expanded" && input$ExPan == "ExPan_dot"  && input$check_up_files == "TCR_and_GEX_tb") {
         runjs("$('#collapseExampleDot .panel-collapse').collapse('show');")
-      } else if (input$Panel_TCRUMAP == "Epitope" && input$epitope_tabpanel == "EpiPan_dot") {
+      } else if (input$Panel_TCRUMAP == "Epitope" && input$epitope_tabpanel == "EpiPan_dot" && input$check_up_files == "TCR_and_GEX_tb") {
+        runjs("$('#collapseExampleDot .panel-collapse').collapse('show');")
+      } else if (input$Panel_TCRUMAP == "Epitope_IMW" && input$Tabs_for_IMW == "imw_epi_dotplot"  && input$check_up_files == "TCR_and_GEX_tb") {
+        runjs("$('#collapseExampleDot .panel-collapse').collapse('show');")
+      } else if (input$Panel_TCRUMAP == "ClusTCR2" && input$ClusTCR2_panel_tabs == "ClusPan_dot"  && input$check_up_files == "TCR_and_GEX_tb") {
+        runjs("$('#collapseExampleDot .panel-collapse').collapse('show');")
+      } else if (input$Marker_Panel == "single_marker_panel" && input$single_marker_panel2 == "MP_plot_dotplot" && input$check_up_files == "GEx_TCR") {
+        runjs("$('#collapseExampleDot .panel-collapse').collapse('show');")
+      }
+      else if (input$Marker_Panel == "dual_marker_panel" && input$dual_marker_panel2 == "DP_plot_dotplot" && input$check_up_files == "GEx_TCR") {
         runjs("$('#collapseExampleDot .panel-collapse').collapse('show');")
       } else {
         # if (input$clonal_abudance_tabs != "TopHeat" || input$ClusTCR2_panel_tabs != "ClustHeat") {
@@ -4235,21 +4430,40 @@ runSTEGO <- function(){
       }
     })
 
-    observeEvent(c(input$clonal_abudance_tabs, input$ExPan, input$epitope_tabpanel, input$ClusTCR2_panel_tabs, input$Panel_TCRUMAP,input$Marker_Panel,input$single_marker_panel2), {
-      if (input$clonal_abudance_tabs == "clonal_abud_violin" && input$Panel_TCRUMAP == "top_clone") {
+    observeEvent(c(input$clonal_abudance_tabs, input$ExPan, input$epitope_tabpanel, input$ClusTCR2_panel_tabs, input$Panel_TCRUMAP,input$Marker_Panel,input$Tabs_for_IMW, input$single_marker_panel2, input$check_up_files), {
+      if (input$clonal_abudance_tabs == "clonal_abud_violin" && input$Panel_TCRUMAP == "top_clone" && input$check_up_files == "TCR_and_GEX_tb") {
         runjs("$('#collapseExampleViolin .panel-collapse').collapse('show');")
-      } else if (input$ClusTCR2_panel_tabs == "ClusPan_violin" && input$Panel_TCRUMAP == "ClusTCR2") {
+      } else if (input$ClusTCR2_panel_tabs == "ClusPan_violin" && input$Panel_TCRUMAP == "ClusTCR2" && input$check_up_files == "TCR_and_GEX_tb") {
         runjs("$('#collapseExampleViolin .panel-collapse').collapse('show');")
-      } else if (input$Panel_TCRUMAP == "Expanded" && input$ExPan == "expan_violinplot") {
+      } else if (input$Panel_TCRUMAP == "Expanded" && input$ExPan == "expan_violinplot" && input$check_up_files == "TCR_and_GEX_tb") {
         runjs("$('#collapseExampleViolin .panel-collapse').collapse('show');")
-      } else if (input$Panel_TCRUMAP == "Epitope" && input$epitope_tabpanel == "EpiPan_dot") {
+      } else if (input$Panel_TCRUMAP == "Epitope" && input$epitope_tabpanel == "EpiPan_violin" && input$check_up_files == "TCR_and_GEX_tb") {
         runjs("$('#collapseExampleViolin .panel-collapse').collapse('show');")
-      } else if (input$Marker_Panel == "single_marker_panel" && input$single_marker_panel2 == "Marker_Panel_plot_VR") {
+      } else if (input$Panel_TCRUMAP == "Epitope_IMW" && input$Tabs_for_IMW == "imw_epi_violin" && input$check_up_files == "TCR_and_GEX_tb") {
+        runjs("$('#collapseExampleViolin .panel-collapse').collapse('show');")
+      } else if (input$Marker_Panel == "single_marker_panel" && input$single_marker_panel2 == "Marker_Panel_plot_VR" && input$check_up_files == "GEx_TCR") {
         runjs("$('#collapseExampleViolin .panel-collapse').collapse('show');")
       } else {
         # if (input$clonal_abudance_tabs != "TopHeat" || input$ClusTCR2_panel_tabs != "ClustHeat") {
         runjs("$('#collapseExampleViolin .panel-collapse').collapse('hide');")
         # } else
+      }
+    })
+
+
+    observeEvent(c(input$clonal_abudance_tabs, input$ExPan, input$epitope_tabpanel, input$ClusTCR2_panel_tabs, input$Panel_TCRUMAP,input$Marker_Panel,input$Tabs_for_IMW, input$single_marker_panel2), {
+      if (input$Panel_TCRUMAP == "top_clone" && input$clonal_abudance_tabs == "clonal_abud_overrep" ) {
+        runjs("$('#collapseExampleGeneList_for_ontology .panel-collapse').collapse('show');")
+      } else if (input$Panel_TCRUMAP == "ClusTCR2" && input$ClusTCR2_panel_tabs == "ClusPan_OvRep") {
+        runjs("$('#collapseExampleGeneList_for_ontology .panel-collapse').collapse('show');")
+      } else if (input$Panel_TCRUMAP == "Expanded" && input$ExPan == "ExPan_OvRep") {
+        runjs("$('#collapseExampleGeneList_for_ontology .panel-collapse').collapse('show');")
+      } else if (input$Panel_TCRUMAP == "Epitope" && input$epitope_tabpanel == "EpiPan_OvRep") {
+        runjs("$('#collapseExampleGeneList_for_ontology .panel-collapse').collapse('show');")
+      } else if (input$Panel_TCRUMAP == "Epitope_IMW" && input$Tabs_for_IMW == "EpiIMW_OvRep") {
+        runjs("$('#collapseExampleGeneList_for_ontology .panel-collapse').collapse('show');")
+      } else {
+        runjs("$('#collapseExampleGeneList_for_ontology .panel-collapse').collapse('hide');")
       }
     })
 
@@ -7854,6 +8068,7 @@ runSTEGO <- function(){
       shinyjs::reset("project_name")
       # Use shinyjs to clear file input
       shinyjs::reset("file_SC")
+      js$resetInputs()
     })
 
     observeEvent(input$clearDataBtn, {
@@ -14675,7 +14890,7 @@ runSTEGO <- function(){
     stat_abundance <- reactiveValues(stats_ab = NULL)
 
     # Clear the table when comparison_abundance changes
-    observeEvent(c(input$comparison_abundance,input$Selected_clonotype,input$Selected_clonotype2, input$logFC_pval_findmarker), {
+    observeEvent(c(input$comparison_abundance,input$Selected_clonotype,input$Selected_clonotype2, input$logFC_pval_findmarker, input$quad_dualmarker), {
       # Clear stat_abundance$stats_ab
       stat_abundance$stats_ab <- NULL
 
@@ -14886,17 +15101,21 @@ runSTEGO <- function(){
       stat_abundance$stats_ab <- markers.fm.list
     })
 
-
-
     compare.stat <- reactive({
-      stat_abundance$stats_ab
+
+      req(stat_abundance$stats_ab)
+
+      if (input$pval_filter) {
+        markers.fm.list <- stat_abundance$stats_ab
+        markers.fm.list2 <- subset(markers.fm.list, markers.fm.list$p_val_adj <= input$pval.ex.filter)
+      } else {
+        markers.fm.list2 <- stat_abundance$stats_ab
+      }
+      markers.fm.list2
 
     })
 
-
-
     output$Ridge_chart_alpha_gamma_stat_comp <- DT::renderDT({
-
 
       sc <- compare.stat()
 
@@ -16071,7 +16290,7 @@ runSTEGO <- function(){
       req(Expansion_check_tb())
       sc <- compare.stat_Expanded()
 
-      req(input$selected_Indiv_Ex_1, input$selected_Indiv_Ex_2, input$pval.ex.filter)
+      req(input$selected_Indiv_Ex_1, input$selected_Indiv_Ex_2)
 
       message("Updating Ident")
       Idents(object = sc) <- sc@meta.data$expansion.status
@@ -16090,16 +16309,25 @@ runSTEGO <- function(){
         markers.fm.list <- FindMarkers(sc, ident.1 = input$selected_Indiv_Ex_1, ident.2 = c(input$selected_Indiv_Ex_2), min.pct = min.pct.expression, logfc.threshold = min.logfc)
       }
 
-
-      markers.fm.list2 <- subset(markers.fm.list, markers.fm.list$p_val_adj < input$pval.ex.filter)
-      Vals_expanded.stats <- as.data.frame(markers.fm.list2)
+      Vals_expanded.stats <- as.data.frame(markers.fm.list)
       rownames(Vals_expanded.stats) <- make.unique(rownames(Vals_expanded.stats))
       Vals_expanded.stats_fn$output_ex1 <- Vals_expanded.stats
 
     })
 
     Vals_expanded.stats <- reactive({
-      Vals_expanded.stats_fn$output_ex1
+
+      # req(Vals_expanded.stats_fn$output_ex1)
+
+      if (input$pval_filter) {
+        markers.fm.list <- Vals_expanded.stats_fn$output_ex1
+
+        markers.fm.list2 <- subset(markers.fm.list, markers.fm.list$p_val_adj <= input$pval.ex.filter)
+      } else {
+        markers.fm.list2 <- Vals_expanded.stats_fn$output_ex1
+      }
+      markers.fm.list2
+
     })
 
     output$compare.stat_Ex <- DT::renderDT(escape = FALSE, options = list(autoWidth = FALSE, lengthMenu = c(2, 5, 10, 20, 50, 100), pageLength = 10, scrollX = TRUE), {
@@ -17005,20 +17233,27 @@ runSTEGO <- function(){
 
       if (input$logFC_pval_findmarker) {
         markers.fm.list <- FindMarkers(sc, ident.1 = name.check.epi, min.pct = min.pct.expression, logfc.threshold = min.logfc, only.pos = TRUE)
-        markers.fm.list2 <- subset(markers.fm.list, markers.fm.list$p_val_adj < input$pval.ex.filter)
-        as.data.frame(markers.fm.list2)
+        as.data.frame(markers.fm.list)
       } else {
         markers.fm.list <- FindMarkers(sc, ident.1 = name.check.epi, min.pct = min.pct.expression, logfc.threshold = min.logfc)
-        markers.fm.list2 <- subset(markers.fm.list, markers.fm.list$p_val_adj < input$pval.ex.filter)
-        as.data.frame(markers.fm.list2)
+        as.data.frame(markers.fm.list)
       }
 
-      Vals_expanded.stats_epi$output_epi <- markers.fm.list2
+      Vals_expanded.stats_epi$output_epi <- markers.fm.list
 
     })
 
     compare.stat_Epi <- reactive({
-      Vals_expanded.stats_epi$output_epi
+      req(Vals_expanded.stats_epi$output_epi)
+
+      if (input$pval_filter) {
+        markers.fm.list <- Vals_expanded.stats_epi$output_epi
+        markers.fm.list2 <- subset(markers.fm.list, markers.fm.list$p_val_adj <= input$pval.ex.filter)
+      } else {
+        markers.fm.list2 <- Vals_expanded.stats_epi$output_epi
+      }
+      markers.fm.list2
+
     })
 
     output$compare.stat_Epi_DT <- DT::renderDT(escape = FALSE, options = list(autoWidth = FALSE, lengthMenu = c(2, 5, 10, 20, 50, 100), pageLength = 10, scrollX = TRUE), {
@@ -17521,8 +17756,6 @@ runSTEGO <- function(){
       sc@meta.data
     })
 
-
-
     ### visulisation of epitopes -------
 
     #UMAP, Pie, heatmap
@@ -17539,28 +17772,138 @@ runSTEGO <- function(){
     })
 
 
-    bar_plot_imw_epi <- reactive({
+    cols_imw_epi_bar <- reactive({
       sc_epitopes <- bar_plot_imw_epi_dt()
       req(sc_epitopes)
-      sc_epitopes@meta.data$Selected_group <- sc_epitopes@meta.data[,names(sc_epitopes@meta.data) %in% input$Samp_col]
+
+      sc_epitopes@meta.data$Selected_group <- sc_epitopes@meta.data[,names(sc_epitopes@meta.data) %in% input$Split_group_by_]
 
       sc_epitopes_percent <- sc_epitopes@meta.data %>%
         dplyr::group_by(Selected_group) %>%
         dplyr::count(SpeciesSimple) %>%
         dplyr::mutate(Percent = n / sum(n) * 100)
-      #
+
+      sc_epitopes_percent <- sc_epitopes_percent[order(sc_epitopes_percent$SpeciesSimple),]
+      sc_epitopes_percent <- sc_epitopes_percent[sc_epitopes_percent$Selected_group %in% input$Graph_split_order,]
+      sc_epitopes_percent$Selected_group <- factor(sc_epitopes_percent$Selected_group,levels = input$Graph_split_order)
+
+      num <- as.data.frame(unique(sc_epitopes_percent$SpeciesSimple))
+      print(num)
+      num <- as.data.frame(num[complete.cases(num) == T, ])
+
+      set.seed(input$seed_col)
+
+      col.gg <- gg_fill_hue(dim(num)[1])
+      palette_rainbow <- rainbow(dim(num)[1])
+      heat_col <- heat.colors(dim(num)[1])
+      col.terrain <- terrain.colors(dim(num)[1])
+      col.topo <- topo.colors(dim(num)[1])
+      col.hcl <- hcl.colors(dim(num)[1], palette = "viridis")
+
+      if (input$colourtype == "default") {
+        lapply(1:dim(num)[1], function(i) {
+          colourInput(paste("col.cols_imw_epi_bar", i, sep = "_"), paste(num[i, ]), col.gg[i])
+        })
+      } else if (input$colourtype == "hcl.colors") {
+        lapply(1:dim(num)[1], function(i) {
+          colourInput(paste("col.cols_imw_epi_bar", i, sep = "_"), paste(num[i, ]), col.hcl[i])
+        })
+      } else if (input$colourtype == "topo.colors") {
+        lapply(1:dim(num)[1], function(i) {
+          colourInput(paste("col.cols_imw_epi_bar", i, sep = "_"), paste(num[i, ]), col.topo[i])
+        })
+      } else if (input$colourtype == "heat.colors") {
+        lapply(1:dim(num)[1], function(i) {
+          colourInput(paste("col.cols_imw_epi_bar", i, sep = "_"), paste(num[i, ]), heat_col[i])
+        })
+      } else if (input$colourtype == "terrain.colors") {
+        lapply(1:dim(num)[1], function(i) {
+          colourInput(paste("col.cols_imw_epi_bar", i, sep = "_"), paste(num[i, ]), col.terrain[i])
+        })
+      } else if (input$colourtype == "rainbow") {
+        lapply(1:dim(num)[1], function(i) {
+          colourInput(paste("col.cols_imw_epi_bar", i, sep = "_"), paste(num[i, ]), palette_rainbow[i])
+        })
+      } else if (input$colourtype == "random") {
+        palette1 <- distinctColorPalette(dim(num)[1])
+        lapply(1:dim(num)[1], function(i) {
+          colourInput(paste("col.cols_imw_epi_bar", i, sep = "_"), paste(num[i, ]), palette1[i])
+        })
+      } else {
+        lapply(1:dim(num)[1], function(i) {
+          colourInput(paste("col.cols_imw_epi_bar", i, sep = "_"), paste(num[i, ]), input$one.colour.default)
+        })
+      } # one colour
+    })
+
+    output$myPanel_cols_imw_epi_bar <- renderUI({
+      cols_imw_epi_bar()
+    })
+
+
+    colors_cols_imw_epi_bar <- reactive({
+      sc_epitopes <- bar_plot_imw_epi_dt()
+      req(sc_epitopes)
+
+      sc_epitopes@meta.data$Selected_group <- sc_epitopes@meta.data[,names(sc_epitopes@meta.data) %in% input$Split_group_by_]
+
+      sc_epitopes_percent <- sc_epitopes@meta.data %>%
+        dplyr::group_by(Selected_group) %>%
+        dplyr::count(SpeciesSimple) %>%
+        dplyr::mutate(Percent = n / sum(n) * 100)
+
+      sc_epitopes_percent <- sc_epitopes_percent[order(sc_epitopes_percent$SpeciesSimple),]
+      sc_epitopes_percent <- sc_epitopes_percent[sc_epitopes_percent$Selected_group %in% input$Graph_split_order,]
+      sc_epitopes_percent$Selected_group <- factor(sc_epitopes_percent$Selected_group,levels = input$Graph_split_order)
+
+      num <- as.data.frame(unique(sc_epitopes_percent$SpeciesSimple))
+      num <- as.data.frame(num[complete.cases(num) == T, ])
+
+      set.seed(input$seed_col)
+
+      col.gg <- gg_fill_hue(dim(num)[1])
+      palette_rainbow <- rainbow(dim(num)[1])
+      heat_col <- heat.colors(dim(num)[1])
+      col.terrain <- terrain.colors(dim(num)[1])
+      col.topo <- topo.colors(dim(num)[1])
+      col.hcl <- hcl.colors(dim(num)[1], palette = "viridis")
+
+      lapply(1:dim(num)[1], function(i) {
+        input[[paste("col.cols_imw_epi_bar", i, sep = "_")]]
+      })
+    })
+
+    bar_plot_imw_epi <- reactive({
+      sc_epitopes <- bar_plot_imw_epi_dt()
+      req(sc_epitopes)
+      sc_epitopes@meta.data$Selected_group <- sc_epitopes@meta.data[,names(sc_epitopes@meta.data) %in% input$Split_group_by_]
+
+
+      sc_epitopes_percent <- sc_epitopes@meta.data %>%
+        dplyr::group_by(Selected_group) %>%
+        dplyr::count(SpeciesSimple) %>%
+        dplyr::mutate(Percent = n / sum(n) * 100)
+
+      sc_epitopes_percent <- sc_epitopes_percent[order(sc_epitopes_percent$SpeciesSimple),]
+      sc_epitopes_percent <- sc_epitopes_percent[sc_epitopes_percent$Selected_group %in% input$Graph_split_order,]
+      sc_epitopes_percent$Selected_group <- factor(sc_epitopes_percent$Selected_group,levels = input$Graph_split_order)
+
       # Calculate total counts per Source
       source_totals <- sc_epitopes@meta.data %>%
         dplyr::group_by(Selected_group) %>%
         dplyr::summarise(Total = n())
 
-      print(source_totals)
       source_totals$Total <- paste0("n=",source_totals$Total)
-      # Create a custom palette with 19 distinct colors
-      custom_palette <- c(brewer.pal(8, "Set2"),
-                          brewer.pal(8, "Dark2"),
-                          brewer.pal(3, "Paired")[1:3]) # Combine palettes to reach 19 colors
-      # Merge the percentage data with the total counts
+      source_totals <- source_totals[source_totals$Selected_group %in% input$Graph_split_order,]
+      source_totals$Selected_group <- factor(source_totals$Selected_group,levels = input$Graph_split_order)
+
+
+      num <- as.data.frame(unique(sc_epitopes_percent$SpeciesSimple))
+
+      num <- as.data.frame(num[complete.cases(num) == T, ])
+      names(num) <- "ID"
+      num$col <- unlist(colors_cols_imw_epi_bar())
+
       sc_epitopes_percent <- merge(sc_epitopes_percent, source_totals, by = "Selected_group")
       print(head(sc_epitopes_percent))
       require(ggtext)
@@ -17571,7 +17914,7 @@ runSTEGO <- function(){
         ylab("Percentage") +
         theme_bw() +
         scale_y_continuous(labels = scales::percent_format(scale = 1), limits = c(0, 110), expand = c(0, 0)) +
-        scale_fill_manual(values = custom_palette) + # Use the custom color palette
+        scale_fill_manual(values = num$col) + # Use the custom color palette
         geom_text(data = source_totals, aes(x = Selected_group, y = 101, label = Total),
                   position = position_dodge(width = 0.9),  # Prevent overlap
                   vjust = -0.5, size = 3.5, fontface = "plain",
@@ -17592,6 +17935,33 @@ runSTEGO <- function(){
     })
 
 
+
+    output$downloadPlot_bar_plot_imw_epi <- downloadHandler(
+      filename = function() {
+        paste("bar_plot_imw_epitope.pdf", sep = "")
+      },
+      content = function(file) {
+        pdf(file, width = input$width_bar_plot_imw_epi, height = input$height_bar_plot_imw_epi, onefile = FALSE) # open the pdf device
+        plot(bar_plot_imw_epi())
+        dev.off()
+      }, contentType = "application/pdf"
+    )
+
+    output$downloadPlotPNG_bar_plot_imw_epi <- downloadHandler(
+      filename = function() {
+        x <- today()
+        paste("bar_plot_imw_epitope.png", sep = "")
+      },
+      content = function(file) {
+        png(file,
+            width = input$width_png_bar_plot_imw_epi,
+            height = input$height_png_bar_plot_imw_epi,
+            res = input$resolution_PNG_bar_plot_imw_epi
+        )
+        plot(bar_plot_imw_epi())
+        dev.off()
+      }, contentType = "application/png" # MIME type of the image
+    )
 
 
     ### Stats IMW -----
@@ -17711,15 +18081,13 @@ runSTEGO <- function(){
 
         if (input$logFC_pval_findmarker) {
           markers.fm.list <- FindMarkers(sc, ident.1 = epitope_of_interest, min.pct = min.pct.expression, logfc.threshold = min.logfc, only.pos = TRUE)
-          markers.fm.list2 <- subset(markers.fm.list, markers.fm.list$p_val_adj < input$pval.ex.filter)
-          as.data.frame(markers.fm.list2)
+          as.data.frame(markers.fm.list)
         } else {
           markers.fm.list <- FindMarkers(sc, ident.1 = epitope_of_interest, min.pct = min.pct.expression, logfc.threshold = min.logfc)
-          markers.fm.list2 <- subset(markers.fm.list, markers.fm.list$p_val_adj < input$pval.ex.filter)
-          as.data.frame(markers.fm.list2)
+          as.data.frame(markers.fm.list)
         }
 
-        Vals_expanded.stats_epi_imw$output_epi_imw <- markers.fm.list2
+        Vals_expanded.stats_epi_imw$output_epi_imw <- markers.fm.list
       } else {
         Vals_expanded.stats_epi_imw$output_epi_imw <- as.data.frame("Too few cells to caluclate stats")
       }
@@ -17727,7 +18095,15 @@ runSTEGO <- function(){
     })
 
     compare.stat_Epi_imw <- reactive({
-      Vals_expanded.stats_epi_imw$output_epi_imw
+      req(Vals_expanded.stats_epi_imw$output_epi_imw)
+
+      if (input$pval_filter) {
+        markers.fm.list <- Vals_expanded.stats_epi_imw$output_epi_imw
+        markers.fm.list2 <- subset(markers.fm.list, markers.fm.list$p_val_adj <= input$pval.ex.filter)
+      } else {
+        markers.fm.list2 <- Vals_expanded.stats_epi_imw$output_epi_imw
+      }
+      markers.fm.list2
     })
 
     output$compare.stat_Epi_imw_DT <- DT::renderDT(escape = FALSE, options = list(autoWidth = FALSE, lengthMenu = c(2, 5, 10, 20, 50, 100), pageLength = 10, scrollX = TRUE), {
@@ -18814,9 +19190,7 @@ runSTEGO <- function(){
         markers.fm.list <- FindMarkers(sc, ident.1 = name.check.clust, min.pct = min.pct.expression, logfc.threshold = min.logfc)
       }
 
-      markers.fm.list2 <- subset(markers.fm.list, markers.fm.list$p_val_adj < input$pval.ex.filter)
-      as.data.frame(markers.fm.list2)
-      Vals_clust.stats_fn$output_clust1 <- markers.fm.list2
+      Vals_clust.stats_fn$output_clust1 <- markers.fm.list
 
     })
 
@@ -18829,10 +19203,18 @@ runSTEGO <- function(){
           "Upload File"
         )
       )
+      markers.fm.list <- Vals_clust.stats_fn$output_clust1
+      req(markers.fm.list)
 
-      df <- Vals_clust.stats_fn$output_clust1
-      req(df)
-      df
+      if (input$pval_filter) {
+
+        markers.fm.list2 <- subset(markers.fm.list, markers.fm.list$p_val_adj <= input$pval.ex.filter)
+      } else {
+        markers.fm.list2 <- Vals_clust.stats_fn$output_clust1
+      }
+      markers.fm.list2
+
+
 
     })
 
@@ -20250,6 +20632,7 @@ runSTEGO <- function(){
     # marker analysis -----
 
     ### single marker feature plot -----
+    stat_abundance_markers <- reactiveValues(stats_markers = NULL)
 
     MainTcell_counts <- reactive({
       sc <- UMAP_metadata_with_labs()
@@ -20784,8 +21167,9 @@ runSTEGO <- function(){
       sc2@meta.data
     })
 
+    Vals_marker1.stats_fn <- reactiveValues(output_marker1=NULL)
 
-    compare.stat_marker <- reactive({
+    observeEvent(input$caluclate_marker1, {
       sc <- stats_marker_one()
 
       validate(
@@ -20800,13 +21184,36 @@ runSTEGO <- function(){
       min.logfc <- input$LogFC_ # 0.25 is standard
       if (input$logFC_pval_findmarker) {
         markers.fm.list <- FindMarkers(sc, ident.1 = "pos", min.pct = min.pct.expression, logfc.threshold = min.logfc, only.pos = TRUE)
-        as.data.frame(markers.fm.list)
+
       } else {
         markers.fm.list <- FindMarkers(sc, ident.1 = "pos", min.pct = min.pct.expression, logfc.threshold = min.logfc)
-        as.data.frame(markers.fm.list)
       }
 
+      Vals_marker1.stats_fn$output_marker1 <- markers.fm.list
+
     })
+
+    compare.stat_marker <- reactive({
+      sc <- UMAP_metadata_with_labs()
+      validate(
+        need(
+          nrow(sc) > 0,
+          "Upload File"
+        )
+      )
+      markers.fm.list <- Vals_marker1.stats_fn$output_marker1
+      req(markers.fm.list)
+
+      if (input$pval_filter) {
+
+        markers.fm.list2 <- subset(markers.fm.list, markers.fm.list$p_val_adj <= input$pval.ex.filter)
+      } else {
+        markers.fm.list2 <- Vals_marker1.stats_fn$output_marker1
+      }
+      markers.fm.list2
+
+    })
+
 
     output$Compare.stat_marker <- DT::renderDT(escape = FALSE, options = list(autoWidth = FALSE, lengthMenu = c(2, 5, 10, 20, 50, 100), pageLength = 10, scrollX = TRUE), {
       sc <- UMAP_metadata_with_labs()
@@ -20819,6 +21226,88 @@ runSTEGO <- function(){
       )
       compare.stat_marker()
     })
+
+
+    # dotplot single------
+    dotplot_single_marker <- reactive({
+      sc <- stats_marker_one()
+      validate(
+        need(
+          nrow(sc) > 0,
+          "Upload File"
+        )
+      )
+      req(input$Var_to_col_marker)
+      Idents(object = sc) <- factor(sc@meta.data$pos_neg, c("neg","pos"))
+
+      if (input$restrict.dotplot) {
+        list.names <- rownames(compare.stat_marker())
+        list.names <- list.names[1:input$restrict.dotplot.num]
+      } else {
+        list.names <- rownames(compare.stat_marker())
+      }
+
+      size_legend <- input$Legend_size - 2
+
+      DotPlot(sc, features = list.names) +
+        RotatedAxis() +
+        theme(
+          axis.title.y = element_blank(),
+          axis.text.y = element_text(colour = "black", family = input$font_type, size = input$text_size),
+          axis.text.x = element_text(colour = "black", family = input$font_type, size = input$text_size, angle = 90),
+          axis.title.x = element_blank(),
+          legend.title = element_text(colour = "black", size = input$Legend_size, family = input$font_type),
+          legend.text = element_text(colour = "black", size = size_legend, family = input$font_type),
+          legend.position = input$legend_position,
+        ) +
+        guides(color=guide_legend(ncol=input$legend_columns)) +
+        scale_colour_gradient2(low = input$low.dotplot, mid = input$middle.dotplot, high = input$high.dotplot) +
+        scale_size_continuous(breaks = seq(0, 100, by = input$sequence_breaks_dotplot)) + # Adjust the breaks as needed
+        scale_x_discrete(labels = label_wrap(20)) +
+        scale_y_discrete(labels = label_wrap(20)) +
+        guides(
+          colour = guide_colorbar(order = 1),
+          size = guide_legend(order = 2)
+        ) +
+        guides(size=guide_legend(ncol=input$legend_columns))
+    })
+
+    output$dotplot_single_marker_plot <- renderPlot({
+      dotplot_single_marker()
+    })
+
+    output$downloadPlot_dotplot_single_marker <- downloadHandler(
+      filename = function() {
+        paste(input$Var_to_col_marker, "_single_marker_dotplot.pdf", sep = "")
+      },
+      content = function(file) {
+        pdf(file,
+            width = input$width_dotplot_single_marker,
+            height = input$height_dotplot_single_marker, onefile = FALSE
+        ) # open the pdf device
+        df <- dotplot_single_marker()
+        plot(df)
+        dev.off()
+      }, contentType = "application/pdf"
+    )
+
+    output$downloadPlotPNG_dotplot_single_marker <- downloadHandler(
+      filename = function() {
+        paste(input$Var_to_col_marker, "_single_marker_dotplot.png", sep = "")
+      },
+      content = function(file) {
+        png(file,
+            width = input$width_png_dotplot_single_marker,
+            height = input$height_png_dotplot_single_marker,
+            res = input$resolution_PNG_dotplot_single_marker
+        )
+        df <- dotplot_single_marker()
+
+        plot(df)
+        dev.off()
+      }, contentType = "application/png" # MIME type of the image
+    )
+
 
     # download tables ----
 
@@ -20970,6 +21459,14 @@ runSTEGO <- function(){
     )
     # Dual marker analysis -----
 
+    observeEvent(c(input$Var_to_col_marker2, input$Var_to_col_marker3, input$Var_to_col_marker, input$Selected_clonotype,input$Selected_clonotype2, input$logFC_pval_findmarker), {
+      # Clear stat_abundance$stats_ab
+
+      Vals_marker1.stats_fn$output_marker1 <- NULL
+      Vals_marker2_3.stats_fn$output_marker23 <- NULL
+
+    })
+
     observeEvent(input$load_marker_genes_dual, {
       sc <- (MainTcell_counts_names())
       validate(
@@ -21024,7 +21521,7 @@ runSTEGO <- function(){
       md$markerX <- ifelse(md$markerX == "-Inf", NA, md$markerX)
       md$markerY <- as.numeric(md[, names(md) %in% input$Var_to_col_marker3])
       md$markerY <- ifelse(md$markerY == "-Inf", NA, md$markerY)
-      md
+
       sc@meta.data <- md
 
       sc <- subset(sc, UMAP_1 > input$Filter_lower_UMAP1_marker)
@@ -21369,8 +21866,10 @@ runSTEGO <- function(){
     )
 
     #### STATs for selected qudrant ------
+    # Vals_marker1.stats_fn <- reactiveValues(output_marker1=NULL)
+    Vals_marker2_3.stats_fn <- reactiveValues(output_marker23=NULL)
 
-    stats_dual_markers_tb1 <- reactive({
+    observeEvent(input$caluclate_marker2_3, {
       sc <- meta_data_for_features_scale2()
 
       validate(
@@ -21389,6 +21888,30 @@ runSTEGO <- function(){
         markers.fm.list <- FindMarkers(sc, ident.1 = input$quad_dualmarker, min.pct = min.pct.expression, logfc.threshold = min.logfc)
       }
       as.data.frame(markers.fm.list)
+
+      Vals_marker2_3.stats_fn$output_marker23 <- markers.fm.list
+
+    })
+
+    stats_dual_markers_tb1 <- reactive({
+      sc <- UMAP_metadata_with_labs()
+      validate(
+        need(
+          nrow(sc) > 0,
+          "Upload File"
+        )
+      )
+      markers.fm.list <- Vals_marker2_3.stats_fn$output_marker23
+      req(markers.fm.list)
+
+      if (input$pval_filter) {
+
+        markers.fm.list2 <- subset(markers.fm.list, markers.fm.list$p_val_adj <= input$pval.ex.filter)
+      } else {
+        markers.fm.list2 <- Vals_marker2_3.stats_fn$output_marker23
+      }
+      markers.fm.list2
+
     })
 
 
@@ -21406,6 +21929,93 @@ runSTEGO <- function(){
         df <- stats_dual_markers_tb1()
         write.csv(df, file)
       }
+    )
+
+    # dotplot ------
+
+
+
+
+    dotplot_dual_marker <- reactive({
+      sc <- meta_data_for_features_scale2()
+
+      validate(
+        need(
+          nrow(sc) > 0,
+          error_message_val_sc
+        )
+      )
+
+      req(input$Var_to_col_marker2, input$Var_to_col_marker3)
+
+      Idents(object = sc) <- factor(sc@meta.data$Quad, c("Q4","Q3","Q2","Q1"))
+
+      if (input$restrict.dotplot) {
+        list.names <- rownames(stats_dual_markers_tb1())
+        list.names <- list.names[1:input$restrict.dotplot.num]
+      } else {
+        list.names <- rownames(stats_dual_markers_tb1())
+      }
+
+      size_legend <- input$Legend_size - 2
+
+      DotPlot(sc, features = list.names) +
+        RotatedAxis() +
+        theme(
+          axis.title.y = element_blank(),
+          axis.text.y = element_text(colour = "black", family = input$font_type, size = input$text_size),
+          axis.text.x = element_text(colour = "black", family = input$font_type, size = input$text_size, angle = 90),
+          axis.title.x = element_blank(),
+          legend.title = element_text(colour = "black", size = input$Legend_size, family = input$font_type),
+          legend.text = element_text(colour = "black", size = size_legend, family = input$font_type),
+          legend.position = input$legend_position,
+        ) +
+        guides(color=guide_legend(ncol=input$legend_columns)) +
+        scale_colour_gradient2(low = input$low.dotplot, mid = input$middle.dotplot, high = input$high.dotplot) +
+        scale_size_continuous(breaks = seq(0, 100, by = input$sequence_breaks_dotplot)) + # Adjust the breaks as needed
+        scale_x_discrete(labels = label_wrap(20)) +
+        scale_y_discrete(labels = label_wrap(20)) +
+        guides(
+          colour = guide_colorbar(order = 1),
+          size = guide_legend(order = 2)
+        ) +
+        guides(size=guide_legend(ncol=input$legend_columns))
+    })
+
+    output$dotplot_dual_marker_plot <- renderPlot({
+      dotplot_dual_marker()
+    })
+
+    output$downloadPlot_dotplot_single_marker <- downloadHandler(
+      filename = function() {
+        paste(input$Var_to_col_marker2,"_",input$Var_to_col_marker3, "_single_marker_dotplot", "_", today(), ".pdf", sep = "")
+      },
+      content = function(file) {
+        pdf(file,
+            width = input$width_dotplot_dual_marker,
+            height = input$height_dotplot_dual_marker, onefile = FALSE
+        ) # open the pdf device
+        df <- dotplot_dual_marker()
+        plot(df)
+        dev.off()
+      }, contentType = "application/pdf"
+    )
+
+    output$downloadPlotPNG_dotplot_single_marker <- downloadHandler(
+      filename = function() {
+        paste(input$Clusters_to_dis_PIE, "_cluster_dotplot", "_", today(), ".png", sep = "")
+      },
+      content = function(file) {
+        png(file,
+            width = input$width_png_dotplot_dual_marker,
+            height = input$height_png_dotplot_dual_marker,
+            res = input$resolution_PNG_dotplot_dual_marker
+        )
+        df <- dotplot_dual_marker()
+
+        plot(df)
+        dev.off()
+      }, contentType = "application/png" # MIME type of the image
     )
 
 
@@ -21848,7 +22458,7 @@ runSTEGO <- function(){
           cluster.names <- unique(Idents(sc))[order(unique(Idents(sc)))]
 
           markers.fm.list <- FindMarkers(sc, ident.1 = name.clone, min.pct = min.pct.expression, logfc.threshold = min.logfc, only.pos = TRUE)
-          markers.fm.list2 <- subset(markers.fm.list, markers.fm.list$p_val_adj < input$pval.ex.filter)
+          markers.fm.list2 <- subset(markers.fm.list, markers.fm.list$p_val_adj <= input$pval.ex.filter)
 
           if (length(markers.fm.list2$p_val_adj) > 0) {
             ### download the dot plot -------
@@ -22353,7 +22963,7 @@ runSTEGO <- function(){
 
             cluster.names <- unique(Idents(sc))[order(unique(Idents(sc)))]
             markers.fm.list <- FindMarkers(sc, ident.1 = name.clone, min.pct = min.pct.expression, logfc.threshold = min.logfc, only.pos = TRUE)
-            markers.fm.list2 <- subset(markers.fm.list, markers.fm.list$p_val_adj < input$pval.ex.filter)
+            markers.fm.list2 <- subset(markers.fm.list, markers.fm.list$p_val_adj <= input$pval.ex.filter)
             message(paste(length(markers.fm.list2$p_val_adj), "total markers for cluster", i))
             if (length(markers.fm.list2$p_val_adj) > 0) {
               clonotype.name.stats <- paste("prioritization/Multi/PublicLike/", i, "_", gsub("[/]", "", gsub("&", "", name.clone)), "_stats_table", "_", today(), ".csv", sep = "")
@@ -22464,7 +23074,7 @@ runSTEGO <- function(){
             markers.fm.list <- FindMarkers(sc, ident.1 = name.clone, min.pct = min.pct.expression, logfc.threshold = min.logfc)
             markers.fm.list
           }
-          markers.fm.list2 <- subset(markers.fm.list, markers.fm.list$p_val_adj < input$pval.ex.filter)
+          markers.fm.list2 <- subset(markers.fm.list, markers.fm.list$p_val_adj <= input$pval.ex.filter)
           x <- today()
 
           message(paste(length(markers.fm.list2$p_val_adj), "total markers for cluster", i))
@@ -23274,7 +23884,7 @@ runSTEGO <- function(){
             min.logfc <- input$LogFC_ # 0.25 is standard
 
             markers.fm.list <- FindMarkers(sc, ident.1 = name.check.clust, min.pct = min.pct.expression, logfc.threshold = min.logfc, only.pos = TRUE)
-            markers.fm.list2 <- subset(markers.fm.list, markers.fm.list$p_val_adj < input$pval.ex.filter)
+            markers.fm.list2 <- subset(markers.fm.list, markers.fm.list$p_val_adj <= input$pval.ex.filter)
 
             message(paste(length(markers.fm.list2$p_val_adj), "total markers for A cluster", i))
 
@@ -23599,7 +24209,7 @@ runSTEGO <- function(){
             min.logfc <- input$LogFC_ # 0.25 is standard
 
             markers.fm.list <- FindMarkers(sc, ident.1 = name.check.clust, min.pct = min.pct.expression, logfc.threshold = min.logfc, only.pos = TRUE)
-            markers.fm.list2 <- subset(markers.fm.list, markers.fm.list$p_val_adj < input$pval.ex.filter)
+            markers.fm.list2 <- subset(markers.fm.list, markers.fm.list$p_val_adj <= input$pval.ex.filter)
 
             message(paste(length(markers.fm.list2$p_val_adj), "total markers for G cluster", i))
 
@@ -23931,7 +24541,7 @@ runSTEGO <- function(){
             min.logfc <- input$LogFC_ # 0.25 is standard
 
             markers.fm.list <- FindMarkers(sc, ident.1 = name.check.clust, min.pct = min.pct.expression, logfc.threshold = min.logfc, only.pos = TRUE)
-            markers.fm.list2 <- subset(markers.fm.list, markers.fm.list$p_val_adj < input$pval.ex.filter)
+            markers.fm.list2 <- subset(markers.fm.list, markers.fm.list$p_val_adj <= input$pval.ex.filter)
 
             message(paste(i, "B cluster has", length(markers.fm.list2$p_val_adj), "total markers"))
 
@@ -24264,7 +24874,7 @@ runSTEGO <- function(){
             min.logfc <- input$LogFC_ # 0.25 is standard
 
             markers.fm.list <- FindMarkers(sc, ident.1 = name.check.clust, min.pct = min.pct.expression, logfc.threshold = min.logfc, only.pos = TRUE)
-            markers.fm.list2 <- subset(markers.fm.list, markers.fm.list$p_val_adj < input$pval.ex.filter)
+            markers.fm.list2 <- subset(markers.fm.list, markers.fm.list$p_val_adj <= input$pval.ex.filter)
 
             message(paste(i, "D cluster has", length(markers.fm.list2$p_val_adj), "total markers"))
 
@@ -24823,7 +25433,7 @@ runSTEGO <- function(){
             min.logfc <- input$LogFC_ # 0.25 is standard
 
             markers.fm.list <- FindMarkers(sc, ident.1 = name.check.epi, min.pct = min.pct.expression, logfc.threshold = min.logfc, only.pos = TRUE)
-            markers.fm.list2 <- subset(markers.fm.list, markers.fm.list$p_val_adj < input$pval.ex.filter)
+            markers.fm.list2 <- subset(markers.fm.list, markers.fm.list$p_val_adj <= input$pval.ex.filter)
 
             message(paste(i, selected.epitope.name, "has", length(markers.fm.list2$p_val_adj), "total markers"))
 
@@ -25058,7 +25668,7 @@ runSTEGO <- function(){
       min.logfc <- input$LogFC_ # 0.25 is standard
 
       markers.fm.list <- FindMarkers(sc, ident.1 = name.check.clust, min.pct = min.pct.expression, logfc.threshold = min.logfc, only.pos = TRUE)
-      markers.fm.list2 <- subset(markers.fm.list, markers.fm.list$p_val_adj < input$pval.ex.filter)
+      markers.fm.list2 <- subset(markers.fm.list, markers.fm.list$p_val_adj <= input$pval.ex.filter)
       as.data.frame(length(markers.fm.list2$p_val_adj))
     })
     ### end -----
@@ -25965,6 +26575,26 @@ runSTEGO <- function(){
       content = function(file) {
         df <- as.data.frame(selected_full_sequences_airr())
         write.csv(df, file, row.names = F)
+      }
+    )
+
+
+    # background gene list -------
+    background_gene_for_ontology <- reactive({
+      sc <- UMAP_metadata_with_labs()
+      req(sc)
+      gene_list <- as.data.frame(rownames(sc@assays$RNA@features))
+      gene_list
+
+    })
+
+    output$download_button_gene_list_for_ontology <- downloadHandler(
+      filename = function() {
+        paste("gene_list_for_ontologies.csv", sep = "")
+      },
+      content = function(file) {
+        df <- as.data.frame(background_gene_for_ontology())
+        write.csv(df, file, row.names = F,col.names = F)
       }
     )
 
