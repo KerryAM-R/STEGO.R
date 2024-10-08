@@ -38,11 +38,10 @@
 #' @import shiny
 #' @import shinyBS
 #' @import shinybusy
-#' @importFrom shinyjs hide useShinyjs runjs
+#' @importFrom shinyjs hide useShinyjs runjs extendShinyjs toggle
 #' @import shinyWidgets
 #' @importFrom stringr str_wrap str_to_title str_detect str_replace
 #' @import tibble
-#' @importFrom shinyjs useShinyjs toggle
 #' @importFrom colourpicker colourInput updateColourInput colourWidget
 #' @import chisq.posthoc.test
 #' @importFrom utils installed.packages
