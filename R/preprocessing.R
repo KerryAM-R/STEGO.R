@@ -1277,9 +1277,6 @@ preprocessing_bd_rap <- function (downloadSeurat = FALSE,
 
           contig_paired_only <- contig_paired_only[!duplicated(contig_paired_only$Cell_Index),]
 
-
-          contig_paired_only <- contig_paired_only %>% select(all_of(c("Cell_Index","indiv.group")), everything())
-
           contig_paired_only$cloneCount <- 1
 
           names_for_group.indiv <- as.data.frame(t(as.data.frame(strsplit(contig_paired_only$Sample_Name,
@@ -1291,7 +1288,7 @@ preprocessing_bd_rap <- function (downloadSeurat = FALSE,
 
           contig_paired_only <- contig_paired_only %>% select(cloneCount,
                                                               indiv.group, group, indiv, everything())
-          head(contig_paired_only)[1:6]
+
           file_name_tcrexplore <- paste0("1_TCR_Explore/",sub_directory, "_TCR_Explore_10x.csv")
           write.csv(contig_paired_only, file_name_tcrexplore,row.names = FALSE)
           message(paste0("Downloaded TCR_Explore for ", sub_directory))
