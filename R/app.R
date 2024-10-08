@@ -289,10 +289,13 @@ runSTEGO <- function(){
 
 
 
+  ####################
+  ###################
+
   # UI page -----
   ui <- fluidPage(
     useShinyjs(),  # Initialize shinyjs
-    #.centre alignment -----
+    #.center alignment -----
     tags$head(
       tags$style(HTML("
     #load_marker_genes_sig,
@@ -416,7 +419,7 @@ runSTEGO <- function(){
       "
       ))
     ),
-    # progress bar colouring, position --------
+    # progress bar coloring, position --------
     tags$style(HTML("
   .dataTables_wrapper .dataTable td {
     white-space: nowrap;
@@ -764,12 +767,8 @@ runSTEGO <- function(){
                 tabPanel(
                   "TCRex",
                   div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
-                  # fluidRow(
-
                   downloadButton("downloaddf_TCRex_10x", "Download table"),
                   div(DT::DTOutput("tb_TCRex_10x_df"),height = "200px"),
-                  # )
-
                 ),
                 tabPanel("Seurat QC",
                          value = 2,
@@ -979,6 +978,18 @@ runSTEGO <- function(){
                   div(class = "name-BD",textInput("sample_tags_name", p("Name of sample",class = "name-header_functions"), value = "BD EA splenocyte")),
                   div(DT::DTOutput("tb_sample_tags_created", height = "200px")),
                 ),
+                tabPanel(
+                  "Auto",
+                  h4("Set up the directories to have folders named sample_condition with the barcode, features, matrix and contig file"),
+                  div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
+                  fluidRow(
+                    column(3,div(actionButton("checkFiles_BD", "Check Files"), style = "padding-top: 25px;")),
+                    column(3,div(actionButton("automateProcess_BD", "Automate Process"), style = "padding-top: 25px;")),
+                  ),
+
+                  div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
+                  verbatimTextOutput("outputText_BDrap")
+                )
               )
             )
           ),
@@ -7203,7 +7214,7 @@ runSTEGO <- function(){
       }
     )
 
-    # automated 10x process if the folder is of the correct structure
+    # automated 10x process if the folder is of the correct structure ----
 
     checkFiles_dt <- reactive({
       req(input$checkFiles)
@@ -7213,7 +7224,7 @@ runSTEGO <- function(){
         zz <- file(FN, open = "wt")
         sink(zz, type = "output")
         sink(zz, type = "message")
-        STEGO.R::preprocessing_10x(downloadTCRex = FALSE, downloadClusTCR = FALSE, downloadSeurat = FALSE, downloadTCR_Explore = FALSE)
+        STEGO.R::preprocessing_10x(downloadTCRex = FALSE, downloadClusTCR = FALSE, downloadSeurat = FALSE, downloadTCR_Explore = FALSE, shiny_server = FALSE)
         sink(type = "message")
         sink(type = "output")
         cat(readLines(FN), sep = "\n")
@@ -7232,7 +7243,43 @@ runSTEGO <- function(){
       withProgress(message = "Pre processing underway", value = 0,
                    {
                      suppressWarnings(
-                       preprocessing_10x(downloadTCRex = T, downloadClusTCR = T, downloadSeurat = T, downloadTCR_Explore = T)
+                       preprocessing_10x(downloadTCRex = T, downloadClusTCR = T, downloadSeurat = T, downloadTCR_Explore = T,  shiny_server = TRUE)
+                     )
+                   }
+      )
+    })
+
+
+    # automating BD Rhapsody -------
+
+    checkFiles_dt_BD <- reactive({
+      req(input$checkFiles_BD)
+
+      if (input$checkFiles_BD) {
+        FN <- tempfile()
+        zz <- file(FN, open = "wt")
+        sink(zz, type = "output")
+        sink(zz, type = "message")
+        STEGO.R::preprocessing_bd_rap(downloadTCRex = FALSE, downloadClusTCR = FALSE, downloadSeurat = FALSE, downloadTCR_Explore = FALSE, shiny_server = FALSE)
+        sink(type = "message")
+        sink(type = "output")
+        cat(readLines(FN), sep = "\n")
+      } else {
+
+      }
+    })
+
+    output$outputText_BDrap <- renderPrint({
+      checkFiles_dt_BD()
+
+    })
+
+    observeEvent(input$automateProcess_BD, {
+
+      withProgress(message = "Pre processing underway", value = 0,
+                   {
+                     suppressWarnings(
+                       STEGO.R::preprocessing_bd_rap(downloadTCRex = T, downloadClusTCR = T, downloadSeurat = T, downloadTCR_Explore = T,  shiny_server = TRUE)
                      )
                    }
       )
