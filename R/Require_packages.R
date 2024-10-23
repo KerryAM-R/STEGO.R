@@ -98,3 +98,4 @@ mat_sum <- function(sc,Samp_col,V_gene_sc) {
   mat$CloneTotal <-sum_data$V1
   mat
 }
+
