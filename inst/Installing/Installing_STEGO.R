@@ -7,8 +7,8 @@ if (!require("BiocManager", quietly = TRUE))
   install.packages("BiocManager")
 
 
-# if (!require("devtools", quietly = TRUE))
-#   install.packages("devtools")
+if (!require("devtools", quietly = TRUE))
+  install.packages("devtools")
 
 if (!require("usethis", quietly = TRUE))
   install.packages("usethis")
