@@ -288,7 +288,6 @@ runSTEGO <- function(){
 
 
 
-  ####################
   ###################
 
   # UI page -----
@@ -19920,6 +19919,11 @@ runSTEGO <- function(){
       # Get the group names from the column names
       group_names <- unique(gsub(input$separator_input,"", colnames(original_data)))
       group_names <- group_names[!(group_names %in% c("Background","background", "TotalSamps", "CloneTotal"))]
+
+      print(TRUE %in% grepl(input$separator_input,group_names) )
+
+      print(group_names)
+
       group_names
 
     })
@@ -19936,17 +19940,16 @@ runSTEGO <- function(){
       }
       # Get the group names from the column names
       group_names <- unique(gsub(input$separator_input,"", colnames(original_data)))  # Assuming first two columns are not part of the groups
-
       len <- length(unlist(group_names)) - 2
 
       # Create an empty list to store top 5 data for each group
       top_5_data_list <- list()
 
-      if(input$is_a_time_series) {
+      if(input$is_a_time_series && TRUE %in% grepl(input$separator_input,group_names)) {
         for (i in 1:len) {
           # Subset the data for the current group
           group_data <- original_data[,names(original_data) %in% c(colnames(original_data)[grepl(group_names[i], colnames(original_data))])]
-
+          print(head(group_data))
           # Check if group_data is empty or not a data frame
           if (!is.data.frame(group_data) || nrow(group_data) == 0) {
             message(paste0("Group data for ", group_names[i], " is empty or not a data frame. Skipping.\n"))
@@ -19956,8 +19959,9 @@ runSTEGO <- function(){
           len_group_data <- dim(group_data)[2]
           # Calculate row sums
           group_data$CloneTotal <- rowSums(group_data)
-          group_data <- subset(group_data,group_data$CloneTotal >= input$Total_count_Cutoff )
 
+          group_data <- subset(group_data,group_data$CloneTotal >= input$Total_count_Cutoff )
+          group_data
           if (dim(group_data)[2]==0) {
             cat(group_names[i], "has not clones. Skipping.\n")
             next  # Skip to the next iteration if group_data is empty or not a data frame
@@ -19966,6 +19970,7 @@ runSTEGO <- function(){
           # Order by CloneTotal in descending order
           group_data <- group_data[order(-group_data$CloneTotal), ]
 
+          req(input$max_number_lines_to)
           top_5_group <- group_data %>%
             slice_max(CloneTotal, n = input$max_number_lines_to)
 
@@ -20021,7 +20026,7 @@ runSTEGO <- function(){
     output$Line_graph_table <- DT::renderDT(escape = FALSE, filter = list(position = "top", clear = FALSE), options = list(autoWidth = FALSE, lengthMenu = c(1, 2, 5, 10, 20, 50, 100), pageLength = 20, scrollX = TRUE), {
 
       list.df <- select_top_five()
-
+      req(list.df)
       if(input$is_a_time_series) {
         df <- as.data.frame(list.df[[input$Group_for_line_graph]])
         df
@@ -20035,6 +20040,7 @@ runSTEGO <- function(){
       } else {
 
         df <-  select_top_five()
+        req(df)
       }
 
       df
@@ -20095,6 +20101,7 @@ runSTEGO <- function(){
       },
       content = function(file) {
         list.df <- select_top_five()
+        req(list.df)
         message("for line graph")
 
         if(input$is_a_time_series) {
@@ -20111,6 +20118,7 @@ runSTEGO <- function(){
         } else {
 
           df <-  select_top_five()
+          req(df)
         }
 
         df <- as.data.frame(df)
@@ -20120,6 +20128,7 @@ runSTEGO <- function(){
 
     output$Line_graph_table2 <- DT::renderDT(escape = FALSE, filter = list(position = "top", clear = FALSE), options = list(autoWidth = FALSE, lengthMenu = c(1, 2, 5, 10, 20, 50, 100), pageLength = 20, scrollX = TRUE), {
       top_5_data_list <- select_top_five()
+      req(top_5_data_list)
       if(input$is_a_time_series) {
         req(top_5_data_list)
         # Remove empty data frames from top_5_data_list
@@ -20127,6 +20136,7 @@ runSTEGO <- function(){
 
       } else {
         top_5_data_list <- select_top_five()
+        req(top_5_data_list)
       }
       # Find the maximum count value across all datasets
       max_count <- max(sapply(top_5_data_list, function(df) max(df)))
@@ -20198,18 +20208,16 @@ runSTEGO <- function(){
     Line_graph_for_tracing <- reactive({
 
       top_5_data_list <- select_top_five()
+      req(top_5_data_list)
 
       if(input$is_a_time_series) {
         req(top_5_data_list)
         # Remove empty data frames from top_5_data_list
         top_5_data_list <- top_5_data_list[sapply(top_5_data_list, function(x) nrow(x) > 0)]
 
-
-
-
-
       } else {
         top_5_data_list <- select_top_five()
+        req(top_5_data_list)
       }
       # Find the maximum count value across all datasets
       max_count <- max(sapply(top_5_data_list, function(df) max(df)))
@@ -20220,7 +20228,6 @@ runSTEGO <- function(){
 
       } else if (input$Graph_type_bar == "Frequency_expanded"){
         max_count <- round(max_count, digits = 2) + 0.01
-
       }
 
       if(input$is_a_time_series) {
@@ -20323,7 +20330,7 @@ runSTEGO <- function(){
         plot_list[[year]] <- p
 
       } else {
-
+        top_5_transposed <- as.data.frame(t(top_5_data_list), stringsAsFactors = FALSE)
         # Convert row names into a regular column
         top_5_transposed$Sample_ID <- rownames(top_5_transposed)
         # Split Sample_ID into separate columns for Group and Time
@@ -20370,7 +20377,7 @@ runSTEGO <- function(){
             legend.title = element_text(colour = "black", size = input$Legend_size, family = input$font_type),
             legend.text = element_text(size = input$Legend_size, family = input$font_type),
             axis.text.y = element_text(colour = "black", family = input$font_type, size = input$text_size),
-            axis.text.x = element_text(colour = "black", family = input$font_type, size = input$text_size, angle = 0),
+            axis.text.x = element_text(colour = "black", family = input$font_type, size = input$text_size, angle = 90),
             axis.title.y  = element_text(colour = "black", family = input$font_type, size = input$title.text.sizer2),
             axis.title.x  = element_blank()
           ) +

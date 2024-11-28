@@ -6,8 +6,9 @@ install.packages("roxygen2")
 if (!require("BiocManager", quietly = TRUE))
   install.packages("BiocManager")
 
-# if (!require("devtools", quietly = TRUE))
-#   install.packages("devtools")
+
+if (!require("devtools", quietly = TRUE))
+  install.packages("devtools")
 
 if (!require("usethis", quietly = TRUE))
   install.packages("usethis")
@@ -21,10 +22,8 @@ y # biomanager packages for the M1 or greater chip
 
 # import all of the fonts to your system. Will only need to be done the first time.
 require(extrafont)
-font_import()
+font_import(prompt = FALSE)
 
-# when it asks if you would like to install the different fonts
-y
 
 
 if (!require("startup", quietly = TRUE))
