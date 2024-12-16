@@ -5,6 +5,7 @@
 #' @import ClusTCR2
 #' @import ComplexHeatmap
 #' @import corrplot
+#' @import ggtext
 #' @importFrom cowplot plot_grid as_gtable align_plots
 #' @importFrom dplyr %>% select case_when slice_max distinct
 #' @importFrom DT DTOutput renderDT
@@ -11688,7 +11689,7 @@ runSTEGO <- function(){
       if(TRUE %in% grepl("[;]",sc@meta.data[,names(sc@meta.data) %in% input$TCR_alpha_gamma_cdr3_reformatting2])) {
         list_df2 <- sc@meta.data[,names(sc@meta.data) %in% input$TCR_alpha_gamma_cdr3_reformatting2]
         df2_ <- t(as.data.frame(strsplit(list_df2, "[;]")))
-        df2 <- as.data.frame(strsplit(df_[,1], "[.]"))
+        df2 <- as.data.frame(strsplit(df2_[,1], "[.]")) # needed to add df2_ instead of df_ as it was referring to the alpha and not beta
         df2 <- as.data.frame(t(df2))
       } else {
         list_df2 <- sc@meta.data[,names(sc@meta.data) %in% input$TCR_alpha_gamma_cdr3_reformatting2]
@@ -26652,7 +26653,6 @@ runSTEGO <- function(){
     )
 
   }
-
   ########
   # run the app in browser -----
   shinyApp(ui = ui, server = server, options = list(launch.browser = TRUE))
