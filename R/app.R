@@ -1658,6 +1658,7 @@ runSTEGO <- function(){
                           multiple = F,
                           accept = c(".rds", "rds")
                 ),
+                checkboxInput("intergrated_features_use_instead",p("Use intergrated Features?", class = "name-header2"), value = T ),
                 tags$head(tags$style("#downloaddf_SeruatObj_merged  {white-space: normal;  }")),
                 downloadButton("downloaddf_SeruatObj_merged", "Download Batch corrected Seurat")
               )
@@ -3534,8 +3535,7 @@ runSTEGO <- function(){
 
                                     )
                                   ),
-                         ),
-                         # epitope analysis IMW ------
+                         ),                         # epitope analysis IMW ------
                          tabPanel("Epitope (IMW)", value = "Epitope_IMW",
                                   tabsetPanel(id = "Tabs_for_IMW",
                                               tabPanel("Summary Table",value = "epit_imw_sumtab",
@@ -8442,7 +8442,11 @@ runSTEGO <- function(){
       )
       all.genes <- rownames(sc)
       sc <- ScaleData(sc, features = all.genes)
-      sc <- RunPCA(sc, features = VariableFeatures(object = sc))
+      if(input$intergrated_features_use_instead && length(merged_object@assays$RNA@misc$intergrated_features)>199) {
+        sc <- RunPCA(sc, features = sc@assays$RNA@misc$intergrated_features)
+      } else {
+        sc <- RunPCA(sc, features = VariableFeatures(object = sc))
+      }
       sc
     })
 
@@ -8772,6 +8776,7 @@ runSTEGO <- function(){
           list.sc[[File_order]] <- subset(list.sc[[File_order]], features = feature_list$V1)
 
         }
+
         list.sc
       }
     })
@@ -8791,7 +8796,7 @@ runSTEGO <- function(){
 
 
     merging_sc_ob <- reactiveValues(Val2 = NULL)
-
+    merging_sc_ob <- reactiveValues(intergrated_features = NULL)
     observeEvent(input$run_merging, {
       sc <- input$file1_rds.file
       validate(
@@ -8806,6 +8811,15 @@ runSTEGO <- function(){
         list.sc <- getData()
       }
 
+
+      if(length(VariableFeatures(list.sc[[1]]))>2000) {
+        merging_sc_ob$intergrated_features <- SelectIntegrationFeatures(object.list = list.sc, nfeatures = 2000)
+      }
+
+      else if(length(VariableFeatures(list.sc[[1]]))<500) {
+        merging_sc_ob$intergrated_features <- SelectIntegrationFeatures(object.list = list.sc, nfeatures = 200)
+      }
+      message(length(merging_sc_ob$intergrated_features))
 
       num <- length(list.sc)
       validate(
@@ -8856,9 +8870,14 @@ runSTEGO <- function(){
       merged_object <- list.sc[[1]]
       merged_object@meta.data$Cell_Index_old <- merged_object@meta.data$Cell_Index
       merged_object@meta.data$Cell_Index <- rownames(merged_object@meta.data)
+      message("there were ",length(merging_sc_ob$intergrated_features),"intergrated features selected")
+      merged_object@assays$RNA@misc$intergrated_features<- merging_sc_ob$intergrated_features
+      print(merged_object@assays$RNA@misc$intergrated_features)
+
       sl <- object.size(merged_object)
       message(paste("files were merged into 1. The merged object is ", round(sl[1]/1000^3, 2), "Gb"))
       merging_sc_ob$Val2 <- merged_object
+
 
     })
     merging_sc <- reactive({
@@ -9018,10 +9037,10 @@ runSTEGO <- function(){
 
       all.genes <- rownames(sc)
 
-      if (length(all.genes) < 3001) {
-        sc <- FindVariableFeatures(sc, selection.method = "vst")
-      } else {
-        sc <- FindVariableFeatures(sc, selection.method = "vst", nfeatures = 3000)
+      if (length(all.genes) < 500) {
+        sc <- FindVariableFeatures(sc, selection.method = "vst", nfeatures = 200)
+      } else if (length(all.genes) < 3001) {
+        sc <- FindVariableFeatures(sc, selection.method = "vst", nfeatures = 2000)
       }
       Vals_norm4$Norm1 <- sc
     })
