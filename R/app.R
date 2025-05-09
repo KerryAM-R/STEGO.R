@@ -72,19 +72,6 @@ runSTEGO <- function(){
 
   }
 
-  # if (!dir.exists("Prioritization/")) {
-  #   message("Creating folders for the Prioritization, as the program wasn't loaded from the STEGO.Rproj file")
-  #   dir.create("Prioritization")
-  #   dir.create("Prioritization/Multi")
-  #   dir.create("Prioritization/Multi/PublicLike")
-  #   dir.create("Prioritization/Multi/Unique")
-  #   dir.create("Prioritization/Clustering")
-  #   dir.create("Prioritization/Clustering/AG")
-  #   dir.create("Prioritization/Clustering/BD")
-  #   dir.create("Prioritization/EpitopePred")
-  #   } else {
-  # }
-
   col_markers <- c("Blues", "BuGn", "BuPu", "GnBu", "Greens", "Greys", "Oranges", "OrRd", "PuBu", "PuBuGn", "PuRd", "Purples", "RdPu", "Reds", "YlGn", "YlGnBu","YlOrBr", "YlOrRd")
   options(shiny.maxRequestSize = 100000*1024^2)
 
@@ -8442,7 +8429,7 @@ runSTEGO <- function(){
       )
       all.genes <- rownames(sc)
       sc <- ScaleData(sc, features = all.genes)
-      if(input$intergrated_features_use_instead && length(merged_object@assays$RNA@misc$intergrated_features)>199) {
+      if(input$intergrated_features_use_instead && length(sc@assays$RNA@misc$intergrated_features)>199) {
         sc <- RunPCA(sc, features = sc@assays$RNA@misc$intergrated_features)
       } else {
         sc <- RunPCA(sc, features = VariableFeatures(object = sc))
@@ -25735,7 +25722,6 @@ runSTEGO <- function(){
       md.checking
       sc@meta.data <- md.checking
       Idents(object = sc) <- sc@meta.data$Clust_selected
-
       name.check.clust <- 10
       min.pct.expression <- input$min_point_ # standard setting: 0.25
       min.logfc <- input$LogFC_ # 0.25 is standard
@@ -26676,3 +26662,4 @@ runSTEGO <- function(){
   # run the app in browser -----
   shinyApp(ui = ui, server = server, options = list(launch.browser = TRUE))
 }
+
