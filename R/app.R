@@ -53,6 +53,8 @@
 #' message("To run STEGO.R use the following code STEGO.R::runSTEGO()")
 #'
 #' @export
+#
+# require(shinyjs)
 
 runSTEGO <- function(){
   # installed.packages.full <- as.data.frame(installed.packages())
@@ -204,83 +206,11 @@ runSTEGO <- function(){
     mat
   }
 
-  # olga -----
-
-  olgafunction_CDR3_BD_testing <- function(CDR3) {
-    message("Running olga-compute_pgen for CDR3: ", CDR3)
-
-    result <- tryCatch({
-      olga <- system2('olga-compute_pgen', args = c("--humanTRB", CDR3),
-                      wait = TRUE, stdout = TRUE)
-      message("Command executed successfully.")
-      return(olga)  # Return output if successful
-      message("Result: ", result)
-      # return(result)
-
-    }, error = function(e) {
-      message("An error occurred: ", e)
-      return("Install")
-      "Install"
-    })
-
-  }
-
-  olgafunction_CDR3_VDJ_BD <- function(CDR3,V,J) {
-    olga <- system2('olga-compute_pgen', args=c("--humanTRB ",
-                                                CDR3,"--v_mask ",V,"--j_mask",J),
-                    wait=TRUE, stdout=TRUE)
-    olga
-
-  }
-
-  olgafunction_CDR3_BD <- function(CDR3) {
-    message("Running olga-compute_pgen for CDR3: ", CDR3)
-
-    result <- tryCatch({
-      olga <- system2('olga-compute_pgen', args = c("--humanTRB", CDR3),
-                      wait = TRUE, stdout = TRUE)
-      message("Command executed successfully.")
-      return(olga)  # Return output if successful
-      message("Result: ", result)
-      return(result)
-
-    }, error = function(e) {
-      message("An error occurred: ", e)
-      return("Install")
-    })
-
-
-  }
-
-  olgafunction_CDR3_AG <- function(y) {
-    olga <- system2('olga-compute_pgen', args=c("--humanTRA ",
-                                                y),
-                    wait=TRUE, stdout=TRUE)
-    olga
-  }
-
-  olgafunction_BD_mouse <- function(CDR3,V,J) {
-    olga <- system2('olga-compute_pgen', args=c("--mouseTRB ",
-                                                CDR3,"--v_mask ",V,"--j_mask",J),
-                    wait=TRUE, stdout=TRUE)
-    olga
-
-  }
-
-  olgafunction_AG_mouse <- function(CDR3,V,J) {
-    olga <- system2('olga-compute_pgen', args=c("--mouseTRA ",
-                                                CDR3,"--v_mask ",V,"--j_mask",J),
-                    wait=TRUE, stdout=TRUE)
-    olga
-  }
-
-
-
   ###################
 
   # UI page -----
   ui <- fluidPage(
-    useShinyjs(),  # Initialize shinyjs
+    shinyjs::useShinyjs(),  # Initialize shinyjs
     #.center alignment -----
     tags$head(
       tags$style(HTML("
@@ -2355,7 +2285,7 @@ runSTEGO <- function(){
               conditionalPanel(
                 condition = "input.QC_panel == 'TCR'",
 
-                fluidRow(column(12, selectInput("Graph_type_bar", p("Type of graph",class = "name-header_functions"), choices = c("Number_expanded", "Frequency_expanded", "Top_clonotypes")))),
+                fluidRow(column(12, selectInput("Graph_type_bar", p("Type of graph",class = "name-header_functions"), choices = c("Number_expanded", "frequency_expanded", "Top_clonotypes")))),
 
 
                 conditionalPanel(
@@ -2833,6 +2763,11 @@ runSTEGO <- function(){
                                         column(10,conditionalPanel(condition = "input.Require_TCR_filter",
                                                                    selectInput("Secondary_Filter_if_needed","Additional filter", choices ="", multiple = T, width = "1000px"))),
                                       ),
+                                      fluidRow(
+                                        column(3,numericInput("maximum_line","y-axis (max)",value = "")),
+                                        column(3,numericInput("breaks_for_line","y-axis breaks",value = "")),
+
+                                      ),
                                       tabsetPanel(
                                         tabPanel("Table",
                                                  div(DT::DTOutput("Line_graph_table")),
@@ -2871,7 +2806,7 @@ runSTEGO <- function(){
                                       div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
                                       fluidRow(
                                         conditionalPanel(
-                                          condition = "input.Graph_type_bar=='Number_expanded' | input.Graph_type_bar=='Frequency_expanded'",
+                                          condition = "input.Graph_type_bar=='Number_expanded' | input.Graph_type_bar=='frequency_expanded'",
                                           fluidRow(
                                             column(
                                               3,
@@ -2932,7 +2867,7 @@ runSTEGO <- function(){
                                             ),
                                           ),
                                           conditionalPanel(
-                                            condition = "input.Graph_type_bar=='Number_expanded' || input.Graph_type_bar=='Frequency_expanded'",
+                                            condition = "input.Graph_type_bar=='Number_expanded' || input.Graph_type_bar=='frequency_expanded'",
                                             fluidRow(
                                               column(
                                                 3,
@@ -9329,6 +9264,8 @@ runSTEGO <- function(){
           "upload file"
         )
       )
+      print(sc)
+      req(sc,input$Samp_col_SampToRemove)
       df <- sc@meta.data
       df2 <- as.data.frame(unique(df[names(df) %in% input$Samp_col_SampToRemove]))
       df2 <- as.data.frame(df2)
@@ -9337,6 +9274,7 @@ runSTEGO <- function(){
 
     observe({
       df2 <- select_group_metadata_SampToRemove()
+
       validate(
         need(
           nrow(df2) > 0,
@@ -12344,7 +12282,7 @@ runSTEGO <- function(){
       df3 <- df3[order(df3$samp.count, decreasing = T), ]
 
       df4 <- df3 %>%
-        mutate(Frequency_expanded = case_when(
+        mutate(frequency_expanded = case_when(
           frequency <= 1e-5 ~ "1. Very rare (0 > X \u2264 1e-5)",
           frequency <= 1e-4 ~ "2. Rare (1e-5 > X \u2264 1e-4)",
           frequency <= 0.001 ~ "3. Small (1e-4 > X \u2264 0.001)",
@@ -12511,7 +12449,7 @@ runSTEGO <- function(){
       df.col.1 <- unlist(colors_clonal_plot())
       req(df4, input$Samp_col)
 
-      ggplot(df4, aes(x = ID_Column, y = frequency, fill = get(input$Graph_type_bar), colour = get(input$Graph_type_bar), label = get(input$Graph_type_bar))) +
+      ggplot(df4, aes(x = ID_Column, y = frequency, fill = Number_expanded, colour = Number_expanded, label = Number_expanded)) +
         geom_bar(stat = "identity") +
         theme_bw() +
         scale_fill_manual(labels = ~ stringr::str_wrap(.x, width = 50), values = alpha(df.col.1, 1), na.value = input$NA_col_analysis) +
@@ -12529,6 +12467,7 @@ runSTEGO <- function(){
 
     clonal_plot_freq <- reactive({
       df4 <- TCR_Expanded()
+      req(df4)
       df4$ID_Column <- df4[, names(df4) %in% input$Samp_col]
       message("Added ID")
       df4 <- df4[df4$ID_Column %in% input$ID_Column_factor, ]
@@ -12538,7 +12477,7 @@ runSTEGO <- function(){
 
       req(df4, input$Samp_col)
 
-      ggplot(df4, aes(x = ID_Column, y = frequency, fill = Frequency_expanded, colour = Frequency_expanded, label = get(input$Graph_type_bar))) +
+      ggplot(df4, aes(x = ID_Column, y = frequency, fill = frequency_expanded, colour = frequency_expanded, label = get(input$Graph_type_bar))) +
         geom_bar(stat = "identity") +
         theme_bw() +
         scale_fill_manual(labels = ~ stringr::str_wrap(.x, width = 50), values = alpha(df.col.1, 1), na.value = input$NA_col_analysis) +
@@ -12619,7 +12558,7 @@ runSTEGO <- function(){
     })
     colors_top_clonal_plot <- reactive({
       df4 <- TCR_Expanded()
-      df4
+      req(df4)
       top10 <- df4 %>%
         group_by(ID_Column) %>%
         top_n(n = input$top_no_clonotypes, wt = frequency)
@@ -12679,7 +12618,8 @@ runSTEGO <- function(){
     output$clonality.bar.graph <- renderPlot({
       if (input$Graph_type_bar == "Number_expanded" ) {
         plot2 <- clonal_plot_count()
-      } else if (input$Graph_type_bar == "Frequency_expanded") {
+
+      } else if (input$Graph_type_bar == "frequency_expanded") {
         plot2 <- clonal_plot_freq()
 
       } else {
@@ -12698,7 +12638,7 @@ runSTEGO <- function(){
         pdf(file, width = input$width_clonality.bar.graph, height = input$height_clonality.bar.graph, onefile = FALSE) # open the pdf device
         if (input$Graph_type_bar == "Number_expanded" ) {
           plot2 <- clonal_plot_count()
-        } else if (input$Graph_type_bar == "Frequency_expanded") {
+        } else if (input$Graph_type_bar == "frequency_expanded") {
           plot2 <- clonal_plot_freq()
 
         } else {
@@ -12720,10 +12660,11 @@ runSTEGO <- function(){
             height = input$height_png_clonality.bar.graph,
             res = input$resolution_PNG_clonality.bar.graph
         )
-        if (input$Graph_type_bar == "Frequency_expanded" ) {
-          plot2 <- clonal_plot_count()
-        } else if (input$Graph_type_bar == "Number_expanded") {
+        if (input$Graph_type_bar == "frequency_expanded" ) {
           plot2 <- clonal_plot_freq()
+        } else if (input$Graph_type_bar == "Number_expanded") {
+          plot2 <- clonal_plot_count()
+
 
         } else {
           plot2 <- top_clonal_plot()
@@ -12755,7 +12696,7 @@ runSTEGO <- function(){
       if (input$Graph_type_bar == "Number_expanded") {
         UMAP.wt.clonality$TYPE.clonality <- UMAP.wt.clonality$Number_expanded
       } else {
-        UMAP.wt.clonality$TYPE.clonality <- paste(UMAP.wt.clonality$Frequency_expanded)
+        UMAP.wt.clonality$TYPE.clonality <- paste(UMAP.wt.clonality$frequency_expanded)
       }
 
       UMAP.wt.clonality[is.na(UMAP.wt.clonality)] <- "unknown"
@@ -13103,13 +13044,14 @@ runSTEGO <- function(){
 
     select_group_metadata <- reactive({
       sc <- UMAP_metadata_with_labs()
-
+      req(sc)
       validate(
         need(
           nrow(sc) > 0,
           "upload file"
         )
       )
+      req(input$Samp_col)
       df <- sc@meta.data
       df2 <- as.data.frame(unique(df[names(df) %in% input$Samp_col]))
       df2 <- as.data.frame(df2)
@@ -13118,7 +13060,7 @@ runSTEGO <- function(){
 
     observe({
       df2 <- select_group_metadata()
-
+      req(df2)
       validate(
         need(
           nrow(df2) > 0,
@@ -13141,6 +13083,7 @@ runSTEGO <- function(){
     })
     observe({
       df2 <- select_group_metadata()
+      req(df2)
       validate(
         need(
           nrow(df2) > 0,
@@ -13152,7 +13095,7 @@ runSTEGO <- function(){
       df2 <- as.data.frame(df2[order(df2$V1), ])
       names(df2) <- "V1"
       df3 <- subset(df2, df2$V1 != "NA")
-
+      req(df3)
       updateSelectInput(
         session,
         "ID_Column_factor",
@@ -13162,6 +13105,7 @@ runSTEGO <- function(){
     })
     observe({
       df2 <- select_group_metadata()
+      req(df2)
       validate(
         need(
           nrow(df2) > 0,
@@ -19866,7 +19810,7 @@ runSTEGO <- function(){
 
       if(input$Graph_type_bar == "Number_expanded") {
         mat
-      } else if (input$Graph_type_bar == "Frequency_expanded") {
+      } else if (input$Graph_type_bar == "frequency_expanded") {
         len <- length(colnames( mat))
         len <- len - 2
         sums_col <- colSums(mat)
@@ -19915,30 +19859,25 @@ runSTEGO <- function(){
       } else if (input$comparison_operator == ">=") {
         original_data <- subset(clones, TotalSamps >= input$cutoff_upset)
       }
-      # } else if (input$Graph_type_bar == "Frequency_expanded") {
-      #   if (input$comparison_operator == "==") {
-      #     original_data <- subset(clones, TotalSamps == input$cutoff_upset_freq)
-      #   } else if (input$comparison_operator == ">=") {
-      #     original_data <- subset(clones, TotalSamps >= input$cutoff_upset_freq)
-      #   }
-      # }
 
       # Get the group names from the column names
-      group_names <- unique(gsub(input$separator_input,"", colnames(original_data)))
+      # group_names <- unique(gsub(input$separator_input,"", colnames(original_data)))
+      group_names <- strsplit(names(original_data), input$separator_input)
+      print(group_names)
       group_names <- group_names[!(group_names %in% c("Background","background", "TotalSamps", "CloneTotal"))]
 
-      print(TRUE %in% grepl(input$separator_input,group_names) )
+      first_bits <- sapply(group_names, `[`, 1)
+      unique_first_bits <- unique(first_bits)
+      unique_first_bits
 
-      print(group_names)
-
-      group_names
+      unique_first_bits
 
     })
 
     select_top_five <- reactive({
 
       clones <- Upset_plot_overlap_table()
-      req(clones)
+      req(clones, input$cutoff_upset)
 
       if (input$comparison_operator == "==") {
         original_data <- subset(clones, TotalSamps == input$cutoff_upset)
@@ -19946,20 +19885,29 @@ runSTEGO <- function(){
         original_data <- subset(clones, TotalSamps >= input$cutoff_upset)
       }
       # Get the group names from the column names
-      group_names <- unique(gsub(input$separator_input,"", colnames(original_data)))  # Assuming first two columns are not part of the groups
-      len <- length(unlist(group_names)) - 2
+      group_names <- check_sep()  # Assuming first two columns are not part of the groups
+      print(group_names)
+      len <- length(group_names)
+      print(len)
 
       # Create an empty list to store top 5 data for each group
       top_5_data_list <- list()
 
-      if(input$is_a_time_series && TRUE %in% grepl(input$separator_input,group_names)) {
+      TRUE %in% grepl(input$separator_input,group_names)
+      total_length <- (length(names(original_data))-4)
+
+      print(length(len) < total_length)
+
+      if(input$is_a_time_series) {
+
         for (i in 1:len) {
           # Subset the data for the current group
+          # message("processing data for line graph for ",i)
           group_data <- original_data[,names(original_data) %in% c(colnames(original_data)[grepl(group_names[i], colnames(original_data))])]
-          print(head(group_data))
+          # print(head(group_data))
           # Check if group_data is empty or not a data frame
           if (!is.data.frame(group_data) || nrow(group_data) == 0) {
-            message(paste0("Group data for ", group_names[i], " is empty or not a data frame. Skipping.\n"))
+            # message(paste0("Group data for ", group_names[i], " is empty or not a data frame. Skipping.\n"))
             next  # Skip to the next iteration if group_data is empty or not a data frame
           }
 
@@ -20070,8 +20018,6 @@ runSTEGO <- function(){
 
       req(list.df)
 
-      message("Observe event is working")
-
       if(input$is_a_time_series) {
 
         req(input$Group_for_line_graph)
@@ -20146,14 +20092,12 @@ runSTEGO <- function(){
         req(top_5_data_list)
       }
       # Find the maximum count value across all datasets
-      max_count <- max(sapply(top_5_data_list, function(df) max(df)))
-
-
+      max_count <- max(sapply(top_5_data_list, function(df) max(as.numeric(unlist(df)), na.rm = TRUE)))
 
       # Round the maximum count value to the nearest 5 and then add 5
       if(input$Graph_type_bar == "Number_expanded") {
         max_count <- ceiling(max_count / 5) * 5
-      } else if (input$Graph_type_bar == "Frequency_expanded"){
+      } else if (input$Graph_type_bar == "frequency_expanded"){
         max_count <- round(max_count, digits = 2) + 0.01
 
       }
@@ -20212,30 +20156,82 @@ runSTEGO <- function(){
 
     })
 
+    observe({
+      top_5_data_list <- select_top_five()
+
+      print("working on this section")
+      print(top_5_data_list)
+      # Find the maximum count value across all datasets
+      max_count <- max(sapply(top_5_data_list, function(df) max(as.numeric(unlist(df)), na.rm = TRUE)))
+
+      # Round the maximum count value to the nearest 5 and then add 5
+      if(input$Graph_type_bar == "Number_expanded") {
+        max_count <- max(sapply(top_5_data_list, function(df) max(as.numeric(unlist(df)), na.rm = TRUE)))
+        max_count <- ceiling(max_count / 5) * 5
+
+      } else if (input$Graph_type_bar == "frequency_expanded"){
+
+        max_count <- round(max_count, digits = 2) + 0.01
+
+      }
+      updateNumericInput(
+        session,
+        inputId = "maximum_line",label = "y-axis",
+        value = max_count
+
+      )
+
+
+    })
+
+    observe({
+
+
+      # Round the maximum count value to the nearest 5 and then add 5
+      if(input$Graph_type_bar == "Number_expanded") {
+        breaks <- 5
+
+      } else if (input$Graph_type_bar == "frequency_expanded"){
+
+        breaks <- 0.05
+
+      }
+      updateNumericInput(
+        session,
+        inputId = "breaks_for_line",label = "breaks",
+        value = breaks
+
+      )
+
+
+    })
+
+
+
+
+
+
     Line_graph_for_tracing <- reactive({
 
       top_5_data_list <- select_top_five()
       req(top_5_data_list)
 
+      year <- input$Group_for_line_graph
+      # Transpose the data frame and convert to data.frame
+      top_5_data <- top_5_data_list[[year]]
+
       if(input$is_a_time_series) {
         req(top_5_data_list)
         # Remove empty data frames from top_5_data_list
         top_5_data_list <- top_5_data_list[sapply(top_5_data_list, function(x) nrow(x) > 0)]
-
+        print(top_5_data_list)
       } else {
         top_5_data_list <- select_top_five()
         req(top_5_data_list)
       }
-      # Find the maximum count value across all datasets
-      max_count <- max(sapply(top_5_data_list, function(df) max(df)))
 
-      # Round the maximum count value to the nearest 5 and then add 5
-      if(input$Graph_type_bar == "Number_expanded") {
-        max_count <- ceiling(max_count / 5) * 5
-
-      } else if (input$Graph_type_bar == "Frequency_expanded"){
-        max_count <- round(max_count, digits = 2) + 0.01
-      }
+      req(input$maximum_line)
+      max_count = input$maximum_line
 
       if(input$is_a_time_series) {
         # Create an empty list to store plots
@@ -20317,7 +20313,12 @@ runSTEGO <- function(){
           geom_line(aes(group = paste(VDJ, V1)), linewidth = 1.25) +
           scale_color_viridis_d(option = "C", begin = 0.2, end = 0.8) +
           scale_shape_manual(values = unique_vdj$shape) +  # Use default shapes
+          scale_y_continuous(
+            limits = c(0, max_count),
+            breaks = seq(0, max_count, by = input$breaks_for_line)  # Adjust step size as needed
+          ) +
           labs(x = "", y = "", title = "", color = year, shape = year) +
+
           theme_minimal() +
           theme(legend.title = element_text(face = "bold", size = 16, family = input$font_type),
                 legend.text = element_text(size = input$Legend_size, family = input$font_type),
@@ -20330,8 +20331,7 @@ runSTEGO <- function(){
             label.theme = element_text(margin = margin(t = 15)),
             override.aes = list(size = 7)# Increase margin between items
           )) +
-          guides(color=guide_legend(ncol=input$legend_columns)) +
-          ylim(0, max_count)  # Set y-axis limits
+          guides(color=guide_legend(ncol=input$legend_columns))
 
         # Store the plot in the list
         plot_list[[year]] <- p
