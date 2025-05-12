@@ -20404,7 +20404,7 @@ runSTEGO <- function(){
     })
 
     output$line_graph_output <- renderPlot({
-      plot_list <- line_graph_output()
+      plot_list <- Line_graph_for_tracing()
       req(plot_list)
 
 
