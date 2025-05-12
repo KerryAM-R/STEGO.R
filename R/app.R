@@ -20320,12 +20320,14 @@ runSTEGO <- function(){
           labs(x = "", y = "", title = "", color = year, shape = year) +
 
           theme_minimal() +
-          theme(legend.title = element_text(face = "bold", size = 16, family = input$font_type),
-                legend.text = element_text(size = input$Legend_size, family = input$font_type),
-                axis.text = element_text(size = 16, family = input$font_type),
-                axis.title = element_blank(),
-                plot.title = element_blank()
-          ) +
+          theme(
+            legend.title = element_text(colour = "black", size = input$Legend_size, family = input$font_type),
+            legend.text = element_text(size = input$Legend_size, family = input$font_type),
+            axis.text.y = element_text(colour = "black", family = input$font_type, size = input$text_size),
+            axis.text.x = element_text(colour = "black", family = input$font_type, size = input$text_size, angle = 90),
+            axis.title.y  = element_text(colour = "black", family = input$font_type, size = input$title.text.sizer2),
+            axis.title.x  = element_blank()
+          )  +
           guides(color = guide_legend(
             title.theme = element_text(margin = margin(b = 0)),  # Increase margin between title and items
             label.theme = element_text(margin = margin(t = 15)),
@@ -20402,7 +20404,7 @@ runSTEGO <- function(){
     })
 
     output$line_graph_output <- renderPlot({
-      plot_list <- Line_graph_for_tracing()
+      plot_list <- line_graph_output()
       req(plot_list)
 
 
