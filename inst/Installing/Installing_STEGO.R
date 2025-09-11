@@ -5,7 +5,7 @@ install.packages("roxygen2")
 # installing STEGO.R
 if (!require("BiocManager", quietly = TRUE))
   install.packages("BiocManager")
-
+devtools::document()
 
 if (!require("devtools", quietly = TRUE))
   install.packages("devtools")
@@ -23,8 +23,6 @@ y # biomanager packages for the M1 or greater chip
 # import all of the fonts to your system. Will only need to be done the first time.
 require(extrafont)
 font_import(prompt = FALSE)
-
-
 
 if (!require("startup", quietly = TRUE))
   install.packages("startup")
