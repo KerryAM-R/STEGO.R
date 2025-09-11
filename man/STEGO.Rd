@@ -3,7 +3,7 @@
 \name{STEGO}
 \alias{STEGO}
 \alias{runSTEGO}
-\title{STEGO application}
+\title{#' STEGO application}
 \usage{
 runSTEGO()
 }
@@ -11,7 +11,7 @@ runSTEGO()
 A shiny R application called STEGO.R
 }
 \description{
-STEGO application
+#' STEGO application
 }
 \examples{
 library(STEGO.R)
