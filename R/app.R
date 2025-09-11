@@ -1,4 +1,4 @@
-#' STEGO application
+#' #' STEGO application
 #' @name STEGO
 #' @import bslib
 #' @import circlize
@@ -2119,8 +2119,6 @@ runSTEGO <- function(){
                           accept = c(".csv", "csv"), width = "600px"
                 ),
               ),
-
-
               div(class = "select-input-container",
                   selectInput("Type_of_receptor", p("Type of receptor",class = "name-header_functions"),
                               choices = c("TCR", "BCR"), selected = "TCR", width = "600px"),
@@ -2293,6 +2291,51 @@ runSTEGO <- function(){
                   fluidRow(
                     column(12, numericInput("top_no_clonotypes", p("Top clonotypes per group",class = "name-header_functions"), value = 1, step = 1, min = 0, max = 20))
                   )),
+
+                bsCollapse(
+                  id = "collapse_line_graph_collapse", open = TRUE, multiple = FALSE,
+                  bsCollapsePanel("Line Graph",style = "primary custom-panel",
+                                  fluidRow(
+                                    column(6,checkboxInput("is_a_time_series",p("Time series?", class = "name-header2"),value = T)),
+                                    column(6,p(" ")),
+                                    conditionalPanel(
+                                      condition = "input.is_a_time_series",
+
+                                      column(6,selectInput("separator_input", p("Select Separators:",class = "name-header_functions"),
+                                                           choices = c("_" = "_.*", "-" = "-.*", "." = "\\..*", "|" = "\\|.*", "#" = "#*", "^" = "\\^*", "&" = "&.*"),
+                                                           selected = "-",
+                                                           multiple = F),),
+                                      column(6,p(" ")),
+                                      column(12,selectInput("comparison_operator",p("Choose comparison operator:",class = "name-header_functions"),
+                                                            choices = c("Equal to" = "==", "Greater than or equal to" = ">="),
+                                                            selected = c("Greater than or equal to" = ">=")),),
+                                      column(12,numericInput("Total_count_Cutoff",p("Minimum Clone Count:",class = "name-header_functions"),value = "")),
+                                      column(12,numericInput("cutoff_upset",p("Minimum samples:",class = "name-header_functions"), value = ""))
+                                    ),
+
+                                    column(12,actionButton("load_samp_name_list","Load samples")),
+                                    column(12,conditionalPanel(
+                                      condition = "input.is_a_time_series",
+                                      selectizeInput("Group_for_line_graph",p("Display multi-sample clones for: ",class = "name-header_functions"),""))),
+
+                                  ),
+
+                                  fluidRow(
+                                    column(12,numericInput("max_number_lines_to",p("Maximum to display",class = "name-header_functions"),value = 10)),
+
+                                  ),
+
+                                  fluidRow(
+                                    column(6,numericInput("maximum_line","y-axis (max)",value = "")),
+                                    column(6,numericInput("breaks_for_line","y-axis breaks",value = "")),
+
+                                  )
+
+
+                  )
+                )
+
+
               )
             ),
             conditionalPanel(
@@ -2729,48 +2772,13 @@ runSTEGO <- function(){
                              ),
                              ##### line graph ----
                              tabPanel("Line Graph",
-                                      p(" "),
-
-                                      fluidRow(
-                                        column(2,checkboxInput("is_a_time_series",p("Time series?", class = "name-header2"),value = T)),
-
-                                        conditionalPanel(
-                                          condition = "input.is_a_time_series",
-
-                                          column(2,selectInput("separator_input", p("Select Separators:",class = "name-header_functions"),
-                                                               choices = c("_" = "_.*", "-" = "-.*", "." = "\\..*", "|" = "\\|.*", "#" = "#*", "^" = "\\^*", "&" = "&.*"),
-                                                               selected = "-",
-                                                               multiple = F),),
-                                          column(4,selectInput("comparison_operator",p("Choose comparison operator:",class = "name-header_functions"),
-                                                               choices = c("Equal to" = "==", "Greater than or equal to" = ">="),
-                                                               selected = c("Greater than or equal to" = ">=")),),
-                                          column(2,numericInput("cutoff_upset",p("Enter cutoff value:",class = "name-header_functions"), value = 2),)
-                                        ),
-                                        column(2,numericInput("Total_count_Cutoff",p("Min count threshold",class = "name-header_functions"),value = 1)),
-                                      ),
-
-                                      fluidRow(
-                                        column(2,numericInput("max_number_lines_to",p("Maximum to display",class = "name-header_functions"),value = 10)),
-                                        column(2,actionButton("load_samp_name_list","Load samples")),
-                                        column(4,conditionalPanel(
-                                          condition = "input.is_a_time_series",
-                                          selectizeInput("Group_for_line_graph",p("Display multi-sample clones for: ",class = "name-header_functions"),""))),
-                                      ),
-                                      fluidRow(
 
 
-                                        column(2,checkboxInput("Require_TCR_filter","Require TCR filter?",value = F)),
-                                        column(10,conditionalPanel(condition = "input.Require_TCR_filter",
-                                                                   selectInput("Secondary_Filter_if_needed","Additional filter", choices ="", multiple = T, width = "1000px"))),
-                                      ),
-                                      fluidRow(
-                                        column(3,numericInput("maximum_line","y-axis (max)",value = "")),
-                                        column(3,numericInput("breaks_for_line","y-axis breaks",value = "")),
-
-                                      ),
                                       tabsetPanel(
                                         tabPanel("Table",
                                                  div(DT::DTOutput("Line_graph_table")),
+                                                 div(DT::DTOutput("testing_line_graph")),
+
                                                  downloadButton("download_line_graph_table", "Download table"),
                                                  # div(DT::DTOutput("Line_graph_table2")),
                                         ),
@@ -2785,7 +2793,25 @@ runSTEGO <- function(){
                                                                           multiple = F)),
                                                    ),
                                                  ),
-                                                 plotOutput("line_graph_output"),
+                                                 fluidRow(
+
+
+                                                   column(2,checkboxInput("Require_TCR_filter","Require TCR filter?",value = F)),
+                                                   column(10,conditionalPanel(condition = "input.Require_TCR_filter",
+                                                                              selectInput("Secondary_Filter_if_needed","Additional filter", choices ="", multiple = T, width = "1000px"))),
+                                                 ),
+                                                 fluidRow(
+                                                   column(
+                                                     3,
+                                                     wellPanel(
+                                                       id = "tPanel23", style = "overflow-y:scroll; max-height: 600px",
+                                                       uiOutput("myPanel_colour_list_for_lines")
+                                                     )
+                                                   ),
+                                                   column(9, plotOutput("line_graph_output", height = "600px"))
+                                                 ),
+
+
 
                                                  fluidRow(
                                                    column(2, numericInput("width_line_graph_output",p("Width (PDF)",class = "name-header_functions"), value = 10)),
@@ -5044,7 +5070,7 @@ runSTEGO <- function(){
       }
 
       contig_AG <- contig_AG %>%
-        select(all_of(name.list), everything())
+        dplyr::select(all_of(name.list), everything())
       names(contig_AG)[1:summary(name.list)[1]] <- paste(names(contig_AG[names(contig_AG) %in% name.list]), "_AG", sep = "")
       # contig_AG
 
@@ -6035,7 +6061,7 @@ runSTEGO <- function(){
       names(contigs2)[names(contigs2) %in% c("v_call")] <- "TRBV_gene"
       names(contigs2)[names(contigs2) %in% c("j_call")] <- "TRBJ_gene"
       contigs2 <- contigs2 %>%
-        select(TRBV_gene, CDR3_beta, everything())
+        dplyr::select(all_of(TRBV_gene, CDR3_beta), everything())
       contigs2 <- subset(contigs2, contigs2$CDR3_beta != "None")
       contigs2 <- contigs2
       contigs2$TRBV_gene <- gsub("[*]0.", "", contigs2$TRBV_gene)
@@ -6095,7 +6121,7 @@ runSTEGO <- function(){
       calls_TCR_paired.fun <- calls_TCR_paired.fun[complete.cases(calls_TCR_paired.fun$vdj_gene_AG_BD), ]
 
       calls_TCR_paired.fun <- calls_TCR_paired.fun %>%
-        select(cloneCount, everything())
+        select(all_of(cloneCount), everything())
 
       calls_TCR_paired.fun
     }
@@ -6964,7 +6990,7 @@ runSTEGO <- function(){
       contig_paired_only$group <- input$group10x
       contig_paired_only$Indiv <- input$Indiv10x
       contig_paired_only <- contig_paired_only %>%
-        select(cloneCount, group, Indiv, everything())
+        select(all_of(cloneCount, group, Indiv), everything())
       contig_paired_only
     }
 
@@ -7675,7 +7701,7 @@ runSTEGO <- function(){
       sc <- input.data_ClusTCR2_extracting()
       md <- as.data.frame(sc@meta.data)
       md <- md %>%
-        select(c(input$junction_aa_extracting,input$v_gene_extracting), everything())
+        select(all_of(c(input$junction_aa_extracting,input$v_gene_extracting)), everything())
 
       df <- md[,names(md) %in% c(input$junction_aa_extracting,input$v_gene_extracting)]
       names(df) <- c("junction_aa","v_call")
@@ -12187,7 +12213,7 @@ runSTEGO <- function(){
 
       TCR_input <- TCR[, names(TCR) %in% c("cloneCount",select_cols)]
       TCR_input <- TCR_input %>%
-        select("cloneCount","ID_Column", everything())
+        dplyr::select(all_of(c("cloneCount", "ID_Column")), everything())
 
       TCR_total <- as.data.frame(ddply(TCR_input,c(input$V_gene_sc),numcolwise(sum)))
       meta2.names <- names(TCR_input)
@@ -12644,7 +12670,6 @@ runSTEGO <- function(){
           plot2 <- top_clonal_plot()
         }
         plot(plot2)
-        dev.off()
         dev.off()
       }, contentType = "application/pdf"
     )
@@ -14904,7 +14929,7 @@ runSTEGO <- function(){
       df <- as.data.frame(sc@meta.data)
 
       df <- df %>%
-        select(c(input$Samp_col, input$V_gene_sc), everything())
+        select(all_of(c(input$Samp_col, input$V_gene_sc)), everything())
 
       unique.df <- (df[, names(df) %in% c(input$Samp_col, input$V_gene_sc)])
       names(unique.df) <- c("group", "chain")
@@ -19839,581 +19864,613 @@ runSTEGO <- function(){
 
     # line graph from upset plot  ----
 
-    # check_sep <- reactive({
-    #   sc <- UMAP_metadata_with_labs()
-    #   validate(
-    #     need(
-    #       nrow(sc) > 0,
-    #       "upload file"
-    #     )
-    #   )
-    #   req( input$cutoff_upset,input$separator_input)
-    #   clones <- Upset_plot_overlap_table()
-    #   req(clones)
-    #
-    #   # if(input$Graph_type_bar == "Number_expanded") {
-    #   if (input$comparison_operator == "==") {
-    #     original_data <- subset(clones, TotalSamps == input$cutoff_upset)
-    #   } else if (input$comparison_operator == ">=") {
-    #     original_data <- subset(clones, TotalSamps >= input$cutoff_upset)
-    #   }
-    #
-    #   # Get the group names from the column names
-    #   # group_names <- unique(gsub(input$separator_input,"", colnames(original_data)))
-    #   group_names <- strsplit(names(original_data), input$separator_input)
-    #
-    #
-    #
-    #   group_names <- group_names[!(group_names %in% c("Background","background", "TotalSamps", "CloneTotal"))]
-    #
-    #   first_bits <- sapply(group_names, `[`, 1)
-    #   unique_first_bits <- unique(first_bits)
-    #   unique_first_bits
-    #
-    #   unique_first_bits
-    #
-    # })
+    observe({
+      if(input$Graph_type_bar == "Number_expanded") {
+        updateNumericInput(
+          session,
+          "cutoff_upset",
+          value = 2
 
-    # select_top_five <- reactive({
-    #
-    #   clones <- Upset_plot_overlap_table()
-    #   req(clones, input$cutoff_upset)
-    #
-    #   if (input$comparison_operator == "==") {
-    #     original_data <- subset(clones, TotalSamps == input$cutoff_upset)
-    #   } else if (input$comparison_operator == ">=") {
-    #     original_data <- subset(clones, TotalSamps >= input$cutoff_upset)
-    #   }
-    #   # Get the group names from the column names
-    #   group_names <- check_sep()  # Assuming first two columns are not part of the groups
-    #   print(group_names)
-    #   len <- length(group_names)
-    #   print(len)
-    #
-    #   # Create an empty list to store top 5 data for each group
-    #   top_5_data_list <- list()
-    #
-    #   TRUE %in% grepl(input$separator_input,group_names)
-    #   total_length <- (length(names(original_data))-4)
-    #
-    #   print(length(len) < total_length)
-    #
-    #   if(input$is_a_time_series) {
-    #
-    #     for (i in 1:len) {
-    #       # Subset the data for the current group
-    #       # message("processing data for line graph for ",i)
-    #       group_data <- original_data[,names(original_data) %in% c(colnames(original_data)[grepl(group_names[i], colnames(original_data))])]
-    #       # print(head(group_data))
-    #       # Check if group_data is empty or not a data frame
-    #       if (!is.data.frame(group_data) || nrow(group_data) == 0) {
-    #         # message(paste0("Group data for ", group_names[i], " is empty or not a data frame. Skipping.\n"))
-    #         next  # Skip to the next iteration if group_data is empty or not a data frame
-    #       }
-    #
-    #       len_group_data <- dim(group_data)[2]
-    #       # Calculate row sums
-    #       group_data$CloneTotal <- rowSums(group_data)
-    #
-    #       group_data <- subset(group_data,group_data$CloneTotal >= input$Total_count_Cutoff )
-    #       group_data
-    #       if (dim(group_data)[2]==0) {
-    #         cat(group_names[i], "has not clones. Skipping.\n")
-    #         next  # Skip to the next iteration if group_data is empty or not a data frame
-    #       }
-    #
-    #       # Order by CloneTotal in descending order
-    #       group_data <- group_data[order(-group_data$CloneTotal), ]
-    #
-    #       req(input$max_number_lines_to)
-    #       top_5_group <- group_data %>%
-    #         slice_max(CloneTotal, n = input$max_number_lines_to)
-    #
-    #       # Remove the CloneTotal column
-    #       top_5_group <- top_5_group[, !grepl("^CloneTotal", colnames(top_5_group))]
-    #       # Store the top 5 data for the current group in the list object
-    #       top_5_data_list[[group_names[i]]] <- top_5_group
-    #
-    #     }
-    #
-    #   } else {
-    #     group_data <- original_data[,!names(original_data) %in% c("background", "TotalSamps", "CloneTotal")]
-    #     group_data$CloneTotal <- rowSums(group_data)
-    #
-    #     group_data <- subset(group_data,group_data$CloneTotal >= input$Total_count_Cutoff)
-    #
-    #
-    #     group_data <- group_data[order(-group_data$CloneTotal), ]
-    #     top_5_group <- group_data %>%
-    #       slice_max(CloneTotal, n = input$max_number_lines_to)
-    #     top_5_group <- top_5_group[, !grepl("^CloneTotal", colnames(top_5_group))]
-    #     top_5_data_list <- top_5_group
-    #   }
-    #
-    #   top_5_data_list
-    #
-    # })
+        )
+      } else {
+        updateNumericInput(
+          session,
+          "cutoff_upset",
+          value = 0.05
+        )
+      }
+    })
 
-    # observeEvent(input$load_samp_name_list,{
-    #
-    #   # Get the group names from the column names
-    #   group_names <- check_sep()
-    #   req(group_names)
-    #
-    #   if (length(group_names)>0) {
-    #     updateSelectInput(
-    #       session,
-    #       "Group_for_line_graph",
-    #       choices = group_names
-    #
-    #     )
-    #   } else {
-    #     updateSelectInput(
-    #       session,
-    #       "Group_for_line_graph",
-    #       choices = ""
-    #
-    #     )
-    #   }
-    #
-    # })
+    observe({
+      if(input$Graph_type_bar == "Number_expanded") {
+        updateNumericInput(
+          session,
+          "Total_count_Cutoff",
+          value = 1
 
-    # output$Line_graph_table <- DT::renderDT(escape = FALSE, filter = list(position = "top", clear = FALSE), options = list(autoWidth = FALSE, lengthMenu = c(1, 2, 5, 10, 20, 50, 100), pageLength = 20, scrollX = TRUE), {
-    #
-    #   list.df <- select_top_five()
-    #   req(list.df)
-    #   if(input$is_a_time_series) {
-    #     df <- as.data.frame(list.df[[input$Group_for_line_graph]])
-    #     df
-    #
-    #     if(input$Require_TCR_filter) {
-    #       df$clones <- rownames(df)
-    #       df <- df[df$clones %in% input$Secondary_Filter_if_needed,]
-    #       df <- df[,!names(df) %in% "clones"]
-    #     }
-    #
-    #   } else {
-    #
-    #     df <-  select_top_five()
-    #     req(df)
-    #   }
-    #
-    #   df
-    # })
+        )
+      } else {
+        updateNumericInput(
+          session,
+          "Total_count_Cutoff",
+          value = 0.05
+        )
+      }
+    })
 
-    # observeEvent(input$require_TCR_filter,{
-    # observe({
-    #
-    #   sc <- UMAP_metadata_with_labs()
-    #   validate(
-    #     need(
-    #       nrow(sc) > 0,
-    #       "upload file"
-    #     )
-    #   )
-    #   clones <- Upset_plot_overlap_table()
-    #   req(clones)
-    #
-    #   list.df <- select_top_five()
-    #
-    #   req(list.df)
-    #
-    #   if(input$is_a_time_series) {
-    #
-    #     req(input$Group_for_line_graph)
-    #
-    #     df <- as.data.frame(list.df[[input$Group_for_line_graph]])
-    #
-    #     df$clones <- rownames(df)
-    #
-    #   } else {
-    #
-    #     df <- select_top_five()
-    #     df$clones <- rownames(df)
-    #   }
-    #
-    #   req(df)
-    #
-    #   updateSelectInput(
-    #     session,
-    #     "Secondary_Filter_if_needed",
-    #     choices = df$clones,
-    #     selected = df$clones
-    #
-    #   )
-    #
-    #
-    # })
+    check_sep <- reactive({
+      sc <- UMAP_metadata_with_labs()
+      validate(
+        need(
+          nrow(sc) > 0,
+          "upload file"
+        )
+      )
+      req( input$cutoff_upset,input$separator_input)
+      clones <- Upset_plot_overlap_table()
+      req(clones)
+
+      # if(input$Graph_type_bar == "Number_expanded") {
+      if (input$comparison_operator == "==") {
+        original_data <- subset(clones, TotalSamps == input$cutoff_upset)
+      } else if (input$comparison_operator == ">=") {
+        original_data <- subset(clones, TotalSamps >= input$cutoff_upset)
+      }
 
 
+      group_names <- strsplit(names(original_data), input$separator_input)
+      group_names <- group_names[!(group_names %in% c("Background","background", "TotalSamps", "CloneTotal"))]
 
-    # output$download_line_graph_table <- downloadHandler(
-    #   filename = function() {
-    #     # x <- today()
-    #     paste("line_graph_table_",input$Group_for_line_graph, ".csv", sep = "")
-    #   },
-    #   content = function(file) {
-    #     list.df <- select_top_five()
-    #     req(list.df)
-    #     message("for line graph")
-    #
-    #     if(input$is_a_time_series) {
-    #       df <- as.data.frame(list.df[[input$Group_for_line_graph]])
-    #       df
-    #
-    #       if(input$Require_TCR_filter) {
-    #         df$clones <- rownames(df)
-    #         df <- df[df$clones %in% input$Secondary_Filter_if_needed,]
-    #         df <- df[,!names(df) %in% "clones"]
-    #       }
-    #
-    #
-    #     } else {
-    #
-    #       df <-  select_top_five()
-    #       req(df)
-    #     }
-    #
-    #     df <- as.data.frame(df)
-    #     write.csv(df, file, row.names = T)
-    #   }
-    # )
+      first_bits <- sapply(group_names, `[`, 1)
+      unique_first_bits <- unique(first_bits)
+      unique_first_bits
 
-    # output$Line_graph_table2 <- DT::renderDT(escape = FALSE, filter = list(position = "top", clear = FALSE), options = list(autoWidth = FALSE, lengthMenu = c(1, 2, 5, 10, 20, 50, 100), pageLength = 20, scrollX = TRUE), {
-    #   top_5_data_list <- select_top_five()
-    #   req(top_5_data_list)
-    #   if(input$is_a_time_series) {
-    #     req(top_5_data_list)
-    #     # Remove empty data frames from top_5_data_list
-    #     top_5_data_list <- top_5_data_list[sapply(top_5_data_list, function(x) nrow(x) > 0)]
-    #
-    #   } else {
-    #     top_5_data_list <- select_top_five()
-    #     req(top_5_data_list)
-    #   }
-    #   # Find the maximum count value across all datasets
-    #   max_count <- max(sapply(top_5_data_list, function(df) max(as.numeric(unlist(df)), na.rm = TRUE)))
-    #
-    #   # Round the maximum count value to the nearest 5 and then add 5
-    #   if(input$Graph_type_bar == "Number_expanded") {
-    #     max_count <- ceiling(max_count / 5) * 5
-    #   } else if (input$Graph_type_bar == "frequency_expanded"){
-    #     max_count <- round(max_count, digits = 2) + 0.01
-    #
-    #   }
-    #
-    #   if(input$is_a_time_series) {
-    #     # Create an empty list to store plots
-    #     plot_list <- list()
-    #     year <- input$Group_for_line_graph
-    #     # Transpose the data frame and convert to data.frame
-    #     top_5_data <- top_5_data_list[[year]]
-    #
-    #     if(input$Require_TCR_filter) {
-    #       top_5_data$clones <- rownames(top_5_data)
-    #       top_5_data <- top_5_data[top_5_data$clones %in% input$Secondary_Filter_if_needed,]
-    #       top_5_data <- top_5_data[,!names(top_5_data) %in% "clones"]
-    #     }
-    #
-    #     top_5_transposed <- as.data.frame(t(top_5_data), stringsAsFactors = FALSE)
-    #
-    #     # Add Year column
-    #     top_5_transposed$ID <- year
-    #
-    #     # Convert row names into a regular column
-    #     top_5_transposed$Sample_ID <- rownames(top_5_transposed)
-    #
-    #     # Split Sample_ID into separate columns for Group and Time
-    #     separator_input2 <- input$separator_input2
-    #
-    #     # Split the strings
-    #     split_strings <- strsplit(as.character(top_5_transposed$Sample_ID), separator_input2)
-    #
-    #     # Convert the list to a data frame
-    #     split_df <- do.call(rbind, lapply(split_strings, function(x) {
-    #       if(length(x) == 2) {
-    #         return(x)
-    #       } else {
-    #         return(c(x[1], NA)) # Handle cases where there might not be a second part
-    #       }
-    #     }))
-    #
-    #     # Convert to a data frame
-    #     split_df <- as.data.frame(split_df, stringsAsFactors = FALSE)
-    #
-    #     # Rename columns for clarity
-    #     names(split_df) <- c("V1", "V2")
-    #
-    #     # Combine with the original transposed data frame
-    #     top_5_transposed <- cbind(top_5_transposed, split_df)
-    #
-    #     # Print the resulting data frame to verify the output
-    #     top_5_transposed
-    #
-    #     # Rest of your code for further processing and plotting
-    #   }
-    #
-    #
-    # })
-    #
-    # observe({
-    #   top_5_data_list <- select_top_five()
-    #
-    #   print("working on this section")
-    #   print(top_5_data_list)
-    #   # Find the maximum count value across all datasets
-    #   max_count <- max(sapply(top_5_data_list, function(df) max(as.numeric(unlist(df)), na.rm = TRUE)))
-    #
-    #   # Round the maximum count value to the nearest 5 and then add 5
-    #   if(input$Graph_type_bar == "Number_expanded") {
-    #     max_count <- max(sapply(top_5_data_list, function(df) max(as.numeric(unlist(df)), na.rm = TRUE)))
-    #     max_count <- ceiling(max_count / 5) * 5
-    #
-    #   } else if (input$Graph_type_bar == "frequency_expanded"){
-    #
-    #     max_count <- round(max_count, digits = 2) + 0.01
-    #
-    #   }
-    #   updateNumericInput(
-    #     session,
-    #     inputId = "maximum_line",label = "y-axis",
-    #     value = max_count
-    #
-    #   )
-    #
-    #
-    # })
-    #
-    # observe({
-    #
-    #
-    #   # Round the maximum count value to the nearest 5 and then add 5
-    #   if(input$Graph_type_bar == "Number_expanded") {
-    #     breaks <- 5
-    #
-    #   } else if (input$Graph_type_bar == "frequency_expanded"){
-    #
-    #     breaks <- 0.05
-    #
-    #   }
-    #   updateNumericInput(
-    #     session,
-    #     inputId = "breaks_for_line",label = "breaks",
-    #     value = breaks
-    #
-    #   )
-    #
-    #
-    # })
+      unique_first_bits
+
+    })
+
+    select_top_five <- reactive({
+      clones <- Upset_plot_overlap_table()
+      req(clones, input$cutoff_upset)
+
+      # subset by operator
+      if (input$comparison_operator == "==") {
+        original_data <- subset(clones, TotalSamps == input$cutoff_upset)
+      } else if (input$comparison_operator == ">=") {
+        original_data <- subset(clones, TotalSamps >= input$cutoff_upset)
+      }
+
+      # group names from your separator logic
+      group_names <- check_sep()
+      len <- length(group_names)
+
+      top_5_data_list <- list()
+
+      total_length <- (ncol(original_data) - 4)
+      print(len < total_length)
+
+      if (input$is_a_time_series) {
+        for (i in seq_len(len)) {
+          # subset columns for this group (force df)
+          group_data <- original_data[, grepl(group_names[i], colnames(original_data)), drop = FALSE]
+
+          if (!is.data.frame(group_data) || ncol(group_data) == 0) next
+
+          # add clone totals
+          group_data$CloneTotal <- rowSums(group_data, na.rm = TRUE)
+          group_data <- subset(group_data, CloneTotal >= input$Total_count_Cutoff)
+
+          group_data <- group_data[order(-group_data$CloneTotal), , drop = FALSE]
+
+          req(input$max_number_lines_to)
+          top_5_group <- group_data %>%
+            slice_max(CloneTotal, n = input$max_number_lines_to)
+
+          # remove the CloneTotal column
+          top_5_group <- top_5_group[, !grepl("^CloneTotal", colnames(top_5_group)), drop = FALSE]
+
+          # store with group name
+          top_5_data_list[[group_names[i]]] <- top_5_group
+        }
+      } else {
+        # non-time series case
+        group_data <- original_data[, !names(original_data) %in% c("background", "TotalSamps", "CloneTotal"), drop = FALSE]
+        group_data$CloneTotal <- rowSums(group_data, na.rm = TRUE)
+        group_data <- subset(group_data, CloneTotal >= input$Total_count_Cutoff)
+        group_data <- group_data[order(-group_data$CloneTotal), , drop = FALSE]
+
+        top_5_group <- group_data %>%
+          slice_max(CloneTotal, n = input$max_number_lines_to)
+
+        top_5_group <- top_5_group[, !grepl("^CloneTotal", colnames(top_5_group)), drop = FALSE]
+
+        # wrap in list for consistency
+        top_5_data_list[["all_groups"]] <- top_5_group
+      }
+
+      top_5_data_list
+    })
+
+    cols_colour_list_for_lines<- reactive({
+
+      list.df <- select_top_five()
+      req(list.df,input$Group_for_line_graph)
+
+      as_colour_names <- rownames(list.df[[input$Group_for_line_graph]])
+      # message("printing colour names for ", input$Group_for_line_graph)
+      # print(as_colour_names)
+      req(as_colour_names)
+
+      num <- as.data.frame(as_colour_names)
+
+      set.seed(input$seed_col)
+      col.gg <- gg_fill_hue(dim(num)[1])
+      palette_rainbow <- rainbow(dim(num)[1])
+      heat_col <- heat.colors(dim(num)[1])
+      col.terrain <- terrain.colors(dim(num)[1])
+      col.topo <- topo.colors(dim(num)[1])
+      col.hcl <- hcl.colors(dim(num)[1], palette = "viridis")
+      one <- rep(input$one.colour.default,dim(num)[1])
+
+      if (input$colourtype == "default") {
+        lapply(1:dim(num)[1], function(i) {
+          colourInput(paste("col.colour_list_for_lines", i, sep = "_"), paste(num[i, ]), col.gg[i])
+        })
+      } else if (input$colourtype == "hcl.colors") {
+        lapply(1:dim(num)[1], function(i) {
+          colourInput(paste("col.colour_list_for_lines", i, sep = "_"), paste(num[i, ]), col.hcl[i])
+        })
+      } else if (input$colourtype == "topo.colors") {
+        lapply(1:dim(num)[1], function(i) {
+          colourInput(paste("col.colour_list_for_lines", i, sep = "_"), paste(num[i, ]), col.topo[i])
+        })
+      } else if (input$colourtype == "heat.colors") {
+        lapply(1:dim(num)[1], function(i) {
+          colourInput(paste("col.colour_list_for_lines", i, sep = "_"), paste(num[i, ]), heat_col[i])
+        })
+      } else if (input$colourtype == "terrain.colors") {
+        lapply(1:dim(num)[1], function(i) {
+          colourInput(paste("col.colour_list_for_lines", i, sep = "_"), paste(num[i, ]), col.terrain[i])
+        })
+      } else if (input$colourtype == "rainbow") {
+        lapply(1:dim(num)[1], function(i) {
+          colourInput(paste("col.colour_list_for_lines", i, sep = "_"), paste(num[i, ]), palette_rainbow[i])
+        })
+      } else if (input$colourtype == "random") {
+        palette1 <- distinctColorPalette(dim(num)[1])
+        lapply(1:dim(num)[1], function(i) {
+          colourInput(paste("col.colour_list_for_lines", i, sep = "_"), paste(num[i, ]), palette1[i])
+        })
+      } else {
+        lapply(1:dim(num)[1], function(i) {
+          colourInput(paste("col.colour_list_for_lines", i, sep = "_"), paste(num[i, ]), one[i])
+        })
+      } # one colour
+    })
+
+    output$myPanel_colour_list_for_lines <- renderUI({
+      cols_colour_list_for_lines()
+    })
+
+    colors_colour_list_for_lines <- reactive({
+      list.df <- select_top_five()
+      req(list.df,input$Group_for_line_graph)
+      as_colour_names <- rownames(list.df[[input$Group_for_line_graph]])
+      req(as_colour_names)
+      num <- as.data.frame(as_colour_names)
+
+      lapply(1:dim(num)[1], function(i) {
+        input[[paste("col.colour_list_for_lines", i, sep = "_")]]
+      })
+    })
+
+    observeEvent(input$load_samp_name_list,{
+
+      # Get the group names from the column names
+      group_names <- check_sep()
+      req(group_names)
+
+      if (length(group_names)>0) {
+        updateSelectInput(
+          session,
+          "Group_for_line_graph",
+          choices = group_names
+
+        )
+      } else {
+        updateSelectInput(
+          session,
+          "Group_for_line_graph",
+          choices = ""
+
+        )
+      }
+
+    })
+
+    output$Line_graph_table <- DT::renderDT(escape = FALSE, filter = list(position = "top", clear = FALSE), options = list(autoWidth = FALSE, lengthMenu = c(1, 2, 5, 10, 20, 50, 100), pageLength = 20, scrollX = TRUE), {
+
+      list.df <- select_top_five()
+      req(list.df)
+      if(input$is_a_time_series) {
+        df <- as.data.frame(list.df[[input$Group_for_line_graph]])
+        df
+
+        if(input$Require_TCR_filter) {
+          df$clones <- rownames(df)
+          df <- df[df$clones %in% input$Secondary_Filter_if_needed,]
+          df <- df[,!names(df) %in% "clones"]
+        }
+
+      } else {
+
+        df <-  select_top_five()
+        req(df)
+      }
+
+      df
+    })
+
+    observe({
+
+      sc <- UMAP_metadata_with_labs()
+      validate(
+        need(
+          nrow(sc) > 0,
+          "upload file"
+        )
+      )
+      clones <- Upset_plot_overlap_table()
+      req(clones)
+
+      list.df <- select_top_five()
+
+      req(list.df)
+
+      if(input$is_a_time_series) {
+
+        req(input$Group_for_line_graph)
+
+        df <- as.data.frame(list.df[[input$Group_for_line_graph]])
+
+        df$clones <- rownames(df)
+
+      } else {
+
+        df <- select_top_five()
+        df$clones <- rownames(df)
+      }
+
+      req(df)
+
+      updateSelectInput(
+        session,
+        "Secondary_Filter_if_needed",
+        choices = df$clones,
+        selected = df$clones
+
+      )
+    })
+
+    output$download_line_graph_table <- downloadHandler(
+      filename = function() {
+        # x <- today()
+        paste("line_graph_table_",input$Group_for_line_graph, ".csv", sep = "")
+      },
+      content = function(file) {
+        list.df <- select_top_five()
+        req(list.df)
+        message("for line graph")
+
+        if(input$is_a_time_series) {
+          df <- as.data.frame(list.df[[input$Group_for_line_graph]])
+          df
+
+          if(input$Require_TCR_filter) {
+            df$clones <- rownames(df)
+            df <- df[df$clones %in% input$Secondary_Filter_if_needed,]
+            df <- df[,!names(df) %in% "clones"]
+          }
+
+
+        } else {
+
+          df <-  select_top_five()
+          req(df)
+        }
+
+        df <- as.data.frame(df)
+        write.csv(df, file, row.names = T)
+      }
+    )
+
+
+    observe({
+      top_5_data_list <- select_top_five()
+      req(top_5_data_list,input$Graph_type_bar)
+      max_count <- max(
+        sapply(top_5_data_list, function(df) {
+          vals <- as.numeric(unlist(df))
+          if (length(vals) == 0 || all(is.na(vals))) return(0)
+          max(vals, na.rm = TRUE)
+        }),
+        na.rm = TRUE
+      )
+      # Round the maximum count value to the nearest 5 and then add 5
+      if(input$Graph_type_bar == "Number_expanded") {
+
+        max_count <- ceiling(max_count / 5) * 5
+
+      } else if (input$Graph_type_bar == "frequency_expanded"){
+        # Find the maximum count value across all datasets
+
+        max_count <- round(max_count, digits = 2) + 0.01
+
+      }
+      updateNumericInput(
+        session,
+        inputId = "maximum_line",label = "y-axis",
+        value = max_count
+
+      )
+
+
+    })
+
+    observe({
+      # Round the maximum count value to the nearest 5 and then add 5
+      if(input$Graph_type_bar == "Number_expanded") {
+        breaks <- 5
+
+      } else if (input$Graph_type_bar == "frequency_expanded"){
+
+        breaks <- 0.05
+
+      }
+      updateNumericInput(
+        session,
+        inputId = "breaks_for_line",label = "breaks",
+        value = breaks
+
+      )
+
+    })
+
+
+    Line_graph_for_tracing <- reactive({
+
+      top_5_data_list <- select_top_five()
+      req(top_5_data_list)
+
+      year <- input$Group_for_line_graph
+      # Transpose the data frame and convert to data.frame
+      top_5_data <- top_5_data_list[[year]]
+
+      if(input$is_a_time_series) {
+        req(top_5_data_list)
+        # Remove empty data frames from top_5_data_list
+        top_5_data_list <- top_5_data_list[sapply(top_5_data_list, function(x) nrow(x) > 0)]
+        req(top_5_data_list)
+
+      } else {
+        top_5_data_list <- select_top_five()
+        req(top_5_data_list)
+      }
+
+      req(input$maximum_line)
+      max_count = input$maximum_line
+
+      if(input$is_a_time_series) {
+        # Create an empty list to store plots
+        plot_list <- list()
+        year <- input$Group_for_line_graph
+
+
+        # Transpose the data frame and convert to data.frame
+        top_5_data <- top_5_data_list[[year]]
+        message("Printing data for the line graph")
+
+        colorblind_vector <- as.data.frame(unlist(colors_colour_list_for_lines()))
+        names(colorblind_vector) <- "col"
+        colorblind_vector$rownames <- rownames(top_5_data)
+
+
+
+        if(input$Require_TCR_filter) {
+          message("Filtering TCR")
+          top_5_data$clones <- rownames(top_5_data)
+          top_5_data <- top_5_data[top_5_data$clones %in% input$Secondary_Filter_if_needed,]
+          top_5_data <- top_5_data[,!names(top_5_data) %in% "clones"]
+
+          colorblind_vector <- colorblind_vector[colorblind_vector$rownames %in% input$Secondary_Filter_if_needed,]
+
+        }
+
+
+
+        # Replace underscores with spaces in the VDJ variable
+        colorblind_vector$rownames <- gsub("_", " ", colorblind_vector$rownames)
+        colorblind_vector$rownames<- gsub(" & ", " ", colorblind_vector$rownames)
+        #   # Wrap the Time_Point variable based on spaces
+        colorblind_vector$rownames <- str_wrap(colorblind_vector$rownames, width = 10)  # Adjust width as needed
+
+        top_5_transposed <- as.data.frame(t(top_5_data), stringsAsFactors = FALSE)
+
+        # Add Year column
+        top_5_transposed$ID <- year
+
+        # Convert row names into a regular column
+        top_5_transposed$Sample_ID <- rownames(top_5_transposed)
+
+        # Split Sample_ID into separate columns for Group and Time
+        separator_input2 <- input$separator_input2
+
+        # Split the strings
+        split_strings <- strsplit(as.character(top_5_transposed$Sample_ID), separator_input2)
+
+        # Convert the list to a data frame
+        split_df <- do.call(rbind, lapply(split_strings, function(x) {
+          if(length(x) == 2) {
+            return(x)
+          } else {
+            return(c(x[1], NA)) # Handle cases where there might not be a second part
+          }
+        }))
+        print(split_df)
+        # Convert to a data frame
+        split_df <- as.data.frame(split_df, stringsAsFactors = FALSE)
+        print(split_df)
+        # Rename columns for clarity
+        names(split_df) <- c("V1", "V2")
+        print(split_df)
+        if (all(is.na(split_df$V2))) {
+          split_df$V2 <- split_df$V1
+        }
+        # Combine with the original transposed data frame
+        top_5_transposed <- cbind(top_5_transposed, split_df)
+        # Rest of your code for further processing and plotting
+        all_names <- names(top_5_transposed)
+        v_gene_names <- all_names[grep("TRAV|TRBV|TRGV|TRDV", all_names)]
+        # Reshape the data into long format
+        data_long <- pivot_longer(top_5_transposed,
+                                  cols = v_gene_names,   # Exclude the Sample_ID, Group, and Time columns
+                                  names_to = "VDJ",  # New column name for time points
+                                  values_to = "Count")     # New column name for values
+        # Replace underscores with spaces in the VDJ variable
+        data_long$VDJ <- gsub("_", " ", data_long$VDJ)
+        data_long$VDJ <- gsub(" & ", " ", data_long$VDJ)
+        #   # Wrap the Time_Point variable based on spaces
+        data_long$VDJ <- str_wrap(data_long$VDJ, width = 10)  # Adjust width as needed
+        #
+        #   # Determine unique levels of VDJ
+        unique_vdj <- as.data.frame(unique(data_long$VDJ))
+        names(unique_vdj) <- "unique_vdj"
+        print(unique_vdj)
+        set.seed(200)
+        unique_vdj$shape <- sample(1:25, nrow(unique_vdj))
+        print(data_long)
+
+
+
+        data_long$VDJ <- factor(data_long$VDJ,levels = colorblind_vector$rownames)
+
+        print(colorblind_vector$rownames)
+
+        print(unique(data_long$VDJ))
+
+        req(length(data_long$V2>0))
+
+        p <- ggplot(data_long, aes(x = V2, y = Count, color = VDJ, shape = VDJ)) +
+          geom_point(size = 7) +  # Increased point size
+          geom_line(aes(group = paste(VDJ, V1)), linewidth = 1.25) +
+          # scale_color_viridis_d(option = "C", begin = 0.2, end = 0.8) +
+          scale_colour_manual(values = colorblind_vector$col) +
+          scale_shape_manual(values = unique_vdj$shape) +  # Use default shapes
+          scale_y_continuous(
+            limits = c(0, max_count),
+            breaks = seq(0, max_count, by = input$breaks_for_line)  # Adjust step size as needed
+          ) +
+          labs(x = "", y = "", title = "", color = year, shape = year) +
+
+          theme_minimal() +
+          theme(
+            legend.title = element_text(colour = "black", size = input$Legend_size, family = input$font_type),
+            legend.text = element_text(size = input$Legend_size, family = input$font_type),
+            axis.text.y = element_text(colour = "black", family = input$font_type, size = input$text_size),
+            axis.text.x = element_text(colour = "black", family = input$font_type, size = input$text_size, angle = 90),
+            axis.title.y  = element_text(colour = "black", family = input$font_type, size = input$title.text.sizer2),
+            axis.title.x  = element_blank()
+          )  +
+          guides(color = guide_legend(
+            title.theme = element_text(margin = margin(b = 0)),  # Increase margin between title and items
+            label.theme = element_text(margin = margin(t = 15)),
+            override.aes = list(size = 7)# Increase margin between items
+          )) +
+          guides(color=guide_legend(ncol=input$legend_columns))
+
+        # Store the plot in the list
+        plot_list[[year]] <- p
+
+      } else {
+        top_5_transposed <- as.data.frame(t(top_5_data_list), stringsAsFactors = FALSE)
+        # Convert row names into a regular column
+        top_5_transposed$Sample_ID <- rownames(top_5_transposed)
+        # Split Sample_ID into separate columns for Group and Time
+        all_names <- names(top_5_transposed)
+        # Find the maximum count value across all datasets
+        max_count <- max(sapply(top_5_data_list, function(df) max(df)))
+        # Round the maximum count value to the nearest 5 and then add 5
+        max_count <- ceiling(max_count / 5) * 5
+        top_5_transposed <- as.data.frame(t(top_5_data_list), stringsAsFactors = FALSE)
+        # Convert row names into a regular column
+        top_5_transposed$Sample_ID <- rownames(top_5_transposed)
+        top_5_transposed
+        # Split Sample_ID into separate columns for Group and Time
+        all_names <- names(top_5_transposed)
+        v_gene_names <- all_names[grep("TRAV|TRBV|TRGV|TRDV", all_names)]
+        v_gene_names
+
+        # Reshape the data into long format
+        data_long <- pivot_longer(top_5_transposed,
+                                  cols = v_gene_names,   # Exclude the Sample_ID, Group, and Time columns
+                                  names_to = "VDJ",  # New column name for time points
+                                  values_to = "Count")     # New column name for values
+        #   # data_long
+
+        #   # Replace underscores with spaces in the VDJ variable
+        data_long$VDJ <- gsub("_", " ", data_long$VDJ)
+        data_long$VDJ <- gsub(" & ", " ", data_long$VDJ)
+        #   #   # Wrap the Time_Point variable based on spaces
+        data_long$VDJ <- str_wrap(data_long$VDJ, width = 10)  # Adjust width as needed
+
+        #   #   # Determine unique levels of VDJ
+        unique_vdj <- as.data.frame(unique(data_long$VDJ))
+        names(unique_vdj) <- "unique_vdj"
+        unique_vdj$shape <- sample(1:25, nrow(unique_vdj))
+
+        plot_list <- ggplot(data_long, aes(x = Sample_ID, y = Count, color = VDJ, shape = VDJ)) +
+          geom_point(size = 7) +  # Increased point size
+          geom_line(aes(group = paste(VDJ)), linewidth = 1.25) +
+          scale_color_viridis_d(option = "C", begin = 0.2, end = 0.8) +
+          scale_shape_manual(values = unique_vdj$shape) +  # Use default shapes
+          labs(x = "TCR counts", y = "", title = "", color = "VDJ", shape = "VDJ") +
+          theme_minimal() +
+          theme(
+            legend.title = element_text(colour = "black", size = input$Legend_size, family = input$font_type),
+            legend.text = element_text(size = input$Legend_size, family = input$font_type),
+            axis.text.y = element_text(colour = "black", family = input$font_type, size = input$text_size),
+            axis.text.x = element_text(colour = "black", family = input$font_type, size = input$text_size, angle = 90),
+            axis.title.y  = element_text(colour = "black", family = input$font_type, size = input$title.text.sizer2),
+            axis.title.x  = element_blank()
+          ) +
+          guides(color = guide_legend(
+            title.theme = element_text(margin = margin(b = 0)),  # Increase margin between title and items
+            label.theme = element_text(margin = margin(t = 15)),
+            override.aes = list(size = 7)# Increase margin between items
+          )) +
+          guides(color=guide_legend(ncol=input$legend_columns)) +
+          ylim(0, max_count)  # Set y-axis limits
+        # }
+
+      }
+
+      plot_list
+    })
 
 
 
 
+    output$line_graph_output <- renderPlot({
+      plot_list <- Line_graph_for_tracing()
+      req(plot_list)
 
 
-    # Line_graph_for_tracing <- reactive({
-    #
-    #   top_5_data_list <- select_top_five()
-    #   req(top_5_data_list)
-    #
-    #   year <- input$Group_for_line_graph
-    #   # Transpose the data frame and convert to data.frame
-    #   top_5_data <- top_5_data_list[[year]]
-    #
-    #   if(input$is_a_time_series) {
-    #     req(top_5_data_list)
-    #     # Remove empty data frames from top_5_data_list
-    #     top_5_data_list <- top_5_data_list[sapply(top_5_data_list, function(x) nrow(x) > 0)]
-    #     print(top_5_data_list)
-    #   } else {
-    #     top_5_data_list <- select_top_five()
-    #     req(top_5_data_list)
-    #   }
-    #
-    #   req(input$maximum_line)
-    #   max_count = input$maximum_line
-    #
-    #   if(input$is_a_time_series) {
-    #     # Create an empty list to store plots
-    #     plot_list <- list()
-    #     year <- input$Group_for_line_graph
-    #
-    #
-    #     # Transpose the data frame and convert to data.frame
-    #     top_5_data <- top_5_data_list[[year]]
-    #
-    #     if(input$Require_TCR_filter) {
-    #       message("Filtering TCR")
-    #       top_5_data$clones <- rownames(top_5_data)
-    #       top_5_data <- top_5_data[top_5_data$clones %in% input$Secondary_Filter_if_needed,]
-    #       top_5_data <- top_5_data[,!names(top_5_data) %in% "clones"]
-    #     }
-    #
-    #     top_5_transposed <- as.data.frame(t(top_5_data), stringsAsFactors = FALSE)
-    #
-    #     # Add Year column
-    #     top_5_transposed$ID <- year
-    #
-    #     # Convert row names into a regular column
-    #     top_5_transposed$Sample_ID <- rownames(top_5_transposed)
-    #
-    #     # Split Sample_ID into separate columns for Group and Time
-    #     separator_input2 <- input$separator_input2
-    #
-    #     # Split the strings
-    #     split_strings <- strsplit(as.character(top_5_transposed$Sample_ID), separator_input2)
-    #
-    #     # Convert the list to a data frame
-    #     split_df <- do.call(rbind, lapply(split_strings, function(x) {
-    #       if(length(x) == 2) {
-    #         return(x)
-    #       } else {
-    #         return(c(x[1], NA)) # Handle cases where there might not be a second part
-    #       }
-    #     }))
-    #
-    #     # Convert to a data frame
-    #     split_df <- as.data.frame(split_df, stringsAsFactors = FALSE)
-    #
-    #     # Rename columns for clarity
-    #     names(split_df) <- c("V1", "V2")
-    #
-    #     # Combine with the original transposed data frame
-    #     top_5_transposed <- cbind(top_5_transposed, split_df)
-    #     # Rest of your code for further processing and plotting
-    #     all_names <- names(top_5_transposed)
-    #     v_gene_names <- all_names[grep("TRAV|TRBV|TRGV|TRDV", all_names)]
-    #     # Reshape the data into long format
-    #     data_long <- pivot_longer(top_5_transposed,
-    #                               cols = v_gene_names,   # Exclude the Sample_ID, Group, and Time columns
-    #                               names_to = "VDJ",  # New column name for time points
-    #                               values_to = "Count")     # New column name for values
-    #     # Replace underscores with spaces in the VDJ variable
-    #     data_long$VDJ <- gsub("_", " ", data_long$VDJ)
-    #     data_long$VDJ <- gsub(" & ", " ", data_long$VDJ)
-    #     #   # Wrap the Time_Point variable based on spaces
-    #     data_long$VDJ <- str_wrap(data_long$VDJ, width = 10)  # Adjust width as needed
-    #     #
-    #     #   # Determine unique levels of VDJ
-    #     unique_vdj <- as.data.frame(unique(data_long$VDJ))
-    #     names(unique_vdj) <- "unique_vdj"
-    #
-    #     set.seed(200)
-    #     unique_vdj$shape <- sample(1:25, nrow(unique_vdj))
-    #     data_long
-    #
-    #     # Create the plot
-    #
-    #     # if(input$number_of_conditions == 2) {
-    #
-    #     req(length(data_long$V2>0))
-    #
-    #     p <- ggplot(data_long, aes(x = V2, y = Count, color = VDJ, shape = VDJ)) +
-    #       geom_point(size = 7) +  # Increased point size
-    #       geom_line(aes(group = paste(VDJ, V1)), linewidth = 1.25) +
-    #       scale_color_viridis_d(option = "C", begin = 0.2, end = 0.8) +
-    #       scale_shape_manual(values = unique_vdj$shape) +  # Use default shapes
-    #       scale_y_continuous(
-    #         limits = c(0, max_count),
-    #         breaks = seq(0, max_count, by = input$breaks_for_line)  # Adjust step size as needed
-    #       ) +
-    #       labs(x = "", y = "", title = "", color = year, shape = year) +
-    #
-    #       theme_minimal() +
-    #       theme(
-    #         legend.title = element_text(colour = "black", size = input$Legend_size, family = input$font_type),
-    #         legend.text = element_text(size = input$Legend_size, family = input$font_type),
-    #         axis.text.y = element_text(colour = "black", family = input$font_type, size = input$text_size),
-    #         axis.text.x = element_text(colour = "black", family = input$font_type, size = input$text_size, angle = 90),
-    #         axis.title.y  = element_text(colour = "black", family = input$font_type, size = input$title.text.sizer2),
-    #         axis.title.x  = element_blank()
-    #       )  +
-    #       guides(color = guide_legend(
-    #         title.theme = element_text(margin = margin(b = 0)),  # Increase margin between title and items
-    #         label.theme = element_text(margin = margin(t = 15)),
-    #         override.aes = list(size = 7)# Increase margin between items
-    #       )) +
-    #       guides(color=guide_legend(ncol=input$legend_columns))
-    #
-    #     # Store the plot in the list
-    #     plot_list[[year]] <- p
-    #
-    #   } else {
-    #     top_5_transposed <- as.data.frame(t(top_5_data_list), stringsAsFactors = FALSE)
-    #     # Convert row names into a regular column
-    #     top_5_transposed$Sample_ID <- rownames(top_5_transposed)
-    #     # Split Sample_ID into separate columns for Group and Time
-    #     all_names <- names(top_5_transposed)
-    #     # Find the maximum count value across all datasets
-    #     max_count <- max(sapply(top_5_data_list, function(df) max(df)))
-    #     # Round the maximum count value to the nearest 5 and then add 5
-    #     max_count <- ceiling(max_count / 5) * 5
-    #     top_5_transposed <- as.data.frame(t(top_5_data_list), stringsAsFactors = FALSE)
-    #     # Convert row names into a regular column
-    #     top_5_transposed$Sample_ID <- rownames(top_5_transposed)
-    #     top_5_transposed
-    #     # Split Sample_ID into separate columns for Group and Time
-    #     all_names <- names(top_5_transposed)
-    #     v_gene_names <- all_names[grep("TRAV|TRBV|TRGV|TRDV", all_names)]
-    #     v_gene_names
-    #
-    #     # Reshape the data into long format
-    #     data_long <- pivot_longer(top_5_transposed,
-    #                               cols = v_gene_names,   # Exclude the Sample_ID, Group, and Time columns
-    #                               names_to = "VDJ",  # New column name for time points
-    #                               values_to = "Count")     # New column name for values
-    #     #   # data_long
-    #
-    #     #   # Replace underscores with spaces in the VDJ variable
-    #     data_long$VDJ <- gsub("_", " ", data_long$VDJ)
-    #     data_long$VDJ <- gsub(" & ", " ", data_long$VDJ)
-    #     #   #   # Wrap the Time_Point variable based on spaces
-    #     data_long$VDJ <- str_wrap(data_long$VDJ, width = 10)  # Adjust width as needed
-    #
-    #     #   #   # Determine unique levels of VDJ
-    #     unique_vdj <- as.data.frame(unique(data_long$VDJ))
-    #     names(unique_vdj) <- "unique_vdj"
-    #     unique_vdj$shape <- sample(1:25, nrow(unique_vdj))
-    #
-    #     plot_list <- ggplot(data_long, aes(x = Sample_ID, y = Count, color = VDJ, shape = VDJ)) +
-    #       geom_point(size = 7) +  # Increased point size
-    #       geom_line(aes(group = paste(VDJ)), linewidth = 1.25) +
-    #       scale_color_viridis_d(option = "C", begin = 0.2, end = 0.8) +
-    #       scale_shape_manual(values = unique_vdj$shape) +  # Use default shapes
-    #       labs(x = "TCR counts", y = "", title = "", color = "VDJ", shape = "VDJ") +
-    #       theme_minimal() +
-    #       theme(
-    #         legend.title = element_text(colour = "black", size = input$Legend_size, family = input$font_type),
-    #         legend.text = element_text(size = input$Legend_size, family = input$font_type),
-    #         axis.text.y = element_text(colour = "black", family = input$font_type, size = input$text_size),
-    #         axis.text.x = element_text(colour = "black", family = input$font_type, size = input$text_size, angle = 90),
-    #         axis.title.y  = element_text(colour = "black", family = input$font_type, size = input$title.text.sizer2),
-    #         axis.title.x  = element_blank()
-    #       ) +
-    #       guides(color = guide_legend(
-    #         title.theme = element_text(margin = margin(b = 0)),  # Increase margin between title and items
-    #         label.theme = element_text(margin = margin(t = 15)),
-    #         override.aes = list(size = 7)# Increase margin between items
-    #       )) +
-    #       guides(color=guide_legend(ncol=input$legend_columns)) +
-    #       ylim(0, max_count)  # Set y-axis limits
-    #     # }
-    #
-    #   }
-    #   plot_list
-    # })
-
-    # output$line_graph_output <- renderPlot({
-    #   plot_list <- Line_graph_for_tracing()
-    #   req(plot_list)
-    #
-    #
-    #   if(input$is_a_time_series) {
-    #     plot_list[[input$Group_for_line_graph]]
-    #   } else {
-    #     plot_list
-    #   }
-    # })
+      if(input$is_a_time_series) {
+        plot_list[[input$Group_for_line_graph]]
+      } else {
+        plot_list
+      }
+    })
 
     # plot2_line <- reactive({
     #   # plot_list <- Line_graph_for_tracing()
@@ -20446,33 +20503,47 @@ runSTEGO <- function(){
 
 
     # Downloading the bar plot -------
-    # output$downloadPlot_line_graph_output <- downloadHandler(
-    #   filename = function() {
-    #     paste("line_graph.pdf", sep = "")
-    #   },
-    #   content = function(file) {
-    #     pdf(file, width = input$width_line_graph_output, height = input$height_line_graph_output, onefile = FALSE) # open the pdf device
-    #     plot(plot2_line())
-    #
-    #     dev.off()
-    #   }, contentType = "application/pdf"
-    # )
-    #
-    # output$downloadPlotPNG_line_graph_output <- downloadHandler(
-    #   filename = function() {
-    #     paste("line_graph.png", sep = "")
-    #   },
-    #   content = function(file) {
-    #     png(file,
-    #         width = input$width_png_line_graph_output,
-    #         height = input$height_png_line_graph_output,
-    #         res = input$resolution_PNG_line_graph_output
-    #     )
-    #     plot(plot2_line())
-    #
-    #     dev.off()
-    #   }, contentType = "application/png" # MIME type of the image
-    # )
+    output$downloadPlot_line_graph_output <- downloadHandler(
+      filename = function() {
+        paste("line_graph.pdf", sep = "")
+      },
+      content = function(file) {
+        pdf(file, width = input$width_line_graph_output, height = input$height_line_graph_output, onefile = FALSE) # open the pdf device
+        plot_list <- Line_graph_for_tracing()
+
+        if(input$is_a_time_series) {
+          plot_list <- plot_list[[input$Group_for_line_graph]]
+        } else {
+          plot_list
+        }
+        plot(plot_list)
+
+        dev.off()
+      }, contentType = "application/pdf"
+    )
+
+    output$downloadPlotPNG_line_graph_output <- downloadHandler(
+      filename = function() {
+        paste("line_graph.png", sep = "")
+      },
+      content = function(file) {
+        png(file,
+            width = input$width_png_line_graph_output,
+            height = input$height_png_line_graph_output,
+            res = input$resolution_PNG_line_graph_output
+        )
+        plot_list <- Line_graph_for_tracing()
+
+        if(input$is_a_time_series) {
+          plot_list <- plot_list[[input$Group_for_line_graph]]
+        } else {
+          plot_list
+        }
+        plot(plot_list)
+
+        dev.off()
+      }, contentType = "application/png" # MIME type of the image
+    )
 
     # overlap table with UMAP and expression -----
     overlap_table <- reactive({
@@ -26664,4 +26735,4 @@ runSTEGO <- function(){
   # run the app in browser -----
   shinyApp(ui = ui, server = server, options = list(launch.browser = TRUE))
 }
-runSTEGO()
+
