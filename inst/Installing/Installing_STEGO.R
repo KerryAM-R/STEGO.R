@@ -35,8 +35,9 @@ usethis::edit_r_environ()
 .rs.restartR()
 
 devtools::install_github("KerryAM-R/STEGO.R")
-1
-n
+
+# 1
+# n
 .rs.restartR()
 
 # Run the application
