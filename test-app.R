@@ -3,7 +3,7 @@ required_pkgs <- c(
   "bslib", "circlize", "ClusTCR2", "ComplexHeatmap", "corrplot", "ggtext",
   "cowplot", "dplyr", "DT", "extrafont", "foreach", "fpc", "ggpattern",
   "ggplot2", "ggrepel", "ggridges", "ggseqlogo", "grid", "gridExtra",
-  "harmony", "iterators", "linkcomm", "lubridate", "Matrix", "methods",
+  "harmony", "iterators",  "lubridate", "Matrix", "methods",
   "plyr", "purrr", "randomcoloR", "RColorBrewer", "Rcpp", "reshape2",
   "readr", "tidyr", "scales", "scGate", "Seurat", "shiny", "shinyBS",
   "shinybusy", "shinyjs", "shinyWidgets", "stringr", "tibble",

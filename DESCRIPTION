@@ -42,7 +42,6 @@ Imports:
     ggtext,
     harmony,
     iterators,
-    linkcomm,
     lubridate,
     Matrix,
     methods,

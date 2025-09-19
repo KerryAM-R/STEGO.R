@@ -21,7 +21,6 @@
 #' @importFrom gridExtra grid.arrange arrangeGrob
 #' @import harmony
 #' @import iterators
-#' @import linkcomm
 #' @importFrom lubridate today
 #' @importFrom Matrix readMM
 #' @import methods
