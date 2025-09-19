@@ -9,7 +9,7 @@
 #' @importFrom cowplot plot_grid as_gtable align_plots
 #' @importFrom dplyr %>% select case_when slice_max distinct
 #' @importFrom DT DTOutput renderDT
-#' @import extrafont
+#' @import fontHelper
 #' @importFrom foreach foreach
 #' @import fpc
 #' @import ggpattern
@@ -59,8 +59,8 @@
 runSTEGO <- function(){
   # installed.packages.full <- as.data.frame(installed.packages())
   # # font ------
-  fonts <- extrafont::fonttable()
-  font <- as.data.frame(unique(fonts$FamilyName))
+
+  font <- as.data.frame(fontHelper::register_fonts("common"))
   names(font) <- "Fonts"
   message("You are currently using STEGO.R version ",packageVersion("STEGO.R"))
   #####

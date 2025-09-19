@@ -30,7 +30,6 @@ Imports:
     cowplot,
     dplyr,
     DT,
-    extrafont,
     foreach,
     fpc,
     ggpattern,
@@ -71,5 +70,8 @@ Suggests:
     rmarkdown,
     BiocManager, 
     devtools,
-    usethis
+    usethis,
+    remotes
+Remotes:
+    KerryAM-R/fontHelper
 VignetteBuilder: knitr

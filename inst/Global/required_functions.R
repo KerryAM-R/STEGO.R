@@ -9,8 +9,9 @@ require(sysfonts)
 # showtext_auto()
 
 # font ------
-font <- as.data.frame(font_families())
-font
+require(fontHelper)
+font <- as.data.frame(fontHelper::register_fonts("common"))
+print(font)
 names(font) <- "Fonts"
 
 

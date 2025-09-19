@@ -18,8 +18,9 @@ invisible(lapply(required_pkgs, function(pkg) {
 
 
 # # font ------
-fonts <- extrafont::fonttable()
-font <- as.data.frame(unique(fonts$FamilyName))
+require(fontHelper)
+font <- as.data.frame(register_fonts("common"))
+print(font)
 names(font) <- "Fonts"
 
 #####
