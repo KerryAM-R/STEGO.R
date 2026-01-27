@@ -1,0 +1,8 @@
+levels	use_as	name	signature
+level1	negative	CD8	
+level2	positive	CD4	
+level3	negative	Treg	
+level4	negative	Th2	
+level5	negative	Th17	
+level6	negative	Th1	
+level7	positive	Tfh	

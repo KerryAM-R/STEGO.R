@@ -1763,6 +1763,8 @@ ui <- fluidPage(
             tags$head(tags$style("#downloaddf_SeruatObj_annotated  {white-space: normal;  }")),
             downloadButton("downloaddf_SeruatObj_annotated", "Download Annotated Seurat"),
           ),
+
+          # 3c annot main panel -----
           mainPanel(
             width = 9,
             tabsetPanel(
@@ -1801,13 +1803,29 @@ ui <- fluidPage(
 
                 # human 10x annotations
                 conditionalPanel(
-                  condition = "input.Data_types == '10x_HS' || input.Data_types == 'BD_HS.Full.Panel' || 'BD_HS.Immune.Panel'",
+                  condition = "input.Data_types == '10x_HS' || input.Data_types == 'BD_HS.Full.Panel' || input.Data_types =='BD_HS.Immune.Panel'",
                   div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
                   fluidRow(
-                    div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
-                    column(3, checkboxInput("hs_function_scGATE", p("Function (Human)", class = "name-header2"), value = F)),
-                    column(3, checkboxInput("hs_simplefunction_scGATE", p("Simple Function (Human)", class = "name-header2"), value = F))
+                    conditionalPanel(
+                      condition = "input.Data_types == '10x_HS' || input.Data_types == 'BD_HS.Full.Panel'",
+
+                      column(3, checkboxInput("hs_function_scGATE", p("Function (Human)", class = "name-header2"), value = F)),
+                      column(3, checkboxInput("hs_simplefunction_scGATE", p("Simple Function (Human)", class = "name-header2"), value = F))
+                    ),
+
+                    conditionalPanel(
+                      condition = "input.Data_types == 'BD_HS.Immune.Panel'",
+
+                      column(3, checkboxInput("hs_bd_BloodT", p("PBMC (T cells)", class = "name-header2"), value = F)),
+
+                    )
+
+
                   ),
+
+
+
+
                   fluidRow(
                     column(3, checkboxInput("hs_IC_scGATE", p("Immune checkpoint (Human)", class = "name-header2"), value = F)),
                     column(3, checkboxInput("hs_cytotoxic_scGATE", p("Cytotoxic (Human)", class = "name-header2"), value = F)),
@@ -1818,6 +1836,11 @@ ui <- fluidPage(
                     column(3, checkboxInput("hs_TCRseq_scGATE", p("TCR-seq (Human)", class = "name-header2"), value = F)),
                   )
                 ),
+
+
+                # hs_
+
+
 
                 # BD rhapsody MM full panel ----
                 conditionalPanel(
@@ -9497,6 +9520,44 @@ server <- function(input, output, session) {
 
 
   # Human annotations -------
+  scGATE_blood_T <- reactive({
+    sc <- getData_2()
+    validate(
+      need(
+        nrow(sc) > 0,
+        "Upload file for annotation"
+      )
+    )
+    req(input$threshold_scGate)
+
+    len <- length(rownames(sc@assays$RNA$scale.data))
+
+    if (input$hs_bd_BloodT) {
+      scGate_models_DB <- custom_db_scGATE(system.file("scGATE", "human/bd_rap_phenotypes", package = "STEGO.R"))
+
+      models.list <- scGate_models_DB
+
+      sc <- scGate(sc,
+                   model = models.list,
+                   pos.thr = input$threshold_scGate,
+                   neg.thr = input$threshold_scGate,
+                   nfeatures = len,
+                   reduction = input$reduction_anno,
+                   ncores = 8, min.cells = 1
+      )
+
+      sc@meta.data$IC <- sc@meta.data$scGate_multi
+      sc@meta.data <- sc@meta.data[!grepl("_UCell", names(sc@meta.data))]
+      sc@meta.data <- sc@meta.data[!grepl("is.pure_", names(sc@meta.data))]
+      sc@meta.data <- sc@meta.data[!grepl("scGate_multi", names(sc@meta.data))]
+      sc
+    } else {
+      sc
+    }
+    sc
+  })
+
+
   scGATE_anno_immune_checkpoint <- reactive({
     sc <- getData_2()
     validate(
