@@ -1815,17 +1815,9 @@ ui <- fluidPage(
 
                     conditionalPanel(
                       condition = "input.Data_types == 'BD_HS.Immune.Panel'",
-
                       column(3, checkboxInput("hs_bd_BloodT", p("PBMC (T cells)", class = "name-header2"), value = F)),
-
                     )
-
-
                   ),
-
-
-
-
                   fluidRow(
                     column(3, checkboxInput("hs_IC_scGATE", p("Immune checkpoint (Human)", class = "name-header2"), value = F)),
                     column(3, checkboxInput("hs_cytotoxic_scGATE", p("Cytotoxic (Human)", class = "name-header2"), value = F)),
@@ -1833,6 +1825,8 @@ ui <- fluidPage(
                     column(3, checkboxInput("hs_cycling_scGATE", p("Cycling (Human)", class = "name-header2"), value = F))
                   ),
                   fluidRow(
+
+
                     column(3, checkboxInput("hs_TCRseq_scGATE", p("TCR-seq (Human)", class = "name-header2"), value = F)),
                   )
                 ),
@@ -1879,17 +1873,46 @@ ui <- fluidPage(
                   verbatimTextOutput("scGATE_verbatum_GeneSet9"),
                 ),
                 # human 10x annotations Verbatium -----
+                # conditionalPanel(
+                #   condition = "input.Data_types == '10x_HS' || input.Data_types == 'BD_HS.Full.Panel' || 'BD_HS.Immune.Panel'",
+                #   div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
+                #   verbatimTextOutput("scGATE_verbatum_function"),
+                #   verbatimTextOutput("scGATE_verbatum_simp_function"),
+                #   verbatimTextOutput("scGATE_verbatum_immune_check"),
+                #   verbatimTextOutput("scGATE_verbatum_cytotoxic"),
+                #   verbatimTextOutput("scGATE_verbatum_senescence"),
+                #   verbatimTextOutput("scGATE_verbatum_cycling"),
+                #   verbatimTextOutput("scGATE_verbatum_TCRseq"),
+                # ),
+
                 conditionalPanel(
-                  condition = "input.Data_types == '10x_HS' || input.Data_types == 'BD_HS.Full.Panel' || 'BD_HS.Immune.Panel'",
-                  div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
-                  verbatimTextOutput("scGATE_verbatum_function"),
-                  verbatimTextOutput("scGATE_verbatum_simp_function"),
-                  verbatimTextOutput("scGATE_verbatum_immune_check"),
-                  verbatimTextOutput("scGATE_verbatum_cytotoxic"),
-                  verbatimTextOutput("scGATE_verbatum_senescence"),
-                  verbatimTextOutput("scGATE_verbatum_cycling"),
-                  verbatimTextOutput("scGATE_verbatum_TCRseq"),
+                  condition = "['10x_HS','BD_HS.Full.Panel','BD_HS.Immune.Panel'].includes(input.Data_types)",
+
+                  div(id = "spinner-container",
+                      class = "centered-spinner",
+                      add_busy_spinner(spin = "fading-circle", height = "200px", width = "200px", color = "#6F00B0")
+                  ),
+                  conditionalPanel(
+                    condition = "['BD_HS.Immune.Panel'].includes(input.Data_types)",
+                  h4("BD Rapsody Phenotyping Annotation"),
+                  tableOutput("scGATE_summary_scGATE_blood_T")
+                  ),
+                  h4("Immune Checkpoint Annotation"),
+                  tableOutput("scGATE_summary_immune_check"),
+
+                  h4("Cytotoxic Annotation"),
+                  tableOutput("scGATE_summary_cytotoxic"),
+
+                  h4("Senescence Annotation"),
+                  tableOutput("scGATE_summary_senescence"),
+
+                  h4("Cycling Annotation"),
+                  tableOutput("scGATE_summary_cycling"),
+
+                  h4("TCR-seq Annotation"),
+                  tableOutput("scGATE_summary_TCRseq")
                 ),
+
                 conditionalPanel(
                   "input.Data_types == 'BD_MM_Full.Panel' || input.Data_types =='10x_MM'",
                   verbatimTextOutput("scGATE_verbatum_BDrhapsody_MM.FP.Tcell"),
@@ -9543,10 +9566,10 @@ server <- function(input, output, session) {
                    neg.thr = input$threshold_scGate,
                    nfeatures = len,
                    reduction = input$reduction_anno,
-                   ncores = 8, min.cells = 1
+                   min.cells = 1
       )
 
-      sc@meta.data$IC <- sc@meta.data$scGate_multi
+      sc@meta.data$Tcell_pheno <- sc@meta.data$scGate_multi
       sc@meta.data <- sc@meta.data[!grepl("_UCell", names(sc@meta.data))]
       sc@meta.data <- sc@meta.data[!grepl("is.pure_", names(sc@meta.data))]
       sc@meta.data <- sc@meta.data[!grepl("scGate_multi", names(sc@meta.data))]
@@ -9557,57 +9580,94 @@ server <- function(input, output, session) {
     sc
   })
 
+  output$scGATE_summary_scGATE_blood_T <- renderTable({
+    sc <- scGATE_blood_T()
+
+    if (!input$hs_bd_BloodT) {
+      return(data.frame(Message = "immune checkpoint not run"))
+    }
+
+    # Count cells per annotation
+    counts <- table(sc@meta.data$Tcell_pheno)
+
+    # Convert to data frame
+    table_data <- as.data.frame(counts)
+    colnames(table_data) <- c("Annotation", "Cell_Count")
+
+    # Add percentage column
+    table_data$Percentage <- round((table_data$Cell_Count / sum(table_data$Cell_Count)) * 100, 1)
+
+    # Optional: reorder by count descending
+    table_data <- table_data[order(-table_data$Cell_Count), ]
+
+    table_data
+  })
+
+
+  #### immune checkpoint -----
 
   scGATE_anno_immune_checkpoint <- reactive({
     sc <- getData_2()
     validate(
-      need(
-        nrow(sc) > 0,
-        "Upload file for annotation"
-      )
+      need(nrow(sc) > 0, "Upload file for annotation")
     )
     req(input$threshold_scGate)
 
     len <- length(rownames(sc@assays$RNA$scale.data))
 
     if (input$hs_IC_scGATE) {
-      scGate_models_DB <- custom_db_scGATE(system.file("scGATE", "human/immune_checkpoint", package = "STEGO.R"))
-
+      scGate_models_DB <- custom_db_scGATE(
+        system.file("scGATE", "human/immune_checkpoint", package = "STEGO.R")
+      )
       models.list <- scGate_models_DB
 
-      sc <- scGate(sc,
-                   model = models.list,
-                   pos.thr = input$threshold_scGate,
-                   neg.thr = input$threshold_scGate,
-                   nfeatures = len,
-                   reduction = input$reduction_anno,
-                   ncores = 8, min.cells = 1
-      )
+      withProgress(message = "Running scGATE immune checkpoint annotation...", {
+        # Optional: update progress inside a loop
+        sc <- scGate(
+          sc,
+          model = models.list,
+          pos.thr = input$threshold_scGate,
+          neg.thr = input$threshold_scGate,
+          nfeatures = len,
+          reduction = input$reduction_anno,
+          min.cells = 1
+        )
+        # You could do something like: incProgress(0.5, "Halfway done") if scGate allows hooks
+      })
 
       sc@meta.data$IC <- sc@meta.data$scGate_multi
       sc@meta.data <- sc@meta.data[!grepl("_UCell", names(sc@meta.data))]
       sc@meta.data <- sc@meta.data[!grepl("is.pure_", names(sc@meta.data))]
       sc@meta.data <- sc@meta.data[!grepl("scGate_multi", names(sc@meta.data))]
-      sc
-    } else {
-      sc
     }
     sc
   })
-  output$scGATE_verbatum_immune_check <- renderPrint({
-    FN <- tempfile()
-    zz <- file(FN, open = "wt")
-    sink(zz, type = "output")
-    sink(zz, type = "message")
-    if (input$hs_IC_scGATE) {
-      scGATE_anno_immune_checkpoint()
-    } else {
-      cat("immune checkpoint not run")
+
+
+  output$scGATE_summary_immune_check <- renderTable({
+    sc <- scGATE_anno_immune_checkpoint()
+
+    if (!input$hs_IC_scGATE) {
+      return(data.frame(Message = "immune checkpoint not run"))
     }
-    sink(type = "message")
-    sink(type = "output")
-    cat(readLines(FN), sep = "\n")
+
+    # Count cells per annotation
+    counts <- table(sc@meta.data$IC)
+
+    # Convert to data frame
+    table_data <- as.data.frame(counts)
+    colnames(table_data) <- c("Annotation", "Cell_Count")
+
+    # Add percentage column
+    table_data$Percentage <- round((table_data$Cell_Count / sum(table_data$Cell_Count)) * 100, 1)
+
+    # Optional: reorder by count descending
+    table_data <- table_data[order(-table_data$Cell_Count), ]
+
+    table_data
   })
+
+  ###### cyto ------
 
   scGATE_anno_cytotoxic <- reactive({
     sc <- getData_2()

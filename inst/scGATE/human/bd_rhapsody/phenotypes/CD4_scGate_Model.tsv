@@ -1,0 +1,9 @@
+levels	use_as	name	signature
+level1	negative	CD8	
+level2	positive	CD4	
+level3	negative	FOXP3	
+level4	negative	PTGDR2	
+level5	negative	RORC	
+level6	negative	TBX21	
+level7	negative	BCL6	
+level8	negative	GZMB	
