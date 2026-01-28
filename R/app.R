@@ -1860,13 +1860,17 @@ runSTEGO <- function(){
                       #### Bd rhapsody annos -------
                       conditionalPanel(
                         condition = "input.Data_types == 'BD_HS.Immune.Panel'",
-                        column(3, checkboxInput("hs_bd_BloodT", p("PBMC (T cells)", class = "name-header2"), value = F)),
-                        column(3, checkboxInput("hs_bd_cyto", p("Cytotoxic (PFR1, GZMB, GNLY)", class = "name-header2"), value = F)),
-                        column(3, checkboxInput("hs_bd_ex", p("Exhaustion (PDCD1, TIGIT, FAG3, HAVCR2)", class = "name-header2"), value = F)),
-                        column(3, checkboxInput("hs_bd_mem", p("Memory", class = "name-header2"), value = F)),
-                        column(3, checkboxInput("hs_bd_prolif", p("Proliferation", class = "name-header2"), value = F)),
-                        column(3, checkboxInput("hs_bd_sens", p("Senescence", class = "name-header2"), value = F)),
-                        column(3, checkboxInput("hs_bd_th1", p("Th1 (IFN, TNF, IL2)", class = "name-header2"), value = F)),
+                        fluidRow(
+                          column(3, checkboxInput("hs_bd_BloodT", "PBMC (T cells)")),
+                          column(3, checkboxInput("hs_bd_cyto", "Cytotoxic (PFR1, GZMB, GNLY)")),
+                          column(3, checkboxInput("hs_bd_ex", "Exhaustion (PDCD1, TIGIT, FAG3, HAVCR2)")),
+                          column(3, checkboxInput("hs_bd_mem", "Memory"))
+                        ),
+                        fluidRow(
+                          column(3, checkboxInput("hs_bd_prolif", "Proliferation")),
+                          column(3, checkboxInput("hs_bd_sens", "Senescence")),
+                          column(3, checkboxInput("hs_bd_th1", "Th1 (IFN, TNF, IL2)"))
+                        )
                       )
                     ),
 
@@ -9998,7 +10002,7 @@ runSTEGO <- function(){
       len <- length(rownames(sc@assays$RNA$scale.data))
 
       if (input$hs_bd_th1) {
-        scGate_models_DB <- custom_db_scGATE(system.file("scGATE", "human/bd_rhapsody/Th1", package = "STEGO.R"))
+        scGate_models_DB <- STEGO.R::custom_db_scGATE(system.file("scGATE", "human/bd_rhapsody/Th1", package = "STEGO.R"))
 
         models.list <- scGate_models_DB
 
@@ -10022,10 +10026,11 @@ runSTEGO <- function(){
       sc
     })
     output$scGATE_summary_scGATE_bd_th1 <- renderTable({
-      sc <- scGATE_bd_sens()
+      sc <- scGATE_bd_th1()
+      req(sc)
 
       if (!input$hs_bd_th1) {
-        return(data.frame(Message = "immune checkpoint not run"))
+        return(data.frame(Message = "Th1 checkpoint not run"))
       }
 
       # Count cells per annotation
@@ -10389,13 +10394,28 @@ runSTEGO <- function(){
       }
       sc
     })
-    output$scGATE_verbatum_TCRseq <- renderPrint({
-      if (input$hs_TCRseq_scGATE) {
-        sc <- scGATE_anno_TCRseq()
-        table(sc@meta.data$TCRseq)
-      } else {
-        cat("TCR-seq not run")
+
+    output$scGATE_summary_TCRseq <- renderTable({
+      sc <- scGATE_anno_TCRseq()
+
+      if (!input$hs_TCRseq_scGATE) {
+        return(data.frame(Message = "TCRseq not run"))
       }
+
+      # Count cells per annotation
+      counts <- table(sc@meta.data$TCRseq)
+
+      # Convert to data frame
+      table_data <- as.data.frame(counts)
+      colnames(table_data) <- c("Annotation", "Cell_Count")
+
+      # Add percentage column
+      table_data$Percentage <- round((table_data$Cell_Count / sum(table_data$Cell_Count)) * 100, 1)
+
+      # Optional: reorder by count descending
+      table_data <- table_data[order(-table_data$Cell_Count), ]
+
+      table_data
     })
 
     # BD rhapsody gates Mouse Full panel -----
@@ -27286,8 +27306,7 @@ runSTEGO <- function(){
     )
 
   }
-  ########
-  ########
+  #########
   # run the app in browser -----
   shinyApp(ui = ui, server = server, options = list(launch.browser = TRUE))
 }
