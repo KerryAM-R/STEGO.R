@@ -1810,31 +1810,32 @@ ui <- fluidPage(
                       condition = "input.Data_types == '10x_HS' || input.Data_types == 'BD_HS.Full.Panel'",
 
                       column(3, checkboxInput("hs_function_scGATE", p("Function (Human)", class = "name-header2"), value = F)),
-                      column(3, checkboxInput("hs_simplefunction_scGATE", p("Simple Function (Human)", class = "name-header2"), value = F))
+                      column(3, checkboxInput("hs_simplefunction_scGATE", p("Simple Function (Human)", class = "name-header2"), value = F)),
+                      column(3, checkboxInput("hs_IC_scGATE", p("Immune checkpoint (Human)", class = "name-header2"), value = F)),
+                      column(3, checkboxInput("hs_cytotoxic_scGATE", p("Cytotoxic (Human)", class = "name-header2"), value = F)),
+                      column(3, checkboxInput("hs_senescence_scGATE", p("Senescence (Human)", class = "name-header2"), value = F)),
+                      column(3, checkboxInput("hs_cycling_scGATE", p("Cycling (Human)", class = "name-header2"), value = F))
                     ),
 
+                    #### Bd rhapsody annos -------
                     conditionalPanel(
                       condition = "input.Data_types == 'BD_HS.Immune.Panel'",
                       column(3, checkboxInput("hs_bd_BloodT", p("PBMC (T cells)", class = "name-header2"), value = F)),
+                      column(3, checkboxInput("hs_bd_cyto", p("Cytotoxic (PFR1, GZMB, GNLY)", class = "name-header2"), value = F)),
+                      column(3, checkboxInput("hs_bd_ex", p("Exhaustion (PDCD1, TIGIT, FAG3, HAVCR2)", class = "name-header2"), value = F)),
+                      column(3, checkboxInput("hs_bd_mem", p("Memory", class = "name-header2"), value = F)),
+                      column(3, checkboxInput("hs_bd_prolif", p("Proliferation", class = "name-header2"), value = F)),
+                      column(3, checkboxInput("hs_bd_sens", p("Senescence", class = "name-header2"), value = F)),
+                      column(3, checkboxInput("hs_bd_th1", p("Th1 (IFN, TNF, IL2)", class = "name-header2"), value = F)),
                     )
                   ),
-                  fluidRow(
-                    column(3, checkboxInput("hs_IC_scGATE", p("Immune checkpoint (Human)", class = "name-header2"), value = F)),
-                    column(3, checkboxInput("hs_cytotoxic_scGATE", p("Cytotoxic (Human)", class = "name-header2"), value = F)),
-                    column(3, checkboxInput("hs_senescence_scGATE", p("Senescence (Human)", class = "name-header2"), value = F)),
-                    column(3, checkboxInput("hs_cycling_scGATE", p("Cycling (Human)", class = "name-header2"), value = F))
-                  ),
+
                   fluidRow(
 
 
                     column(3, checkboxInput("hs_TCRseq_scGATE", p("TCR-seq (Human)", class = "name-header2"), value = F)),
                   )
                 ),
-
-
-                # hs_
-
-
 
                 # BD rhapsody MM full panel ----
                 conditionalPanel(
@@ -1873,30 +1874,54 @@ ui <- fluidPage(
                   verbatimTextOutput("scGATE_verbatum_GeneSet9"),
                 ),
                 # human 10x annotations Verbatium -----
-                # conditionalPanel(
-                #   condition = "input.Data_types == '10x_HS' || input.Data_types == 'BD_HS.Full.Panel' || 'BD_HS.Immune.Panel'",
-                #   div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
-                #   verbatimTextOutput("scGATE_verbatum_function"),
-                #   verbatimTextOutput("scGATE_verbatum_simp_function"),
-                #   verbatimTextOutput("scGATE_verbatum_immune_check"),
-                #   verbatimTextOutput("scGATE_verbatum_cytotoxic"),
-                #   verbatimTextOutput("scGATE_verbatum_senescence"),
-                #   verbatimTextOutput("scGATE_verbatum_cycling"),
-                #   verbatimTextOutput("scGATE_verbatum_TCRseq"),
-                # ),
 
                 conditionalPanel(
-                  condition = "['10x_HS','BD_HS.Full.Panel','BD_HS.Immune.Panel'].includes(input.Data_types)",
+                  condition = "['BD_HS.Immune.Panel'].includes(input.Data_types)",
+                  h4("BD Rhapsody Annotations"),
+
+                  fluidRow(
+                    column(6,
+                           h4("Phenotyping"),
+                           tableOutput("scGATE_summary_scGATE_blood_T")),
+                    column(6,
+                           h4("Cytotoxic"),
+                           tableOutput("scGATE_summary_scGATE_bd_cyto"))
+                  ),
+
+                  fluidRow(
+                    column(6,
+                           h4("Exhaustion"),
+                           tableOutput("scGATE_summary_scGATE_bd_ex")),
+                    column(6,
+                           h4("Memory"),
+                           tableOutput("scGATE_summary_scGATE_bd_mem"))
+                  ),
+
+                  fluidRow(
+                    column(6,
+                           h4("Proliferation"),
+                           tableOutput("scGATE_summary_scGATE_bd_prolif")),
+                    column(6,
+                           h4("Senescence"),
+                           tableOutput("scGATE_summary_scGATE_bd_sens"))
+                  ),
+
+                  fluidRow(
+                    column(6,
+                           h4("Th1 marker"),
+                           tableOutput("scGATE_summary_scGATE_bd_th1"))
+                  )
+                ),
+
+
+                conditionalPanel(
+                  condition = "['10x_HS','BD_HS.Full.Panel',].includes(input.Data_types)",
 
                   div(id = "spinner-container",
                       class = "centered-spinner",
                       add_busy_spinner(spin = "fading-circle", height = "200px", width = "200px", color = "#6F00B0")
                   ),
-                  conditionalPanel(
-                    condition = "['BD_HS.Immune.Panel'].includes(input.Data_types)",
-                  h4("BD Rapsody Phenotyping Annotation"),
-                  tableOutput("scGATE_summary_scGATE_blood_T")
-                  ),
+
                   h4("Immune Checkpoint Annotation"),
                   tableOutput("scGATE_summary_immune_check"),
 
@@ -1909,9 +1934,20 @@ ui <- fluidPage(
                   h4("Cycling Annotation"),
                   tableOutput("scGATE_summary_cycling"),
 
+
+                ),
+                conditionalPanel(
+                  condition = "['10x_HS','BD_HS.Full.Panel','BD_HS.Immune.Panel'].includes(input.Data_types)",
+
+                  div(id = "spinner-container",
+                      class = "centered-spinner",
+                      add_busy_spinner(spin = "fading-circle", height = "200px", width = "200px", color = "#6F00B0")
+                  ),
                   h4("TCR-seq Annotation"),
                   tableOutput("scGATE_summary_TCRseq")
+
                 ),
+
 
                 conditionalPanel(
                   "input.Data_types == 'BD_MM_Full.Panel' || input.Data_types =='10x_MM'",
@@ -9543,6 +9579,10 @@ server <- function(input, output, session) {
 
 
   # Human annotations -------
+  # Human BD annotations -------
+
+
+  # phenotypes
   scGATE_blood_T <- reactive({
     sc <- getData_2()
     validate(
@@ -9556,7 +9596,7 @@ server <- function(input, output, session) {
     len <- length(rownames(sc@assays$RNA$scale.data))
 
     if (input$hs_bd_BloodT) {
-      scGate_models_DB <- custom_db_scGATE(system.file("scGATE", "human/bd_rap_phenotypes", package = "STEGO.R"))
+      scGate_models_DB <- custom_db_scGATE(system.file("scGATE", "human/bd_rhapsody/phenotypes", package = "STEGO.R"))
 
       models.list <- scGate_models_DB
 
@@ -9579,7 +9619,6 @@ server <- function(input, output, session) {
     }
     sc
   })
-
   output$scGATE_summary_scGATE_blood_T <- renderTable({
     sc <- scGATE_blood_T()
 
@@ -9589,6 +9628,368 @@ server <- function(input, output, session) {
 
     # Count cells per annotation
     counts <- table(sc@meta.data$Tcell_pheno)
+
+    # Convert to data frame
+    table_data <- as.data.frame(counts)
+    colnames(table_data) <- c("Annotation", "Cell_Count")
+
+    # Add percentage column
+    table_data$Percentage <- round((table_data$Cell_Count / sum(table_data$Cell_Count)) * 100, 1)
+
+    # Optional: reorder by count descending
+    table_data <- table_data[order(-table_data$Cell_Count), ]
+
+    table_data
+  })
+
+  # cytotoxicity
+  scGATE_bd_cyto <- reactive({
+    sc <- getData_2()
+    validate(
+      need(
+        nrow(sc) > 0,
+        "Upload file for annotation"
+      )
+    )
+    req(input$threshold_scGate)
+
+    len <- length(rownames(sc@assays$RNA$scale.data))
+
+    if (input$hs_bd_cyto) {
+      scGate_models_DB <- custom_db_scGATE(system.file("scGATE", "human/bd_rhapsody/cyto", package = "STEGO.R"))
+
+      models.list <- scGate_models_DB
+
+      sc <- scGate(sc,
+                   model = models.list,
+                   pos.thr = input$threshold_scGate,
+                   neg.thr = input$threshold_scGate,
+                   nfeatures = len,
+                   reduction = input$reduction_anno,
+                   min.cells = 1
+      )
+
+      sc@meta.data$cytotoxic <- sc@meta.data$scGate_multi
+      sc@meta.data <- sc@meta.data[!grepl("_UCell", names(sc@meta.data))]
+      sc@meta.data <- sc@meta.data[!grepl("is.pure_", names(sc@meta.data))]
+      sc@meta.data <- sc@meta.data[!grepl("scGate_multi", names(sc@meta.data))]
+      sc
+    } else {
+      sc
+    }
+    sc
+  })
+  output$scGATE_summary_scGATE_bd_cyto <- renderTable({
+    sc <- scGATE_bd_cyto()
+
+    if (!input$hs_bd_cyto) {
+      return(data.frame(Message = "immune checkpoint not run"))
+    }
+
+    # Count cells per annotation
+    counts <- table(sc@meta.data$cytotoxic)
+
+    # Convert to data frame
+    table_data <- as.data.frame(counts)
+    colnames(table_data) <- c("Annotation", "Cell_Count")
+
+    # Add percentage column
+    table_data$Percentage <- round((table_data$Cell_Count / sum(table_data$Cell_Count)) * 100, 1)
+
+    # Optional: reorder by count descending
+    table_data <- table_data[order(-table_data$Cell_Count), ]
+
+    table_data
+  })
+
+
+  # exhaustion
+  scGATE_bd_ex <- reactive({
+    sc <- getData_2()
+    validate(
+      need(
+        nrow(sc) > 0,
+        "Upload file for annotation"
+      )
+    )
+    req(input$threshold_scGate)
+
+    len <- length(rownames(sc@assays$RNA$scale.data))
+
+    if (input$hs_bd_ex) {
+      scGate_models_DB <- custom_db_scGATE(system.file("scGATE", "human/bd_rhapsody/exhaustion", package = "STEGO.R"))
+
+      models.list <- scGate_models_DB
+
+      sc <- scGate(sc,
+                   model = models.list,
+                   pos.thr = input$threshold_scGate,
+                   neg.thr = input$threshold_scGate,
+                   nfeatures = len,
+                   reduction = input$reduction_anno,
+                   min.cells = 1
+      )
+
+      sc@meta.data$exhaustion <- sc@meta.data$scGate_multi
+      sc@meta.data <- sc@meta.data[!grepl("_UCell", names(sc@meta.data))]
+      sc@meta.data <- sc@meta.data[!grepl("is.pure_", names(sc@meta.data))]
+      sc@meta.data <- sc@meta.data[!grepl("scGate_multi", names(sc@meta.data))]
+      sc
+    } else {
+      sc
+    }
+    sc
+  })
+  output$scGATE_summary_scGATE_bd_ex <- renderTable({
+    sc <- scGATE_bd_ex()
+
+    if (!input$hs_bd_ex) {
+      return(data.frame(Message = "immune checkpoint not run"))
+    }
+
+    # Count cells per annotation
+    counts <- table(sc@meta.data$exhaustion)
+
+    # Convert to data frame
+    table_data <- as.data.frame(counts)
+    colnames(table_data) <- c("Annotation", "Cell_Count")
+
+    # Add percentage column
+    table_data$Percentage <- round((table_data$Cell_Count / sum(table_data$Cell_Count)) * 100, 1)
+
+    # Optional: reorder by count descending
+    table_data <- table_data[order(-table_data$Cell_Count), ]
+
+    table_data
+  })
+
+  # memory
+  scGATE_bd_mem <- reactive({
+    sc <- getData_2()
+    validate(
+      need(
+        nrow(sc) > 0,
+        "Upload file for annotation"
+      )
+    )
+    req(input$threshold_scGate)
+
+    len <- length(rownames(sc@assays$RNA$scale.data))
+
+    if (input$hs_bd_mem) {
+      scGate_models_DB <- custom_db_scGATE(system.file("scGATE", "human/bd_rhapsody/memory", package = "STEGO.R"))
+
+      models.list <- scGate_models_DB
+
+      sc <- scGate(sc,
+                   model = models.list,
+                   pos.thr = input$threshold_scGate,
+                   neg.thr = input$threshold_scGate,
+                   nfeatures = len,
+                   reduction = input$reduction_anno,
+                   min.cells = 1
+      )
+
+      sc@meta.data$memory <- sc@meta.data$scGate_multi
+      sc@meta.data <- sc@meta.data[!grepl("_UCell", names(sc@meta.data))]
+      sc@meta.data <- sc@meta.data[!grepl("is.pure_", names(sc@meta.data))]
+      sc@meta.data <- sc@meta.data[!grepl("scGate_multi", names(sc@meta.data))]
+      sc
+    } else {
+      sc
+    }
+    sc
+  })
+  output$scGATE_summary_scGATE_bd_mem <- renderTable({
+    sc <- scGATE_bd_mem()
+
+    if (!input$hs_bd_mem) {
+      return(data.frame(Message = "immune checkpoint not run"))
+    }
+
+    # Count cells per annotation
+    counts <- table(sc@meta.data$memory)
+
+    # Convert to data frame
+    table_data <- as.data.frame(counts)
+    colnames(table_data) <- c("Annotation", "Cell_Count")
+
+    # Add percentage column
+    table_data$Percentage <- round((table_data$Cell_Count / sum(table_data$Cell_Count)) * 100, 1)
+
+    # Optional: reorder by count descending
+    table_data <- table_data[order(-table_data$Cell_Count), ]
+
+    table_data
+  })
+
+  # Proliferation
+  scGATE_bd_prolif <- reactive({
+    sc <- getData_2()
+    validate(
+      need(
+        nrow(sc) > 0,
+        "Upload file for annotation"
+      )
+    )
+    req(input$threshold_scGate)
+
+    len <- length(rownames(sc@assays$RNA$scale.data))
+
+    if (input$hs_bd_prolif) {
+      scGate_models_DB <- custom_db_scGATE(system.file("scGATE", "human/bd_rhapsody/prolif", package = "STEGO.R"))
+
+      models.list <- scGate_models_DB
+
+      sc <- scGate(sc,
+                   model = models.list,
+                   pos.thr = input$threshold_scGate,
+                   neg.thr = input$threshold_scGate,
+                   nfeatures = len,
+                   reduction = input$reduction_anno,
+                   min.cells = 1
+      )
+
+      sc@meta.data$proliferation <- sc@meta.data$scGate_multi
+      sc@meta.data <- sc@meta.data[!grepl("_UCell", names(sc@meta.data))]
+      sc@meta.data <- sc@meta.data[!grepl("is.pure_", names(sc@meta.data))]
+      sc@meta.data <- sc@meta.data[!grepl("scGate_multi", names(sc@meta.data))]
+      sc
+    } else {
+      sc
+    }
+    sc
+  })
+  output$scGATE_summary_scGATE_bd_mem <- renderTable({
+    sc <- scGATE_bd_prolif()
+
+    if (!input$hs_bd_prolif) {
+      return(data.frame(Message = "immune checkpoint not run"))
+    }
+
+    # Count cells per annotation
+    counts <- table(sc@meta.data$proliferation)
+
+    # Convert to data frame
+    table_data <- as.data.frame(counts)
+    colnames(table_data) <- c("Annotation", "Cell_Count")
+
+    # Add percentage column
+    table_data$exhaustion <- round((table_data$Cell_Count / sum(table_data$Cell_Count)) * 100, 1)
+
+    # Optional: reorder by count descending
+    table_data <- table_data[order(-table_data$Cell_Count), ]
+
+    table_data
+  })
+
+
+  # Proliferation
+  scGATE_bd_sens <- reactive({
+    sc <- getData_2()
+    validate(
+      need(
+        nrow(sc) > 0,
+        "Upload file for annotation"
+      )
+    )
+    req(input$threshold_scGate)
+
+    len <- length(rownames(sc@assays$RNA$scale.data))
+
+    if (input$hs_bd_sens) {
+      scGate_models_DB <- custom_db_scGATE(system.file("scGATE", "human/bd_rhapsody/Senescence", package = "STEGO.R"))
+
+      models.list <- scGate_models_DB
+
+      sc <- scGate(sc,
+                   model = models.list,
+                   pos.thr = input$threshold_scGate,
+                   neg.thr = input$threshold_scGate,
+                   nfeatures = len,
+                   reduction = input$reduction_anno,
+                   min.cells = 1
+      )
+
+      sc@meta.data$senescence <- sc@meta.data$scGate_multi
+      sc@meta.data <- sc@meta.data[!grepl("_UCell", names(sc@meta.data))]
+      sc@meta.data <- sc@meta.data[!grepl("is.pure_", names(sc@meta.data))]
+      sc@meta.data <- sc@meta.data[!grepl("scGate_multi", names(sc@meta.data))]
+      sc
+    } else {
+      sc
+    }
+    sc
+  })
+  output$scGATE_summary_scGATE_bd_sens <- renderTable({
+    sc <- scGATE_bd_sens()
+
+    if (!input$hs_bd_sens) {
+      return(data.frame(Message = "immune checkpoint not run"))
+    }
+
+    # Count cells per annotation
+    counts <- table(sc@meta.data$senescence)
+
+    # Convert to data frame
+    table_data <- as.data.frame(counts)
+    colnames(table_data) <- c("Annotation", "Cell_Count")
+
+    # Add percentage column
+    table_data$Percentage <- round((table_data$Cell_Count / sum(table_data$Cell_Count)) * 100, 1)
+
+    # Optional: reorder by count descending
+    table_data <- table_data[order(-table_data$Cell_Count), ]
+
+    table_data
+  })
+
+  # Proliferation
+  scGATE_bd_th1 <- reactive({
+    sc <- getData_2()
+    validate(
+      need(
+        nrow(sc) > 0,
+        "Upload file for annotation"
+      )
+    )
+    req(input$threshold_scGate)
+
+    len <- length(rownames(sc@assays$RNA$scale.data))
+
+    if (input$hs_bd_th1) {
+      scGate_models_DB <- custom_db_scGATE(system.file("scGATE", "human/bd_rhapsody/Th1", package = "STEGO.R"))
+
+      models.list <- scGate_models_DB
+
+      sc <- scGate(sc,
+                   model = models.list,
+                   pos.thr = input$threshold_scGate,
+                   neg.thr = input$threshold_scGate,
+                   nfeatures = len,
+                   reduction = input$reduction_anno,
+                   min.cells = 1
+      )
+
+      sc@meta.data$Th1 <- sc@meta.data$scGate_multi
+      sc@meta.data <- sc@meta.data[!grepl("_UCell", names(sc@meta.data))]
+      sc@meta.data <- sc@meta.data[!grepl("is.pure_", names(sc@meta.data))]
+      sc@meta.data <- sc@meta.data[!grepl("scGate_multi", names(sc@meta.data))]
+      sc
+    } else {
+      sc
+    }
+    sc
+  })
+  output$scGATE_summary_scGATE_bd_th1 <- renderTable({
+    sc <- scGATE_bd_sens()
+
+    if (!input$hs_bd_th1) {
+      return(data.frame(Message = "immune checkpoint not run"))
+    }
+
+    # Count cells per annotation
+    counts <- table(sc@meta.data$Th1)
 
     # Convert to data frame
     table_data <- as.data.frame(counts)
@@ -9617,7 +10018,7 @@ server <- function(input, output, session) {
 
     if (input$hs_IC_scGATE) {
       scGate_models_DB <- custom_db_scGATE(
-        system.file("scGATE", "human/immune_checkpoint", package = "STEGO.R")
+        system.file("scGATE", "human/10x_genomics/immune_checkpoint", package = "STEGO.R")
       )
       models.list <- scGate_models_DB
 
@@ -9668,7 +10069,7 @@ server <- function(input, output, session) {
   })
 
   ###### cyto ------
-
+  # '/Users/mullan/Library/R/arm64/4.5/library/STEGO.R/scGATE/human/10x_genomics/'
   scGATE_anno_cytotoxic <- reactive({
     sc <- getData_2()
     validate(
@@ -9682,7 +10083,7 @@ server <- function(input, output, session) {
     len <- length(rownames(sc@assays$RNA$scale.data))
 
     if (input$hs_cytotoxic_scGATE) {
-      scGate_models_DB <- custom_db_scGATE(system.file("scGATE", "human/cytotoxic", package = "STEGO.R"))
+      scGate_models_DB <- custom_db_scGATE(system.file("scGATE", "human/10x_genomics/cytotoxic", package = "STEGO.R"))
 
       models.list <- scGate_models_DB
 
@@ -9735,7 +10136,7 @@ server <- function(input, output, session) {
     len <- length(rownames(sc@assays$RNA$scale.data))
 
     if (input$hs_senescence_scGATE) {
-      scGate_models_DB <- custom_db_scGATE(system.file("scGATE", "human/senescence", package = "STEGO.R"))
+      scGate_models_DB <- custom_db_scGATE(system.file("scGATE", "human/10x_genomics/senescence", package = "STEGO.R"))
       models.list <- scGate_models_DB
 
       sc <- scGate(sc,
@@ -9787,7 +10188,7 @@ server <- function(input, output, session) {
     len <- length(rownames(sc@assays$RNA$scale.data))
 
     if (input$hs_function_scGATE) {
-      scGate_models_DB <- custom_db_scGATE(system.file("scGATE", "human/function", package = "STEGO.R"))
+      scGate_models_DB <- custom_db_scGATE(system.file("scGATE", "human/10x_genomics/function", package = "STEGO.R"))
 
       models.list <- scGate_models_DB
 
@@ -9827,7 +10228,7 @@ server <- function(input, output, session) {
     len <- length(rownames(sc@assays$RNA$scale.data))
 
     if (input$hs_simplefunction_scGATE) {
-      scGate_models_DB <- custom_db_scGATE(system.file("scGATE", "human/simple_functions", package = "STEGO.R"))
+      scGate_models_DB <- custom_db_scGATE(system.file("scGATE", "human/10x_genomics/simple_functions", package = "STEGO.R"))
 
       models.list <- scGate_models_DB
 
@@ -9861,7 +10262,6 @@ server <- function(input, output, session) {
     }
   })
 
-
   output$scGATE_verbatum_simp_function <- renderPrint({
     if (input$hs_simplefunction_scGATE) {
       sc <- scGATE_anno_simplefunction()
@@ -9870,9 +10270,6 @@ server <- function(input, output, session) {
       cat("Simple Function not run")
     }
   })
-
-
-
   scGATE_anno_cycling <- reactive({
     sc <- getData_2()
     validate(
@@ -9886,7 +10283,7 @@ server <- function(input, output, session) {
     len <- length(rownames(sc@assays$RNA$scale.data))
 
     if (input$hs_cycling_scGATE) {
-      scGate_models_DB <- custom_db_scGATE(system.file("scGATE", "human/cycling", package = "STEGO.R"))
+      scGate_models_DB <- custom_db_scGATE(system.file("scGATE", "human/10x_genomics/cycling", package = "STEGO.R"))
 
       models.list <- scGate_models_DB
 
@@ -9899,7 +10296,7 @@ server <- function(input, output, session) {
                    ncores = 8, min.cells = 1
       )
 
-      sc@meta.data$cycling <- sc@meta.data$scGate_multi
+      sc@meta.data$prolif <- sc@meta.data$scGate_multi
       sc@meta.data <- sc@meta.data[!grepl("_UCell", names(sc@meta.data))]
       sc@meta.data <- sc@meta.data[!grepl("is.pure_", names(sc@meta.data))]
       sc@meta.data <- sc@meta.data[!grepl("scGate_multi", names(sc@meta.data))]
@@ -9938,11 +10335,7 @@ server <- function(input, output, session) {
         sc@meta.data$TCRseq <- ifelse(sc@meta.data$vj_gene_AG == "TRAV1-2.TRAJ33", "MAIT",
                                       ifelse(sc@meta.data$vj_gene_AG == "TRAV1-2.TRAJ12", "MAIT",
                                              ifelse(sc@meta.data$vj_gene_AG == "TRAV1-2.TRAJ23", "MAIT",
-                                                    ifelse(sc@meta.data$vj_gene_AG == "TRAV1-2.TRAJ9", "CD1b-restricted(poss)",
                                                            ifelse(sc@meta.data$vj_gene_AG == "TRAV10.TRAJ18", "iNKT",
-                                                                  ifelse(sc@meta.data$v_gene_BD == "TRBV4-1" & sc@meta.data$v_gene_AG == "TRAV17", "CD1b-restricted(poss)",
-                                                                         ifelse(sc@meta.data$v_gene_BD == "TRBV4-1" & sc@meta.data$v_gene_AG != "TRAV17", "CD1c-restricted(poss)",
-                                                                                # ifelse(sc@meta.data$chain_AG == 'TRG' & sc@meta.data$chain_BD == 'TRB',"gb T cell",
                                                                                 ifelse(sc@meta.data$chain_AG == "TRG" & sc@meta.data$chain_BD == "TRD", "gd T cell",
                                                                                        ifelse(sc@meta.data$chain_AG == "TRA" & sc@meta.data$chain_BD == "TRB", "ab T cell", "")
                                                                                 )
@@ -9950,9 +10343,6 @@ server <- function(input, output, session) {
                                                                   )
                                                            )
                                                     )
-                                             )
-                                      )
-        )
         sc
       } else {
       }
@@ -10988,6 +11378,49 @@ server <- function(input, output, session) {
       )
     )
 
+    # ----------------------
+    # BD phenotypes
+    # ----------------------
+    if (input$hs_bd_BloodT) {
+      obj <- scGATE_blood_T()
+      sc@meta.data$Tcell_pheno <- obj@meta.data$Tcell_pheno
+      sc@meta.data$Tmajor_pheno <-ifelse(grepl("DP",sc@meta.data$Tcell_pheno),"DP",
+                                      ifelse(grepl("CD4",sc@meta.data$Tcell_pheno),"CD4",
+                                                           ifelse(grepl("CD8",sc@meta.data$Tcell_pheno),"CD8",
+                                                                         ifelse(grepl("DN",sc@meta.data$Tcell_pheno),"DN","other"
+                                                                         ))))
+
+
+    }
+    if (input$hs_bd_cyto) {
+      obj <- scGATE_bd_cyto()
+      sc@meta.data$cytotoxic <- obj@meta.data$cytotoxic
+    }
+    if (input$hs_bd_ex) {
+      obj <- scGATE_bd_ex()
+      sc@meta.data$exhaustion <- obj@meta.data$exhaustion
+    }
+    if (input$hs_bd_mem) {
+      obj <- scGATE_bd_mem()
+      sc@meta.data$memory <- obj@meta.data$memory
+    }
+    if (input$hs_bd_prolif) {
+      obj <- scGATE_bd_prolif()
+      sc@meta.data$proliferation <- obj@meta.data$proliferation
+    }
+    if (input$hs_bd_sens) {
+      obj <- scGATE_bd_sens()
+      sc@meta.data$senescence <- obj@meta.data$senescence
+    }
+    if (input$hs_bd_th1) {
+      obj <- scGATE_bd_th1()
+      sc@meta.data$Th1 <- obj@meta.data$Th1
+    }
+    # ----------------------
+    ### 10x Genomics
+    # ----------------------
+
+
     if (input$hs_function_scGATE) {
       obj <- scGATE_anno_function()
       sc@meta.data$Tcellfunction <- obj@meta.data$Tcellfunction
@@ -11012,7 +11445,6 @@ server <- function(input, output, session) {
                                                                          )))))))
 
     }
-
     if (input$hs_IC_scGATE) {
       obj <- scGATE_anno_immune_checkpoint()
       sc@meta.data$IC <- obj@meta.data$IC
@@ -11030,10 +11462,6 @@ server <- function(input, output, session) {
     if (input$hs_cycling_scGATE) {
       obj <- scGATE_anno_cycling()
       sc@meta.data$cycling <- obj@meta.data$cycling
-    }
-    if (input$hs_TCRseq_scGATE) {
-      obj <- scGATE_anno_TCRseq()
-      sc@meta.data$TCRseq <- obj@meta.data$TCRseq
     }
 
     if (input$GeneSet1_scGate) {
@@ -11080,7 +11508,13 @@ server <- function(input, output, session) {
       obj <- scGate_anno_GeneSet9()
       sc@meta.data$geneSet9 <- obj@meta.data$geneSet9
       names(sc@meta.data)[names(sc@meta.data) %in% "geneSet9"] <- input$geneset9_name
-    } else {
+    }
+    if (input$hs_TCRseq_scGATE) {
+      obj <- scGATE_anno_TCRseq()
+      sc@meta.data$TCRseq <- obj@meta.data$TCRseq
+    }
+
+    else {
       sc
     }
 
