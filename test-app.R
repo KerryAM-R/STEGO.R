@@ -20,7 +20,6 @@ invisible(lapply(required_pkgs, function(pkg) {
 # # font ------
 require(fontHelper)
 font <- as.data.frame(register_fonts("common"))
-print(font)
 names(font) <- "Fonts"
 
 #####
@@ -8873,8 +8872,6 @@ server <- function(input, output, session) {
     merged_object@meta.data$Cell_Index <- rownames(merged_object@meta.data)
     message("there were ",length(merging_sc_ob$intergrated_features),"intergrated features selected")
     merged_object@assays$RNA@misc$intergrated_features<- merging_sc_ob$intergrated_features
-    print(merged_object@assays$RNA@misc$intergrated_features)
-
     sl <- object.size(merged_object)
     message(paste("files were merged into 1. The merged object is ", round(sl[1]/1000^3, 2), "Gb"))
     merging_sc_ob$Val2 <- merged_object
@@ -9343,7 +9340,6 @@ server <- function(input, output, session) {
         "upload file"
       )
     )
-    print(sc)
     req(sc,input$Samp_col_SampToRemove)
     df <- sc@meta.data
     df2 <- as.data.frame(unique(df[names(df) %in% input$Samp_col_SampToRemove]))
@@ -14108,7 +14104,6 @@ server <- function(input, output, session) {
       top_BD_cluster$Selected_function <- factor(top_BD_cluster$Selected_function,
         levels = cluster_levels
       )
-    print(top_BD_cluster$Selected_function )
     } else {
       # For any other variable, keep default factor order
       top_BD_cluster$Selected_function <- factor(top_BD_cluster$Selected_function,
@@ -14271,8 +14266,6 @@ server <- function(input, output, session) {
     }
 
     names(col.file) <- "V1"
-    print(col.file)
-
 
     if (input$show_selected == "Selected_list") {
       col.file$col <- unlist(colors_UMAP_all_classification())
@@ -14283,8 +14276,6 @@ server <- function(input, output, session) {
       col.file
     }
     top_BD_cluster$Selected_function <- factor(top_BD_cluster$Selected_function, levels = col.file$V1)
-    print(col.file)
-
     top_BD_cluster$ID_Column <- top_BD_cluster[,names(top_BD_cluster) %in% input$Samp_col]
     # names(top_BD_cluster)[names(top_BD_cluster) %in% input$Samp_col] <- "ID_Column"
 
@@ -14302,8 +14293,6 @@ server <- function(input, output, session) {
     md <- subset(md, md$UMAP_2 > input$Filter_lower_UMAP2_marker_GEX)
     md <- subset(md, md$UMAP_2 < input$Filter_lower_UMAP2_marker2_GEX)
     top_BD_cluster <- md
-
-    print(top_BD_cluster$Selected_function)
 
     df <- ggplot(top_BD_cluster, aes(
       x = UMAP_1,
@@ -18408,7 +18397,7 @@ server <- function(input, output, session) {
     sc@meta.data$SpeciesSimple <- gsub("Homo sapiens","homo_sapiens",sc@meta.data$SpeciesSimple)
     sc@meta.data$SpeciesSimple <- gsub("SARS-CoV-2,SARS-CoV","SARS-CoV-1/2",sc@meta.data$SpeciesSimple)
     sc@meta.data$SpeciesSimple <- unlist(sc@meta.data$SpeciesSimple)
-    print(unique(sc@meta.data$SpeciesSimple))
+    # print(unique(sc@meta.data$SpeciesSimple))
     sc
   })
 
