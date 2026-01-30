@@ -2803,6 +2803,15 @@ ui <- fluidPage(
                                ),
                                tabPanel(
                                  "Upset Plot",
+                                 p(
+                                   HTML("<span style='color: purple; font-weight: bold;'>Annotation text size</span> updates the numbers on the bars")
+                                 ),
+                                 p(
+                                   HTML("<span style='color: purple; font-weight: bold;'>Axis number size</span> updates the bar plots numeric axis")
+                                 ),
+                                 p(
+                                   HTML("<span style='color: purple; font-weight: bold;'>Axis text size</span> updates the names of the rows")
+                                 ),
                                  plotOutput("Upset_plot_overlap"),
                                  fluidRow(
                                    column(2, numericInput("width_Upset_plot_overlap",p("Width (PDF)",class = "name-header_functions"), value = 10)),
@@ -2856,8 +2865,6 @@ ui <- fluidPage(
                                                  ),
                                                  column(9, plotOutput("line_graph_output", height = "600px"))
                                                ),
-
-
 
                                                fluidRow(
                                                  column(2, numericInput("width_line_graph_output",p("Width (PDF)",class = "name-header_functions"), value = 10)),
@@ -14084,12 +14091,41 @@ server <- function(input, output, session) {
     )
 
     top_BD_cluster <- sc@meta.data
+
+    # Assign the selected column
     top_BD_cluster$Selected_function <- top_BD_cluster[, names(top_BD_cluster) %in% input$Colour_By_this_overview]
     top_BD_cluster$Selected_function <- ifelse(grepl("NA", top_BD_cluster$Selected_function), NA, top_BD_cluster$Selected_function)
-    top_BD_cluster$Selected_function <- factor(top_BD_cluster$Selected_function, levels = unique(top_BD_cluster$Selected_function))
-    num <- as.data.frame(unique(top_BD_cluster$Selected_function))
-    num <- as.data.frame(num[complete.cases(num) == T, ])
 
+    # Only reorder numerically if Seurat clusters
+    if (input$Colour_By_this_overview == "seurat_clusters") {
+
+      clusters_num <- as.numeric(as.character(top_BD_cluster$Selected_function))
+
+      cluster_levels <- seq(
+        min(clusters_num, na.rm = TRUE),
+        max(clusters_num, na.rm = TRUE)
+      )
+      top_BD_cluster$Selected_function <- factor(top_BD_cluster$Selected_function,
+        levels = cluster_levels
+      )
+    print(top_BD_cluster$Selected_function )
+    } else {
+      # For any other variable, keep default factor order
+      top_BD_cluster$Selected_function <- factor(top_BD_cluster$Selected_function,
+                                                 levels = unique(top_BD_cluster$Selected_function))
+    }
+
+    if (input$Colour_By_this_overview == "seurat_clusters") {
+
+      num <- data.frame(
+        Selected_function = levels(top_BD_cluster$Selected_function)
+      )
+
+    } else {
+
+      num <- as.data.frame(unique(top_BD_cluster$Selected_function))
+      num <- num[complete.cases(num), , drop = FALSE]
+    }
     col.gg <- gg_fill_hue(dim(num)[1])
     palette_rainbow <- rainbow(dim(num)[1])
     heat_col <- heat.colors(dim(num)[1])
@@ -14146,11 +14182,40 @@ server <- function(input, output, session) {
       )
     )
     top_BD_cluster <- sc@meta.data
+
+    # Assign the selected column
     top_BD_cluster$Selected_function <- top_BD_cluster[, names(top_BD_cluster) %in% input$Colour_By_this_overview]
     top_BD_cluster$Selected_function <- ifelse(grepl("NA", top_BD_cluster$Selected_function), NA, top_BD_cluster$Selected_function)
-    top_BD_cluster$Selected_function <- factor(top_BD_cluster$Selected_function, levels = unique(top_BD_cluster$Selected_function))
-    num <- as.data.frame(unique(top_BD_cluster$Selected_function))
-    num <- as.data.frame(num[complete.cases(num) == T, ])
+
+    # Only reorder numerically if Seurat clusters
+    if (input$Colour_By_this_overview == "seurat_clusters") {
+
+      clusters_num <- as.numeric(as.character(top_BD_cluster$Selected_function))
+
+      cluster_levels <- seq(
+        min(clusters_num, na.rm = TRUE),
+        max(clusters_num, na.rm = TRUE)
+      )
+      top_BD_cluster$Selected_function <- factor(top_BD_cluster$Selected_function,
+                                                 levels = cluster_levels
+      )
+    } else {
+      # For any other variable, keep default factor order
+      top_BD_cluster$Selected_function <- factor(top_BD_cluster$Selected_function,
+                                                 levels = unique(top_BD_cluster$Selected_function))
+    }
+
+    if (input$Colour_By_this_overview == "seurat_clusters") {
+
+      num <- data.frame(
+        Selected_function = levels(top_BD_cluster$Selected_function)
+      )
+
+    } else {
+
+      num <- as.data.frame(unique(top_BD_cluster$Selected_function))
+      num <- num[complete.cases(num), , drop = FALSE]
+    }
 
     lapply(1:dim(num)[1], function(i) {
       input[[paste("col.UMAP_all_classification", i, sep = "_")]]
@@ -14170,20 +14235,56 @@ server <- function(input, output, session) {
     top_BD_cluster <- sc@meta.data
     top_BD_cluster$Selected_function <- top_BD_cluster[, names(top_BD_cluster) %in% input$Colour_By_this_overview]
     top_BD_cluster$Selected_function <- ifelse(grepl("NA", top_BD_cluster$Selected_function), NA, top_BD_cluster$Selected_function)
-    # top_BD_cluster$Selected_function <- factor(top_BD_cluster$Selected_function,levels = unique(top_BD_cluster$Selected_function))
-    col.file <- as.data.frame(unique(top_BD_cluster$Selected_function))
-    col.file <- as.data.frame(col.file[complete.cases(col.file) == T, ])
+
+    # Only reorder numerically if Seurat clusters
+    if (input$Colour_By_this_overview == "seurat_clusters") {
+      clusters_num <- as.numeric(as.character(top_BD_cluster$Selected_function))
+      cluster_levels <- seq(
+        min(clusters_num, na.rm = TRUE),
+        max(clusters_num, na.rm = TRUE)
+      )
+      top_BD_cluster$Selected_function <- factor(top_BD_cluster$Selected_function,
+                                                 levels = cluster_levels
+      )
+    } else {
+      # For any other variable, keep default factor order
+      top_BD_cluster$Selected_function <- factor(top_BD_cluster$Selected_function,
+                                                 levels = unique(top_BD_cluster$Selected_function))
+    }
+
+
+    if (input$Colour_By_this_overview == "seurat_clusters") {
+
+      clusters_num <- as.numeric(as.character(top_BD_cluster$Selected_function))
+
+      cluster_levels <- seq(
+        min(clusters_num, na.rm = TRUE),
+        max(clusters_num, na.rm = TRUE)
+      )
+
+      col.file <- as.data.frame(cluster_levels)
+
+    } else {
+
+      col.file <- as.data.frame(unique(top_BD_cluster$Selected_function))
+      col.file <- as.data.frame(col.file[complete.cases(col.file) == T, ])
+    }
+
     names(col.file) <- "V1"
+    print(col.file)
+
+
     if (input$show_selected == "Selected_list") {
       col.file$col <- unlist(colors_UMAP_all_classification())
       col.file <- col.file[col.file$V1 %in% input$SiteNumInput, ]
-      top_BD_cluster$Selected_function <- factor(top_BD_cluster$Selected_function, levels = col.file$V1)
-    } else {
-      top_BD_cluster$Selected_function <- factor(top_BD_cluster$Selected_function, levels = unique(top_BD_cluster$Selected_function))
 
+    } else {
       col.file$col <- unlist(colors_UMAP_all_classification())
       col.file
     }
+    top_BD_cluster$Selected_function <- factor(top_BD_cluster$Selected_function, levels = col.file$V1)
+    print(col.file)
+
     top_BD_cluster$ID_Column <- top_BD_cluster[,names(top_BD_cluster) %in% input$Samp_col]
     # names(top_BD_cluster)[names(top_BD_cluster) %in% input$Samp_col] <- "ID_Column"
 
@@ -14192,38 +14293,49 @@ server <- function(input, output, session) {
       top_BD_cluster <- top_BD_cluster[top_BD_cluster$ID_Column %in% input$selected_Indiv, ]
     }
 
-    # top_BD_cluster$alpha_val <- ifelse(is.na(top_BD_cluster$Selected_function)==T,0.1,1)
-
-
     top_BD_cluster <- top_BD_cluster[top_BD_cluster$ID_Column %in% input$ID_Column_factor, ]
     top_BD_cluster$ID_Column <- factor(top_BD_cluster$ID_Column, levels = input$ID_Column_factor)
+
     md <- top_BD_cluster
     md <- subset(md, md$UMAP_1 > input$Filter_lower_UMAP1_marker_GEX)
     md <- subset(md, md$UMAP_1 < input$Filter_lower_UMAP1_marker2_GEX)
-
     md <- subset(md, md$UMAP_2 > input$Filter_lower_UMAP2_marker_GEX)
     md <- subset(md, md$UMAP_2 < input$Filter_lower_UMAP2_marker2_GEX)
     top_BD_cluster <- md
 
-    df <- ggplot(top_BD_cluster, aes(x = UMAP_1, UMAP_2, colour = Selected_function, alpha = Selected_function, label = Selected_function)) +
+    print(top_BD_cluster$Selected_function)
+
+    df <- ggplot(top_BD_cluster, aes(
+      x = UMAP_1,
+      y = UMAP_2,
+      colour = Selected_function,
+      alpha = Selected_function,
+      label = Selected_function
+    )) +
       geom_point() +
-      scale_color_manual(labels = ~ stringr::str_wrap(.x, width = 20), values = col.file$col, na.value = input$NA_col_analysis) +
-      scale_alpha_manual(labels = ~ stringr::str_wrap(.x, width = 20), values = rep(1, length(unique(top_BD_cluster$Selected_function))), na.value = 0.1) +
+      scale_color_manual(
+        labels = ~ stringr::str_wrap(.x, width = 20),
+        values = col.file$col,
+        na.value = input$NA_col_analysis
+      ) +
+      scale_alpha_manual(
+        labels = ~ stringr::str_wrap(.x, width = 20),
+        values = rep(1, length(unique(top_BD_cluster$Selected_function))),
+        na.value = 0.1
+      ) +
       theme_bw() +
       theme(
         strip.text = element_text(size = input$Strip_text_size, family = input$font_type),
         axis.title.y = element_text(colour = "black", family = input$font_type, size = input$title.text.sizer2),
         axis.text.y = element_text(colour = "black", family = input$font_type, size = input$text_size),
         axis.text.x = element_text(colour = "black", family = input$font_type, size = input$text_size, angle = 0),
-        axis.title.x = element_text(colour = "black", angle = 0, vjust = .5, face = "plain", family = input$font_type, size = input$title.text.sizer2),
+        axis.title.x = element_text(colour = "black", angle = 0, vjust = 0.5, face = "plain", family = input$font_type, size = input$title.text.sizer2),
         legend.text = element_text(colour = "black", size = input$Legend_size, family = input$font_type),
         legend.title = element_blank(),
-        legend.position = input$legend_position,
+        legend.position = input$legend_position
       )
 
-    if (input$Split_by_group_overview == "no") {
-      df <- df
-    } else {
+    if (input$Split_by_group_overview != "no") {
       df <- df + facet_wrap(~ID_Column, nrow = input$wrap_row)
     }
     df
@@ -14292,6 +14404,9 @@ server <- function(input, output, session) {
     )
     top_BD_cluster <- sc@meta.data
     top_BD_cluster$Selected_function <- top_BD_cluster[, names(top_BD_cluster) %in% input$Colour_By_this_overview]
+
+
+
     top_BD_cluster$Selected_function <- ifelse(top_BD_cluster$Selected_function == "NA", NA, top_BD_cluster$Selected_function)
     top_BD_cluster <- top_BD_cluster[order(top_BD_cluster$Selected_function), ]
     top_BD_cluster$Selected_function <- ifelse(top_BD_cluster$Selected_function == "Neg",NA,top_BD_cluster$Selected_function)
@@ -20271,26 +20386,67 @@ server <- function(input, output, session) {
     mat <- as.data.frame(mat)
     df.x <- make_comb_mat(mat)
     list.names <- as.character(input$ID_Column_factor)
-
-    ht <- draw(UpSet(df.x,
-                     pt_size = unit(5, "mm"),
-                     lwd = 1,
-                     row_names_gp = gpar(fontfamily = input$font_type, fontsize = 12),
-                     column_names_gp = gpar(fontfamily = input$font_type, fontsize = 12),
-                     top_annotation = upset_top_annotation(df.x,
-                                                           add_numbers = T,
-                                                           numbers_gp = gpar(fontfamily = input$font_type, fontsize = 12),
-                                                           annotation_name_gp = gpar(fontfamily = input$font_type, fontsize = 12),
-                                                           gp = gpar(fill = "black"),
-                     ),
-                     right_annotation = upset_right_annotation(df.x,
-                                                               add_numbers = T,
-                                                               numbers_gp = gpar(fontfamily = input$font_type, fontsize = 12),
-                                                               annotation_name_gp = gpar(fontfamily = input$font_type, fontsize = 12),
-                                                               gp = gpar(fill = "black"),
-                     ),
-                     set_order = list.names
-    ), padding = unit(c(20, 20, 20, 20), "mm"))
+    ht <- draw(
+      UpSet(
+        df.x,
+        pt_size = unit(5, "mm"),
+        lwd = 1,
+        row_names_gp = gpar(
+          fontfamily = input$font_type,
+          fontsize = input$title.text.sizer2,
+          fontface = "plain"
+        ),
+        column_names_gp = gpar(
+          fontfamily = input$font_type,
+          fontsize = input$title.text.sizer2,
+          fontface = "plain"
+        ),
+        top_annotation = upset_top_annotation(
+          df.x,
+          add_numbers = TRUE,
+          numbers_gp = gpar(
+            fontfamily = input$font_type,
+            fontsize = input$anno_text_size,  # numbers on top of bars
+            fontface = "plain"
+          ),
+          show_annotation_name = FALSE,              # removes "Intersection size" label
+          numbers_rot = 0,               # THIS controls rotation of the numbers above bars
+          axis_param = list(
+            gp = gpar(
+              fontsize = input$text_size,  # top bar axis numbers
+              fontfamily = input$font_type,
+              fontface = "plain"
+            )
+          ),
+          gp = gpar(fill = "black")
+        ),
+        right_annotation = upset_right_annotation(
+          df.x,
+          add_numbers = TRUE,
+          numbers_gp = gpar(
+            fontfamily = input$font_type,
+            fontsize = input$title.text.sizer2,
+            fontface = "plain"
+          ),
+          annotation_name_gp = gpar(
+            fontfamily = input$font_type,
+            fontsize = input$title.text.sizer2,
+            fontface = "plain"
+          ),
+          axis_param = list(
+            gp = gpar(
+              fontsize = input$text_size,  # top bar axis numbers
+              fontfamily = input$font_type,
+              fontface = "plain"
+            )
+          ),
+          show_annotation_name = FALSE,             # removes label on right annotation
+          gp = gpar(fill = "black")
+        ),
+        set_order = list.names
+      ),
+      padding = unit(c(20, 20, 20, 20), "mm")
+    )
     ht
   })
   output$Upset_plot_overlap <- renderPlot({
@@ -21460,6 +21616,9 @@ server <- function(input, output, session) {
     )
 
     umap.meta <- meta_data_for_features_scale()
+
+    print(tibble(umap.meta))
+
     umap.meta_pos <- subset(umap.meta, umap.meta$scale != "-Inf")
 
     umap.meta$scale <- ifelse(umap.meta$scale == "-Inf", NA, umap.meta$scale)
@@ -21509,7 +21668,6 @@ server <- function(input, output, session) {
 
     marker_selected_UMAP()
   })
-
 
   output$downloadPlot_marker_selected_UMAP_plot <- downloadHandler(
     filename = function() {
@@ -22766,79 +22924,93 @@ server <- function(input, output, session) {
 
   ## prioritising and automating the analysis ------
 
-  output$Simple_workflow_step1 <- renderPrint({
-    sc <- UMAP_metadata_with_labs()
-    validate(
-      need(
-        nrow(sc) > 0,
-        "upload file"
-      )
-    )
-
-    TCR_Expanded_Df <- TCR_Expanded_fun(sc, (input$Samp_col), (input$V_gene_sc))
-    TCR_Expanded_Df$obs <- 1
-    length.samp.ID <- length(unique(TCR_Expanded_Df$ID_Column))
-    mat <- mat_sum(sc, input$Samp_col, input$V_gene_sc)
-    if (max(mat$TotalSamps) == 1 && length.samp.ID == 1) {
-      message("one individual and one sample")
-
-      TCR_Expanded_Df <- TCR_Expanded_fun(sc, (input$Samp_col), (input$V_gene_sc))
-      TCR_Expanded_Df$obs <- 1
-      TCR_Expanded_Df2 <- subset(TCR_Expanded_Df, TCR_Expanded_Df$percent > input$cut.off_percent_rep)
-      observations <- sum(TCR_Expanded_Df2$obs)
-      percentage <- sum(TCR_Expanded_Df2$percent)
-      if (observations > 0) {
-        message("ImmunoDom")
-        message(paste0("There are ",observations, " immuno dominant clonotype(s) that account for ", round(percentage, 2), "% of the repertoire"))
-      } else {
-        message("Polyclonal")
-      }
-    } else if (max(mat$TotalSamps) > 1 || length.samp.ID > 1) {
-      message("multiple individuals or samples")
-    } else {
-      message("other")
-    }
-  })
+  # output$Simple_workflow_step1 <- renderPrint({
+  #
+  #   sc <- UMAP_metadata_with_labs()
+  #   validate(
+  #     need(!is.null(sc) && nrow(sc) > 0, "No UMAP metadata available")
+  #   )
+  #
+  #   validate(
+  #     need(!is.null(input$Samp_col) && !is.null(input$V_gene_sc), "Select Samp_col and V_gene_sc")
+  #   )
+  #
+  #   cut_off <- ifelse(is.null(input$cut.off_percent_rep), 0, input$cut.off_percent_rep)
+  #
+  #   TCR_Expanded_Df <- TCR_Expanded_fun(sc, input$Samp_col, input$V_gene_sc)
+  #   validate(
+  #     need(!is.null(TCR_Expanded_Df) && nrow(TCR_Expanded_Df) > 0, "TCR_Expanded_fun returned no data")
+  #   )
+  #
+  #   TCR_Expanded_Df$obs <- 1
+  #   length.samp.ID <- length(unique(TCR_Expanded_Df$ID_Column))
+  #
+  #   mat <- mat_sum(sc, input$Samp_col, input$V_gene_sc)
+  #   max_total <- if (!is.null(mat) && nrow(mat) > 0) max(mat$TotalSamps) else 0
+  #
+  #   output_lines <- character(0)
+  #
+  #   if (max_total == 1 && length.samp.ID == 1) {
+  #     TCR_Expanded_Df2 <- subset(TCR_Expanded_Df, TCR_Expanded_Df$percent > cut_off)
+  #     observations <- ifelse(nrow(TCR_Expanded_Df2) > 0, sum(TCR_Expanded_Df2$obs), 0)
+  #     percentage <- ifelse(nrow(TCR_Expanded_Df2) > 0, sum(TCR_Expanded_Df2$percent), 0)
+  #
+  #     if (observations > 0) {
+  #       output_lines <- c(
+  #         output_lines,
+  #         "ImmunoDom",
+  #         paste0("There are ", observations, " immuno dominant clonotype(s) that account for ", round(percentage, 2), "% of the repertoire")
+  #       )
+  #     } else {
+  #       output_lines <- c(output_lines, "Polyclonal")
+  #     }
+  #
+  #   } else if (max_total > 1 || length.samp.ID > 1) {
+  #     output_lines <- c(output_lines, "Multiple individuals or samples")
+  #   } else {
+  #     output_lines <- c(output_lines, "Other")
+  #   }
+  #
+  #   # just return the lines — renderPrint will display them
+  #   output_lines
+  # })
 
   ### UI outputs -----
-  output$Module_case_statements <- renderUI({
-    sc <- UMAP_metadata_with_labs()
-    validate(
-      need(
-        nrow(sc) > 0,
-        "upload file"
-      )
-    )
+  multi_ui <- reactive({
+    fluidRow(
+      column(3, numericInput(
+        "cut.off_percent_repMulti",
+        "Priority cut-off",
+        value = 1, step = 0.001
+      )),
+      column(3, numericInput(
+        "CloneTotal_input_top2",
+        "Select clones > (Private)",
+        value = 2, min = 2
+      )),
+      column(12, actionButton(
+        "Multi_download_button",
+        "Download multi analysis"
+      ))
+)
+  })
 
-    TCR_Expanded_Df <- TCR_Expanded_fun(sc, (input$Samp_col), (input$V_gene_sc))
-    TCR_Expanded_Df$obs <- 1
-    TCR_Expanded_Df2 <- subset(TCR_Expanded_Df, TCR_Expanded_Df$percent > input$cut.off_percent_rep)
-    observations <- sum(TCR_Expanded_Df2$obs)
-    length.samp.ID <- length(unique(TCR_Expanded_Df$ID_Column))
+  output$Module_case_statements <- renderUI({
+
+    sc <- UMAP_metadata_with_labs()
+    validate(need(nrow(sc) > 0, "upload file"))
 
     mat <- mat_sum(sc, input$Samp_col, input$V_gene_sc)
+    max_total <- if (nrow(mat) > 0) max(mat$TotalSamps) else 0
 
-    if (max(mat$TotalSamps) == 1 && length.samp.ID == 1) {
-      message("one individual and one sample")
-      if (observations > 0) {
-        fluidRow(
-          column(12, actionButton("ImmDom_download_buttonOneOne", "Download ImmunoDom (1 & 1) analysis"))
-        )
-      } else {
-        fluidRow(
-          # column(12,selectInput("AnalysisType","Preset parameters for", = c("ImmunoDom"))),
-          column(12, actionButton("Poly_download_buttonOneOne", "Download Polyclonal (1 & 1) analysis"))
-        )
-      }
-    } else if (max(mat$TotalSamps) > 1 || length.samp.ID > 1) {
-      # BD_sum <- Top_clonotypes_multiCounts()
+    length.samp.ID <- length(unique(sc[[input$Samp_col]]))
 
-      fluidRow(
-        column(3, numericInput("cut.off_percent_repMulti", "Priority cut-off", value = 1, step = 0.001, min = 0, max = 1)),
-        column(3, numericInput("CloneTotal_input_top2", "Select clones > (Private)", value = 2, min = 2)),
-        column(12, actionButton("Multi_download_button", "Download multi analysis"))
-      )
+    if (max_total == 1 && length.samp.ID == 1) {
+      actionButton("OneOne_placeholder", "Run analysis")
+    } else if (max_total > 1 || length.samp.ID > 1) {
+      multi_ui()
     } else {
+      NULL
     }
   })
 
@@ -23389,7 +23561,6 @@ server <- function(input, output, session) {
 
     names(unique.df) <- c("group", "chain")
     unique.df <- unique.df[unique.df$group %in% input$ID_Column_factor, ]
-
     unique.df <- subset(unique.df, unique.df$chain != "NA")
     unique.df <- subset(unique.df, unique.df$group != "NA")
     unique.df$cloneCount <- 1
@@ -23399,21 +23570,46 @@ server <- function(input, output, session) {
     df.x <- make_comb_mat(mat)
     list.names <- as.character(input$ID_Column_factor)
 
+
+    # ht = draw(UpSet(df.x,
+    #                 pt_size = unit(input$upset.point.size, "mm"),
+    #                 lwd = input$upset.lwd,
+    #                 row_names_gp =  gpar(fontfamily = input$font_type,fontsize = input$upset.text.size),#changes font size of "set size" labels
+    #                 column_names_gp = gpar(fontfamily = input$font_type),
+    #                 comb_col = c(your_list_df$ID)[comb_degree(df.x)],
+    #                 top_annotation = upset_top_annotation(df.x,
+    #                                                       numbers_gp = gpar(fontfamily = input$font_type,fontsize = input$font.size.anno.upset),
+    #                                                       annotation_name_gp = gpar(fontfamily = input$font_type,fontsize=input$font.size.anno.upset),
+    #                                                       gp = gpar(fill = input$top_annotation_colour),
+    #
+    #                 ),
+    #                 right_annotation = upset_right_annotation(df.x,
+    #                                                           add_numbers = T,
+    #                                                           numbers_gp = gpar(fontfamily = input$font_type,fontsize = input$font.size.anno.upset),
+    #                                                           annotation_name_gp = gpar(fontfamily = input$font_type,fontsize=input$font.size.anno.upset),
+    #                                                           gp = gpar(fill = input$right_annotation_colour),
+    #                 ),
+    #
+    #
+    #                 set_order  = c(input$order.of.group)
+    # ), padding = unit(c(20, 20, 20, 20), "mm"))
+    #
+
     ht <- draw(UpSet(df.x,
                      pt_size = unit(5, "mm"),
                      lwd = 1,
-                     row_names_gp = gpar(fontfamily = input$font_type, fontsize = 12),
-                     column_names_gp = gpar(fontfamily = input$font_type, fontsize = 12),
+                     row_names_gp = gpar(fontfamily = input$font_type, fontsize = input$text_size),
+                     column_names_gp = gpar(fontfamily = input$font_type, fontsize = input$text_size),
                      top_annotation = upset_top_annotation(df.x,
                                                            add_numbers = T,
-                                                           numbers_gp = gpar(fontfamily = input$font_type, fontsize = 12),
-                                                           annotation_name_gp = gpar(fontfamily = input$font_type, fontsize = 12),
+                                                           numbers_gp = gpar(fontfamily = input$font_type, fontsize = input$text_size),
+                                                           annotation_name_gp = gpar(fontfamily = input$font_type, fontsize = input$text_size),
                                                            gp = gpar(fill = "black"),
                      ),
                      right_annotation = upset_right_annotation(df.x,
                                                                add_numbers = T,
-                                                               numbers_gp = gpar(fontfamily = input$font_type, fontsize = 12),
-                                                               annotation_name_gp = gpar(fontfamily = input$font_type, fontsize = 12),
+                                                               numbers_gp = gpar(fontfamily = input$font_type, fontsize = input$text_size),
+                                                               annotation_name_gp = gpar(fontfamily = input$font_type, fontsize = input$text_size),
                                                                gp = gpar(fill = "black"),
                      ),
                      set_order = list.names
