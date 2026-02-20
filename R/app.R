@@ -17359,7 +17359,7 @@ runSTEGO <- function(){
       }, contentType = "application/pdf"
     )
 
-    output$downloadPlotPNG_all_expression_dotplot_ex <- downloadHandler(
+    output$downloadPlotPNG_Violin_expanded_sig <- downloadHandler(
       filename = function() {
         paste("Expanded_violin", input$Split_group_by_, "_",input$Ex_transcripts_of_interest,"_", today(), ".png", sep = "")
       },
