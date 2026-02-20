@@ -3160,7 +3160,11 @@ runSTEGO <- function(){
                                               tabPanel(
                                                 "Stats",value = "clonal_abud_stats",
                                                 div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
-                                                downloadButton("downloaddf_FindMarker_Top", "Download stats table"),
+                                                fluidRow(
+                                                  downloadButton("downloaddf_FindMarker_Top", "Download stats table"),
+                                                  downloadButton("downloaddf_FindMarker_Top_ggvol", "Download ggVolcanoR table"),
+                                                ),
+
                                                 div(DT::DTOutput("Ridge_chart_alpha_gamma_stat_comp")),
                                               ),
                                               tabPanel(
@@ -3201,7 +3205,8 @@ runSTEGO <- function(){
                                                   conditionalPanel(
                                                     condition = "input.plot_type_ridgvi=='Ridge (selected clonotype)' | input.plot_type_ridgvi=='Violin (selected clonotype)'",
                                                     column(6, div(DT::DTOutput("Ridge_chart_alpha_gamma_stat") ),
-                                                           downloadButton("downloaddf_clusTCR_GEx", "Download stats")
+                                                           downloadButton("downloaddf_clusTCR_GEx", "Download stats"),
+                                                           # downloadButton("downloaddf_clusTCR_GEx_ggol", "Download stats")
                                                     )
                                                   ),
                                                   column(6, plotOutput("Ridge_chart_alpha_gamma_plot_out", height = "600px"))
@@ -3287,7 +3292,12 @@ runSTEGO <- function(){
                                              value = "ExPan_stat",
                                              div(id = "spinner-container",class = "centered-spinner",add_busy_spinner(spin = "fading-circle",height = "200px",width = "200px",color = "#6F00B0")),
                                              div(DT::DTOutput("compare.stat_Ex")),
-                                             downloadButton("downloadtb_compare.stat_Ex", "Download table")
+                                             fluidRow(
+                                               downloadButton("downloadtb_compare.stat_Ex", "Download table"),
+                                               downloadButton("downloadtb_compare.stat_Ex_ggvol", "Download ggVolcanoR table"),
+                                             )
+
+
                                     ),
                                     tabPanel("Dotplot",
                                              value = "ExPan_dot",
@@ -3306,7 +3316,18 @@ runSTEGO <- function(){
                                     tabPanel("Violin",value = "expan_violinplot",
                                              selectInput("Ex_transcripts_of_interest",p("Significant genes",class = "name-header_functions"),choices = ""),
                                              # tabPanel("plot",
-                                             plotOutput("Violin_expanded_sig", height = "600px")
+                                             plotOutput("Violin_expanded_sig", height = "600px"),
+                                             # width_png_line_graph_output
+                                             fluidRow(
+                                               column(2, numericInput("width_Violin_expanded_sig",p("Width (PDF)",class = "name-header_functions"), value = 10)),
+                                               column(2, numericInput("height_Violin_expanded_sig",p("Height (PDF)",class = "name-header_functions"), value = 8)),
+                                               column(1, style = "margin-top: 20px;", downloadButton("downloadPlot_Violin_expanded_sig", "PDF")),
+                                               column(2, numericInput("width_png_Violin_expanded_sig",p("Width (PNG)",class = "name-header_functions"), value = 2400)),
+                                               column(2, numericInput("height_png_Violin_expanded_sig",p("Height (PNG)",class = "name-header_functions"), value = 1000)),
+                                               column(2, numericInput("resolution_PNG_Violin_expanded_sig",p("Resolution (PNG)",class = "name-header_functions"), value = 144)),
+                                               column(1, style = "margin-top: 20px;", downloadButton("downloadPlotPNG_Violin_expanded_sig", "PNG"))
+                                             ),
+
                                              # )
                                     ),
                                     tabPanel("Over-representation",
@@ -15835,6 +15856,25 @@ runSTEGO <- function(){
       }
     )
 
+    output$downloaddf_FindMarker_Top_ggvol <- downloadHandler(
+      filename = function() {
+        paste(input$Selected_clonotype,"_",input$comparison_abundance,"ggvolcanoR.csv", sep = "")
+      },
+      content = function(file) {
+        df <- as.data.frame(compare.stat())
+        print(names(df))
+
+        df$ID <- rownames(df)
+        df <- df[,names(df) %in% c("ID","p_val_adj","avg_log2FC")]
+        names(df)[grepl("p_val_adj",names(df))] <- "Pvalue"
+        names(df)[grepl("avg_log2FC",names(df))] <- "logFC"
+        print(df)
+        # Reorder
+        df <- df[, c("ID", "logFC", "Pvalue")]
+        write.csv(df, file, row.names = F)
+      }
+    )
+
 
     observeEvent(input$run_string.data_Exp_top, {
       # df <- compare.stat()
@@ -15868,8 +15908,6 @@ runSTEGO <- function(){
         selected = df$V1[1]
       )
     })
-
-
 
     # ridge plot ------
     Ridge_chart_alpha_gamma_df <- reactive({
@@ -15970,6 +16008,9 @@ runSTEGO <- function(){
         write.csv(df, file, row.names = T)
       }
     )
+
+
+
     ### Violin plots top clonotype -----
     Violin_plot_table <- reactive({
       sc <- data_sc_pro()
@@ -17051,6 +17092,26 @@ runSTEGO <- function(){
       }
     )
 
+
+    output$downloadtb_compare.stat_Ex_ggvol <- downloadHandler(
+      filename = function() {
+        paste(input$Split_group_by_,"_ggvolcanoR.csv", sep = "")
+      },
+      content = function(file) {
+        df <- as.data.frame(Vals_expanded.stats())
+        print(names(df))
+
+        df$ID <- rownames(df)
+        df <- df[,names(df) %in% c("ID","p_val_adj","avg_log2FC")]
+        names(df)[grepl("p_val_adj",names(df))] <- "Pvalue"
+        names(df)[grepl("avg_log2FC",names(df))] <- "logFC"
+        print(df)
+        # Reorder
+        df <- df[, c("ID", "logFC", "Pvalue")]
+        write.csv(df, file, row.names = F)
+      }
+    )
+
     # req(Expansion_check_tb())
 
 
@@ -17161,8 +17222,6 @@ runSTEGO <- function(){
       )
 
     })
-
-
     observe({
       df2 <- Expansion_check_tb()
       validate(
@@ -17286,6 +17345,36 @@ runSTEGO <- function(){
       Violin_plot_Exp()
 
     })
+
+
+    output$downloadPlot_Violin_expanded_sig <- downloadHandler(
+      filename = function() {
+        paste("Expanded_violin", input$Split_group_by_, "_", today(), ".pdf", sep = "")
+      },
+      content = function(file) {
+        pdf(file, width = input$width_Violin_expanded_sig, height = input$height_Violin_expanded_sig, onefile = FALSE) # open the pdf device
+        df <- Violin_plot_Exp()
+        plot(df)
+        dev.off()
+      }, contentType = "application/pdf"
+    )
+
+    output$downloadPlotPNG_all_expression_dotplot_ex <- downloadHandler(
+      filename = function() {
+        paste("Expanded_violin", input$Split_group_by_, "_",input$Ex_transcripts_of_interest,"_", today(), ".png", sep = "")
+      },
+      content = function(file) {
+        png(file,
+            width = input$width_png_Violin_expanded_sig,
+            height = input$height_png_Violin_expanded_sig,
+            res = input$resolution_PNG_Violin_expanded_sig
+        )
+        df <- Violin_plot_Exp()
+
+        plot(df)
+        dev.off()
+      }, contentType = "application/png" # MIME type of the image
+    )
 
 
 
