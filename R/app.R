@@ -750,8 +750,8 @@ runSTEGO <- function(){
                   h4("Add File Name", class = "name-header5"),
                   textInput("name_BD",h5("e.g., Samp1_Tumor", class = "name-header"), value = "")),
               fluidRow(
-                column(6, numericInput("no_lines_skip_Tags", p("Skip first 7 lines (Tags)",class = "name-header_functions"), value = 7, min = 0, max = 20, step = 7), ),
-                column(6, fileInput("file_calls_BD", p("Sample Tag Calls (.csv)",class = "name-header_functions"),
+                column(12, numericInput("no_lines_skip_Tags", p("Skip first 7 lines (Tags)",class = "name-header_functions"), value = 7, min = 0, max = 20, step = 7), ),
+                column(12, fileInput("file_calls_BD", p("Sample Tag Calls (.csv)",class = "name-header_functions"),
                                     accept = c("text/csv", "text/comma-separated-values,text/plain", ".csv")
                 ), )
               ),
@@ -5158,6 +5158,7 @@ runSTEGO <- function(){
 
       if (input$filtered_list == "Unfiltered") {
         contig_AG <- contig_AG[!duplicated(contig_AG$Cell_Index), ]
+
         name.list <- names(contig_AG[c(
           names(contig_AG[grep("gene", names(contig_AG))]),
           names(contig_AG[grep("call", names(contig_AG))]),
@@ -5183,7 +5184,7 @@ runSTEGO <- function(){
       }
 
       contig_AG <- contig_AG %>%
-        dplyr::select(all_of(name.list), everything())
+        dplyr::select(dplyr::all_of(c(name.list)), everything())
       names(contig_AG)[1:summary(name.list)[1]] <- paste(names(contig_AG[names(contig_AG) %in% name.list]), "_AG", sep = "")
       # contig_AG
 
@@ -5203,7 +5204,7 @@ runSTEGO <- function(){
           )])
 
           contig_D <- contig_D %>%
-            select(all_of(name.list), everything())
+            dplyr::select(dplyr::all_of(name.list), everything())
           names(contig_D)[1:summary(name.list)[1]] <- paste(names(contig_D[names(contig_D) %in% name.list]), "_AG", sep = "")
 
           contig_AG <- rbind(contig_AG, contig_D)
@@ -5240,7 +5241,7 @@ runSTEGO <- function(){
       }
 
       contig_BD <- contig_BD %>%
-        select(all_of(name.list), everything())
+        dplyr::select(dplyr:: all_of(name.list), everything())
       names(contig_BD)[1:summary(name.list)[1]] <- paste(names(contig_BD[names(contig_BD) %in% name.list]), "_BD", sep = "")
 
       if (input$filtered_list == "Unfiltered") {
@@ -5260,7 +5261,7 @@ runSTEGO <- function(){
           )])
 
           contig_B <- contig_B %>%
-            select(all_of(name.list), everything())
+            dplyr::select(dplyr::all_of(name.list), everything())
           names(contig_B)[1:summary(name.list)[1]] <- paste(names(contig_B[names(contig_B) %in% name.list]), "_BD", sep = "")
 
           head(contig_B)
@@ -5355,8 +5356,8 @@ runSTEGO <- function(){
 
       if (input$filtered_list == "Unfiltered") {
         contig_paired_only <- contig_paired_only %>%
-          select(
-            all_of(c(
+          dplyr::select(
+            dplyr::all_of(c(
               "Cell_Index", "Sample_Name", "Sample_Tag", "pairing", "pairing_type", "Clonality", "seq_identified", "seq_identified_TRA", "seq_identified_TRB", "seq_identified_TRG", "seq_identified_TRD", "cell_type_experimental_AG", "cell_type_experimental_BD", "chain_AG", "chain_BD",
               names(contig_paired_only[grep("call", names(contig_paired_only))])
             )),
@@ -5364,8 +5365,8 @@ runSTEGO <- function(){
           )
       } else {
         contig_paired_only <- contig_paired_only %>%
-          select(
-            all_of(c(
+          dplyr::select(
+            dplyr::all_of(c(
               "Cell_Index", "Sample_Name", "Sample_Tag", "cell_type_experimental_AG", "cell_type_experimental_BD", "chain_AG", "chain_BD",names(contig_paired_only[grep("call", names(contig_paired_only))])
             )),
             everything()
@@ -5501,7 +5502,7 @@ runSTEGO <- function(){
       }
 
       contig_IgH <- contig_IgH %>%
-        select(all_of(name.list), everything())
+        dplyr::select(dplyr::all_of(name.list), everything())
       names(contig_IgH)[1:summary(name.list)[1]] <- paste(names(contig_IgH[names(contig_IgH) %in% name.list]), "_IgH", sep = "")
 
 
@@ -5533,7 +5534,7 @@ runSTEGO <- function(){
       }
 
       contig_IgLK <- contig_IgLK %>%
-        select(all_of(name.list), everything())
+        dplyr::select(dplyr::all_of(name.list), everything())
       names(contig_IgLK)[1:summary(name.list)[1]] <- paste(names(contig_IgLK[names(contig_IgLK) %in% name.list]), "_IgLK", sep = "")
 
       if (input$filtered_list == "Unfiltered") {
@@ -5615,8 +5616,8 @@ runSTEGO <- function(){
 
       if (input$filtered_list == "Unfiltered") {
         contig_paired_only <- contig_paired_only %>%
-          select(
-            all_of(c(
+          dplyr::select(
+            dplyr::all_of(c(
               "Cell_Index", "Sample_Name", "Sample_Tag", "pairing", "pairing_type", "Clonality", "seq_identified", "seq_identified_TRA", "seq_identified_TRB", "seq_identified_TRG", "seq_identified_TRD", "cell_type_experimental_IgH", "cell_type_experimental_IgLK", "chain_IgH", "chain_IgLK",
               names(contig_paired_only[grep("call", names(contig_paired_only))])
             )),
@@ -5624,8 +5625,8 @@ runSTEGO <- function(){
           )
       } else {
         contig_paired_only <- contig_paired_only %>%
-          select(
-            all_of(c(
+          dplyr::select(
+            dplyr::all_of(c(
               "Cell_Index", "Sample_Name", "Sample_Tag", "cell_type_experimental_IgH", "cell_type_experimental_IgLK", "chain_IgH", "chain_IgLK",
               names(contig_paired_only[grep("call", names(contig_paired_only))])
             )),
@@ -5925,7 +5926,7 @@ runSTEGO <- function(){
       names(mmMat) <- barcode$V1
       mmMat$Gene_Name <- rownames(mmMat)
       mmMat <- mmMat %>%
-        select(all_of("Gene_Name"), everything())
+        dplyr::select(dplyr::all_of("Gene_Name"), everything())
       mmMat
     }
 
@@ -6173,8 +6174,11 @@ runSTEGO <- function(){
       }
       names(contigs2)[names(contigs2) %in% c("v_call")] <- "TRBV_gene"
       names(contigs2)[names(contigs2) %in% c("j_call")] <- "TRBJ_gene"
+
+      print(tibble(contigs2))
+
       contigs2 <- contigs2 %>%
-        dplyr::select(all_of(TRBV_gene, CDR3_beta), everything())
+        dplyr::select(dplyr::all_of(c("TRBV_gene", "CDR3_beta")), everything())
       contigs2 <- subset(contigs2, contigs2$CDR3_beta != "None")
       contigs2 <- contigs2
       contigs2$TRBV_gene <- gsub("[*]0.", "", contigs2$TRBV_gene)
@@ -6234,7 +6238,7 @@ runSTEGO <- function(){
       calls_TCR_paired.fun <- calls_TCR_paired.fun[complete.cases(calls_TCR_paired.fun$vdj_gene_AG_BD), ]
 
       calls_TCR_paired.fun <- calls_TCR_paired.fun %>%
-        select(all_of(cloneCount), everything())
+        dplyr::select(dplyr::all_of("cloneCount"), everything())
 
       calls_TCR_paired.fun
     }
@@ -6324,7 +6328,7 @@ runSTEGO <- function(){
         )])
 
         contig_A <- contig_A %>%
-          select(all_of(name.list), everything())
+          dplyr::select(dplyr::all_of(name.list), everything())
         names(contig_A)[1:summary(name.list)[1]] <- paste(names(contig_A[names(contig_A) %in% name.list]), "_A", sep = "")
 
         names(contig_A) %in% c("cell_id", "Sample_Name")
@@ -6340,7 +6344,7 @@ runSTEGO <- function(){
         )])
         head(contig_A)
         contig_G <- contig_G %>%
-          select(all_of(name.list), everything())
+          dplyr::select(dplyr::all_of(name.list), everything())
         names(contig_G)[1:summary(name.list)[1]] <- paste(names(contig_G[names(contig_G) %in% name.list]), "_G", sep = "")
 
         names(contig_G) %in% c("cell_id", "Sample_Name")
@@ -6359,7 +6363,7 @@ runSTEGO <- function(){
         )])
 
         contig_B <- contig_B %>%
-          select(all_of(name.list), everything())
+          dplyr::select(dplyr::all_of(name.list), everything())
         names(contig_B)[1:summary(name.list)[1]] <- paste(names(contig_B[names(contig_B) %in% name.list]), "_B", sep = "")
 
         names(contig_B) %in% c("cell_id", "Sample_Name")
@@ -6376,7 +6380,7 @@ runSTEGO <- function(){
         )])
 
         contig_D <- contig_D %>%
-          select(all_of(name.list), everything())
+          dplyr::select(dplyr::all_of(name.list), everything())
         names(contig_D)[1:summary(name.list)[1]] <- paste(names(contig_D[names(contig_D) %in% name.list]), "_D", sep = "")
 
         names(contig_D) %in% c("cell_id", "Sample_Name")
@@ -6474,7 +6478,7 @@ runSTEGO <- function(){
         merged_junction_contig <- merge(contig_paired_only, junction_only_sum, by = c("junction_aa_A", "junction_aa_B", "junction_aa_G", "junction_aa_D", "v_gene_A", "v_gene_B", "v_gene_G", "v_gene_D", "chain_A", "chain_B", "chain_G", "chain_D", "pairing")) # "v_gene_B","v_gene_D","v_gene_G"
         name.list_all <- c("cell_id", "Sample_Name", "pairing", "order")
         merged_junction_contig <- merged_junction_contig %>%
-          select(all_of(name.list_all), everything())
+          dplyr::select(dplyr::all_of(name.list_all), everything())
 
         # merged_junction_contig <- merged_junction_contig[!names(merged_junction_contig) %in% c(names(merged_junction_contig[grep("v_gene",names(merged_junction_contig))]))]
         merged_junction_contig <- merged_junction_contig[order(merged_junction_contig$cell_id), ]
@@ -6648,7 +6652,7 @@ runSTEGO <- function(){
       )])
 
       contig_AG <- contig_AG %>%
-        select(all_of(name.list), everything())
+        dplyr::select(dplyr::all_of(name.list), everything())
       names(contig_AG)[1:summary(name.list)[1]] <- paste(names(contig_AG[names(contig_AG) %in% name.list]), "_AG", sep = "")
       contig_AG
 
@@ -6659,7 +6663,7 @@ runSTEGO <- function(){
         "chain"
       )])
       contig_BD <- contig_BD %>%
-        select(all_of(name.list), everything())
+        dplyr::select(dplyr::all_of(name.list), everything())
 
 
       names(contig_BD)[1:summary(name.list)[1]] <- paste(names(contig_BD[names(contig_BD) %in% name.list]), "_BD", sep = "")
@@ -6721,7 +6725,7 @@ runSTEGO <- function(){
       contig_paired_only$Sample_Name <- paste(input$Indiv10x, "_", input$group10x, sep = "")
 
       contig_paired_only <- contig_paired_only %>%
-        select(all_of(c("Cell_Index", "Sample_Name")), everything())
+        dplyr::select(dplyr::all_of(c("Cell_Index", "Sample_Name")), everything())
       contig_paired_only
     })
 
@@ -6743,7 +6747,7 @@ runSTEGO <- function(){
         "chain"
       )])
       contig_AG <- contig_AG %>%
-        select(all_of(name.list), everything())
+        dplyr::select(dplyr::all_of(name.list), everything())
       names(contig_AG)[1:summary(name.list)[1]] <- paste(names(contig_AG[names(contig_AG) %in% name.list]), "_AG", sep = "")
       contig_AG
 
@@ -6754,7 +6758,7 @@ runSTEGO <- function(){
         "chain"
       )])
       contig_BD <- contig_BD %>%
-        select(all_of(name.list), everything())
+        dplyr::select(dplyr::all_of(name.list), everything())
 
 
       names(contig_BD)[1:summary(name.list)[1]] <- paste(names(contig_BD[names(contig_BD) %in% name.list]), "_BD", sep = "")
@@ -6815,7 +6819,7 @@ runSTEGO <- function(){
       contig_paired_only$Sample_Name <- paste(input$Indiv10x, "_", input$group10x, sep = "")
 
       contig_paired_only <- contig_paired_only %>%
-        select(all_of(c("Cell_Index", "Sample_Name")), everything())
+        dplyr::select(dplyr::all_of(c("Cell_Index", "Sample_Name")), everything())
 
       contig_paired_only
     }
@@ -6849,7 +6853,7 @@ runSTEGO <- function(){
       )])
       name.list
       contig_LK <- contig_LK %>%
-        select(all_of(name.list), everything())
+        dplyr::select(dplyr::all_of(name.list), everything())
       names(contig_LK)[1:summary(name.list)[1]] <- paste(names(contig_LK[names(contig_LK) %in% name.list]), "_IgL", sep = "")
       head(contig_LK)
 
@@ -6861,7 +6865,7 @@ runSTEGO <- function(){
         "chain"
       )])
       contig_H <- contig_H %>%
-        select(all_of(name.list), everything())
+        dplyr::select(dplyr::all_of(name.list), everything())
 
 
       names(contig_H)[1:summary(name.list)[1]] <- paste(names(contig_H[names(contig_H) %in% name.list]), "_IgH", sep = "")
@@ -6930,7 +6934,7 @@ runSTEGO <- function(){
       contig_paired_only_dup$Sample_Name <- paste(input$Indiv10x, "_", input$group10x, sep = "")
 
       contig_paired_only_dup <- contig_paired_only_dup %>%
-        select(all_of(c("Cell_Index", "Sample_Name")), everything())
+        dplyr::select(dplyr::all_of(c("Cell_Index", "Sample_Name")), everything())
 
       contig_paired_only_dup
 
@@ -7103,7 +7107,7 @@ runSTEGO <- function(){
       contig_paired_only$group <- input$group10x
       contig_paired_only$Indiv <- input$Indiv10x
       contig_paired_only <- contig_paired_only %>%
-        select(all_of(cloneCount, group, Indiv), everything())
+        dplyr::select(dplyr::all_of(c("cloneCount", "group", "Indiv")), everything())
       contig_paired_only
     }
 
@@ -7152,7 +7156,7 @@ runSTEGO <- function(){
       names(mmMat) <- barcode$V1
       mmMat$Gene_Name <- rownames(mmMat)
       mmMat <- mmMat %>%
-        select(all_of("Gene_Name"), everything())
+        dplyr::select(dplyr::all_of("Gene_Name"), everything())
       mmMat
     }
 
@@ -7223,7 +7227,7 @@ runSTEGO <- function(){
       names(contigs2)[names(contigs2) %in% c("v_gene")] <- "TRBV_gene"
       names(contigs2)[names(contigs2) %in% c("j_gene")] <- "TRBJ_gene"
       contigs2 <- contigs2 %>%
-        select(TRBV_gene, CDR3_beta, everything())
+        dplyr::select(dplyr::all_of(c("TRBV_gene", "CDR3_beta")), everything())
 
 
       contigs2$CDR3_beta <- gsub("^$", "None", contigs2$CDR3_beta)
@@ -7458,7 +7462,7 @@ runSTEGO <- function(){
       contig_paired_only$Sample_Name <- input$sample_name_Array
 
       contig_paired_only <- contig_paired_only %>%
-        select(all_of(c("Cell_Index", "Sample_Name")), everything())
+        dplyr::select(dplyr::all_of(c("Cell_Index", "Sample_Name")), everything())
 
       contig_paired_only
     })
@@ -7565,7 +7569,7 @@ runSTEGO <- function(){
       contigs$Sample_Name <- input$sample_name_Array
 
       contig_paired_only <- contigs %>%
-        select(all_of(c("Cell_Index", "Sample_Name")), everything())
+        dplyr::select(dplyr::all_of(c("Cell_Index", "Sample_Name")), everything())
 
       contig_paired_only
     }
@@ -7814,7 +7818,7 @@ runSTEGO <- function(){
       sc <- input.data_ClusTCR2_extracting()
       md <- as.data.frame(sc@meta.data)
       md <- md %>%
-        select(all_of(c(input$junction_aa_extracting,input$v_gene_extracting)), everything())
+        dplyr::select(dplyr::all_of(c(input$junction_aa_extracting,input$v_gene_extracting)), everything())
 
       df <- md[,names(md) %in% c(input$junction_aa_extracting,input$v_gene_extracting)]
       names(df) <- c("junction_aa","v_call")
@@ -12812,13 +12816,11 @@ runSTEGO <- function(){
 
       TCR_input <- TCR[, names(TCR) %in% c("cloneCount",select_cols)]
       TCR_input <- TCR_input %>%
-        dplyr::select(all_of(c("cloneCount", "ID_Column")), everything())
+        dplyr::select(dplyr::all_of(c("cloneCount", "ID_Column")), everything())
 
       TCR_total <- as.data.frame(ddply(TCR_input,c(input$V_gene_sc),numcolwise(sum)))
       meta2.names <- names(TCR_input)
-
       total.condition <- as.data.frame(ddply(TCR_input, "ID_Column", numcolwise(sum)))
-
       emtpy <- matrix(nrow = dim(TCR_input)[1], ncol = dim(total.condition)[1])
 
       for (i in 1:dim(TCR_input)[1]) {
@@ -14091,7 +14093,7 @@ runSTEGO <- function(){
       totals <- meta.data[, names(meta.data) %in% c(input$Samp_col, input$Colour_By_this_overview)]
 
       totals <- totals %>%
-        select(all_of(input$Samp_col), everything())
+        dplyr::select(dplyr::all_of(input$Samp_col), everything())
 
       names(totals) <- c("groups", "Function")
       tab <- table(totals$Function, totals$groups)
@@ -14699,7 +14701,7 @@ runSTEGO <- function(){
       totals <- meta.data[, names(meta.data) %in% c(input$Samp_col, input$Split_group_by_)]
 
       totals %>%
-        select(all_of(input$Samp_col), everything())
+        dplyr::select(dplyr::all_of(input$Samp_col), everything())
 
       names(totals) <- c("samps", "split")
       totals$split <- as.character(totals$split)
@@ -15629,7 +15631,7 @@ runSTEGO <- function(){
       df <- as.data.frame(sc@meta.data)
 
       df <- df %>%
-        select(all_of(c(input$Samp_col, input$V_gene_sc)), everything())
+        dplyr::select(dplyr::all_of(c(input$Samp_col, input$V_gene_sc)), everything())
 
       unique.df <- (df[, names(df) %in% c(input$Samp_col, input$V_gene_sc)])
       names(unique.df) <- c("group", "chain")
@@ -16574,7 +16576,7 @@ runSTEGO <- function(){
       geneSet2$Bonferroni <- p.adjust(geneSet2$p.val, method = "bonferroni")
       # name.list <- c("Geneset_ID","p.val","FDR","Bonferroni","OR","lowerCI","upperCI","in.geneset.name","in.geneset","background.geneset","total.sig","background.genes","background.geneset.name")
       # geneSet2 <- geneSet2 %>%
-      #     select(all_of(name.list), everything())
+      #     dplyr::select(dplyr::all_of(name.list), everything())
 
       geneSet2
     })
@@ -18377,7 +18379,7 @@ runSTEGO <- function(){
       geneSet2$Bonferroni <- p.adjust(geneSet2$p.val, method = "bonferroni")
       name.list <- c("Geneset_ID", "p.val", "FDR", "Bonferroni", "OR", "lowerCI", "upperCI", "in.geneset.name", "in.geneset", "background.geneset", "total.sig", "background.genes", "background.geneset.name")
       geneSet2 <- geneSet2 %>%
-        select(all_of(name.list), everything())
+        dplyr::select(dplyr::all_of(name.list), everything())
     })
 
     output$Over_rep_Epi_Tab <- DT::renderDT(escape = FALSE, filter = list(position = "top", clear = FALSE), options = list(autoWidth = FALSE, lengthMenu = c(1, 2, 5, 10, 20, 50, 100), pageLength = 10, scrollX = TRUE), {
@@ -19252,7 +19254,7 @@ runSTEGO <- function(){
 
 
       clusterAG <- df7 %>%
-        select(all_of(c(input$Samp_col, "Sample_count", "Total_cloneCount", "ClusterCount", "priority", "Updated_order")), everything())
+        dplyr::select(dplyr::all_of(c(input$Samp_col, "Sample_count", "Total_cloneCount", "ClusterCount", "priority", "Updated_order")), everything())
     })
 
     BD_cluster <- reactive({
@@ -19329,7 +19331,7 @@ runSTEGO <- function(){
       df7 <- df7[order(df7$priority, decreasing = F), ]
 
       clusterBD <- df7 %>%
-        select(all_of(c(input$Samp_col, "Sample_count", "Total_cloneCount", "ClusterCount", "priority", "Updated_order")), everything())
+        dplyr::select(dplyr::all_of(c(input$Samp_col, "Sample_count", "Total_cloneCount", "ClusterCount", "priority", "Updated_order")), everything())
       clusterBD
     })
 
@@ -21554,7 +21556,7 @@ runSTEGO <- function(){
       geneSet2$Bonferroni <- p.adjust(geneSet2$p.val, method = "bonferroni")
       name.list <- c("Geneset_ID", "p.val", "FDR", "Bonferroni", "OR", "lowerCI", "upperCI", "in.geneset.name", "in.geneset", "background.geneset", "total.sig", "background.genes", "background.geneset.name")
       geneSet2 <- geneSet2 %>%
-        select(all_of(name.list), everything())
+        dplyr::select(dplyr::all_of(name.list), everything())
     })
 
     output$Over_rep_overlap_Tab <- DT::renderDT(escape = FALSE, filter = list(position = "top", clear = FALSE), options = list(autoWidth = FALSE, lengthMenu = c(1, 2, 5, 10, 20, 50, 100), pageLength = 20, scrollX = TRUE), {
@@ -24317,7 +24319,7 @@ runSTEGO <- function(){
 
 
       clusterAG <- df7 %>%
-        select(all_of(c(input$Samp_col, "Sample_count", "Total_cloneCount", "ClusterCount", "priority", "Updated_order")), everything())
+        dplyr::select(dplyr::all_of(c(input$Samp_col, "Sample_count", "Total_cloneCount", "ClusterCount", "priority", "Updated_order")), everything())
     })
     G_cluster <- reactive({
       x <- today()
@@ -24390,7 +24392,7 @@ runSTEGO <- function(){
 
 
       clusterAG <- df7 %>%
-        select(all_of(c(input$Samp_col, "Sample_count", "Total_cloneCount", "ClusterCount", "priority", "Updated_order")), everything())
+        dplyr::select(dplyr::all_of(c(input$Samp_col, "Sample_count", "Total_cloneCount", "ClusterCount", "priority", "Updated_order")), everything())
     })
     B_cluster <- reactive({
       sc <- UMAP_metadata_with_labs()
@@ -24459,7 +24461,7 @@ runSTEGO <- function(){
       df7 <- df7[order(df7$priority, decreasing = F), ]
 
       clusterBD <- df7 %>%
-        select(all_of(c(input$Samp_col, "Sample_count", "Total_cloneCount", "ClusterCount", "priority", "Updated_order")), everything())
+        dplyr::select(dplyr::all_of(c(input$Samp_col, "Sample_count", "Total_cloneCount", "ClusterCount", "priority", "Updated_order")), everything())
       clusterBD
     })
     D_cluster <- reactive({
@@ -24529,7 +24531,7 @@ runSTEGO <- function(){
       df7 <- df7[order(df7$priority, decreasing = F), ]
 
       clusterBD <- df7 %>%
-        select(all_of(c(input$Samp_col, "Sample_count", "Total_cloneCount", "ClusterCount", "priority", "Updated_order")), everything())
+        dplyr::select(dplyr::all_of(c(input$Samp_col, "Sample_count", "Total_cloneCount", "ClusterCount", "priority", "Updated_order")), everything())
       clusterBD
     })
 
@@ -27306,7 +27308,7 @@ runSTEGO <- function(){
       alpha_beta$b_quals <- ""
 
       alpha_beta <- alpha_beta %>%
-        select(all_of(c("id","epitope","subject","a_nucseq","b_nucseq")), everything())
+        dplyr::select(dplyr::all_of(c("id","epitope","subject","a_nucseq","b_nucseq")), everything())
     })
 
     output$TCRdist_AIRR_dt <- DT::renderDT(escape = FALSE, options = list(autoWidth = FALSE, lengthMenu = c(2, 5, 10, 20, 50, 100), pageLength = 10, scrollX = TRUE), {
@@ -27360,7 +27362,7 @@ runSTEGO <- function(){
       name.list <- c("subject","epitope","count","v_a_gene","j_a_gene","cdr3_a_aa","cdr3_a_nucseq","v_b_gene","j_b_gene","cdr3_b_aa","cdr3_b_nucseq")
 
       md3 <- md3 %>%
-        select(all_of(name.list), everything())
+        dplyr::select(dplyr::all_of(name.list), everything())
       md3
 
     })
@@ -27412,7 +27414,7 @@ runSTEGO <- function(){
       name.list <- c("cdr3a","cdr3a_nucseq","va","ja","cdr3b","cdr3b_nucseq","vb","jb","subject")
 
       md3 <- md3 %>%
-        select(all_of(name.list), everything())
+        dplyr::select(dplyr::all_of(name.list), everything())
 
       md3
 
@@ -27580,7 +27582,7 @@ runSTEGO <- function(){
     )
 
   }
-  #########
+  ########
   # run the app in browser -----
   shinyApp(ui = ui, server = server, options = list(launch.browser = TRUE))
 }
